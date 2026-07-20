@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
@@ -35,6 +36,7 @@ import jakarta.validation.constraints.Size;
 })
 @Entity
 @Table(indexes = {@Index(columnList="userName")})  // for sorting the NamedQuery BuiltinUser.findAll
+@Schema(description = "Built-in Dataverse user account payload used for local username and password authentication.")
 public class BuiltinUser implements Serializable {
 
     private static final long serialVersionUID = 1L;

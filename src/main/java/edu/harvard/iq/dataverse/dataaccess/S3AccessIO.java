@@ -1331,8 +1331,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if (e.getCause() instanceof S3Exception) {
                 S3Exception s3e = (S3Exception) e.getCause();
                 if (s3e.statusCode() == 501) {
-                    // In this case, it's likely that tags are not implemented at all (e.g. by
-                    // Minio) so no tag was set either and it's just something to be aware of
+                    // In this case, it's likely that tags are not implemented at all
+                    // so no tag was set either and it's just something to be aware of
                     logger.warning("Temp tag not deleted: Object tags not supported by storage: " + driverId);
                 } else {
                     // In this case, the assumption is that adding tags has worked, so not removing

@@ -44,7 +44,10 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -88,6 +91,7 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
  */
 
 @Path("access")
+@Tag(name = "Access", description = "Download files, bundles, citations, metadata, and access-related file assets.")
 public class Access extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
         
@@ -137,8 +141,12 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("datafile/{fileId}/citation/{format}")
+    @Operation(summary = "Returns a data file citation",
+            description = "Formats the requested data file citation in the selected citation format after validating access.")
     public Response datafileCitation(@Context ContainerRequestContext crc,
+                                     @Parameter(description = "Data file id or persistent identifier.", required = true)
                                      @PathParam("fileId") String fileId,
+                                     @Parameter(description = "Citation format to return.")
                                      @PathParam("format") String formatString) {
 
         DataCitation.Format format = DataCitation.getFormat(formatString);
@@ -162,8 +170,21 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/bundle/{fileId}")
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId,
-                                                 @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
+    @Operation(summary = "Build a file bundle",
+            description = "Streams a ZIP bundle for a data file, including citation exports and optional tabular metadata when available.")
+    @APIResponse(responseCode = "200",
+            description = "ZIP archive containing the data file bundle, citation files, and available metadata.",
+            content = @Content(mediaType = "application/zip",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc,
+                                                 @Parameter(description = "Data file id or persistent identifier for the bundle.", required = true)
+                                                 @PathParam("fileId") String fileId,
+                                                 @Parameter(description = "File metadata id used to select a specific file metadata record.")
+                                                 @QueryParam("fileMetadataId") Long fileMetadataId,
+                                                 @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                 @QueryParam("gbrecs") boolean gbrecs,
+                                                 @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                                                 @QueryParam("gbrids") String gbrids,
                                                  @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         DataFile df = findDataFileUserCanSeeOrDieWrapper(fileId, req);
@@ -223,8 +244,24 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/bundle/{fileId}")
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
-                                                                      @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Operation(summary = "Submit guestbook response for a file bundle",
+            description = "Records the supplied guestbook response and then streams the ZIP bundle for a data file.")
+    @APIResponse(responseCode = "200",
+            description = "ZIP archive containing the data file bundle, citation files, and available metadata.",
+            content = @Content(mediaType = "application/zip",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public BundleDownloadInstance datafileBundleWithGuestbookResponse(@Context ContainerRequestContext crc,
+            @Parameter(description = "Data file id or persistent identifier for the bundle.", required = true)
+            @PathParam("fileId") String fileId,
+            @Parameter(description = "File metadata id used to select a specific file metadata record.")
+            @QueryParam("fileMetadataId") Long fileMetadataId,
+            @Parameter(description = "Whether guestbook records have already been written for this download.")
+            @QueryParam("gbrecs") boolean gbrecs,
+            @Parameter(description = "Guestbook response id list supplied by the user interface.")
+            @QueryParam("gbrids") String gbrids,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+            @RequestBody(description = "Guestbook response JSON for the requested data file.")
+            String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         processDatafileWithGuestbookResponse(crc, req, headers, fileId, uriInfo, gbrecs, jsonBody);
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
@@ -258,7 +295,15 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId:.+}")
     @Produces({"application/xml","*/*"})
-    public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
+    @Operation(summary = "Downloads a data file",
+            description = "Streams the requested data file after validating access and guestbook requirements.")
+    public Response datafile(@Context ContainerRequestContext crc,
+                             @Parameter(description = "Data file id, persistent identifier, or path-style file reference.", required = true)
+                             @PathParam("fileId") String fileId,
+                             @Parameter(description = "Whether guestbook records have already been written for this download.")
+                             @QueryParam("gbrecs") boolean gbrecs,
+                             @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                             @QueryParam("gbrids") String gbrids,
                              @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -406,8 +451,16 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId:.+}")
     @Produces({"application/json"})
-    public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId,
-                                                  @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) {
+    @Operation(summary = "Submit guestbook response for a data file",
+            description = "Records the supplied guestbook response and returns access details for a data file download.")
+    public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc,
+                                                  @Parameter(description = "Data file id, persistent identifier, or path-style file reference.", required = true)
+                                                  @PathParam("fileId") String fileId,
+                                                  @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                  @QueryParam("gbrecs") boolean gbrecs,
+                                                  @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+                                                  @RequestBody(description = "Guestbook response JSON for the requested data file.")
+                                                  String jsonBody) {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         fileId = normalizeFileId(fileId, req);
@@ -580,7 +633,18 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId}/metadata")
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Operation(summary = "Export tabular file metadata",
+            description = "Streams tabular data file metadata in the default DDI XML format.")
+    public String tabularDatafileMetadata(@Context ContainerRequestContext crc,
+                                          @Parameter(description = "Data file id or persistent identifier for the tabular file.", required = true)
+                                          @PathParam("fileId") String fileId,
+                                          @Parameter(description = "File metadata id used to select a specific file metadata record.")
+                                          @QueryParam("fileMetadataId") Long fileMetadataId,
+                                          @Parameter(description = "Comma-separated metadata sections to exclude from the export.")
+                                          @QueryParam("exclude") String exclude,
+                                          @Parameter(description = "Comma-separated metadata sections to include in the export.")
+                                          @QueryParam("include") String include,
+                                          @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         return tabularDatafileMetadataDDI(crc, fileId, fileMetadataId, exclude, include, header, response);
     }
     
@@ -592,7 +656,18 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Operation(summary = "Export tabular file metadata as DDI",
+            description = "Streams DDI XML metadata for a tabular data file.")
+    public String tabularDatafileMetadataDDI(@Context ContainerRequestContext crc,
+                                             @Parameter(description = "Data file id or persistent identifier for the tabular file.", required = true)
+                                             @PathParam("fileId") String fileId,
+                                             @Parameter(description = "File metadata id used to select a specific file metadata record.")
+                                             @QueryParam("fileMetadataId") Long fileMetadataId,
+                                             @Parameter(description = "Comma-separated metadata sections to exclude from the export.")
+                                             @QueryParam("exclude") String exclude,
+                                             @Parameter(description = "Comma-separated metadata sections to include in the export.")
+                                             @QueryParam("include") String include,
+                                             @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null;
@@ -665,7 +740,10 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("datafile/{fileId}/auxiliary")
+    @Operation(summary = "Lists auxiliary files",
+            description = "Lists auxiliary files associated with the requested data file.")
     public Response listDatafileMetadataAux(@Context ContainerRequestContext crc,
+                                            @Parameter(description = "Data file id or persistent identifier.", required = true)
                                             @PathParam("fileId") String fileId,
                                             @Context UriInfo uriInfo,
                                             @Context HttpHeaders headers,
@@ -680,8 +758,12 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("datafile/{fileId}/auxiliary/{origin}")
+    @Operation(summary = "Lists auxiliary files by origin",
+            description = "Lists auxiliary files associated with the requested data file and origin.")
     public Response listDatafileMetadataAuxByOrigin(@Context ContainerRequestContext crc,
+                                                    @Parameter(description = "Data file id or persistent identifier.", required = true)
                                                     @PathParam("fileId") String fileId,
+                                                    @Parameter(description = "Auxiliary file origin to match.", required = true)
                                                     @PathParam("origin") String origin,
                                                     @Context UriInfo uriInfo,
                                                     @Context HttpHeaders headers,
@@ -725,9 +807,18 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    @Operation(summary = "Downloads an auxiliary file",
+            description = "Streams the requested auxiliary file format version after validating file access.")
+    @APIResponse(responseCode = "200",
+            description = "Auxiliary file bytes for the requested data file format.",
+            content = @Content(mediaType = "application/octet-stream",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
     public DownloadInstance downloadAuxiliaryFile(@Context ContainerRequestContext crc,
+                                                  @Parameter(description = "Data file id or persistent identifier.", required = true)
                                                   @PathParam("fileId") String fileId,
+                                                  @Parameter(description = "Auxiliary file format tag.", required = true)
                                                   @PathParam("formatTag") String formatTag,
+                                                  @Parameter(description = "Auxiliary file format version.", required = true)
                                                   @PathParam("formatVersion") String formatVersion,
                                                   @Context UriInfo uriInfo,
                                                   @Context HttpHeaders headers,
@@ -802,7 +893,16 @@ public class Access extends AbstractApiBean {
     @Path("datafiles")
     @Consumes("text/plain")
     @Produces({ "application/zip" })
-    public Response postDownloadDatafiles(@Context ContainerRequestContext crc, String body, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+    @Operation(summary = "Stream a ZIP for selected files",
+            description = "Accepts a text list of data file ids and streams the selected files as a ZIP archive.")
+    public Response postDownloadDatafiles(@Context ContainerRequestContext crc,
+                                          @RequestBody(description = "Text list of data file ids to include in the ZIP archive.")
+                                          String body,
+                                          @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                          @QueryParam("gbrecs") boolean gbrecs,
+                                          @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                                          @QueryParam("gbrids") String gbrids,
+                                          @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         processDatafileWithGuestbookResponse(crc, req, headers, body, uriInfo, gbrecs, body);
@@ -819,8 +919,19 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("dataset/{id}")
     @Produces({"application/zip"})
-    public Response downloadAllFromLatest(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId,
-                                          @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
+    @Operation(summary = "Downloads files from the latest dataset version",
+            description = "Streams a ZIP archive containing files from the draft version when the requester may view it, otherwise from the latest released version.")
+    @APIResponse(responseCode = "200",
+            description = "ZIP archive containing files from the latest accessible dataset version.",
+            content = @Content(mediaType = "application/zip",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public Response downloadAllFromLatest(@Context ContainerRequestContext crc,
+                                          @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                          @PathParam("id") String datasetIdOrPersistentId,
+                                          @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                          @QueryParam("gbrecs") boolean gbrecs,
+                                          @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                                          @QueryParam("gbrids") String gbrids,
                                           @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
             User user = getRequestUser(crc);
@@ -865,7 +976,16 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("dataset/{id}")
     @Produces({"application/zip"})
-    public Response downloadAllFromLatestWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) throws WebApplicationException {
+    @Operation(summary = "Submit guestbook response for latest dataset files",
+            description = "Records a guestbook response and prepares a ZIP download for files in the latest accessible dataset version.")
+    public Response downloadAllFromLatestWithGuestbookResponse(@Context ContainerRequestContext crc,
+                                                               @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                                               @PathParam("id") String datasetIdOrPersistentId,
+                                                               @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                               @QueryParam("gbrecs") boolean gbrecs,
+                                                               @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+                                                               @RequestBody(description = "Guestbook response JSON for the dataset file download.")
+                                                               String jsonBody) throws WebApplicationException {
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -896,8 +1016,26 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("dataset/{id}/versions/{versionId}")
     @Produces({"application/zip"})
-    public Response downloadAllFromVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId,
-                                           @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids, @QueryParam("key") String apiTokenParam, @QueryParam("signed") boolean signed, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+    @Operation(summary = "Downloads files from a dataset version",
+            description = "Streams a ZIP archive containing files from the requested dataset version after resolving version aliases such as draft or latest-published.")
+    @APIResponse(responseCode = "200",
+            description = "ZIP archive containing files from the requested dataset version.",
+            content = @Content(mediaType = "application/zip",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public Response downloadAllFromVersion(@Context ContainerRequestContext crc,
+                                           @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                           @PathParam("id") String datasetIdOrPersistentId,
+                                           @Parameter(description = "Dataset version selector, such as draft, latest, latest-published, or a version number.", required = true)
+                                           @PathParam("versionId") String versionId,
+                                           @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                           @QueryParam("gbrecs") boolean gbrecs,
+                                           @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                                           @QueryParam("gbrids") String gbrids,
+                                           @Parameter(description = "Legacy API token query value.")
+                                           @QueryParam("key") String apiTokenParam,
+                                           @Parameter(description = "Whether the request URL was signed.")
+                                           @QueryParam("signed") boolean signed,
+                                           @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
             DatasetVersion dsv = getDatasetVersionFromVersion(crc, datasetIdOrPersistentId, versionId);
             if (dsv == null) {
@@ -925,8 +1063,22 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("dataset/{id}/versions/{versionId}")
     @Produces({"application/zip"})
-    public Response downloadAllFromVersionWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId,
-                                                                @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, String jsonBody,
+    @Operation(summary = "Submit guestbook response for dataset version files",
+            description = "Records a guestbook response and prepares a ZIP download for files in the requested dataset version.")
+    @APIResponse(responseCode = "200",
+            description = "Signed URL details for downloading the requested dataset version files.",
+            content = @Content(mediaType = "application/json"))
+    public Response downloadAllFromVersionWithGuestbookResponse(@Context ContainerRequestContext crc,
+                                                                @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                                                @PathParam("id") String datasetIdOrPersistentId,
+                                                                @Parameter(description = "Dataset version selector, such as draft, latest, latest-published, or a version number.", required = true)
+                                                                @PathParam("versionId") String versionId,
+                                                                @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                                @QueryParam("gbrecs") boolean gbrecs,
+                                                                @Parameter(description = "Legacy API token query value.")
+                                                                @QueryParam("key") String apiTokenParam,
+                                                                @RequestBody(description = "Guestbook response JSON for the dataset version file download.")
+                                                                String jsonBody,
                                                                 @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -999,7 +1151,19 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafiles/{fileIds}")
     @Produces({"application/zip"})
-    public Response datafiles(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("gbrids") String gbrids,
+    @Operation(summary = "Downloads selected data files",
+            description = "Streams a ZIP archive containing the selected data files after validating access and guestbook requirements.")
+    @APIResponse(responseCode = "200",
+            description = "ZIP archive containing the selected data files.",
+            content = @Content(mediaType = "application/zip",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public Response datafiles(@Context ContainerRequestContext crc,
+                              @Parameter(description = "Comma-separated data file ids to include in the ZIP archive.", required = true)
+                              @PathParam("fileIds") String fileIds,
+                              @Parameter(description = "Whether guestbook records have already been written for this download.")
+                              @QueryParam("gbrecs") boolean gbrecs,
+                              @Parameter(description = "Guestbook response id list supplied by the user interface.")
+                              @QueryParam("gbrids") String gbrids,
                               @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
         return downloadDatafiles(crc, fileIds, gbrecs, gbrids, uriInfo, headers, response, null);
@@ -1009,8 +1173,19 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafiles/{fileIds}")
     @Produces({"application/zip"})
-    public Response datafilesWithGuestbookResponse(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs,
-                                                   @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, String jsonBody) throws WebApplicationException {
+    @Operation(summary = "Submit guestbook response for selected data files",
+            description = "Records a guestbook response and prepares a ZIP download for the selected data files.")
+    @APIResponse(responseCode = "200",
+            description = "Signed URL details for downloading the selected data files.",
+            content = @Content(mediaType = "application/json"))
+    public Response datafilesWithGuestbookResponse(@Context ContainerRequestContext crc,
+                                                   @Parameter(description = "Comma-separated data file ids to include in the ZIP archive.", required = true)
+                                                   @PathParam("fileIds") String fileIds,
+                                                   @Parameter(description = "Whether guestbook records have already been written for this download.")
+                                                   @QueryParam("gbrecs") boolean gbrecs,
+                                                   @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+                                                   @RequestBody(description = "Guestbook response JSON for the selected data file download.")
+                                                   String jsonBody) throws WebApplicationException {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         return processDatafileWithGuestbookResponse(crc, req, headers, fileIds, uriInfo, gbrecs, jsonBody);
@@ -1259,10 +1434,19 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({ "image/png" })
     @AuthRequired
-    public InputStream fileCardImage(@Context ContainerRequestContext crc, @PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        
-        
-        
+    @Operation(summary = "Returns a data file card image",
+            description = "Returns a generated thumbnail image for a data file when the file type supports thumbnail generation.")
+    @APIResponse(responseCode = "200",
+            description = "PNG thumbnail image for the data file.",
+            content = @Content(mediaType = "image/png",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public InputStream fileCardImage(@Context ContainerRequestContext crc,
+            @Parameter(description = "Data file id used to locate the card image.", required = true)
+            @PathParam("fileId") Long fileId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+
+
+
         DataFile df = dataFileService.find(fileId);
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         if (df == null || (df.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, df))) {
@@ -1298,7 +1482,16 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({ "image/png" })
     @AuthRequired
-    public InputStream dvCardImage(@Context ContainerRequestContext crc, @PathParam("dataverseId") Long dataverseId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Operation(summary = "Returns a dataverse card image",
+            description = "Returns a thumbnail image generated from the dataverse logo when one is configured.")
+    @APIResponse(responseCode = "200",
+            description = "PNG thumbnail image for the dataverse.",
+            content = @Content(mediaType = "image/png",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public InputStream dvCardImage(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataverse id used to locate the card image.", required = true)
+            @PathParam("dataverseId") Long dataverseId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         logger.fine("entering dvCardImage");
         
         Dataverse dataverse = dataverseService.find(dataverseId);
@@ -1476,15 +1669,24 @@ public class Access extends AbstractApiBean {
     })
     @Tag(name = "saveAuxiliaryFileWithVersion", 
          description = "Save Auxiliary File With Version")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
+    @RequestBody(description = "Multipart auxiliary file content and metadata to store for the data file format version.",
+                 content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response saveAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
+                                                 @Parameter(description = "Data file id for the auxiliary file.", required = true)
                                                  @PathParam("fileId") Long fileId,
+                                                 @Parameter(description = "Auxiliary file format tag.", required = true)
                                                  @PathParam("formatTag") String formatTag,
+                                                 @Parameter(description = "Auxiliary file format version.", required = true)
                                                  @PathParam("formatVersion") String formatVersion,
+                                                 @Parameter(description = "Application or source that created the auxiliary file.")
                                                  @FormDataParam("origin") String origin,
+                                                 @Parameter(description = "Marks whether the auxiliary file can be accessed publicly.")
                                                  @FormDataParam("isPublic") boolean isPublic,
+                                                 @Parameter(description = "Auxiliary file type or grouping label.")
                                                  @FormDataParam("type") String type,
+                                                 @Parameter(description = "Auxiliary file part, including submitted media type.", required = true)
                                                  @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
+                                                 @Parameter(description = "Auxiliary file content stream.", required = true)
                                                  @FormDataParam("file") InputStream fileInputStream) {
         AuthenticatedUser authenticatedUser;
         try {
@@ -1528,9 +1730,14 @@ public class Access extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    @Operation(summary = "Deletes an auxiliary file",
+            description = "Deletes the requested auxiliary file format version after validating edit permissions.")
     public Response deleteAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
+                                                   @Parameter(description = "Data file id for the auxiliary file.", required = true)
                                                    @PathParam("fileId") Long fileId,
+                                                   @Parameter(description = "Auxiliary file format tag.", required = true)
                                                    @PathParam("formatTag") String formatTag,
+                                                   @Parameter(description = "Auxiliary file format version.", required = true)
                                                    @PathParam("formatVersion") String formatVersion) {
         AuthenticatedUser authenticatedUser;
         try {
@@ -1573,7 +1780,13 @@ public class Access extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/allowAccessRequest")
-    public Response allowAccessRequest(@Context ContainerRequestContext crc, @PathParam("id") String datasetToAllowAccessId, String requestStr) {
+    @Operation(summary = "Updates dataset file access request settings",
+            description = "Enables or disables file access requests for the dataset terms in the editable dataset version.")
+    public Response allowAccessRequest(@Context ContainerRequestContext crc,
+                                       @Parameter(description = "Dataset id or persistent identifier.", required = true)
+                                       @PathParam("id") String datasetToAllowAccessId,
+                                       @RequestBody(description = "Boolean value indicating whether file access requests are allowed.")
+                                       String requestStr) {
 
         DataverseRequest dataverseRequest = null;
         Dataset dataset;
@@ -1616,8 +1829,13 @@ public class Access extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/datafile/{id}/requestAccess")
+    @Operation(summary = "Requests access to a restricted data file",
+            description = "Creates a file access request for the authenticated user when requests are accepted and access has not already been granted.")
     public Response requestFileAccess(@Context ContainerRequestContext crc
-            ,@PathParam("id") String fileToRequestAccessId, String jsonBody) {
+            ,@Parameter(description = "Restricted data file id or persistent identifier.", required = true)
+            @PathParam("id") String fileToRequestAccessId,
+            @RequestBody(description = "Optional guestbook response JSON submitted with the access request.")
+            String jsonBody) {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1692,9 +1910,16 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/datafile/{id}/listRequests")
-    public Response listFileAccessRequests(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId,
+    @Operation(summary = "Lists data file access requests",
+            description = "Lists active or historical access requests for a restricted data file.")
+    public Response listFileAccessRequests(@Context ContainerRequestContext crc,
+                                           @Parameter(description = "Restricted data file id or persistent identifier.", required = true)
+                                           @PathParam("id") String fileToRequestAccessId,
+                                           @Parameter(description = "Includes historical access requests when true.")
                                            @QueryParam("includeHistory") boolean includeHistory,
+                                           @Parameter(description = "Number of historical access requests to include per page.")
                                            @QueryParam("per_page") final int numResultsPerPageRequested,
+                                           @Parameter(description = "Pagination offset for historical access requests.")
                                            @QueryParam("start") final int paginationStart,
                                            @Context HttpHeaders headers) {
         DataverseRequest dataverseRequest;
@@ -1764,7 +1989,14 @@ public class Access extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/datafile/{id}/grantAccess/{identifier}")
-    public Response grantFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    @Operation(summary = "Grants access to a data file",
+            description = "Assigns the file downloader role to the requested assignee for a restricted data file.")
+    public Response grantFileAccess(@Context ContainerRequestContext crc,
+                                    @Parameter(description = "Restricted data file id or persistent identifier.", required = true)
+                                    @PathParam("id") String fileToRequestAccessId,
+                                    @Parameter(description = "User or group identifier receiving file access.", required = true)
+                                    @PathParam("identifier") String identifier,
+                                    @Context HttpHeaders headers) {
         
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1826,7 +2058,14 @@ public class Access extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("/datafile/{id}/revokeAccess/{identifier}")
-    public Response revokeFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    @Operation(summary = "Revokes access to a restricted data file",
+            description = "Removes the file downloader role from the requested assignee for a restricted data file.")
+    public Response revokeFileAccess(@Context ContainerRequestContext crc,
+                                     @Parameter(description = "Restricted data file id or persistent identifier.", required = true)
+                                     @PathParam("id") String fileToRequestAccessId,
+                                     @Parameter(description = "User or group identifier losing file access.", required = true)
+                                     @PathParam("identifier") String identifier,
+                                     @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1892,7 +2131,14 @@ public class Access extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("/datafile/{id}/rejectAccess/{identifier}")
-    public Response rejectFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    @Operation(summary = "Rejects a data file access request",
+            description = "Rejects the requested assignee's access request for a restricted data file.")
+    public Response rejectFileAccess(@Context ContainerRequestContext crc,
+                                     @Parameter(description = "Restricted data file id or persistent identifier.", required = true)
+                                     @PathParam("id") String fileToRequestAccessId,
+                                     @Parameter(description = "User or group identifier whose access request is rejected.", required = true)
+                                     @PathParam("identifier") String identifier,
+                                     @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1940,7 +2186,11 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/datafile/{id}/userFileAccessRequested")
-    public Response getUserFileAccessRequested(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+    @Operation(summary = "Checks whether file access was requested",
+            description = "Returns whether the authenticated user has an access request recorded for the restricted data file.")
+    public Response getUserFileAccessRequested(@Context ContainerRequestContext crc,
+                                               @Parameter(description = "Restricted data file id or persistent identifier.", required = true)
+                                               @PathParam("id") String dataFileId) {
         DataFile dataFile;
         AuthenticatedUser requestAuthenticatedUser;
         try {
@@ -1964,7 +2214,11 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/datafile/{id}/userPermissions")
-    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+    @Operation(summary = "Returns current user file permissions",
+            description = "Returns booleans indicating whether the current user may download the file, manage file permissions, or edit the owner dataset.")
+    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc,
+                                             @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                             @PathParam("id") String dataFileId) {
         DataFile dataFile;
         try {
             DataverseRequest req = createDataverseRequest(getRequestAuthenticatedUserOrDie(crc));
@@ -1982,7 +2236,8 @@ public class Access extends AbstractApiBean {
 
     private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
         // Check if guestbook response is required
-        boolean required = df.getOwner().hasEnabledGuestbook();
+        Dataset d = df.getOwner();
+        boolean required = df.getOwner().hasEnabledGuestbook() && !d.getEffectiveGuestbookEntryAtRequest();
         boolean wasWrittenInPost = false;
         if (required) {
             User requestor = getRequestor(user);
@@ -2236,7 +2491,15 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Produces({"image/png"})
     @Path("dataverseFeaturedItemImage/{itemId}")
-    public InputStream getDataverseFeatureItemImage(@Context ContainerRequestContext crc, @PathParam("itemId") Long itemId) {
+    @Operation(summary = "Returns a featured item image",
+            description = "Returns the image file associated with a dataverse featured item when the requester may view the item.")
+    @APIResponse(responseCode = "200",
+            description = "PNG image associated with the dataverse featured item.",
+            content = @Content(mediaType = "image/png",
+                    schema = @Schema(type = SchemaType.STRING, format = "binary")))
+    public InputStream getDataverseFeatureItemImage(@Context ContainerRequestContext crc,
+                                                    @Parameter(description = "Dataverse featured item id.", required = true)
+                                                    @PathParam("itemId") Long itemId) {
         DataverseFeaturedItem dataverseFeaturedItem;
         try {
             dataverseFeaturedItem = execCommand(new GetDataverseFeaturedItemCommand(createDataverseRequest(getRequestUser(crc)), dataverseFeaturedItemServiceBean.findById(itemId)));

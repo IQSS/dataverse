@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<!DOCTYPE resources PUBLIC "-//Payara.fish//DTD Payara Server 7 Resource Definitions//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-resources_1_8.dtd">
 <resources>
     <!-- This executor is used in edu.harvard.iq.dataverse.dataaccess.S3AccessIO to support asynchronous operations -->
-    <custom-resource res-type="javax.enterprise.concurrent.ManagedExecutorService" 
+    <custom-resource res-type="jakarta.enterprise.concurrent.ManagedExecutorService" 
                      jndi-name="java:app/env/concurrent/s3UploadExecutor" 
                      factory-class="org.glassfish.resources.custom.factory.ManagedExecutorServiceFactory">
         <property name="threadPriority" value="5"/>
@@ -12,7 +12,7 @@
         <property name="threadLifeTime" value="3600"/>
     </custom-resource>
     <!-- Managed Executor Service for Citation Updates -->
-    <custom-resource res-type="javax.enterprise.concurrent.ManagedExecutorService" 
+    <custom-resource res-type="jakarta.enterprise.concurrent.ManagedExecutorService" 
                      jndi-name="java:app/env/concurrent/CitationUpdateExecutor" 
                      factory-class="org.glassfish.resources.custom.factory.ManagedExecutorServiceFactory">
         <property name="corePoolSize" value="1"/>
