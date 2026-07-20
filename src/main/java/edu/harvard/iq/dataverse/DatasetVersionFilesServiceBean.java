@@ -180,51 +180,51 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
         return typedQuery.getResultList();
     }
-    
+
     /**
      * Similar to the above, but dedicated for retrieving FileMetadatas of only
      * tabular datafiles in the specified DatasetVersion. Used in the metadata
-     * export subsystem. 
+     * export subsystem.
      *
      * @param datasetVersion the DatasetVersion to access
      * @param limit          for pagination, can be null
      * @param offset         for pagination, can be null
-     * @param publicFilesOnly  skip restricted, embargoed etc. files 
+     * @param publicFilesOnly  skip restricted, embargoed etc. files
      * @return a FileMetadata list from the specified DatasetVersion
      */
     public List<FileMetadata> getTabularDataFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, boolean publicFilesOnly) {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<FileMetadata> criteriaQuery = criteriaBuilder.createQuery(FileMetadata.class);
-        
+
         Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
         Predicate basePredicate = criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
-        
-        Root<DataTable> dataTableRoot = criteriaQuery.from(DataTable.class);        
+
+        Root<DataTable> dataTableRoot = criteriaQuery.from(DataTable.class);
         Predicate tabularPredicate = criteriaBuilder.equal(dataTableRoot.get("dataFile"), fileMetadataRoot.get("dataFile"));
-        
+
         Predicate combinedPredicate;
-        
+
         if (publicFilesOnly) {
             combinedPredicate = criteriaBuilder.and(basePredicate, tabularPredicate);
         } else {
-            combinedPredicate = criteriaBuilder.and(basePredicate, 
-                    tabularPredicate, 
-                    createSearchCriteriaAccessStatusPredicate(FileSearchCriteria.FileAccessStatus.Public, 
-                            criteriaBuilder, 
+            combinedPredicate = criteriaBuilder.and(basePredicate,
+                    tabularPredicate,
+                    createSearchCriteriaAccessStatusPredicate(FileSearchCriteria.FileAccessStatus.Public,
+                            criteriaBuilder,
                             fileMetadataRoot));
         }
-        
+
         List<Order> orderList = new ArrayList<>();
-        
+
         // Ordering the resulting fileMetadatas by label AND id, to avoid any ambiguity when there are duplicate filenames in the version
         orderList.add(criteriaBuilder.asc(fileMetadataRoot.get("label")));
         orderList.add(criteriaBuilder.asc(fileMetadataRoot.get("id")));
-        
+
         criteriaQuery
                 .select(fileMetadataRoot)
                 .where(combinedPredicate)
                 .orderBy(orderList);
-        
+
         TypedQuery<FileMetadata> typedQuery = em.createQuery(criteriaQuery);
         if (limit != null) {
             typedQuery.setMaxResults(limit);
@@ -232,7 +232,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         if (offset != null) {
             typedQuery.setFirstResult(offset);
         }
-        
+
         return typedQuery.getResultList();
     }
 
@@ -278,6 +278,16 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                 );
         Long count = em.createQuery(criteriaQuery).getSingleResult();
         return count != null && count > 0;
+    }
+
+    /**
+     * This is strictly for use in IT tests!
+     *
+     * @param em EntityManager, such as dataverse.util.testing.performance.JpaEntityManagerService.createEntityManager()
+     *
+     */
+    public void injectEntityManager(EntityManager em) {
+        this.em = em;
     }
 
     private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<FileAccessStatus, Long> totalCounts, FileAccessStatus dataFileAccessStatus, FileSearchCriteria searchCriteria) {

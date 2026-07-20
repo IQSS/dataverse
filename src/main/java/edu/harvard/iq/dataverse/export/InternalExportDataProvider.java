@@ -39,22 +39,23 @@ import org.xml.sax.SAXException;
 
 /**
  * Provides all data necessary to create an export
- * 
+ *
  */
 public class InternalExportDataProvider implements ExportDataProvider {
 
     private final DatasetVersion dv;
     private JsonObject jsonRepresentation = null;
-    private JsonObject jsonRepresentationNoFiles = null; 
+    private JsonObject jsonRepresentationNoFiles = null;
     private JsonObject schemaDotOrgRepresentation = null;
     private JsonObject oreRepresentation = null;
     private JsonArray fileAndDataDetails = null;
     private InputStream is = null;
+    private DatasetVersionFilesServiceBean datasetVersionFilesService = null;
 
     InternalExportDataProvider(DatasetVersion dv) {
         this.dv = dv;
     }
-    
+
     InternalExportDataProvider(DatasetVersion dv, InputStream is) {
         this.dv = dv;
         this.is=is;
@@ -63,24 +64,24 @@ public class InternalExportDataProvider implements ExportDataProvider {
     @Override
     public JsonObject getDatasetJson(DatasetExportQuery query) {
         if (isOnlyDatasetLevelMetadataRequested(query)) {
-            // If we already have the "full" Json representation (with files) 
-            // generated, should we return it (potentially moving MUCH more json 
-            // than the client needs, or spend extra cycles generating the short 
-            // form from scratch? - I'm choosing to go with latter. 
+            // If we already have the "full" Json representation (with files)
+            // generated, should we return it (potentially moving MUCH more json
+            // than the client needs, or spend extra cycles generating the short
+            // form from scratch? - I'm choosing to go with latter.
             if (jsonRepresentationNoFiles == null) {
                 final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.datasetAsJsonForDTO(dv, false);
                 jsonRepresentationNoFiles = datasetAsJsonBuilder.build();
             }
             return jsonRepresentationNoFiles;
         }
-        
+
         if (jsonRepresentation == null) {
             final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.datasetAsJsonForDTO(dv);
             jsonRepresentation = datasetAsJsonBuilder.build();
         }
         return jsonRepresentation;
     }
-    
+
     @Override
     public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery query) {
         if (schemaDotOrgRepresentation == null) {
@@ -100,30 +101,30 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
     @Override
     public String getDataCiteXml() {
-        // @todo Is this the best way to obtain the metadata? - as opposed to 
-        // going through the normal Export framework? (it may be, if it needs 
-        // to be version-specific - ?) 
+        // @todo Is this the best way to obtain the metadata? - as opposed to
+        // going through the normal Export framework? (it may be, if it needs
+        // to be version-specific - ?)
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
                 dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
     }
-    
+
     @Override
     public Document getDataCiteXml(DatasetExportQuery query) {
         // Note that the query parameter is ignored, for now
         String dataciteXmlString = getDataCiteXml();
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        
+
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
-        
+
             return builder.parse(new InputSource(new StringReader(dataciteXmlString)));
         } catch (ParserConfigurationException | SAXException | IOException px) {
             return null;
-        } 
+        }
 
     }
-    
+
     @Override
     public JsonArray getDatasetFileDetails() {
         if (fileAndDataDetails == null) {
@@ -136,7 +137,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
         }
         return fileAndDataDetails;
     }
-    
+
     @Override
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query) {
         if (fileAndDataDetails == null) {
@@ -149,28 +150,29 @@ public class InternalExportDataProvider implements ExportDataProvider {
         }
         return fileAndDataDetails.stream().map(jsonValue -> jsonValue.asJsonObject());
     }
-    
+
     @Override
     /**
      * This new (as of dataverse-spi 2.1.0) method will attempt to retrieve
      * the requested tabular metadata more efficiently, by calling the
-     * DatasetVersionFilesServiceBean method directly. Which, among other things, 
+     * DatasetVersionFilesServiceBean method directly. Which, among other things,
      * allows to retrieve this information in batches. If for whatever reason
      * that fails - if, for example, the EJB is not available in this context,
      * we will throw an ExportException, giving the exporter a chance to try and
      * retrieve this information using the traditional all-at-once method via
      * getDatasetFileDetails();
-     * 
+     *
      */
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query, PageRequest pageRequest) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
 
         List<FileMetadata> fileMetadatas;
-        DatasetVersionFilesServiceBean datasetVersionFilesService = null;
-        try {
-            datasetVersionFilesService = CDI.current().select(DatasetVersionFilesServiceBean.class).get();
-        } catch (java.lang.IllegalArgumentException | IllegalStateException ie) {
-            throw new ExportException("EJB DatasetVersionFilesService is not available; " + ie.getMessage());
+        if (datasetVersionFilesService == null) {
+            try {
+                datasetVersionFilesService = CDI.current().select(DatasetVersionFilesServiceBean.class).get();
+            } catch (java.lang.IllegalArgumentException | IllegalStateException ie) {
+                throw new ExportException("EJB DatasetVersionFilesService is not available; " + ie.getMessage());
+            }
         }
 
         if (datasetVersionFilesService == null) {
@@ -206,25 +208,25 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     /**
-     * Only one context object is supported 
+     * Only one context object is supported
      * @param DatasetExportQuery
-     * @return 
+     * @return
      */
     private boolean isOnlyDatasetLevelMetadataRequested(DatasetExportQuery query) {
 
         Set<DatasetMetadataPredicates> predicates = query.getDatasetPredicates();
-        
+
         for (DatasetMetadataPredicates p : predicates) {
             // @todo This is pending on adding a dedicated DATASET_LEVEL_ONLY predicate
             // to the enum
             //if (p.equals(DatasetMetadataPredicates.DATASET_LEVEL_ONLY)) return true;
         }
 
-        // The default assumption is we pack both the Dataset, and the File-level 
+        // The default assumption is we pack both the Dataset, and the File-level
         // metadata in the Json
         return false;
     }
-    
+
     /**
      * Are we skipping non-public, restricted and embargoed files?
      *
@@ -236,7 +238,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     /**
-     * Is this metadata request only for ingested tabular files (i.e., files 
+     * Is this metadata request only for ingested tabular files (i.e., files
      * with linked DataTable objects)
      *
      * @param FileExportQuery
@@ -247,8 +249,8 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     /**
-     * Is detailed information about DataVariable objects associated with the 
-     * tabular DataTable requested? 
+     * Is detailed information about DataVariable objects associated with the
+     * tabular DataTable requested?
      *
      * @param FileExportQuery
      * @return yes or no
@@ -256,22 +258,30 @@ public class InternalExportDataProvider implements ExportDataProvider {
     private boolean isDataVariableMetadataRequested(FileExportQuery query) {
         return checkForPredicate(query, FileMetadataPredicates.INCLUDE_TABULAR_DATA_VARIABLES);
     }
-    
+
     /**
      * Service method for checking a FileExportQuery for a specific predicate specified.
-     * 
+     *
      * @param query
      * @param predicate
-     * @return 
+     * @return
      */
     private boolean checkForPredicate(FileExportQuery query, FileMetadataPredicates predicate) {
-        
+
         Set<FileMetadataPredicates> predicates = query.getFilePredicates();
-        
+
         for (FileMetadataPredicates p : predicates) {
             if (p.equals(predicate)) return true;
         }
 
         return false;
+    }
+
+    /**
+     * This method is exclusively for use in IT tests
+     * @param versionFilesService
+     */
+    public void injectVersionFilesService(DatasetVersionFilesServiceBean versionFilesService) {
+        datasetVersionFilesService = versionFilesService;
     }
 }
