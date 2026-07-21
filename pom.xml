@@ -26,6 +26,9 @@
         <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
         <failsafe.jacoco.args>-Ddummy.jacoco.property=true</failsafe.jacoco.args>
         
+        <jacoco.merged.outputdir>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</jacoco.merged.outputdir>
+        <sonar.coverage.jacoco.xmlReportPaths>${jacoco.merged.outputdir}</sonar.coverage.jacoco.xmlReportPaths>
+        
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
@@ -1031,7 +1034,7 @@
                         </goals>
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <outputDirectory>${jacoco.merged.outputdir}</outputDirectory>
                             <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
