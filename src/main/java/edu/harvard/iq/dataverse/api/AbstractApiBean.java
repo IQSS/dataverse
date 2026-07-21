@@ -1067,7 +1067,7 @@ public abstract class AbstractApiBean {
         // This is a highly used response builder, which is why this is an experimental opt-in change!
         // TODO: This will be removed in a future version.
         if (FeatureFlags.UNIFY_API_RESPONSE_MESSAGE_STYLE.enabled()) {
-            return ok(null, Json.createValue(msg), null);
+            return ok(null, JsonUtil.createValue(msg), null);
         } else {
             return ok(JsonUtil.createObjectBuilder().add("message", msg).build(), null, null);
         }
@@ -1080,7 +1080,7 @@ public abstract class AbstractApiBean {
         if (JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE.lookupOptional(Boolean.class).orElse(false)) {
             return ok(bld.build(), JsonUtil.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
         } else {
-            return ok(bld.build(), Json.createValue(msg), null);
+            return ok(bld.build(), JsonUtil.createValue(msg), null);
         }
     }
 
@@ -1089,7 +1089,7 @@ public abstract class AbstractApiBean {
     }
 
     protected Response ok(long value) {
-        return ok(Json.createValue(value), null, null);
+        return ok(JsonUtil.createValue(value), null, null);
     }
 
     /**

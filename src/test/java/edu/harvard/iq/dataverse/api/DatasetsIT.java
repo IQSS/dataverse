@@ -7096,8 +7096,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertEquals("Updated File 1", file.getString("label"));
                 assertEquals("dir1", file.getString("directoryLabel"));
                 assertEquals("Updated description for File 1", dataFile.getString("description"));
-                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 1")));
-                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 2")));
+                assertTrue(dataFile.getJsonArray("categories").contains(JsonUtil.createValue("Category 1")));
+                assertTrue(dataFile.getJsonArray("categories").contains(JsonUtil.createValue("Category 2")));
                 assertTrue(file.getBoolean("restricted"));
                 
                 // Check provFreeForm for file1
@@ -7109,7 +7109,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 assertEquals("Updated File 2", file.getString("label"));
                 assertEquals("dir2", file.getString("directoryLabel"));
                 assertEquals("Updated description for File 2", dataFile.getString("description"));
-                assertTrue(dataFile.getJsonArray("categories").contains(Json.createValue("Category 3")));
+                assertTrue(dataFile.getJsonArray("categories").contains(JsonUtil.createValue("Category 3")));
                 
                 // Check provFreeForm for file2
                 Response provResponse = UtilIT.getProvFreeForm(file2Id.toString(), apiToken);
@@ -7204,7 +7204,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
             JsonObject dataFile = file.getJsonObject("dataFile");
             if (dataFile.getInt("id") == file3Id) {
                 JsonArray tabularTags = dataFile.getJsonArray("tabularTags");
-                if (tabularTags != null && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString())) && tabularTags.contains(Json.createValue(DataFileTag.TagType.Survey.toString()))) {
+                if (tabularTags != null && tabularTags.contains(JsonUtil.createValue(DataFileTag.TagType.Survey.toString())) && tabularTags.contains(JsonUtil.createValue(DataFileTag.TagType.Survey.toString()))) {
                     foundValidTags = true;
                     break;
                 }

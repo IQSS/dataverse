@@ -121,9 +121,9 @@ public class URLTokenUtil {
         if (tokenValue != null && !tokenValue.isBlank()) {
             try{
                 int x =Integer.parseInt(tokenValue);
-                return Json.createValue(x);
+                return JsonUtil.createValue(x);
             } catch (NumberFormatException nfe){
-                return Json.createValue(tokenValue);
+                return JsonUtil.createValue(tokenValue);
             }
         } else {
             return null;
