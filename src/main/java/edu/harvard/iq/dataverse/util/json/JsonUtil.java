@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +21,12 @@ import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonException;
 import jakarta.json.JsonValue;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonString;
 import jakarta.json.spi.JsonProvider;
 import jakarta.json.stream.JsonGenerator;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonArrayBuilder;
 
 public class JsonUtil {
 
@@ -169,7 +173,7 @@ public class JsonUtil {
     }
 
     /**
-     * A factory to create Jakarta JSON-P Builders such as {@code JsonObjectBuilder} and {@code JsonArrayBuilder}.
+     * A provider to create Jakarta JSON-P Builders such as {@code JsonObjectBuilder} and {@code JsonArrayBuilder}.
      * This is a thread-safe, static, and final instance to manage JSON builder creation.
      *
      * <p>Using a one-time initialized factory avoids a classpath-scan on every invocation of
@@ -233,5 +237,68 @@ public class JsonUtil {
      */
     public static JsonArrayBuilder createArrayBuilder(Collection<?> collection) {
         return provider.createArrayBuilder(collection);
+    }
+
+    /**
+     * Create a new {@link JsonNumber}, initialized with the content of a Double from a cached provider instance.
+     * {@link Json#createValue(double)} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Number
+     */
+    public static JsonNumber createValue(double value){
+        return provider.createValue(value);
+    }
+
+    /**
+     * Create a new {@link JsonNumber}, initialized with the content of an Integer from a cached provider instance.
+     * {@link Json#createValue(int)} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Number
+     */
+    public static JsonNumber createValue(int value){
+        return provider.createValue(value);
+    }
+
+    /**
+     * Create a new {@link JsonNumber}, initialized with the content of a Long from a cached provider instance.
+     * {@link Json#createValue(long)} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Number
+     */
+    public static JsonNumber createValue(long value){
+        return provider.createValue(value);
+    }
+
+    /**
+     * Create a new {@link JsonNumber}, initialized with the content of a Number from a cached provider instance.
+     * {@link Json#createValue(Number)} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Number
+     */
+    public static JsonNumber createValue(Number value){
+        return provider.createValue(value);
+    }
+
+    /**
+     * Create a new {@link JsonString}, initialized with the content of a String from a cached provider instance.
+     * {@link Json#createValue(String)} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON String
+     */
+    public static JsonString createValue(String value){
+        return provider.createValue(value);
+    }
+
+    /**
+     * Create a new {@link JsonNumber}, initialized with the content of a BigDecimal from a cached provider instance.
+     * {@link Json#createValue(BigDecimal)} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Number
+     */
+    public static JsonNumber createValue(BigDecimal value){
+        return provider.createValue(value);
+    }
+
+    /**
+     * Create a new {@link JsonNumber}, initialized with the content of a BigInteger from a cached provider instance.
+     * {@link Json#createValue(BigInteger)} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Number
+     */
+    public static JsonNumber createValue(BigInteger value){
+        return provider.createValue(value);
     }
 }

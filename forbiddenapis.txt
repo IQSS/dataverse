@@ -7,3 +7,12 @@ jakarta.json.Json#createArrayBuilder(jakarta.json.JsonArray)
 jakarta.json.Json#createObjectBuilder()
 jakarta.json.Json#createObjectBuilder(java.util.Map)
 jakarta.json.Json#createObjectBuilder(jakarta.json.JsonObject)
+
+@defaultMessage Use edu.harvard.iq.dataverse.util.json.JsonUtil.createValue(...) instead
+jakarta.json.Json#createValue(double)
+jakarta.json.Json#createValue(int)
+jakarta.json.Json#createValue(long)
+jakarta.json.Json#createValue(Number)
+jakarta.json.Json#createValue(String)
+jakarta.json.Json#createValue(java.math.BigDecimal)
+jakarta.json.Json#createValue(java.math.BigInteger)

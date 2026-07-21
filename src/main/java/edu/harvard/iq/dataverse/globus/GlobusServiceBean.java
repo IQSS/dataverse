@@ -1158,7 +1158,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                     Long uploadedFileSize = fileSizeMap.get(fileId);
                     myLogger.info("Found size for file " + fileId + ": " + uploadedFileSize + " bytes");
                     patch = Json.createPatchBuilder()
-                            .add("/fileSize", Json.createValue(uploadedFileSize)).build();
+                            .add("/fileSize", JsonUtil.createValue(uploadedFileSize)).build();
                     fileJsonObject = patch.apply(fileJsonObject);
                 } else {
                     logger.fine("No file size entry found for file "+fileId);

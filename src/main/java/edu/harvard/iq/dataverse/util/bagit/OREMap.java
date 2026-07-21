@@ -90,10 +90,10 @@ public class OREMap {
         
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
-        localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), Json.createValue(JsonLDNamespace.ore.getUrl()));
-        localContext.putIfAbsent(JsonLDNamespace.dcterms.getPrefix(), Json.createValue(JsonLDNamespace.dcterms.getUrl()));
-        localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), Json.createValue(JsonLDNamespace.dvcore.getUrl()));
-        localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), Json.createValue(JsonLDNamespace.schema.getUrl()));
+        localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonUtil.createValue(JsonLDNamespace.ore.getUrl()));
+        localContext.putIfAbsent(JsonLDNamespace.dcterms.getPrefix(), JsonUtil.createValue(JsonLDNamespace.dcterms.getUrl()));
+        localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), JsonUtil.createValue(JsonLDNamespace.dvcore.getUrl()));
+        localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonUtil.createValue(JsonLDNamespace.schema.getUrl()));
 
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asURL();
@@ -381,7 +381,7 @@ public class OREMap {
 
     private void addToContextMap(JsonLDTerm key) {
         if (!key.inNamespace()) {
-            localContext.putIfAbsent(key.getLabel(), Json.createValue(key.getUrl()));
+            localContext.putIfAbsent(key.getLabel(), JsonUtil.createValue(key.getUrl()));
         }
     }
 
@@ -426,9 +426,9 @@ public class OREMap {
 
         JsonLDTerm fieldName = dfType.getJsonLDTerm();
         if (fieldName.inNamespace()) {
-            localContext2.putIfAbsent(fieldName.getNamespace().getPrefix(), Json.createValue(fieldName.getNamespace().getUrl()));
+            localContext2.putIfAbsent(fieldName.getNamespace().getPrefix(), JsonUtil.createValue(fieldName.getNamespace().getUrl()));
         } else {
-            localContext2.putIfAbsent(fieldName.getLabel(), Json.createValue(fieldName.getUrl()));
+            localContext2.putIfAbsent(fieldName.getLabel(), JsonUtil.createValue(fieldName.getUrl()));
         }
         JsonArrayBuilder vals = JsonUtil.createArrayBuilder();
         if (!dfType.isCompound()) {
@@ -462,9 +462,9 @@ public class OREMap {
                             // ToDo - also needs to recurse here?
                             if (subFieldName.inNamespace()) {
                                 localContext2.putIfAbsent(subFieldName.getNamespace().getPrefix(),
-                                        Json.createValue(subFieldName.getNamespace().getUrl()));
+                                        JsonUtil.createValue(subFieldName.getNamespace().getUrl()));
                             } else {
-                                localContext2.putIfAbsent(subFieldName.getLabel(), Json.createValue(subFieldName.getUrl()));
+                                localContext2.putIfAbsent(subFieldName.getLabel(), JsonUtil.createValue(subFieldName.getUrl()));
                             }
 
                             List<String> values = dsf.getValues_nondisplay();
