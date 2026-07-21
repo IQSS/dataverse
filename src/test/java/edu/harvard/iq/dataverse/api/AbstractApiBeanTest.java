@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.FeatureFlag;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalFeatureFlags;
@@ -93,7 +94,7 @@ class AbstractApiBeanTest {
     @Test
     void testMessageAndDataDefaultStyle() {
         String message = "myMessage";
-        Response response = sut.ok(message, Json.createObjectBuilder().add("test", "value"));
+        Response response = sut.ok(message, JsonUtil.createObjectBuilder().add("test", "value"));
 
         JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
         JsonObject jsonObject = jsonReader.readObject();
@@ -106,7 +107,7 @@ class AbstractApiBeanTest {
     @JvmSetting(key = JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE, value = "true")
     void testMessageAndDataLegacyStyle() {
         String message = "myMessage";
-        Response response = sut.ok(message, Json.createObjectBuilder().add("test", "value"));
+        Response response = sut.ok(message, JsonUtil.createObjectBuilder().add("test", "value"));
 
         JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
         JsonObject jsonObject = jsonReader.readObject();

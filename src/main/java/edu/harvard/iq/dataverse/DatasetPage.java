@@ -3015,7 +3015,7 @@ public class DatasetPage implements java.io.Serializable {
                     String status = updateVersion.getArchivalCopyLocationStatus();
                     if((status==null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE) || (JvmSettings.BAGIT_ARCHIVE_ON_VERSION_UPDATE.lookupOptional(Boolean.class).orElse(false) && archiveCommand.canDelete())){
                         // Delete the record of any existing copy since it is now out of date/incorrect
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                         updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                         //Persist to db now
@@ -6126,7 +6126,7 @@ public class DatasetPage implements java.io.Serializable {
                     reviewsJsonObj = commandEngine.submit(new GetDatasetReviewsCommand(dvRequestService.getDataverseRequest(), dataset));
                     JsonObjectBuilder reviews = CroissantExportUtil.getReviews(reviewsJsonObj);
                     JsonObject croissantJson = JsonUtil.getJsonObject(croissant);
-                    String updatedContent = Json.createObjectBuilder(croissantJson)
+                    String updatedContent = JsonUtil.createObjectBuilder(croissantJson)
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                     return updatedContent;
                 } catch (CommandException e) {
@@ -6206,7 +6206,7 @@ public class DatasetPage implements java.io.Serializable {
                     if (status == null || (force && cmd.canDelete())) {
 
                         // Set initial pending status
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                         dv.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                         //Persist now

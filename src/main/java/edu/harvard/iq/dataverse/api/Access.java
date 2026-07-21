@@ -619,7 +619,7 @@ public class Access extends AbstractApiBean {
         baseUrl = baseUrl.replace(":persistentId", id);
         key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
-        return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
+        return ok(JsonUtil.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
 
     /* 
@@ -782,7 +782,7 @@ public class Access extends AbstractApiBean {
             throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + (origin==null ? "": " and the specified origin"));
         }
         boolean isAccessAllowed = isAccessAuthorized(user, df);
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         auxFileList.forEach(auxFile -> {
             if (isAccessAllowed || auxFile.getIsPublic()) {
                 NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
@@ -1951,7 +1951,7 @@ public class Access extends AbstractApiBean {
             return error(NOT_FOUND, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
-        JsonArrayBuilder userArray = Json.createArrayBuilder();
+        JsonArrayBuilder userArray = JsonUtil.createArrayBuilder();
 
         for (FileAccessRequest fileAccessRequest : requests) {
             userArray.add(json(fileAccessRequest));
@@ -1959,7 +1959,7 @@ public class Access extends AbstractApiBean {
 
         // Check for pagination request
         if (includeHistory && numResultsPerPageRequested > 0 && paginationStart > 0) {
-            JsonObjectBuilder builder = Json.createObjectBuilder()
+            JsonObjectBuilder builder = JsonUtil.createObjectBuilder()
                     .add("status", ApiConstants.STATUS_OK)
                     .add("data", userArray);
 
@@ -2226,7 +2226,7 @@ public class Access extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         User requestUser = getRequestUser(crc);
         jsonObjectBuilder.add("canDownloadFile", permissionService.userOn(requestUser, dataFile).has(Permission.DownloadFile));
         jsonObjectBuilder.add("canManageFilePermissions", permissionService.userOn(requestUser, dataFile).has(Permission.ManageFilePermissions));

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.FileAccessRequest;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
@@ -454,7 +455,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     public JsonObjectBuilder toJson() {
-        //JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
+        //JsonObjectBuilder authenicatedUserJson = JsonUtil.createObjectBuilder();
         NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
          
         authenicatedUserJson.add("id", this.id);
@@ -490,7 +491,7 @@ public class AuthenticatedUser implements User, Serializable {
      */
     public static JsonObjectBuilder getBundleStrings(){
      
-           return Json.createObjectBuilder()                   
+           return JsonUtil.createObjectBuilder()
                 .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
                 .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
                 .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))

@@ -265,7 +265,7 @@ public class DataversesIT {
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response createFail = UtilIT.createDataverse(Json.createObjectBuilder().add("name", "notEnough").add("alias", "notEnough").build(), apiToken);
+        Response createFail = UtilIT.createDataverse(JsonUtil.createObjectBuilder().add("name", "notEnough").add("alias", "notEnough").build(), apiToken);
         createFail.prettyPrint();
         createFail.then().assertThat()
                 /**
@@ -289,11 +289,11 @@ public class DataversesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String dataverseAlias = UtilIT.getRandomDvAlias();
         String emailAddressOfFirstDataverseContact = dataverseAlias + "@mailinator.com";
-        JsonObjectBuilder jsonToCreateDataverse = Json.createObjectBuilder()
+        JsonObjectBuilder jsonToCreateDataverse = JsonUtil.createObjectBuilder()
                 .add("name", dataverseAlias)
                 .add("alias", dataverseAlias)
-                .add("dataverseContacts", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("contactEmail", emailAddressOfFirstDataverseContact)
                         )
                 );
@@ -995,25 +995,25 @@ public class DataversesIT {
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
 
-        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
-                .add("datasetVersion", Json.createObjectBuilder()
-                        .add("license", Json.createObjectBuilder()
+        JsonObjectBuilder datasetJson = JsonUtil.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("license", JsonUtil.createObjectBuilder()
                                 .add("name", "CC0 1.0")
                         )
-                        .add("metadataBlocks", Json.createObjectBuilder()
-                                .add("citation", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "title")
                                                         .add("value", "Test Dataset")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Simpson, Homer")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1024,11 +1024,11 @@ public class DataversesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "author")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("datasetContactEmail",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "hsimpson@mailinator.com")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1039,11 +1039,11 @@ public class DataversesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "datasetContact")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("dsDescriptionValue",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "This a test dataset.")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1054,8 +1054,8 @@ public class DataversesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "dsDescription")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add("Other")
                                                         )
                                                         .add("typeClass", "controlledVocabulary")
@@ -1256,7 +1256,7 @@ public class DataversesIT {
                 .body("data[0].fields.size()", is(10)) // 28 - 18 child duplicates
                 .body("data[0].fields.author.childFields.size()", is(4));
 
-        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.prettyPrint();
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2546,7 +2546,7 @@ public class DataversesIT {
         // Configure metadata blocks - disable inherit from root and set specific blocks
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
                 dataverseAlias, 
-                Json.createArrayBuilder().add("socialscience"), 
+                JsonUtil.createArrayBuilder().add("socialscience"), 
                 apiToken);
         setMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -2587,7 +2587,7 @@ public class DataversesIT {
         // Configure metadata blocks - disable inherit from root and set specific blocks
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
                 dataverseAlias, 
-                Json.createArrayBuilder().add("citation"), 
+                JsonUtil.createArrayBuilder().add("citation"), 
                 apiToken);
         setMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());

@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import jakarta.json.Json;
@@ -67,7 +68,7 @@ public class JsonLDExportIT {
             String problematicDescription =
                 "File contains <CSP data, <img tag, <script and text ending with <";
 
-            JsonObjectBuilder fileMetadata = Json.createObjectBuilder()
+            JsonObjectBuilder fileMetadata = JsonUtil.createObjectBuilder()
                 .add("description", problematicDescription)
                 .add("label", "test-file-with-csp-tag.tab");
 

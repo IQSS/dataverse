@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -45,9 +46,9 @@ public class FileTypeDetectionIT {
 
         String readmeFile = "README.md";
 
-        JsonObjectBuilder readmeFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder readmeFileMetadata = JsonUtil.createObjectBuilder()
                 .add("description", "How to run the code on the data.")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Documentation")
                 );
 
@@ -69,10 +70,10 @@ public class FileTypeDetectionIT {
 
         String jupyterNotebook = "src/test/java/edu/harvard/iq/dataverse/util/irc-metrics.ipynb";
 
-        JsonObjectBuilder jupyterNotebookMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder jupyterNotebookMetadata = JsonUtil.createObjectBuilder()
                 .add("description", "Jupyter Notebook showing IRC metrics.")
                 .add("directoryLabel", "code")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Code")
                 );
 
@@ -92,10 +93,10 @@ public class FileTypeDetectionIT {
 
         String tsvFile = "src/test/java/edu/harvard/iq/dataverse/util/irclog.tsv";
 
-        JsonObjectBuilder tsvFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder tsvFileMetadata = JsonUtil.createObjectBuilder()
                 .add("description", "TSV file of Dataverse IRC logs.")
                 .add("directoryLabel", "data")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
 
@@ -140,9 +141,9 @@ public class FileTypeDetectionIT {
 
         String filePath = "scripts/issues/1380/dvs.pdf";
 
-        JsonObjectBuilder readmeFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder readmeFileMetadata = JsonUtil.createObjectBuilder()
                 .add("description", "This is a PDF.")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Documentation")
                 );
 

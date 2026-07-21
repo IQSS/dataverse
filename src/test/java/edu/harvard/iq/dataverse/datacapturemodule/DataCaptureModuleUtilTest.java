@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import java.io.UnsupportedEncodingException;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -52,7 +54,7 @@ public class DataCaptureModuleUtilTest {
         System.out.println("getScriptFromRequestOk");
         HttpResponseFactory factory = new DefaultHttpResponseFactory();
         org.apache.http.HttpResponse response = factory.newHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null), null);
-        JsonObjectBuilder jab = Json.createObjectBuilder();
+        JsonObjectBuilder jab = JsonUtil.createObjectBuilder();
         jab.add("userId", 42);
         jab.add("datasetIdentifier", "123");
         jab.add("script", "#!/bin/sh");
@@ -70,7 +72,7 @@ public class DataCaptureModuleUtilTest {
         System.out.println("getScriptFromRequestNotFound");
         HttpResponseFactory factory = new DefaultHttpResponseFactory();
         org.apache.http.HttpResponse response = factory.newHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_NOT_FOUND, null), null);
-        JsonObjectBuilder jab = Json.createObjectBuilder();
+        JsonObjectBuilder jab = JsonUtil.createObjectBuilder();
         jab.add("userId", 42);
         jab.add("datasetIdentifier", "123");
         jab.add("script", "#!/bin/sh");

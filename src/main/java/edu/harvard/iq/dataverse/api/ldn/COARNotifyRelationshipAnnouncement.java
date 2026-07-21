@@ -305,7 +305,7 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
      * Build the JSON object representing the citing resource.
      */
     private JsonObject buildCitingResourceJson(String subjectId, String relationship, ResourceMetadata metadata) {
-        JsonObjectBuilder citingResourceBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder citingResourceBuilder = JsonUtil.createObjectBuilder()
                 .add("@id", subjectId)
                 .add("relationship", relationship);
 

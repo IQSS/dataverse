@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ws.rs.DefaultValue;
@@ -64,7 +65,7 @@ public class FileRecordJobResource extends AbstractApiBean {
             if (!returnString.equals("FileSystemImportJob in progress")) {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, returnString);
             }
-            return ok(Json.createObjectBuilder()
+            return ok(JsonUtil.createObjectBuilder()
                     .add("message", returnString)
                     .add("executionId", jsonObject.getInt("executionId"))
             );

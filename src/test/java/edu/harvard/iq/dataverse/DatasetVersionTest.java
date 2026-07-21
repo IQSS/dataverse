@@ -127,7 +127,7 @@ public class DatasetVersionTest {
         // TODO: if it ever becomes easier to mock a dataset title, test it.
         assertEquals("", obj.getString("name"));
         // TODO: If it ever becomes easier to mock authors, test them.
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
         assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
@@ -181,7 +181,7 @@ public class DatasetVersionTest {
         // TODO: if it ever becomes easier to mock a dataset title, test it.
         assertEquals("", obj.getString("name"));
         // TODO: If it ever becomes easier to mock authors, test them.
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
         assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.

@@ -90,7 +90,7 @@ public class SendFeedbackAPI extends AbstractApiBean {
             String baseUrl = systemConfig.getDataverseSiteUrl();
             String installationBrandName = BrandingUtil.getInstallationBrandName();
             String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
-            JsonArrayBuilder jab = Json.createArrayBuilder();
+            JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
             Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName, SendFeedbackDialog.ccSupport(feedbackTarget));
             jab.add(feedback.toLimitedJsonObjectBuilder());
             mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody());

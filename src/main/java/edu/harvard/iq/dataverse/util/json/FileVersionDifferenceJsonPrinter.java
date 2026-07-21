@@ -213,7 +213,7 @@ public class FileVersionDifferenceJsonPrinter {
      */
     private static class GroupDataAccumulator {
         private JsonObject nameValue;
-        private JsonArrayBuilder listItems = Json.createArrayBuilder();
+        private JsonArrayBuilder listItems = JsonUtil.createArrayBuilder();
         private Map<String, Integer> itemCounts = new HashMap<>();
 
         void mergeCounts(FileVersionDifference.FileDifferenceSummaryItem item) {
@@ -246,7 +246,7 @@ public class FileVersionDifferenceJsonPrinter {
 
         void reset() {
             nameValue = null;
-            listItems = Json.createArrayBuilder();
+            listItems = JsonUtil.createArrayBuilder();
             itemCounts.clear();
         }
 

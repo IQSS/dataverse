@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -568,7 +569,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     
     @Override
     public JsonObject getProviderSpecification() {
-        JsonObjectBuilder providerSpecification = Json.createObjectBuilder();
+        JsonObjectBuilder providerSpecification = JsonUtil.createObjectBuilder();
         providerSpecification.add("id", id);
         providerSpecification.add("label", label);
         providerSpecification.add("protocol", protocol);

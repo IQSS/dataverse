@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -1081,7 +1082,7 @@ public class AdminIT {
         // Audit files
         Response resp = UtilIT.auditFiles(apiToken, null, 100L, null);
         resp.prettyPrint();
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         resp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.lastId", equalTo(100));
@@ -1134,7 +1135,7 @@ public class AdminIT {
         getAuthProviders.prettyPrint();
 
         String factoryData = String.format("type: oidc | issuer: http://keycloak.mydomain.com:8090/realms/test | clientId: %s | clientSecret: %s", clientId, clientSecret);
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = JsonUtil.createObjectBuilder()
                 .add("id", "oidc1")
                 .add("factoryAlias", "oidc")
                 .add("title", "Open ID Connect SPA")

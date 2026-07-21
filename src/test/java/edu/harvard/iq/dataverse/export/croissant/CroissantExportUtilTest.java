@@ -27,7 +27,7 @@ public class CroissantExportUtilTest {
     void testGetReviews() throws IOException {
         String content = Files.readString(Path.of("doc/sphinx-guides/source/_static/api/list-reviews.json"), StandardCharsets.UTF_8);
         JsonObject apiResponseJson = JsonUtil.getJsonObject(content);
-        JsonObjectBuilder job = Json.createObjectBuilder(apiResponseJson.getJsonObject("data"));
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder(apiResponseJson.getJsonObject("data"));
         JsonObject result = CroissantExportUtil.getReviews(job).build();
         System.out.println(prettyPrint(result));
         assertTrue(result.getJsonArray("reviews").size() == 1);
