@@ -2401,6 +2401,9 @@ The standard has further evolved into a format called Croissant. For details, se
 
 The ``schema.org`` format changed after Dataverse 6.4 as well. Previously its content type was "application/json" but now it is "application/ld+json".
 
+As of Dataverse v6.12, the ``schema.org`` format may be configured to replace the ``distribution`` field (listing individual files) with a ``potentialAction`` field (providing a template for file downloads) for datasets with many files, which can reduce the size of the export and avoid errors when scanned by Google. See :ref:`dataverse.exports.schema-dot-org.max-files-for-download-entries` in the Installation Guide for details.
+
+
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
