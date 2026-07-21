@@ -1148,7 +1148,7 @@ public abstract class AbstractApiBean {
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_ERROR)
                         .add(ApiConstants.MESSAGE_FIELD, msg)
-                        .add("fieldErrors", Json.createObjectBuilder(fieldErrors).build())
+                        .add("fieldErrors", JsonUtil.createObjectBuilder(fieldErrors).build())
                         .build()
                 )
                 .type(MediaType.APPLICATION_JSON_TYPE)

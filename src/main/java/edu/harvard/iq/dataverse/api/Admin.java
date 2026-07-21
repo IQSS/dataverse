@@ -2826,7 +2826,7 @@ public class Admin extends AbstractApiBean {
         for (FeatureFlags flag : FeatureFlags.values()) {
             map.put(flag.name(), flag.enabled() ? "enabled" : "disabled");
         }
-        return ok(Json.createObjectBuilder(map));
+        return ok(JsonUtil.createObjectBuilder(map));
     }
 
     @GET

@@ -6126,7 +6126,7 @@ public class DatasetPage implements java.io.Serializable {
                     reviewsJsonObj = commandEngine.submit(new GetDatasetReviewsCommand(dvRequestService.getDataverseRequest(), dataset));
                     JsonObjectBuilder reviews = CroissantExportUtil.getReviews(reviewsJsonObj);
                     JsonObject croissantJson = JsonUtil.getJsonObject(croissant);
-                    String updatedContent = Json.createObjectBuilder(croissantJson)
+                    String updatedContent = JsonUtil.createObjectBuilder(croissantJson)
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                     return updatedContent;
                 } catch (CommandException e) {

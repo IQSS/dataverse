@@ -507,7 +507,7 @@ public class OREMap {
                 }
                 JsonObject cachedValue = datasetFieldService.getExternalVocabularyValue(val);
                 if (cachedValue != null) {
-                    JsonObjectBuilder job = Json.createObjectBuilder(cachedValue);
+                    JsonObjectBuilder job = JsonUtil.createObjectBuilder(cachedValue);
                     job.add("@id", val);
                     JsonObject extVal = job.build();
                     logger.fine("Adding: " + extVal);
