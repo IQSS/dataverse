@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -14,6 +15,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
 import jakarta.ejb.EJB;
@@ -314,6 +316,15 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             logger.fine("Redirecting to file download url: " + fileDownloadUrl);
             try {
+                // Sign URL for preview url user
+                User user = session.getUser();
+                if (user != null &&  (user instanceof PrivateUrlUser)) {
+                    PrivateUrlUser privateUrlUser =  (PrivateUrlUser) user;
+                    String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + privateUrlUser.getToken();
+                    // Signing requires the full url path
+                    fileDownloadUrl = fileDownloadUrl.replace("/api/access/", "http://localhost:8080/api/v1/access/");
+                    fileDownloadUrl = UrlSignerUtil.signUrl(fileDownloadUrl, 1, privateUrlUser.getIdentifier(), "GET", key);
+                }
                 FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
             } catch (IOException ex) {
                 logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);

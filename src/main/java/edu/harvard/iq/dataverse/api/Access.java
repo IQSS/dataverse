@@ -12,10 +12,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.*;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -2237,7 +2234,12 @@ public class Access extends AbstractApiBean {
     private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
         // Check if guestbook response is required
         Dataset d = df.getOwner();
-        boolean required = df.getOwner().hasEnabledGuestbook() && !d.getEffectiveGuestbookEntryAtRequest();
+        boolean exempt = false;
+        // PrivateUrlUser access to requested dataset's files must be checked!
+        if (user instanceof PrivateUrlUser) {
+            exempt = (df.getOwner().getId() == ((PrivateUrlUser) user).getDatasetId());
+        }
+        boolean required = !exempt && df.getOwner().hasEnabledGuestbook() && !d.getEffectiveGuestbookEntryAtRequest();
         boolean wasWrittenInPost = false;
         if (required) {
             User requestor = getRequestor(user);
