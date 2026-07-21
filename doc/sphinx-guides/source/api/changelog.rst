@@ -15,6 +15,8 @@ v6.12
 
   - **/api/admin/index/perms/{id}**
 
+- Dataset creation API calls may now behave differently when neither a license nor terms are provided, depending on the new :ref:`dataverse.api.assume-default-license-when-not-provided-via-api` setting.
+
 v6.11
 -----
 - The GET /api/mydata/retrieve, if the search returns no data, now includes the "data" block with 0 results. The message that was returned in "error_message" will be returned in "message" and the "success" will be `true`. All other errors will continue to reply with "success":false and the error message in "error_message".

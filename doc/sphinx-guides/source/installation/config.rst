@@ -3367,6 +3367,20 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.api.assume-default-license-when-not-provided-via-api:
+
+dataverse.api.assume-default-license-when-not-provided-via-api
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+When creating a dataset via API, if neither a license nor any terms of use are provided, this setting determines whether the default license is assigned.
+
+- If set to ``true``, the default license is assigned if no license and no terms are provided.
+- If set to ``false``, no license is assigned (and no terms).
+- If not set (default), the behavior depends on the :ref:`:AllowCustomTermsOfUse` setting: if custom terms are allowed, no license is assigned; if not allowed, the default license is assigned.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_ASSUME_DEFAULT_LICENSE_WHEN_NOT_PROVIDED_VIA_API``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.api.blocked.endpoints:
 
 dataverse.api.blocked.endpoints

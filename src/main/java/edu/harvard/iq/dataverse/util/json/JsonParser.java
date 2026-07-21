@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -470,25 +471,27 @@ public class JsonParser {
 
             License license = null;
 
-            try {
-                // This method will attempt to parse the license in the format 
-                // in which it appears in our json exports, as a compound
-                // field, for ex.:
-                // "license": {
-                //    "name": "CC0 1.0",
-                //    "uri": "http://creativecommons.org/publicdomain/zero/1.0"
-                // }
-                license = parseLicense(obj.getJsonObject("license"));
-            } catch (ClassCastException cce) {
-                logger.fine("class cast exception parsing the license section (will try parsing as a string)");
-                // attempt to parse as string: 
-                // i.e. this is for backward compatibility, after the bug in #9155
-                // was fixed, with the old style of encoding the license info 
-                // in input json, for ex.: 
-                // "license" : "CC0 1.0"
-                license = parseLicense(obj.getString("license", null));
+            if (obj.containsKey("license")) {
+                try {
+                    // This method will attempt to parse the license in the format 
+                    // in which it appears in our json exports, as a compound
+                    // field, for ex.:
+                    // "license": {
+                    //    "name": "CC0 1.0",
+                    //    "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+                    // }
+                    license = parseLicense(obj.getJsonObject("license"));
+                } catch (ClassCastException cce) {
+                    logger.fine("class cast exception parsing the license section (will try parsing as a string)");
+                    // attempt to parse as string: 
+                    // i.e. this is for backward compatibility, after the bug in #9155
+                    // was fixed, with the old style of encoding the license info 
+                    // in input json, for ex.: 
+                    // "license" : "CC0 1.0"
+                    license = parseLicense(obj.getString("license", null));
+                }
             }
-            
+
             //test to see if license exists in dataset type 
             //if not set it to null - 
             //only test if Dataset has a type and if it has custom available licenses
@@ -505,21 +508,43 @@ public class JsonParser {
                         license = null;
                     }
                 }
-            }           
+            }
+
+            terms.setTermsOfUse(obj.getString("termsOfUse", null));
+            terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+            terms.setSpecialPermissions(obj.getString("specialPermissions", null));
+            terms.setRestrictions(obj.getString("restrictions", null));
+            terms.setCitationRequirements(obj.getString("citationRequirements", null));
+            terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
+            terms.setConditions(obj.getString("conditions", null));
+            terms.setDisclaimer(obj.getString("disclaimer", null));
 
             if (license == null) {
-                terms.setLicense(license);
-                terms.setTermsOfUse(obj.getString("termsOfUse", null));
-                terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
-                terms.setSpecialPermissions(obj.getString("specialPermissions", null));
-                terms.setRestrictions(obj.getString("restrictions", null));
-                terms.setCitationRequirements(obj.getString("citationRequirements", null));
-                terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
-                terms.setConditions(obj.getString("conditions", null));
-                terms.setDisclaimer(obj.getString("disclaimer", null));
-            } else {
-                terms.setLicense(license);
+                // If no license was provided or the provided license was invalid,
+                // we check if terms were provided.
+                boolean termsProvided = terms.getTermsOfUse() != null
+                        || terms.getConfidentialityDeclaration() != null
+                        || terms.getSpecialPermissions() != null
+                        || terms.getRestrictions() != null
+                        || terms.getCitationRequirements() != null
+                        || terms.getDepositorRequirements() != null
+                        || terms.getConditions() != null
+                        || terms.getDisclaimer() != null;
+
+                Optional<Boolean> assumeDefault = JvmSettings.ASSUME_DEFAULT_LICENSE_WHEN_NOT_PROVIDED_VIA_API.lookupOptional(Boolean.class);
+
+                if (assumeDefault.isPresent()) {
+                    if (assumeDefault.get() && !termsProvided) {
+                        license = licenseService.getDefault();
+                    }
+                } else {
+                    // Default behavior (when setting not set)
+                    if (!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, true)) {
+                        license = licenseService.getDefault();
+                    }
+                }
             }
+            terms.setLicense(license);
             terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
             terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
             terms.setOriginalArchive(obj.getString("originalArchive", null));
@@ -700,12 +725,7 @@ public class JsonParser {
 
     private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {
         if (licenseNameOrUri == null){
-            boolean safeDefaultIfKeyNotFound = true;
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
-                return null;
-            } else {
-                return licenseService.getDefault();
-            }
+            return null;
         }
         License license = licenseService.getByNameOrUri(licenseNameOrUri);
         if (license == null) throw new JsonParseException("Invalid license: " + licenseNameOrUri);
@@ -714,12 +734,7 @@ public class JsonParser {
 
     private edu.harvard.iq.dataverse.license.License parseLicense(JsonObject licenseObj) throws JsonParseException {
         if (licenseObj == null){
-            boolean safeDefaultIfKeyNotFound = true;
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
-                return null;
-            } else {
-                return licenseService.getDefault();
-            }
+            return null;
         }
 
         String licenseName = licenseObj.getString("name", null);

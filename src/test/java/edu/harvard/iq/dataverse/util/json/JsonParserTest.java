@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -758,7 +759,53 @@ public class JsonParserTest {
         throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
     }
     
+    @Test
+    public void testParseDatasetVersion_LicenseAndTerms() throws JsonParseException {
+        // Prepare mocks
+        License defaultLicense = new License();
+        defaultLicense.setName("CC0 1.0");
+        Mockito.when(licenseService.getDefault()).thenReturn(defaultLicense);
+
+        String baseJson = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}}";
+        
+        // Case 1: Setting not set, AllowCustomTermsOfUse = false -> should pick default
+        settingsSvc.setAllowCustomTermsOfUse(false);
+        System.clearProperty("dataverse.api.assume-default-license-when-not-provided-via-api");
+        DatasetVersion dsv1 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
+        assertEquals(defaultLicense, dsv1.getTermsOfUseAndAccess().getLicense());
+
+        // Case 2: Setting not set, AllowCustomTermsOfUse = true -> should NOT pick default
+        settingsSvc.setAllowCustomTermsOfUse(true);
+        DatasetVersion dsv2 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
+        assertNull(dsv2.getTermsOfUseAndAccess().getLicense());
+
+        // Case 3: assumeDefaultLicenseWhenNotProvidedViaApi = true, terms NOT provided -> should pick default
+        System.setProperty("dataverse.api.assume-default-license-when-not-provided-via-api", "true");
+        DatasetVersion dsv3 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
+        assertEquals(defaultLicense, dsv3.getTermsOfUseAndAccess().getLicense());
+
+        // Case 4: assumeDefaultLicenseWhenNotProvidedViaApi = true, terms PROVIDED -> should NOT pick default
+        String jsonWithTerms = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}, \"termsOfUse\":\"Some terms\"}";
+        DatasetVersion dsv4 = sut.parseDatasetVersion(JsonUtil.getJsonObject(jsonWithTerms));
+        assertNull(dsv4.getTermsOfUseAndAccess().getLicense());
+        assertEquals("Some terms", dsv4.getTermsOfUseAndAccess().getTermsOfUse());
+
+        // Case 5: assumeDefaultLicenseWhenNotProvidedViaApi = false -> should NOT pick default
+        System.setProperty("dataverse.api.assume-default-license-when-not-provided-via-api", "false");
+        DatasetVersion dsv5 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
+        assertNull(dsv5.getTermsOfUseAndAccess().getLicense());
+        
+        // Cleanup
+        System.clearProperty("dataverse.api.assume-default-license-when-not-provided-via-api");
+    }
+
     private static class MockSettingsSvc extends SettingsServiceBean {
+        private boolean allowCustomTermsOfUse = false;
+        
+        public void setAllowCustomTermsOfUse(boolean allow) {
+            this.allowCustomTermsOfUse = allow;
+        }
+
         @Override
         public String getValueForKey( Key key /*, String defaultValue */) {
             switch (key) {
@@ -775,7 +822,7 @@ public class JsonParserTest {
         @Override
         public boolean isTrueForKey(Key key, boolean safeDefaultIfKeyNotFound) {
             if (key == Key.AllowCustomTermsOfUse) {
-                return false;
+                return this.allowCustomTermsOfUse;
             }
             return safeDefaultIfKeyNotFound;
         }

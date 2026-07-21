@@ -96,7 +96,7 @@ public enum JvmSettings {
     // API: MDC Citation updates
     SCOPE_API_MDC(SCOPE_API, "mdc"),
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
-    
+    ASSUME_DEFAULT_LICENSE_WHEN_NOT_PROVIDED_VIA_API(SCOPE_API, "assume-default-license-when-not-provided-via-api"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
@@ -318,7 +318,7 @@ public enum JvmSettings {
     SCOPE_COARNOTIFY(SCOPE_LINKEDDATANOTIFICATION, "coar-notify"),
     SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT(SCOPE_COARNOTIFY, "relationship-announcement"),
     COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT_NOTIFY_SUPERUSERS_ONLY(SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT, "notify-superusers-only"),
-    ;
+   ;
 
     private static final String SCOPE_SEPARATOR = ".";
     public static final String PLACEHOLDER_KEY = "%s";
