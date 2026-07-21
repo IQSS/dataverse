@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -18,10 +19,10 @@ import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonException;
 import jakarta.json.JsonValue;
+import jakarta.json.spi.JsonProvider;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonBuilderFactory;
 
 public class JsonUtil {
 
@@ -178,7 +179,7 @@ public class JsonUtil {
      * <p>See also <a href="https://github.com/jakartaee/jsonp-api/issues/26">JSON-P #26</a>,
      * <a href="https://github.com/eclipse-ee4j/yasson/issues/698">Yasson #698</a> and others.</p>
      */
-    private static final JsonBuilderFactory builderFactory = Json.createBuilderFactory(Map.of());
+    private static final JsonProvider provider = JsonProvider.provider();
 
     /**
      * Create a new {@link JsonObjectBuilder} from a cached provider instance.
@@ -186,7 +187,25 @@ public class JsonUtil {
      * @return the JSON Object Builder
      */
     public static JsonObjectBuilder createObjectBuilder() {
-        return builderFactory.createObjectBuilder();
+        return provider.createObjectBuilder();
+    }
+
+    /**
+     * Create a new {@link JsonObjectBuilder}, initialized with the specified object from a cached provider instance.
+     * {@link Json#createObjectBuilder()} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Object Builder
+     */
+    public static JsonObjectBuilder createObjectBuilder(JsonObject object) {
+        return provider.createObjectBuilder(object);
+    }
+
+    /**
+     * Create a new {@link JsonObjectBuilder}, initialized with the data from specified map from a cached provider instance.
+     * {@link Json#createObjectBuilder()} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Object Builder
+     */
+    public static JsonObjectBuilder createObjectBuilder(Map<String, ?> map) {
+        return provider.createObjectBuilder(map);
     }
 
     /**
@@ -195,6 +214,24 @@ public class JsonUtil {
      * @return the JSON Array Builder
      */
     public static JsonArrayBuilder createArrayBuilder() {
-        return builderFactory.createArrayBuilder();
+        return provider.createArrayBuilder();
+    }
+
+    /**
+     * Create a new {@link JsonArrayBuilder}, initialized with the specified array from a cached provider instance.
+     * {@link Json#createArrayBuilder()} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Array Builder
+     */
+    public static JsonArrayBuilder createArrayBuilder(JsonArray array) {
+        return provider.createArrayBuilder(array);
+    }
+
+    /**
+     * Create a new {@link JsonArrayBuilder}, initialized with the content of specified collection from a cached provider instance.
+     * {@link Json#createArrayBuilder()} drop-in replacement, avoiding classpath-rescan on invocation.
+     * @return the JSON Array Builder
+     */
+    public static JsonArrayBuilder createArrayBuilder(Collection<?> collection) {
+        return provider.createArrayBuilder(collection);
     }
 }

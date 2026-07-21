@@ -1888,7 +1888,7 @@ public class JsonPrinter {
 
     public static JsonArrayBuilder jsonLanguage(Map<String, String> langMap) {
         // returns an array of metadatalanguages
-        return Json.createArrayBuilder(langMap.entrySet().stream().map(entry -> jsonLanguage(entry.getKey(), entry.getValue())).toList());
+        return JsonUtil.createArrayBuilder(langMap.entrySet().stream().map(entry -> jsonLanguage(entry.getKey(), entry.getValue())).toList());
     }
     
     public static JsonArrayBuilder jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {

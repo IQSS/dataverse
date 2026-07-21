@@ -296,7 +296,7 @@ public class Datasets extends AbstractApiBean {
                         .getReviews(commandEngine.submit(new GetDatasetReviewsCommand(req, dataset)));
                 String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject croissantJson = JsonUtil.getJsonObject(content);
-                String updatedContent = Json.createObjectBuilder(croissantJson)
+                String updatedContent = JsonUtil.createObjectBuilder(croissantJson)
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                 is = new ByteArrayInputStream(updatedContent.getBytes(StandardCharsets.UTF_8));
             }

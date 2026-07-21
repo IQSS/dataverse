@@ -221,7 +221,7 @@ public class JsonResponseBuilder {
         // This is necessary because we need to build in two places: logging and response creation.
         // Without cloning the object builder, we'd end up with an empty entity in the response when logging before that.
         JsonObject entity = this.entityBuilder.build();
-        this.entityBuilder = Json.createObjectBuilder(entity);
+        this.entityBuilder = JsonUtil.createObjectBuilder(entity);
         
         StringBuilder metadata = new StringBuilder();
         entity.forEach((k,v) -> metadata.append("_").append(k).append("=").append(v.toString()).append(";"));

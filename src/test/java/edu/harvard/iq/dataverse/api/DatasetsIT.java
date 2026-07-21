@@ -3672,7 +3672,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         
 
         String expectedJsonLD = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1.jsonld");
-        jo = Json.createObjectBuilder(jo).remove("@id").remove("http://schema.org/dateModified").build();
+        jo = JsonUtil.createObjectBuilder(jo).remove("@id").remove("http://schema.org/dateModified").build();
         String jsonLD = jo.toString();
 
         // ToDo: Are the static pars as expected
@@ -3851,7 +3851,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         JsonObject jsonLD = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
 
         JsonObject expectedJsonLD = JSONLDUtil.decontextualizeJsonLD(expectedString);
-        expectedJsonLD = Json.createObjectBuilder(expectedJsonLD).remove("@id").remove("http://schema.org/dateModified")
+        expectedJsonLD = JsonUtil.createObjectBuilder(expectedJsonLD).remove("@id").remove("http://schema.org/dateModified")
                 .build();
         // ToDo: Assert that the semantic api response is the same (everything in the
         // expected version is in the new one - deleting the @id and dateModified means
