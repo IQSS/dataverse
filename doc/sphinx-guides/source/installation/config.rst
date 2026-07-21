@@ -252,16 +252,34 @@ For any resources to be integrated with Dataverse, find documentation how to set
 Ongoing Security of Your Installation
 +++++++++++++++++++++++++++++++++++++
 
-Like any application, you should keep up-to-date with patches to both the Dataverse software and the platform (usually Linux) it runs on. Dataverse releases are announced on the dataverse-community_ mailing list, the Dataverse blog_, and in chat.dataverse.org_.
+New Releases
+^^^^^^^^^^^^
+
+Like any application, you should keep up-to-date with new releases of Dataverse, which often contain security fixes.
+
+Dataverse releases are announced on the dataverse-community_ mailing list, Zulip_, and the Dataverse blog_.
 
 .. _dataverse-community: https://groups.google.com/g/dataverse-community
+.. _Zulip: https://dataverse.zulipchat.com/
 .. _blog: https://dataverse.org/blog
-.. _chat.dataverse.org: https://chat.dataverse.org
 
-In addition to these public channels, you can subscribe to receive security notices via email from the Dataverse team. These notices are sent to the ``contact_email`` in the installation spreadsheet_ and you can open an issue in the dataverse-installations_ repo to add or change the contact email. Security notices are also sent to people and organizations that prefer to remain anonymous. To be added to this private list, please email support@dataverse.org.
+These announcements link to release notes, which can be found on GitHub:
 
-.. _spreadsheet: https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/edit#gid=0
-.. _dataverse-installations: https://github.com/IQSS/dataverse-installations
+- Backend: https://github.com/IQSS/dataverse/releases
+- Frontend: https://github.com/IQSS/dataverse-frontend/releases
+
+If the release contains a security-related fix, the release notes will mention generically that a fix is included. Some details are provided via private security advisories, described below.
+
+.. _security-advisories:
+
+Security Advisories
+^^^^^^^^^^^^^^^^^^^
+
+We highly recommend signing up to receive security advisories from the Dataverse team. These advisories are not archived publicly because we don't want attackers to use exploits against you. For this reason we also control who is subscribed to the security advisory mailing list.
+
+To subscribe, email support@dataverse.org and ask to be added to the Dataverse security advisory mailing list.
+
+Below you'll see a step called :ref:`map-of-installations` where you can provide a email address we can use to contact you. We typically automatically add this address to the security list but please feel free to reach out early.
 
 For additional details about security practices by the Dataverse team, see the :doc:`/developers/security` section of the Developer Guide.
 
@@ -2571,6 +2589,8 @@ As described above, Dataverse will automatically detect whether you need to crea
 One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the Search Console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. Consult `Google's "submit a sitemap" instructions`_ for more information.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
+
+.. _map-of-installations:
 
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
