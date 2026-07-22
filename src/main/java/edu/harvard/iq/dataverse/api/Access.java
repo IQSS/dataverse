@@ -2235,7 +2235,7 @@ public class Access extends AbstractApiBean {
         // Check if guestbook response is required
         Dataset d = df.getOwner();
         boolean exempt = false;
-        // PrivateUrlUser access to requested dataset's files must be checked!
+        // PrivateUrlUser access to draft files is exempt from guestbook responses in JSF https://github.com/IQSS/dataverse/issues/12535
         if (user instanceof PrivateUrlUser) {
             exempt = (df.getOwner().getId() == ((PrivateUrlUser) user).getDatasetId());
         }
