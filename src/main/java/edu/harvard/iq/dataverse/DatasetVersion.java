@@ -198,6 +198,15 @@ public class DatasetVersion implements Serializable {
     private List<CurationStatus> curationStatuses = new ArrayList<>();
 
     @Transient
+    private Map<CurationStatus, Date> keyCache = curationStatuses.stream()
+            .collect(Collectors.toMap(
+                    cs -> cs,
+                    CurationStatus::getCreateTime,
+                    (a, b) -> a,
+                    IdentityHashMap::new
+            ));
+
+    @Transient
     private DatasetVersionDifference dvd;
     
     //The Json version of the archivalCopyLocation string
@@ -2140,31 +2149,55 @@ public class DatasetVersion implements Serializable {
          * The code here assured both the DESC order and NULLS LAST.
          */
         if (curationStatuses != null) {
-            curationStatuses.sort(Comparator.comparing(
-                CurationStatus::getCreateTime,
-                Comparator.nullsLast(Comparator.reverseOrder())
-            ));
+            curationStatuses.sort(
+                    Comparator.comparing(
+                            keyCache::get,
+                            Comparator.nullsLast(Comparator.reverseOrder())
+                    )
+            );
         }
         return curationStatuses;
     }
 
     protected void setCurationStatuses(List<CurationStatus> curationStatuses) {
         this.curationStatuses = curationStatuses;
+        keyCache = curationStatuses.stream()
+                .collect(Collectors.toMap(
+                        cs -> cs,
+                        CurationStatus::getCreateTime,
+                        (a, b) -> a,
+                        IdentityHashMap::new
+                ));
     }
 
     public CurationStatus getCurrentCurationStatus() {
-        return !getCurationStatuses().isEmpty() ? getCurationStatuses().get(0) : null;
+        return !getCurationStatuses().isEmpty() ? getCurationStatuses().getFirst() : null;
     }
 
     
     public void addCurationStatus(CurationStatus status) {
         status.setDatasetVersion(this);
-        curationStatuses.add(0, status); // Add the new status at the beginning of the list
+        curationStatuses.addFirst(status); // Add the new status at the beginning of the list
+        // After that cache the keys
+        keyCache = curationStatuses.stream()
+                .collect(Collectors.toMap(
+                        cs -> cs,
+                        CurationStatus::getCreateTime,
+                        (a, b) -> a,
+                        IdentityHashMap::new
+                ));
     }
 
     public void removeCurationStatus(CurationStatus curationStatus) {
         curationStatuses.remove(curationStatus);
         curationStatus.setDatasetVersion(null);
+        keyCache = curationStatuses.stream()
+                .collect(Collectors.toMap(
+                        cs -> cs,
+                        CurationStatus::getCreateTime,
+                        (a, b) -> a,
+                        IdentityHashMap::new
+                ));
     }
 
     public CurationStatus getCurationStatusAsOfDate(Date date) {
