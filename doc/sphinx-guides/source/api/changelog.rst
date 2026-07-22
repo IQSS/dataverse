@@ -7,20 +7,40 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.12
+-----
+
+- Several API endpoints that return both a ``message`` and ``data`` field were incorrectly returning the message as a nested object (``{"message":{"message":"..."}}``).
+  This has been fixed so that the message is now a plain string (``{"message":"..."}``).
+  If you have integrations that depend on the old behavior, you can temporarily revert by setting :ref:`dataverse.legacy.api-response-message-style` to true.
+  This flag will be removed in a future version.
+  Affected endpoints: ``POST /api/datasets/{id}/add`` (duplicate file warning), ``PUT /api/admin/settings``, ``PUT /api/dataverses/{id}``, ``PUT /api/dataverses/{id}/inputLevels``, ``POST /api/admin/savedsearches``, ``PUT /api/harvest/clients/{nickName}``, ``PUT /api/harvest/server/oaisets/{specname}``.
+  See `#12096 <https://github.com/IQSS/dataverse/issues/12096>`_.
+- Most API endpoints that return a success notification but no actual data have it embedded into ``data``:  ``{"data":{"message":"..."}}``.
+  For now, this style will remain the supported default. In a future version of Dataverse the ``message`` will always be a separate top field: ``{"data":{},"message":"..."}``.
+  Integrators and client vendors are welcome to opt-in to the new style and test thoroughly by enabling :ref:`dataverse.feature.unify-api-response-message-style`.
+- The permission reindexing endpoints have been updated to use ``POST`` and require superuser access. They are now documented in the :doc:`/admin/solr-search-index` guide.
+
+  - **/api/admin/index/perms**
+
+  - **/api/admin/index/perms/{id}**
+
 v6.11
 -----
 
+- The GET /api/mydata/retrieve, if the search returns no data, now includes the "data" block with 0 results. The message that was returned in "error_message" will be returned in "message" and the "success" will be `true`. All other errors will continue to reply with "success":false and the error message in "error_message".
 - The endpoints GET, PUT AND DELETE for `/api/admin/dataverse/{alias}/storageDriver` have been moved to `/api/dataverses/{alias}/storageDriver`.
 - The endpoint `/api/admin/dataverse/storageDrivers` has been moved and renamed to `/api/dataverses/{alias}/allowedStorageDrivers`. Regarding the change of the name, this endpoint will in the future only display the storageDrivers that are allowed on the specified collection, as of now, it will display the entire list of available Drivers on the installation.
 - The following API will now return ``403`` if the ``requireFilesToPublishDataset`` flag is set and the dataset version contains 0 files.
 
   - **/api/datasets/{Id}/submitForReview**
 
+- The ``GET /api/access/datafile/{id}/userPermissions`` endpoint now requires authentication.
 - The Croissant :ref:`metadata export format <metadata-export-formats>` has been updated from version 1.0 to 1.1, which is reflected in the ``conformsTo`` property. The unused ``wd`` property has been dropped.
-
 
 v6.10
 -----
+
 - The following GET APIs will now return ``400`` if a required Guestbook Response is not supplied. A Guestbook Response can be passed to these APIs in the JSON body using a POST call. See the notes under :ref:`basic-file-access` and :ref:`download-by-dataset-by-version` for details.
 
   - **/api/access/datafile/{fileId:.+}**

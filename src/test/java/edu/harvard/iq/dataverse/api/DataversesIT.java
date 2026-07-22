@@ -1176,7 +1176,7 @@ public class DataversesIT {
         Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "name", newCollectionName, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Change the description of the collection:
 
@@ -1184,7 +1184,7 @@ public class DataversesIT {
         changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "description", newDescription, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Change the affiliation of the collection:
 
@@ -1192,7 +1192,7 @@ public class DataversesIT {
         changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "affiliation", newAffiliation, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Cannot update filePIDsEnabled from a regular user:
 
@@ -1205,7 +1205,7 @@ public class DataversesIT {
         changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Check on the collection, under the new alias:
 
@@ -1341,7 +1341,7 @@ public class DataversesIT {
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(15));
 
         listMetadataBlocksResponse = UtilIT.getMetadataBlock("geospatial");
         String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].name"));

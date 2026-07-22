@@ -23,6 +23,8 @@ of such instances.
 
 The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "Identify" verb).
 
+Please note that Dataverse can also harvest metadata from other OAI-PMH servers, like :ref:`DataCite <harvesting-from-datacite>`. See :doc:`harvestclients` for details.
+
 How does it work?
 -----------------
 

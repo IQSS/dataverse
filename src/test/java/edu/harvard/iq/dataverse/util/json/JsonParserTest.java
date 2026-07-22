@@ -113,6 +113,13 @@ public class JsonParserTest {
                           "displayOrder": 3
                         }
                       ]
+                    },
+                    {
+                      "question": "Address",
+                      "required": false,
+                      "displayOrder": 3,
+                      "type": "textarea",
+                      "hidden": false
                     }
                   ]
                 }
@@ -792,7 +799,7 @@ public class JsonParserTest {
         Guestbook gb = new Guestbook();
         gb = sut.parseGuestbook(jsonObj, gb);
         assertEquals(true, gb.isEnabled());
-        assertEquals(3, gb.getCustomQuestions().size());
+        assertEquals(4, gb.getCustomQuestions().size());
         assertEquals(4, gb.getCustomQuestions().get(2).getCustomQuestionValues().size());
         assertEquals("Purple", gb.getCustomQuestions().get(2).getCustomQuestionValues().get(3).getValueString());
         assertEquals(3, gb.getCustomQuestions().get(2).getCustomQuestionValues().get(3).getDisplayOrder());
@@ -827,6 +834,10 @@ public class JsonParserTest {
                                 {
                                     "id": 3,
                                     "value": "Yellow"
+                                },
+                                {
+                                    "id": 4,
+                                    "value": "Text area with a string instead of an array"
                                 }
                             ]
                         }
@@ -850,7 +861,7 @@ public class JsonParserTest {
         guestbookResponse.setGuestbook(gb);
         jsonObj = JsonUtil.getJsonObject(guestbookResponseJson);
         GuestbookResponse gbr = sut.parseGuestbookResponse(jsonObj, guestbookResponse);
-        assertTrue(gbr.getCustomQuestionResponses().size() == 3);
+        assertTrue(gbr.getCustomQuestionResponses().size() == 4);
 
         // Test missing required question response
         try {

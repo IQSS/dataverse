@@ -27,6 +27,7 @@ There are several steps to LocalContexts integration.
   The metadatablock contains one field allowing Dataverse to store the URL of an associated Local Contexts Hub project. Be sure to update the Solr schema after installing the metadatablock (see :ref:`update-solr-schema`).
   The external vocabulary script interacts with the Local Contexts Hub (via the Dataverse server) to display the Labels and Notices associated with the proect and provide a link to it.
   The script also supports adding/removing such a link from the dataset's metadata. Note that only a project that references the dataset's PID in its `Optional Project Information` field can be linked to a dataset.
+  Note that the Local Contexts script configuration JSON must be edited to include your Dataverse server's URL and the Local Contexts API key you use in Dataverse. (The latter is optional but it must be included for Dataverse to add information about Notices and Labels to exported metadata and the metadata sent to DataCite for DOIs.) 
 - Lastly, to show Local Contexts information in the summary section of the dataset page, as shown in the image above, you should add `LCProjectUrl` to list of custom summary fields via use of the :ref:`:CustomDatasetSummaryFields` setting.
 - Optionally, one can also set the dataverse.feature.add-local-contexts-permission-check FeatureFlag to true. This assures that only users editing datasets can use the LocalContexts search functionality (e.g. via API).
   This is not recommended unless problematic use is seen.

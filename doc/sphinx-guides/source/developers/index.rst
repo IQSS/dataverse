@@ -46,4 +46,6 @@ Developer Guide
    fontcustom
    classic-dev-env
    search-services
+   testing/fixtures.md
+   testing/performance.md
    
