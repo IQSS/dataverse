@@ -74,6 +74,8 @@ import jakarta.ws.rs.core.HttpHeaders;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -131,7 +133,10 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
-    
+
+    @EJB
+    DataverseRoleServiceBean dataverseRoleService;
+
     @POST
     @AuthRequired
     @Operation(summary = "Create the root dataverse",
@@ -1567,6 +1572,18 @@ public class Dataverses extends AbstractApiBean {
                         .map(a -> json(a))
                         .collect(toJsonArray())
         ), getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/assignments/userAssignableRoles")
+    @Operation(summary = "Lists user-assignable roles",
+            description = "Lists the roles the current user is allowed to assign to others for a dataverse.")
+    @APIResponse(responseCode = "200",
+            description = "List of user-assignable roles",
+            content = @Content(mediaType = "application/json"))
+    public Response getAssignableRoles(@Context ContainerRequestContext crc, @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true) @PathParam("identifier") String dvIdtf) {
+        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDataverseOrDie(dvIdtf), req.getUser())))), getRequestUser(crc));
     }
 
     @POST

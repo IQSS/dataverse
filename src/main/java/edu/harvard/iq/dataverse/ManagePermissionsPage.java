@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -239,18 +240,18 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void editRole(String roleId) {
         setRole(roleService.find(Long.parseLong(roleId)));
     }
-    
+
     /** Role Assignment History */
     private List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> roleAssignmentHistory;
 
     public List<DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry> getRoleAssignmentHistory() {
-        
+
         if (roleAssignmentHistory == null) {
             roleAssignmentHistory = roleService.getRoleAssignmentHistory(dvObject.getId());
         }
         return roleAssignmentHistory;
     }
-    
+
 
     /*
     ============================================================================
@@ -423,40 +424,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     public List<DataverseRole> getAvailableRoles() {
-        List<DataverseRole> roles = new LinkedList<>();
-        if (dvObject != null && dvObject.getId() != null) {
-
-            if (dvObject instanceof Dataverse) {
-                roles.addAll(roleService.availableRoles(dvObject.getId()));
-
-            } else if (dvObject instanceof Dataset) {
-                // don't show roles that only have Dataverse level permissions
-                // current the available roles for a dataset are gotten from its parent
-                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getId())) {
-                    for (Permission permission : role.permissions()) {
-                        if (permission.appliesTo(Dataset.class) || permission.appliesTo(DataFile.class)) {
-                            roles.add(role);
-                            break;
-                        }
-                    }
-                }
-
-            } else if (dvObject instanceof DataFile) {
-                // only show roles that have File level permissions
-                // current the available roles for a file are gotten from its parent's parent                
-                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getOwner().getId())) {
-                    for (Permission permission : role.permissions()) {
-                        if (permission.appliesTo(DataFile.class)) {
-                            roles.add(role);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            Collections.sort(roles, DataverseRole.CMP_BY_NAME);
+        if (dvObject == null || dvObject.getId() == null) {
+            return List.of();
         }
-        return roles;
+
+        return roleService.availableRoles(dvObject).stream()
+                .sorted(DataverseRole.CMP_BY_NAME)
+                .collect(Collectors.toList());
     }
 
     public DataverseRole getAssignedRole() {
@@ -699,7 +673,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void setRenderRoleMessages(Boolean renderRoleMessages) {
         this.renderRoleMessages = renderRoleMessages;
     }
-    
+
     public String getSignedUrlForRAHistoryCsv() {
         String apiPath;
         //Including /v1 in these urls is required for the signature to validate
@@ -713,17 +687,17 @@ public class ManagePermissionsPage implements java.io.Serializable {
             // For other types (like DataFile), return null or a default path
             return null;
         }
-        
+
         try {
             // Get the application URL from the system config
             String baseUrl = SystemConfig.getDataverseSiteUrlStatic();
             if (baseUrl.endsWith("/")) {
                 baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
             }
-            
+
             // Construct the full URL
             String fullApiPath = baseUrl + apiPath;
-            
+
             // Generate a signed URL with the user's API token
             User user = session.getUser();
             String key = null;
@@ -731,7 +705,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             if (user instanceof AuthenticatedUser authUser) {
                 userId = authUser.getUserIdentifier();
                 ApiToken apiToken = authenticationService.findApiTokenByUser(authUser);
-                
+
                 if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
                     key = apiToken.getTokenString();
                 }
@@ -746,7 +720,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         }
         return null;
     }
-    
+
     public String getPermissionsHistoryFilename() {
         if (dvObject instanceof Dataverse dv) {
             return dv.getAlias() + "_permissions_history.csv";

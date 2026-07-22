@@ -2463,6 +2463,18 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
+    @Path("{identifier}/assignments/userAssignableRoles")
+    @Operation(summary = "Lists user-assignable roles",
+            description = "Lists the roles the current user is allowed to assign to others for a dataset.")
+    @APIResponse(responseCode = "200",
+            description = "List of user-assignable roles",
+            content = @Content(mediaType = "application/json"))
+    public Response getAssignableRoles(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id) {
+        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDatasetOrDie(id), req.getUser())))), getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
     @Deprecated(forRemoval = true, since = "2024-10-17")
     @Path("{id}/privateUrl")
     @Operation(summary = "Returns private URL data",
