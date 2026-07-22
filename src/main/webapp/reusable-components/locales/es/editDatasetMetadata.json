@@ -1,0 +1,12 @@
+{
+  "breadcrumbActionItem": "Editar metadatos del dataset",
+  "infoAlert": {
+    "heading": "Editar metadatos del dataset",
+    "text": "Agrega más metadatos sobre este dataset para ayudar a otros a encontrarlo fácilmente."
+  },
+  "hostCollection": {
+    "label": "Colección anfitriona",
+    "description": "La colección que contiene estos datos."
+  },
+  "metadata": "Metadatos"
+}

@@ -1,0 +1,85 @@
+{
+  "noDatasetsMessage": {
+    "authenticated": "This collection currently has no datasets. You can add to it by using the Add Data button on this page.",
+    "anonymous": "This collection currently has no datasets. Please <1>log in</1> to see if you are able to add to it."
+  },
+  "noItemsMessage": {
+    "authenticated": "This collection currently has no {{typeOfEmptyItems}}. You can add to it by using the Add Data button on this page.",
+    "anonymous": "This collection currently has no {{typeOfEmptyItems}}. Please <1>log in</1> to see if you are able to add to it.",
+    "itemTypeMessage": {
+      "all": "collections, datasets or files",
+      "collection": "collections",
+      "dataset": "datasets",
+      "file": "files",
+      "collectionAndDataset": "collections or datasets",
+      "collectionAndFile": "collections or files",
+      "datasetAndFile": "datasets or files"
+    }
+  },
+  "sort": {
+    "title": "Sort",
+    "options": {
+      "relevance": "Relevance",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "dateAsc": "Oldest",
+      "dateDesc": "Newest"
+    }
+  },
+  "noSearchMatches": "There are no collections, datasets, or files that match your search. Please try a new search by using other or broader terms. You can also check out the <anchor>search guide</anchor> for tips.",
+  "createdAlert": "You have successfully created your collection! To learn more about what you can do with your collection, check out the <anchor>User Guide</anchor>.",
+  "filterResults": "Filter Results",
+  "collectionFilterTypeLabel": "Collections",
+  "datasetFilterTypeLabel": "Datasets",
+  "fileFilterTypeLabel": "Files",
+  "searchThisCollectionPlaceholder": "Search this collection...",
+  "advancedSearch": "Advanced Search",
+  "publish": {
+    "title": "Publish Collection",
+    "button": "Publish",
+    "question": "Are you sure you want to publish your collection? Once you do so it must remain published.",
+    "error": "There was an error publishing your collection."
+  },
+  "publishedAlert": "Your collection is now public.",
+  "accountJustCreated": "Welcome to Dataverse! Your account is all set, and we're thrilled to have you on board. Start exploring today!",
+  "addFacetFilter": "Add {{labelName}} facet filter",
+  "removeSelectedFacet": "Remove {{labelName}} facet filter",
+  "share": {
+    "shareCollection": "Share Collection",
+    "helpText": "Share this collection on your favorite social media networks."
+  },
+  "editedAlert": "You have successfully updated your collection!",
+  "editCollection": {
+    "edit": "Edit",
+    "generalInfo": "General Information",
+    "themeAndWidgets": "Theme + Widgets",
+    "permissions": "Permissions",
+    "groups": "Groups",
+    "datasetTemplates": "Dataset Templates",
+    "datasetGuestbooks": "Dataset Guestbooks",
+    "featuredDataverses": "Featured Dataverses",
+    "deleteCollection": "Delete Collection"
+  },
+  "featuredItems": {
+    "title": "Featured Items",
+    "slider": {
+      "prevLabel": "Go to previous slide",
+      "nextLabel": "Go to next slide",
+      "dotLabel": "Go to slide"
+    }
+  },
+  "deleteCollectionModal": {
+    "title": "Delete Collection",
+    "message": "Are you sure you want to delete your collection? You cannot undelete this collection.",
+    "delete": "Delete"
+  },
+  "collectionDeletedSuccess": "Your collection has been deleted.",
+  "defaultCollectionDeleteError": "Something went wrong deleting the collection. Try again later.",
+  "description": "Description",
+  "linkCollection": {
+    "title": "Link Collection",
+    "helper": "Choose which of your collections you would like to link this collection to.",
+    "save": "Save Linked Collection",
+    "success": "<wrapper>{{linkedCollectionName}} has been successfully linked to <a>{{linkingCollectionName}}</a></wrapper>"
+  }
+}

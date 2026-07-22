@@ -1,0 +1,6 @@
+{
+  "copyright": "Copyright © {{year}}, {{copyrightHolder}}",
+  "privacyPolicy": "Privacy Policy",
+  "poweredBy": "Powered by",
+  "spaVersion": "frontend version: {{version}}"
+}

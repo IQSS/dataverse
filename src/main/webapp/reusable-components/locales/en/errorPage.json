@@ -1,0 +1,8 @@
+{
+  "message": {
+    "heading": "Oops,",
+    "errorText": "something went wrong..."
+  },
+  "brandName": "Dataverse",
+  "backToHomepage": "Back to {{brandName}} Homepage"
+}

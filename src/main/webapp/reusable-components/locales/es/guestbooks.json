@@ -1,0 +1,31 @@
+{
+  "title": "Libros de visitas del dataset",
+  "errors": {
+    "getGuestbook": "Algo salió mal al obtener el libro de visitas. Inténtalo de nuevo más tarde."
+  },
+  "preview": {
+    "title": "Vista previa del libro de visitas",
+    "description": "Al descargar ficheros, el libro de visitas solicita la siguiente información.",
+    "guestbookNameLabel": "Nombre del libro de visitas",
+    "guestbookDataLabel": "Datos recopilados",
+    "guestbookDataTip": "Datos del usuario recopilados por el libro de visitas.",
+    "accountInformation": "Información de la cuenta",
+    "customQuestionsLabel": "Preguntas personalizadas",
+    "required": "Obligatorio",
+    "optional": "Opcional"
+  },
+  "create": {
+    "fields": {
+      "dataCollected": {
+        "label": "Datos recopilados",
+        "help": "Información de la cuenta de Dataverse que se recopilará cuando un usuario descargue un fichero. Marca las que serán obligatorias.",
+        "options": {
+          "name": "Nombre",
+          "email": "Correo electrónico",
+          "institution": "Institución",
+          "position": "Cargo"
+        }
+      }
+    }
+  }
+}

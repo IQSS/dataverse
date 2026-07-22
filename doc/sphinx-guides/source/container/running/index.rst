@@ -10,4 +10,5 @@ Contents:
    metadata-blocks
    github-action
    frontend-dev
+   reusable-components
    backend-dev

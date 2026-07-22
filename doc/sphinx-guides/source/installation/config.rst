@@ -2693,6 +2693,19 @@ protocol, host, and port number and should not include a trailing slash.
 - We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``.
   https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
+.. _dataverse.reusable-components.base-url:
+
+dataverse.reusable-components.base-url
+++++++++++++++++++++++++++++++++++++++
+
+Base URL from which the Dataverse :doc:`reusable React component bundles </container/running/reusable-components>` (e.g. ``dv-uploader.js``) are loaded by JSF pages. Trailing slashes are trimmed automatically.
+
+The default value, ``/reusable-components``, serves the pre-built bundle that ships inside the Dataverse WAR (under ``webapp/reusable-components/``), same-origin. Out of the box no further configuration is required.
+
+Operators who want to host the bundle off the WAR — for example behind a separate static-file server, a CDN, or any other URL of their choosing — can copy the contents of ``webapp/reusable-components/`` to that location and set ``dataverse.reusable-components.base-url`` to the URL where the files are served. There is no published artifact (npm package, Docker image, etc.) today; rehosting is the operator's responsibility.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_REUSABLE_COMPONENTS_BASE_URL``.
+
 .. _dataverse.files.directory:
 
 dataverse.files.directory
@@ -3999,6 +4012,28 @@ dataverse.feature.api-session-auth
 ++++++++++++++++++++++++++++++++++
 
 Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
+
+.. _dataverse.feature.react-uploader:
+
+dataverse.feature.react-uploader
+++++++++++++++++++++++++++++++++
+
+Replaces the classic PrimeFaces file upload widget on the JSF dataset edit page with the React file uploader (DVWebloader v2). Requires :ref:`dataverse.feature.api-session-auth` to be enabled and the JSF page to be able to reach the reusable component bundle (see :ref:`dataverse.reusable-components.base-url` and the :doc:`/container/running/reusable-components` guide).
+
+This flag has no effect on the file replace flow, which continues to use the classic JSF upload widget.
+
+**Create-dataset flow change.** Enabling this flag also changes the create-dataset page: the file-upload section is no longer rendered there. The React uploader is API-driven and needs the dataset to exist (PID assigned) before it can request upload URLs or register files, so it cannot run on a transient (not-yet-saved) dataset. Users save the dataset metadata first, then add files on the persisted dataset's edit-files page. This matches the SPA's flow. Installations that have not enabled this flag keep the legacy "create + upload in one step" UX unchanged.
+
+.. _dataverse.feature.react-tree-view:
+
+dataverse.feature.react-tree-view
++++++++++++++++++++++++++++++++++
+
+Replaces the classic PrimeFaces tree component on the dataset Files tab (when the user selects "Tree" in the Table/Tree toggle) with the React lazy file tree. The same component the SPA uses is mounted directly into the JSF page.
+
+Requires :ref:`dataverse.feature.api-session-auth` and the React bundle to be reachable from the browser (see :ref:`dataverse.reusable-components.base-url` and :doc:`/container/running/reusable-components`).
+
+This flag has no effect on the table view of the Files tab, which continues to use the classic PrimeFaces datatable.
 
 .. _dataverse.feature.api-bearer-auth:
 

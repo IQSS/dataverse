@@ -1,0 +1,15 @@
+{
+  "pageTitle": "Crear Dataset",
+  "hostCollection": {
+    "label": "Colección contenedora",
+    "description": "La colección que contiene estos datos.",
+    "helpText": "Cambiar la colección contenedora borrará cualquier campo en el que hayas ingresado datos.",
+    "buttonLabel": "Editar colección contenedora"
+  },
+  "notAllowedToCreateDataset": "No tienes permisos para crear un dataset dentro de esta colección.",
+  "template": {
+    "label": "Plantilla de dataset",
+    "description": "La plantilla de dataset que completa información automáticamente en el formulario.",
+    "helpText": "Cambiar la plantilla borrará cualquier campo en el que hayas ingresado datos."
+  }
+}

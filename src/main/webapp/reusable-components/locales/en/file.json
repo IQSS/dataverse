@@ -1,0 +1,165 @@
+{
+  "tabs": {
+    "metadata": "Metadata",
+    "versions": "Versions",
+    "preview": "Preview",
+    "query": "Query",
+    "fileTools": "File Tools"
+  },
+  "fileVersion": {
+    "version": "Dataset Version",
+    "publishedOn": "Published On",
+    "summary": "Summary",
+    "contributors": "Contributors",
+    "noChange": "No changes associated with this version.",
+    "noVersions": "File not included in this version.",
+    "file": "file",
+    "fileChanged": "[File {{name}}]",
+    "access": "File Access",
+    "accessChanged": "{{access}}",
+    "metadata": "File Metadata",
+    "metadataChange": "{{field}} {{action}}",
+    "tags": "File Tags",
+    "tagsChange": "{{count}} {{action}}",
+    "deaccessionedReason": "Deaccessioned Reason",
+    "actions": {
+      "Added": "Added",
+      "Deleted": "Deleted",
+      "Changed": "Changed"
+    },
+    "error": "Error on loading file versions"
+  },
+  "subtext": "This file is part of \"{{datasetTitle}}\".",
+  "datasetCitationTitle": "Dataset Citation",
+  "fileCitationTitle": "File Citation",
+  "fileAccess": {
+    "title": "File Access",
+    "restricted": {
+      "name": "Restricted",
+      "icon": "Restricted File Icon"
+    },
+    "restrictedWithAccess": {
+      "name": "Restricted with Access Granted",
+      "icon": "Restricted with access Icon"
+    },
+    "embargoed": {
+      "name": "Embargoed"
+    },
+    "public": {
+      "name": "Public",
+      "icon": "Public File Icon"
+    }
+  },
+  "metadata": {
+    "title": "File Metadata",
+    "fields": {
+      "preview": "Preview",
+      "labels": "File Tags",
+      "persistentId": "File Persistent ID",
+      "downloadUrl": {
+        "title": "Download URL",
+        "description": "Use the Download URL in a Wget command or a download manager to avoid interrupted downloads, time outs or other failures. <1>User Guide - Downloading via URL</1>"
+      },
+      "unf": "File UNF",
+      "depositDate": "Deposit Date",
+      "metadataReleaseDate": "Metadata Release Date",
+      "publicationDate": "Publication Date",
+      "embargoReason": "Embargo Reason",
+      "size": "Size",
+      "type": "Type",
+      "variables": "Variables",
+      "observations": "Observations",
+      "directory": "File Path",
+      "description": "Description"
+    }
+  },
+  "actionButtons": {
+    "title": "File Action Buttons",
+    "editFileMenu": {
+      "title": "Edit File",
+      "options": {
+        "metadata": "Metadata",
+        "tags": "Tags",
+        "restrict": "Restrict",
+        "unrestrict": "Unrestrict",
+        "replace": "Replace",
+        "delete": "Delete"
+      }
+    },
+    "share": {
+      "title": "Share File",
+      "helpText": "Share this file on your favorite social media networks."
+    }
+  },
+  "actions": {
+    "optionsMenu": {
+      "guestbookCollectModal": {
+        "submitError": "Something went wrong submitting guestbook responses. Try again later.",
+        "downloadError": "Something went wrong downloading the file. Try again later.",
+        "validation": {
+          "required": "This field is required.",
+          "invalidEmail": "Please enter a valid email address."
+        }
+      }
+    }
+  },
+  "deleteFileModal": {
+    "title": "Delete File",
+    "message": "The file will be deleted after you click on the Delete button.",
+    "messagePublishedDataset": "Files will not be removed from previously published versions of the dataset.",
+    "delete": "Delete"
+  },
+  "editFileTagsModal": {
+    "title": "Edit Tags",
+    "selectedTagsLabel": "Selected Tags",
+    "noTagsSelected": "No tags selected",
+    "fileTagsLabel": "File Tags",
+    "fileTagsPlaceholder": "Select...",
+    "customFileTagLabel": "Custom File Tag",
+    "customFileTagPlaceholder": "Add new file tag...",
+    "customFileTagApply": "Apply",
+    "customFileTagHelp": "Creating a new tag will add it as a tag option for all files in this dataset.",
+    "tabularTagsLabel": "Tabular Data Tags",
+    "tabularTagsPlaceholder": "Select...",
+    "tabularTagsHelp": "Select a tag to describe the type(s) of data this is (survey, time series, geospatial, etc).",
+    "deleteTagsLabel": "Delete Tags",
+    "deleteTagsHelp": "Select to delete Custom File Tags not used by the files in the dataset.",
+    "deleteTagsCheckboxLabel": "Delete tags not being used",
+    "removeTagAria": "Remove tag",
+    "intro": "Select existing file tags or create new tags to describe your files. Each file can have more than one tag.",
+    "customFileTagDuplicateError": "This tag already exists."
+  },
+  "fileDeletedSuccess": "The file has been deleted.",
+  "fileTagsUpdatedSuccess": "The file tags have been updated.",
+  "defaultFileDeleteError": "Something went wrong deleting the file. Try again later.",
+  "defaultFileUpdateError": "Something went wrong updating the file. Try again later.",
+  "alerts": {
+    "draftVersion": {
+      "heading": "This draft version needs to be published",
+      "alertText": "When ready for sharing, please <a>go to the dataset page</a> to publish it so that others can see these changes."
+    }
+  },
+  "restriction": {
+    "fileRestrictdSuccess": "The file has been restricted.",
+    "fileUnrestrictedSuccess": "The file has been unrestricted.",
+    "restrictAccess": "Restrict Access",
+    "restrictionInfoP1": "Restricting limits access to published files. People who want to use the restricted files can request access by default. ",
+    "restrictionInfoP2": "If you disable request access, you must add information about access to the Terms of Access field.",
+    "restrictionInfoP3": "Learn about restricting files and dataset access in the <a>User Guide</a>.",
+    "termsOfAccess": "Terms of Access for Restricted Files",
+    "enableAccessRequest": "Enable access request",
+    "saveChanges": "Save Changes",
+    "cancelChanges": "Cancel Changes",
+    "messagePublishedDataset": "Files will not be changed from previously published versions of the dataset.",
+    "message": "The file will be unrestricted.",
+    "defaultFileRestrictError": "Something went wrong restricting the file. Try again later.",
+    "defaultFileUnrestrictError": "Something went wrong unrestricting the file. Try again later.",
+    "requestAccessTooltipText": "If checked, users can request access to the restricted files in this dataset.",
+    "termsOfAccessTooltipTex": "information on how and if users can access restricted files in this dataset."
+  },
+  "getCategoriesError": "Something went wrong fetching available categories. Try again later.",
+  "previewTab": {
+    "openInNewWindow": "Open in New Window",
+    "defaultLoadingToolError": "Something went wrong loading the external tool. Try again later."
+  }
+}

@@ -648,8 +648,42 @@
     </p:dataTable>
 
     <!-- Files Tree -->
+    <ui:param name="useReactTreeView" value="#{systemConfig.reactTreeViewEnabled and DatasetPage.fileDisplayTree}"/>
+
+    <ui:fragment rendered="#{useReactTreeView}">
+        <!--
+            React-based reusable file tree component. Replaces the
+            PrimeFaces p:tree below when dataverse.feature.react-tree-view
+            is enabled. The bundle is loaded from
+            #{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js
+            (default `/reusable-components/...`); operators can override via
+            dataverse.reusable-components.base-url.
+
+            Authentication is via the user's JSESSIONID. The
+            dataverse.feature.api-session-auth flag must be enabled.
+        -->
+        <div id="dv-tree-view"></div>
+        <script>
+            //<![CDATA[
+            // Each value is JSON-encoded server-side via systemConfig.jsString
+            // so quotes, backslashes, newlines, and stray closing-script
+            // sequences in user input cannot break out of the JS string
+            // literal. See SystemConfig#jsString for the escaping contract.
+            window.dvTreeViewConfig = {
+                siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
+                datasetPid: #{systemConfig.jsString(DatasetPage.dataset.globalId.asString())},
+                datasetVersionId: #{systemConfig.jsString(DatasetPage.workingVersion.friendlyVersionNumber)},
+                locale: #{systemConfig.jsString(dataverseSession.localeCode)},
+                rootElementId: 'dv-tree-view',
+                fileMetadataPath: '/file.xhtml'
+            };
+            //]]>
+        </script>
+        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js?version=#{systemConfig.reusableComponentsVersion}"></script>
+    </ui:fragment>
+
     <p:tree id="filesTree" style="width:100%;"
-            rendered="#{DatasetPage.fileDisplayTree}"
+            rendered="#{!useReactTreeView and DatasetPage.fileDisplayTree}"
             widgetVar="filesTree"
             value="#{DatasetPage.filesTreeRoot}"
             var="node">
@@ -666,5 +700,5 @@
             </a>
             <span class="text-muted">(#{node.dataFile.friendlySize})</span>
         </p:treeNode>
-    </p:tree>      
+    </p:tree>
 </ui:composition>

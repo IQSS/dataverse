@@ -1,0 +1,165 @@
+{
+  "tabs": {
+    "metadata": "Metadatos",
+    "versions": "Versiones",
+    "preview": "Vista previa",
+    "query": "Consulta",
+    "fileTools": "Herramientas de archivo"
+  },
+  "fileVersion": {
+    "version": "Versión del dataset",
+    "publishedOn": "Publicado en",
+    "summary": "Resumen",
+    "contributors": "Colaboradores",
+    "noChange": "No hay cambios asociados con esta versión.",
+    "file": "archivo",
+    "fileChanged": "[Fichero {{name}}]",
+    "access": "Acceso al archivo",
+    "accessChanged": "{{access}}",
+    "metadata": "Metadatos del archivo",
+    "metadataChange": "{{field}} {{action}}",
+    "tags": "Etiquetas de archivo",
+    "tagsChange": "{{count}} {{action}}",
+    "deaccessionedReason": "Motivo de despublicación",
+    "actions": {
+      "Added": "Agregado",
+      "Deleted": "Eliminado",
+      "Changed": "Cambiado"
+    },
+    "error": "Error al cargar las versiones del archivo"
+  },
+  "fileNotChange": "No hay cambios asociados con esta versión",
+  "subtext": "Este fichero es parte de \"{{datasetTitle}}\".",
+  "datasetCitationTitle": "Cita del dataset",
+  "fileCitationTitle": "Cita del archivo",
+  "fileAccess": {
+    "title": "Acceso al archivo",
+    "restricted": {
+      "name": "Restringido",
+      "icon": "Ícono de fichero restringido"
+    },
+    "restrictedWithAccess": {
+      "name": "Restringido con acceso concedido",
+      "icon": "Ícono de restringido con acceso"
+    },
+    "embargoed": {
+      "name": "Embargado"
+    },
+    "public": {
+      "name": "Público",
+      "icon": "Ícono de fichero público"
+    }
+  },
+  "metadata": {
+    "title": "Metadatos del archivo",
+    "fields": {
+      "preview": "Vista previa",
+      "labels": "Etiquetas de archivo",
+      "persistentId": "ID persistente del archivo",
+      "downloadUrl": {
+        "title": "URL de descarga",
+        "description": "Usa la URL de descarga en un comando Wget o en un gestor de descargas para evitar descargas interrumpidas, tiempos de espera u otras fallas. <1>Guía del usuario - Descarga vía URL</1>"
+      },
+      "unf": "UNF del archivo",
+      "depositDate": "Fecha de depósito",
+      "metadataReleaseDate": "Fecha de publicación de metadatos",
+      "publicationDate": "Fecha de publicación",
+      "embargoReason": "Motivo del embargo",
+      "size": "Tamaño",
+      "type": "Tipo",
+      "variables": "Variables",
+      "observations": "Observaciones",
+      "directory": "Ruta del archivo",
+      "description": "Descripción"
+    }
+  },
+  "actionButtons": {
+    "title": "Botones de acción del archivo",
+    "editFileMenu": {
+      "title": "Editar archivo",
+      "options": {
+        "metadata": "Metadatos",
+        "tags": "Etiquetas",
+        "restrict": "Restringir",
+        "unrestrict": "Quitar restricción",
+        "replace": "Reemplazar",
+        "delete": "Eliminar"
+      }
+    },
+    "share": {
+      "title": "Compartir archivo",
+      "helpText": "Comparte este fichero en tus redes sociales favoritas."
+    }
+  },
+  "actions": {
+    "optionsMenu": {
+      "guestbookCollectModal": {
+        "submitError": "Algo salió mal al enviar las respuestas del libro de visitas. Inténtalo de nuevo más tarde.",
+        "downloadError": "Algo salió mal al descargar el archivo. Inténtalo de nuevo más tarde.",
+        "validation": {
+          "required": "Este campo es obligatorio.",
+          "invalidEmail": "Por favor, ingresa un correo electrónico válido."
+        }
+      }
+    }
+  },
+  "deleteFileModal": {
+    "title": "Eliminar archivo",
+    "message": "El fichero se eliminará después de hacer clic en el botón Eliminar.",
+    "messagePublishedDataset": "Los ficheros no se eliminarán de versiones previamente publicadas del dataset.",
+    "delete": "Eliminar"
+  },
+  "editFileTagsModal": {
+    "title": "Editar etiquetas",
+    "selectedTagsLabel": "Etiquetas seleccionadas",
+    "noTagsSelected": "No hay etiquetas seleccionadas",
+    "fileTagsLabel": "Etiquetas de archivo",
+    "fileTagsPlaceholder": "Seleccionar...",
+    "customFileTagLabel": "Etiqueta de fichero personalizada",
+    "customFileTagPlaceholder": "Agregar nueva etiqueta de fichero...",
+    "customFileTagApply": "Aplicar",
+    "customFileTagHelp": "Crear una nueva etiqueta la agregará como opción de etiqueta para todos los ficheros de este dataset.",
+    "tabularTagsLabel": "Etiquetas de datos tabulares",
+    "tabularTagsPlaceholder": "Seleccionar...",
+    "tabularTagsHelp": "Selecciona una etiqueta para describir el tipo(s) de datos que es (encuesta, series de tiempo, geoespacial, etc.).",
+    "deleteTagsLabel": "Eliminar etiquetas",
+    "deleteTagsHelp": "Selecciona para eliminar etiquetas personalizadas que no usan los ficheros en el dataset.",
+    "deleteTagsCheckboxLabel": "Eliminar etiquetas que no se están usando",
+    "removeTagAria": "Quitar etiqueta",
+    "intro": "Selecciona etiquetas de fichero existentes o crea nuevas etiquetas para describir tus ficheros. Cada fichero puede tener más de una etiqueta.",
+    "customFileTagDuplicateError": "Esta etiqueta ya existe."
+  },
+  "fileDeletedSuccess": "El fichero ha sido eliminado.",
+  "fileTagsUpdatedSuccess": "Las etiquetas del fichero han sido actualizadas.",
+  "defaultFileDeleteError": "Algo salió mal al eliminar el fichero. Intenta nuevamente más tarde.",
+  "defaultFileUpdateError": "Algo salió mal al actualizar el fichero. Intenta nuevamente más tarde.",
+  "alerts": {
+    "draftVersion": {
+      "heading": "Esta versión borrador necesita ser publicada",
+      "alertText": "Cuando esté lista para compartir, por favor <a>ve a la página del dataset</a> para publicarla y que otros puedan ver estos cambios."
+    }
+  },
+  "restriction": {
+    "fileRestrictdSuccess": "El fichero ha sido restringido.",
+    "fileUnrestrictedSuccess": "La restricción del fichero ha sido eliminada.",
+    "restrictAccess": "Restringir acceso",
+    "restrictionInfoP1": "Restringir limita el acceso a los ficheros publicados. Quienes quieran usar los ficheros restringidos pueden solicitar acceso por defecto. ",
+    "restrictionInfoP2": "Si desactivas la solicitud de acceso, debes agregar información sobre el acceso en el campo Términos de acceso.",
+    "restrictionInfoP3": "Aprende sobre restricción de ficheros y acceso a datasets en la <a>Guía del usuario</a>.",
+    "termsOfAccess": "Términos de acceso para ficheros restringidos",
+    "enableAccessRequest": "Habilitar solicitud de acceso",
+    "saveChanges": "Guardar cambios",
+    "cancelChanges": "Cancelar cambios",
+    "messagePublishedDataset": "Los ficheros no se cambiarán en las versiones previamente publicadas del dataset.",
+    "message": "El fichero quedará sin restricción.",
+    "defaultFileRestrictError": "Algo salió mal al restringir el fichero. Intenta nuevamente más tarde.",
+    "defaultFileUnrestrictError": "Algo salió mal al quitar la restricción del fichero. Intenta nuevamente más tarde.",
+    "requestAccessTooltipText": "Si está marcado, los usuarios pueden solicitar acceso a los ficheros restringidos en este dataset.",
+    "termsOfAccessTooltipTex": "Información sobre cómo y si los usuarios pueden acceder a los ficheros restringidos en este dataset."
+  },
+  "getCategoriesError": "Algo salió mal al obtener las categorías disponibles. Intenta nuevamente más tarde.",
+  "previewTab": {
+    "openInNewWindow": "Abrir en una nueva ventana",
+    "defaultLoadingToolError": "Algo salió mal al cargar la herramienta externa. Intenta nuevamente más tarde."
+  }
+}

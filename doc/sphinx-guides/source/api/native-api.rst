@@ -2507,6 +2507,63 @@ Usage example:
 
 .. note:: Keep in mind that you can combine all of the above query parameters depending on the results you are looking for.
 
+List a Folder of a Dataset Version (Tree View)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|CORS| Lists the immediate children (folders and files) inside a folder of a dataset version, with paging. This is intended for lazy tree-view UIs that fetch each folder's children on demand and that need stable cursor-based pagination across very large datasets:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl "$SERVER_URL/api/datasets/$ID/versions/$VERSION/tree?limit=100"
+
+Folders are returned first, then files. Both are sorted by name (case-insensitive); files break ties on the data file id for stability.
+
+Query parameters:
+
+* ``path`` — folder within the dataset, forward-slash separated; root is ``""`` or omit. The server normalises the value with the same rules applied to folder names at upload time: repeated slashes and backslashes collapse to ``/``, and leading dots, dashes and spaces are stripped (stored folder names never start with them). The end of the path is preserved apart from trailing slashes — interior folder names may legitimately end in a dot or space, and paths emitted by the endpoint itself always round-trip. A path that normalises to nothing (for example ``..``) is rejected with ``400``.
+* ``limit`` — page size; default ``100``, clamped to ``1000``.
+* ``cursor`` — opaque server-issued token. Pass back the ``nextCursor`` from a previous response to fetch the next page. Invalid or stale cursors yield ``400``.
+* ``include`` — ``all`` (default), ``folders``, or ``files``.
+* ``order`` — ``NameAZ`` (default) or ``NameZA``.
+* ``includeDeaccessioned`` — same semantics as the ``files`` endpoint.
+* ``originals`` — when ``true``, ingested tabular files are reported in their original-upload form: the per-file ``downloadUrl`` requests ``?format=original`` and both ``checksum`` and ``size`` reflect the saved original rather than the converted TSV. (The folder ``counts.bytes`` rollup stays the served-form total — see below.)
+
+Response shape:
+
+.. code-block:: json
+
+  {
+    "path": "data/raw",
+    "items": [
+      { "type": "folder", "name": "2024", "path": "data/raw/2024",
+        "counts": { "files": 12, "folders": 1, "bytes": 4194304,
+                    "restricted": 0, "embargoed": 0, "retentionExpired": 0 } },
+      { "type": "file", "id": 42, "name": "data.csv", "path": "data/raw/data.csv",
+        "size": 1024, "contentType": "text/csv", "access": "public",
+        "checksum": { "type": "MD5", "value": "abc" },
+        "downloadUrl": "/api/access/datafile/42" }
+    ],
+    "nextCursor": "b2Zmc2V0PTEwMA",
+    "limit": 100,
+    "order": "NameAZ",
+    "include": "all",
+    "approximateCount": 137
+  }
+
+``approximateCount`` is the total number of folders and files at the requested path, snapshotted on the first page of a pagination walk and carried unchanged through the rest of the walk (hence "approximate": on draft versions, files added mid-walk are not reflected until a new walk starts).
+
+The per-file ``access`` marker is one of ``retentionExpired``, ``restricted``, ``embargoed``, or ``public``, resolved in that order (a retention-expired file cannot be served at all, so that state wins even for restricted files; a restricted file with an active embargo reports ``restricted``). The embargo and retention date checks match the actual download enforcement (a file whose embargo lifts today is ``public`` and downloadable). Note this differs by one day, at the boundary, from the ``files`` endpoint's access-status *filter*, which treats a file as embargoed through the lift date itself.
+
+Folder counts are recursive: ``counts.files`` is the total number of files anywhere in the folder's subtree, ``counts.folders`` is the count of immediate subfolders, and ``counts.bytes`` is the total size of all files in the subtree. ``counts.bytes`` uses ``df.filesize`` — the size of the bytes the default ``downloadUrl`` would serve, which for ingested tabular files is the converted TSV rather than the original upload — so it is intended as a "downloading this folder = N GB" UX hint, not an authoritative original-bytes total. ``counts.restricted``, ``counts.embargoed`` and ``counts.retentionExpired`` mirror the per-file ``access`` resolution and are mutually exclusive buckets; public files are implied as ``files - restricted - embargoed - retentionExpired``.
+
+Checksum semantics: ``checksum`` is present on a file row only when it is the digest of the bytes a client would receive by following ``downloadUrl``. For ingested tabular files the default ``downloadUrl`` resolves to the converted TSV — bytes whose digest Dataverse does not store — so the ``checksum`` field is omitted; requesting the same listing with ``originals=true`` flips ``downloadUrl`` to ``?format=original`` (the saved-original auxiliary blob) and the matching digest is reported again. The per-file ``size`` follows the same rule: under ``originals=true`` it reports the saved original's size so it matches the original bytes, while the folder ``counts.bytes`` rollup stays the served-form total. Clients can therefore treat "``checksum`` present" as an unconditional commitment that the value matches what ``downloadUrl`` will serve — and, under ``originals=true``, that ``size`` matches too.
+
+Caching: for published, non-deaccessioned versions the response carries an ``ETag`` header (derived from the request inputs and the current date) and ``Cache-Control: private, no-cache``. A released version's file list is frozen, but the response is still time-dependent — ``access`` markers flip when an embargo lapses or a retention period expires — so clients must revalidate rather than reuse a stored copy blindly; sending the ETag back in ``If-None-Match`` yields a body-less ``304 Not Modified`` while it still matches, and the date component of the ETag makes embargo/retention transitions invalidate it. ``private`` keeps the response out of shared caches because the route is auth-required. Drafts and deaccessioned versions emit no caching headers because their content can change in place.
+
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
