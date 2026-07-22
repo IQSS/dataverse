@@ -1522,65 +1522,6 @@ public class DdiExportUtil {
         }
     }
 
-    // An alternative version of the createOtherMats method - this one is used 
-    // when a "full" DDI is being cooked; just like the fileDscr and data/var sections methods, 
-    // it operates on the list of FileMetadata entities, not on File DTOs. This is because
-    // DTOs do not support "tabular", variable-level metadata yet. And we need to be able to 
-    // tell if this file is in fact tabular data - so that we know if it needs an
-    // otherMat, or a fileDscr section. 
-    // -- L.A. 4.5 
-    // [update:] Since the comment above was written, the method below was changed
-    // to operate on a JsonArray, as provided by the FileDetails method in the 
-    // ExportDataProvider. However, As of 6.8, this method is no longer used at 
-    // all. This is because the DTOs supplied by ExportDataProvider.getDatasetJson() 
-    // DO in fact contain enough information to generate the otherMat sections 
-    // properly, whether this is a short or a full version of the DDI. I am however leaving 
-    // this method here for reference. 
-
-    private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, JsonArray fileDetails) throws XMLStreamException {
-        // The preferred URL for this dataverse, for cooking up the file access API links:
-        String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
-
-        for (int i=0;i<fileDetails.size();i++) {
-            JsonObject fileJson = fileDetails.getJsonObject(i);
-            // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
-            // tabular ones - in fileDscr sections. (fileDscr sections have special fields for numbers of variables
-            // and observations, etc.)
-            if (!fileJson.getBoolean("tabularData", false)) {
-                xmlw.writeStartElement("otherMat");
-                xmlw.writeAttribute("ID", "f" + fileJson.getJsonNumber(("id").toString()));
-                if (fileJson.containsKey("pidUrl")){
-                    XmlWriterUtil.writeAttribute(xmlw, "URI",  fileJson.getString("pidUrl"));
-                }  else {
-                    xmlw.writeAttribute("URI", dataverseUrl + "/api/access/datafile/" + fileJson.getJsonNumber("id").toString());
-                }
-
-                xmlw.writeAttribute("level", "datafile");
-                xmlw.writeStartElement("labl");
-                xmlw.writeCharacters(fileJson.getString("filename"));
-                xmlw.writeEndElement(); // labl
-
-                if (fileJson.containsKey("description")) {
-                    xmlw.writeStartElement("txt");
-                    xmlw.writeCharacters(fileJson.getString("description"));
-                    xmlw.writeEndElement(); // txt
-                }
-                // there's no readily available field in the othermat section 
-                // for the content type (aka mime type); so we'll store it in this
-                // specially formatted notes section:
-                if (fileJson.containsKey("contentType")) {
-                    xmlw.writeStartElement("notes");
-                    xmlw.writeAttribute("level", LEVEL_FILE);
-                    xmlw.writeAttribute("type", NOTE_TYPE_CONTENTTYPE);
-                    xmlw.writeAttribute("subject", NOTE_SUBJECT_CONTENTTYPE);
-                    xmlw.writeCharacters(fileJson.getString("contentType"));
-                    xmlw.writeEndElement(); // notes
-                }
-                xmlw.writeEndElement(); // otherMat
-            }
-        }
-    }
-
     private static void writeFileDescription(XMLStreamWriter xmlw, FileDTO fileDTo) throws XMLStreamException {
         String description = fileDTo.getDataFile().getDescription();
         if (description != null) {
@@ -1718,7 +1659,6 @@ public class DdiExportUtil {
                 dataTablesThisBatch++; 
 
                 if (varQuantityThisBatch >= variablesBatchSize || dataTableCurrent == varQuantityMap.size() - 1) {
-                    //JsonArray tabularFileDetails = exportDataProvider.getTabularDataDetails(ExportDataContext.context().withOffset(dataTableStart).withLength(dataTablesThisBatch));
                     FileExportQuery exportQuery = FileExportQuery.builder()
                             .addFilePredicate(FileMetadataPredicates.ONLY_PUBLIC_FILES)
                             .addFilePredicate(FileMetadataPredicates.ONLY_TABULAR_FILES)
@@ -1729,7 +1669,6 @@ public class DdiExportUtil {
                     logger.fine("total number of variables in this batch: " + varQuantityThisBatch);
 
                     int count = 0;
-                    //for (int i = 0; i < tabularFileDetails.size(); i++) {
                     Iterator<JsonObject> it = tabularFileDetails.iterator();
                     while (it.hasNext()) {
                         JsonObject fileJson = it.next();
