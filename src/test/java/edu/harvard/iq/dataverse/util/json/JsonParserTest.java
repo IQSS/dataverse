@@ -768,35 +768,24 @@ public class JsonParserTest {
 
         String baseJson = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}}";
         
-        // Case 1: Setting not set, AllowCustomTermsOfUse = false -> should pick default
-        settingsSvc.setAllowCustomTermsOfUse(false);
-        System.clearProperty("dataverse.api.assume-default-license-when-not-provided-via-api");
+        // Case 1: Flag false (default), terms NOT provided -> should pick default
+        System.setProperty("dataverse.feature.do-not-assume-default-license", "false");
         DatasetVersion dsv1 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
         assertEquals(defaultLicense, dsv1.getTermsOfUseAndAccess().getLicense());
 
-        // Case 2: Setting not set, AllowCustomTermsOfUse = true -> should NOT pick default
-        settingsSvc.setAllowCustomTermsOfUse(true);
-        DatasetVersion dsv2 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
-        assertNull(dsv2.getTermsOfUseAndAccess().getLicense());
-
-        // Case 3: assumeDefaultLicenseWhenNotProvidedViaApi = true, terms NOT provided -> should pick default
-        System.setProperty("dataverse.api.assume-default-license-when-not-provided-via-api", "true");
-        DatasetVersion dsv3 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
-        assertEquals(defaultLicense, dsv3.getTermsOfUseAndAccess().getLicense());
-
-        // Case 4: assumeDefaultLicenseWhenNotProvidedViaApi = true, terms PROVIDED -> should NOT pick default
+        // Case 2: Flag false (default), terms PROVIDED -> should NOT pick default
         String jsonWithTerms = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}, \"termsOfUse\":\"Some terms\"}";
-        DatasetVersion dsv4 = sut.parseDatasetVersion(JsonUtil.getJsonObject(jsonWithTerms));
-        assertNull(dsv4.getTermsOfUseAndAccess().getLicense());
-        assertEquals("Some terms", dsv4.getTermsOfUseAndAccess().getTermsOfUse());
+        DatasetVersion dsv2 = sut.parseDatasetVersion(JsonUtil.getJsonObject(jsonWithTerms));
+        assertNull(dsv2.getTermsOfUseAndAccess().getLicense());
+        assertEquals("Some terms", dsv2.getTermsOfUseAndAccess().getTermsOfUse());
 
-        // Case 5: assumeDefaultLicenseWhenNotProvidedViaApi = false -> should NOT pick default
-        System.setProperty("dataverse.api.assume-default-license-when-not-provided-via-api", "false");
-        DatasetVersion dsv5 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
-        assertNull(dsv5.getTermsOfUseAndAccess().getLicense());
+        // Case 3: Flag true, terms NOT provided -> should NOT pick default
+        System.setProperty("dataverse.feature.do-not-assume-default-license", "true");
+        DatasetVersion dsv3 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
+        assertNull(dsv3.getTermsOfUseAndAccess().getLicense());
         
         // Cleanup
-        System.clearProperty("dataverse.api.assume-default-license-when-not-provided-via-api");
+        System.clearProperty("dataverse.feature.do-not-assume-default-license");
     }
 
     private static class MockSettingsSvc extends SettingsServiceBean {

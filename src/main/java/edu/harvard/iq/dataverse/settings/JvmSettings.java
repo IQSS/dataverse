@@ -96,7 +96,6 @@ public enum JvmSettings {
     // API: MDC Citation updates
     SCOPE_API_MDC(SCOPE_API, "mdc"),
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
-    ASSUME_DEFAULT_LICENSE_WHEN_NOT_PROVIDED_VIA_API(SCOPE_API, "assume-default-license-when-not-provided-via-api"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),

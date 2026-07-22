@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -531,15 +530,8 @@ public class JsonParser {
                         || terms.getConditions() != null
                         || terms.getDisclaimer() != null;
 
-                Optional<Boolean> assumeDefault = JvmSettings.ASSUME_DEFAULT_LICENSE_WHEN_NOT_PROVIDED_VIA_API.lookupOptional(Boolean.class);
-
-                if (assumeDefault.isPresent()) {
-                    if (assumeDefault.get() && !termsProvided) {
-                        license = licenseService.getDefault();
-                    }
-                } else {
-                    // Default behavior (when setting not set)
-                    if (!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, true)) {
+                if (!FeatureFlags.DO_NOT_ASSUME_DEFAULT_LICENSE.enabled()) {
+                    if (!termsProvided) {
                         license = licenseService.getDefault();
                     }
                 }

@@ -15,7 +15,7 @@ v6.12
 
   - **/api/admin/index/perms/{id}**
 
-- Dataset creation API calls may now behave differently when neither a license nor terms are provided, depending on the new :ref:`dataverse.api.assume-default-license-when-not-provided-via-api` setting.
+- Dataset creation API calls may now behave differently when neither a license nor terms are provided, depending on the new :ref:`dataverse.feature.do-not-assume-default-license` feature flag.
 
 v6.11
 -----
