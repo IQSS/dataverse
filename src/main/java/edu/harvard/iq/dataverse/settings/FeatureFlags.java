@@ -261,6 +261,19 @@ public enum FeatureFlags {
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
     
+    /**
+     * Historically, success messages have returned success messages as {data:{message:...}}.
+     * Error messages have been return as either {message:...} or {message:{message:...}}.
+     * While the alignment of error messages is opt-out (see {@link JvmSettings#LEGACY_API_RESPONSE_MESSAGE_STYLE},
+     * changing the response format of ~230 success responses may cause a lot of friction.
+     * This feature flag makes sure any early adopters can change to the unified response layout,
+     * and it will graduate to the new default later.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.unify-api-response-message-style"
+     * @since Dataverse 6.12
+     */
+    UNIFY_API_RESPONSE_MESSAGE_STYLE("unify-api-response-message-style"),
+    
     /** Require Embargo Reason. By default, adding a reason when embargoing is optional. This 
      * flag makes a reason required, both in the UI and API.
      */
@@ -291,6 +304,7 @@ public enum FeatureFlags {
      */
     ALLOW_LOCALLY_FAIR_DATA("allow-locally-fair-data"),
     ;
+    
     
     final String flag;
     final boolean defaultStatus;
@@ -324,6 +338,17 @@ public enum FeatureFlags {
      */
     public boolean enabled() {
         return JvmSettings.FEATURE_FLAG.lookupOptional(Boolean.class, flag).orElse(defaultStatus);
+    }
+    
+    /**
+     * Returns the scoped configuration key for this feature flag.
+     * The key is constructed by inserting the flag name into the {@link JvmSettings#FEATURE_FLAG} pattern,
+     * resulting in a string of the form "dataverse.feature.{flag}".
+     *
+     * @return the scoped configuration key as a String
+     */
+    public String getScopedKey() {
+        return JvmSettings.FEATURE_FLAG.insert(flag);
     }
 
 }
