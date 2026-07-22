@@ -166,7 +166,6 @@ public class InternalExportDataProvider implements ExportDataProvider {
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query, PageRequest pageRequest) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
 
-        List<FileMetadata> fileMetadatas;
         if (datasetVersionFilesService == null) {
             try {
                 datasetVersionFilesService = CDI.current().select(DatasetVersionFilesServiceBean.class).get();
@@ -181,12 +180,10 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
         if (isOnlyTabularMetadataRequested(query) && isDataVariableMetadataRequested(query)) {
 
-            fileMetadatas = datasetVersionFilesService.getTabularDataFileMetadatas(dv,
+            for (FileMetadata fileMetadata : datasetVersionFilesService.getTabularDataFileMetadatas(dv,
                     pageRequest.getLimit(),
                     pageRequest.getOffset(),
-                    isOnlyPublicMetadataRequested(query));
-
-            for (FileMetadata fileMetadata : fileMetadatas) {
+                    isOnlyPublicMetadataRequested(query))) {
                 DataFile dataFile = fileMetadata.getDataFile();
                 jab.add(JsonPrinter.jsonDatafileWithDatatableForExport(dataFile, fileMetadata));
             }
