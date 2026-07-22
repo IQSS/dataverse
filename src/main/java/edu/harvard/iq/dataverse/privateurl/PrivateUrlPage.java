@@ -52,7 +52,6 @@ public class PrivateUrlPage implements Serializable {
             }
             if(!sessionUserCanViewUnpublishedDataset){
                 //Only Reset if user cannot view this Draft Version
-                privateUrlUser.setToken(token);
                 session.setUser(privateUrlUser); 
             }
             logger.info("Redirecting PrivateUrlUser '" + privateUrlUser.getIdentifier() + "' to " + draftDatasetPageToBeRedirectedTo);
