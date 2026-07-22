@@ -161,6 +161,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setTermsOfUse(String termsOfUse) {
         this.termsOfUse = termsOfUse;
+        if (termsOfUse != null) {
+            this.license = null;
+        }
     }
 
     public String getTermsOfAccess() {
@@ -177,6 +180,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setConfidentialityDeclaration(String confidentialityDeclaration) {
         this.confidentialityDeclaration = confidentialityDeclaration;
+        if (confidentialityDeclaration != null) {
+            this.license = null;
+        }
     }
 
     public String getSpecialPermissions() {
@@ -185,6 +191,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setSpecialPermissions(String specialPermissions) {
         this.specialPermissions = specialPermissions;
+        if (specialPermissions != null) {
+            this.license = null;
+        }
     }
 
     public String getRestrictions() {
@@ -193,6 +202,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setRestrictions(String restrictions) {
         this.restrictions = restrictions;
+        if (restrictions != null) {
+            this.license = null;
+        }
     }
 
     public String getCitationRequirements() {
@@ -201,6 +213,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setCitationRequirements(String citationRequirements) {
         this.citationRequirements = citationRequirements;
+        if (citationRequirements != null) {
+            this.license = null;
+        }
     }
 
     public String getDepositorRequirements() {
@@ -209,6 +224,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setDepositorRequirements(String depositorRequirements) {
         this.depositorRequirements = depositorRequirements;
+        if (depositorRequirements != null) {
+            this.license = null;
+        }
     }
 
     public String getConditions() {
@@ -217,6 +235,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setConditions(String conditions) {
         this.conditions = conditions;
+        if (conditions != null) {
+            this.license = null;
+        }
     }
 
     public String getDisclaimer() {
@@ -225,6 +246,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setDisclaimer(String disclaimer) {
         this.disclaimer = disclaimer;
+        if (disclaimer != null) {
+            this.license = null;
+        }
     }
 
     public String getDataAccessPlace() {

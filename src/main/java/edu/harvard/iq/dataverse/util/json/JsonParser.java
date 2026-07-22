@@ -491,24 +491,6 @@ public class JsonParser {
                 }
             }
 
-            //test to see if license exists in dataset type 
-            //if not set it to null - 
-            //only test if Dataset has a type and if it has custom available licenses
-            if (dsv.getDataset() != null) {
-                DatasetType dst = dsv.getDataset().getDatasetType();
-                if (dst != null && dst.getLicenses() != null && !dst.getLicenses().isEmpty() && license != null) {
-                    boolean invalidLicense = true;
-                    for (License testLicense : dst.getLicenses()) {
-                        if (testLicense.equals(license)) {
-                            invalidLicense = false;
-                        }
-                    }
-                    if (invalidLicense) {
-                        license = null;
-                    }
-                }
-            }
-
             terms.setTermsOfUse(obj.getString("termsOfUse", null));
             terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
             terms.setSpecialPermissions(obj.getString("specialPermissions", null));
@@ -547,6 +529,25 @@ public class JsonParser {
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
             terms.setDatasetVersion(dsv);
+
+            //test to see if license exists in dataset type
+            //if not set it to null -
+            //only test if Dataset has a type and if it has custom available licenses
+            if (dsv.getDataset() != null) {
+                DatasetType dst = dsv.getDataset().getDatasetType();
+                if (dst != null && dst.getLicenses() != null && !dst.getLicenses().isEmpty() && license != null) {
+                    boolean invalidLicense = true;
+                    for (License testLicense : dst.getLicenses()) {
+                        if (testLicense.equals(license)) {
+                            invalidLicense = false;
+                        }
+                    }
+                    if (invalidLicense) {
+                        license = null;
+                    }
+                }
+            }
+
             JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
             if (metadataBlocks == null){
                 throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.metadatablocks.not.found"));
