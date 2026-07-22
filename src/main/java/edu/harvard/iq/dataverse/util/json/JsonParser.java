@@ -460,7 +460,13 @@ public class JsonParser {
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
-            dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+            // Checking "releaseTime" to be consistent with JsonPrinter which outputs this field as 'releaseTime' with full timestamp
+            if (obj.containsKey("releaseTime")) {
+                dsv.setReleaseTime(parseTime(obj.getString("releaseTime", null)));
+            } else {
+                // Accept 'releaseDate' to remain backward compatible. This truncates to date only!
+                dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+            }
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
