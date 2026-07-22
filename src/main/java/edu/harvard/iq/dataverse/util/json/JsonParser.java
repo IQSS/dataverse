@@ -518,17 +518,6 @@ public class JsonParser {
                     }
                 }
             }
-            terms.setLicense(license);
-            terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
-            terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
-            terms.setOriginalArchive(obj.getString("originalArchive", null));
-            terms.setAvailabilityStatus(obj.getString("availabilityStatus", null));
-            terms.setContactForAccess(obj.getString("contactForAccess", null));
-            terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
-            terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
-            dsv.setTermsOfUseAndAccess(terms);
-            terms.setDatasetVersion(dsv);
 
             //test to see if license exists in dataset type
             //if not set it to null -
@@ -547,6 +536,18 @@ public class JsonParser {
                     }
                 }
             }
+
+            terms.setLicense(license);
+            terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
+            terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
+            terms.setOriginalArchive(obj.getString("originalArchive", null));
+            terms.setAvailabilityStatus(obj.getString("availabilityStatus", null));
+            terms.setContactForAccess(obj.getString("contactForAccess", null));
+            terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
+            terms.setStudyCompletion(obj.getString("studyCompletion", null));
+            terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
+            dsv.setTermsOfUseAndAccess(terms);
+            terms.setDatasetVersion(dsv);
 
             JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
             if (metadataBlocks == null){
