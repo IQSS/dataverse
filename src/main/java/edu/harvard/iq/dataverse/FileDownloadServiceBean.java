@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -14,16 +15,19 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.primefaces.PrimeFaces;
 
@@ -314,6 +318,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             logger.fine("Redirecting to file download url: " + fileDownloadUrl);
             try {
+                // Sign URL for preview url user
+                User user = session.getUser();
+                if (user != null &&  (user instanceof PrivateUrlUser)) {
+                    PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+                    String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + privateUrlUser.getToken();
+                    // Signing requires the full url path
+                    fileDownloadUrl = UrlSignerUtil.signUrl(getFullUrlForSigning(fileDownloadUrl), 1, privateUrlUser.getIdentifier(), "GET", key);
+                }
                 FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
             } catch (IOException ex) {
                 logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
@@ -337,7 +349,23 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to aux file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-    
+
+    private String getFullUrlForSigning(String path) {
+        ExternalContext extContext = FacesContext.getCurrentInstance().getExternalContext();
+
+        // Get the base server and port details
+        HttpServletRequest request = (HttpServletRequest) extContext.getRequest();
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int port = request.getServerPort();
+
+        // Build the full base URL + path and an API version (default is v1)
+        StringBuilder fullUrl = new StringBuilder();
+        fullUrl.append(scheme).append("://").append(serverName).append(":").append(port)
+                .append(path.replace("/api/access/", "/api/v1/access/"));
+
+        return fullUrl.toString();
+    }
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
      * Data Explorer. This method may be invoked directly from the

@@ -51,7 +51,11 @@ public class PrivateUrlServiceBean implements Serializable {
      * @return A PrivateUrlUser if one can be found using the token or null.
      */
     public PrivateUrlUser getPrivateUrlUserFromToken(String token) {
-        return PrivateUrlUtil.getPrivateUrlUserFromRoleAssignment(getRoleAssignmentFromPrivateUrlToken(token));
+        PrivateUrlUser user = PrivateUrlUtil.getPrivateUrlUserFromRoleAssignment(getRoleAssignmentFromPrivateUrlToken(token));
+        if (user != null) {
+            user.setToken(token);
+        }
+        return user;
     }
 
     /**
@@ -59,7 +63,11 @@ public class PrivateUrlServiceBean implements Serializable {
      * null.
      */
     public PrivateUrlRedirectData getPrivateUrlRedirectDataFromToken(String token) {
-        return PrivateUrlUtil.getPrivateUrlRedirectData(getRoleAssignmentFromPrivateUrlToken(token));
+        PrivateUrlRedirectData privateUrlRedirectData = PrivateUrlUtil.getPrivateUrlRedirectData(getRoleAssignmentFromPrivateUrlToken(token));
+        if (privateUrlRedirectData != null && privateUrlRedirectData.getPrivateUrlUser() != null) {
+            privateUrlRedirectData.getPrivateUrlUser().setToken(token);
+        }
+        return privateUrlRedirectData;
     }
 
     /**
