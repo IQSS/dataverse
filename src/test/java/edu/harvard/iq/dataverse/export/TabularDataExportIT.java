@@ -163,10 +163,9 @@ class TabularDataExportIT {
             var datasetVersion = em.find(DatasetVersion.class, datasetVersionId);
             assumeTrue(datasetVersion != null, "No dataset version available in DB. Check fixtures!");
 
-            InternalExportDataProvider provider = new InternalExportDataProvider(datasetVersion);
             DatasetVersionFilesServiceBean versionFilesService = new DatasetVersionFilesServiceBean();
             versionFilesService.injectEntityManager(em);
-            provider.injectVersionFilesService(versionFilesService);
+            InternalExportDataProvider provider = new InternalExportDataProvider(datasetVersion, versionFilesService);
 
             JsonArrayBuilder jab = Json.createArrayBuilder();
             int filesPerBatch = numberOfFiles / numberOfBatches;
@@ -232,10 +231,9 @@ class TabularDataExportIT {
             var datasetVersion = em.find(DatasetVersion.class, datasetVersionId);
             assumeTrue(datasetVersion != null, "No dataset version available in DB. Check fixtures!");
 
-            InternalExportDataProvider provider = new InternalExportDataProvider(datasetVersion);
             DatasetVersionFilesServiceBean versionFilesService = new DatasetVersionFilesServiceBean();
             versionFilesService.injectEntityManager(em);
-            provider.injectVersionFilesService(versionFilesService);
+            InternalExportDataProvider provider = new InternalExportDataProvider(datasetVersion, versionFilesService);
 
             ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
 

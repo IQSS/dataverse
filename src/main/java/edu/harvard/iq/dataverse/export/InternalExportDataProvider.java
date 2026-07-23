@@ -60,6 +60,16 @@ public class InternalExportDataProvider implements ExportDataProvider {
         this.dv = dv;
         this.is=is;
     }
+    
+    /**
+     * This constructor is exclusively for use in IT tests
+     * @param dv
+     * @param versionFilesService
+     */
+    InternalExportDataProvider(DatasetVersion dv, DatasetVersionFilesServiceBean versionFilesService) {
+        this.dv = dv;
+        this.datasetVersionFilesService = versionFilesService;
+    }
 
     @Override
     public JsonObject getDatasetJson(DatasetExportQuery query) {
@@ -272,13 +282,5 @@ public class InternalExportDataProvider implements ExportDataProvider {
         }
 
         return false;
-    }
-
-    /**
-     * This method is exclusively for use in IT tests
-     * @param versionFilesService
-     */
-    public void injectVersionFilesService(DatasetVersionFilesServiceBean versionFilesService) {
-        datasetVersionFilesService = versionFilesService;
     }
 }
