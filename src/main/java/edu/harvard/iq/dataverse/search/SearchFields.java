@@ -85,6 +85,9 @@ public class SearchFields {
      * Internal boolean used when creating OAI sets, for example.
      */
     public static final String IS_HARVESTED = "isHarvested";
+
+    public static final String IS_LINKED = "isLinked";
+
     /**
      * Such as https://doi.org/10.5072/FK2/HXI35W
      *

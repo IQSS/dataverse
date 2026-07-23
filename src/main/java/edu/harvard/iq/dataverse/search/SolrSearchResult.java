@@ -1,31 +1,23 @@
 package edu.harvard.iq.dataverse.search;
 
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.logging.Logger;
-
 import edu.harvard.iq.dataverse.*;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-
-import org.apache.commons.collections4.CollectionUtils;
-
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import org.apache.commons.collections4.CollectionUtils;
 
-import javax.xml.crypto.Data;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class SolrSearchResult {
 
@@ -109,6 +101,8 @@ public class SolrSearchResult {
     private String dataverseParentAlias;
     private String dataverseParentName;
     private List<Dataverse> collections;
+    private Boolean isLinked;
+
 //    private boolean statePublished;
     /**
      * @todo Investigate/remove this "unpublishedState" variable. For files that
@@ -582,9 +576,10 @@ public class SolrSearchResult {
                 .add("restricted", this.fileRestricted)
                 .add("variables", this.tabularDataCount)
                 .add("observations", this.observations)
-                .add("canDownloadFile", this.canDownloadFile);
+                .add("canDownloadFile", this.canDownloadFile)
+                .add("isLinked", this.isLinked);
 
-        // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
+        // Now that nullSafeJsonBuilder has been instantiated, check for null before adding to it!
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
             nullSafeJsonBuilder.add("score", getScore());
@@ -1135,6 +1130,15 @@ public class SolrSearchResult {
     public void setFileRestricted(Boolean fileRestricted) {
         this.fileRestricted = fileRestricted;
     }
+
+    public Boolean isLinked() {
+        return isLinked;
+    }
+
+    public void setLinked(Boolean isLinked) {
+        this.isLinked = isLinked;
+    }
+
     public Boolean getCanDownloadFile() {
         return canDownloadFile;
     }
