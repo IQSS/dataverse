@@ -260,6 +260,10 @@ public class DatasetsIT {
 
     @Test
     public void testCreateDataset() {
+        Response createSuperUser = UtilIT.createRandomUser();
+        String superusername = UtilIT.getUsernameFromResponse(createSuperUser);
+        UtilIT.setSuperuserStatus(superusername, true);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUser);
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -339,17 +343,29 @@ public class DatasetsIT {
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // OK, let's delete this dataset as well, and then delete the dataverse...
-        
-        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        // Now publish the dataset and try to delete it (as superuser)
+        Response publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, superuserApiToken);
+        deleteDatasetResponse.prettyPrint();
+        deleteDatasetResponse.then().assertThat()
+                .body("message", containsString("/destroy"))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        // Try /destroy to get rid of the dataset
+        deleteDatasetResponse = UtilIT.destroyDataset(datasetId, superuserApiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
-        
+
+        // Delete the dataverse
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
+        // Delete the Users
         Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+        deleteUserResponse = UtilIT.deleteUser(superusername);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
 
@@ -3785,7 +3801,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         //Delete the published dataset
-        Response deletePublishedResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deletePublishedResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deletePublishedResponse.prettyPrint();
         deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
 

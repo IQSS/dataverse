@@ -338,26 +338,21 @@ public class Datasets extends AbstractApiBean {
         return response( req -> {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
-            boolean destroy = false;
 
-            if (doomed.getVersions().size() == 1) {
-                if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
-                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can delete published datasets"));
+            if (!doomedVersion.isDraft()) {
+                String msg = "This API can only delete the latest version if it is a DRAFT.";
+                if (u.isSuperuser()) {
+                    msg += " Please use '/destroy' to delete the published version";
                 }
-                destroy = true;
-            } else {
-                if (!doomedVersion.isDraft()) {
-                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "This is a published dataset with multiple versions. This API can only delete the latest version if it is a DRAFT"));
-                }
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, msg));
             }
 
-            // Gather the locations of the physical files that will need to be
-            // deleted once the destroy command execution has been finalized:
-            Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomedVersion, destroy);
+            // Gather the locations of the physical files that will need to be deleted
+            Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomedVersion);
 
-            execCommand( new DeleteDatasetCommand(req, findDatasetOrDie(id)));
+            execCommand(new DeleteDatasetVersionCommand(req, doomed));
 
-            // If we have gotten this far, the destroy command has succeeded,
+            // If we have gotten this far, the delete command has succeeded,
             // so we can finalize it by permanently deleting the physical files:
             // (DataFileService will double-check that the datafiles no
             // longer exist in the database, before attempting to delete

@@ -255,7 +255,7 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     // DELETE DATASET
     public boolean canIssueDeleteDatasetCommand(DvObject dvo){
-        return canIssueCommand(dvo, DeleteDatasetCommand.class);
+        return canIssueCommand(dvo, DeleteDatasetVersionCommand.class);
     }
     
     // PUBLISH DATASET
