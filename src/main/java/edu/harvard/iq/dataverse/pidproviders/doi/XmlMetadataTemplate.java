@@ -7,8 +7,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -24,25 +26,11 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import edu.harvard.iq.dataverse.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.ocpsoft.common.util.Strings;
 
-import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetAuthor;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetRelPublication;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.ExternalIdentifier;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -66,9 +54,9 @@ public class XmlMetadataTemplate {
     private static final Logger logger = Logger.getLogger(XmlMetadataTemplate.class.getName());
 
     public static final String XML_NAMESPACE = "http://datacite.org/schema/kernel-4";
-    public static final String XML_SCHEMA_LOCATION = "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd";
+    public static final String XML_SCHEMA_LOCATION = "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.7/metadata.xsd";
     public static final String XML_XSI = "http://www.w3.org/2001/XMLSchema-instance";
-    public static final String XML_SCHEMA_VERSION = "4.5";
+    public static final String XML_SCHEMA_VERSION = "4.7";
 
     private DoiMetadata doiMetadata;
 
@@ -358,6 +346,7 @@ public class XmlMetadataTemplate {
             String keyword = null;
             String scheme = null;
             String schemeUri = null;
+            String valueUri = null;
 
             for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
                 switch (subField.getDatasetFieldType().getName()) {
@@ -370,6 +359,9 @@ public class XmlMetadataTemplate {
                 case DatasetFieldConstant.keywordVocabURI:
                     schemeUri = subField.getValue();
                     break;
+                case DatasetFieldConstant.keywordTermURI:
+                    valueUri = subField.getValue();
+                    break;
                 }
             }
             if (StringUtils.isNotBlank(keyword)) {
@@ -379,6 +371,9 @@ public class XmlMetadataTemplate {
                 }
                 if (StringUtils.isNotBlank(schemeUri)) {
                     attributesMap.put("schemeURI", schemeUri);
+                }
+                if (StringUtils.isNotBlank(valueUri)) {
+                    attributesMap.put("valueURI", valueUri);
                 }
                 subjectsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "subjects", subjectsCreated);
                 XmlWriterUtil.writeFullElementWithAttributes(xmlw, "subject", attributesMap, StringEscapeUtils.escapeXml10(keyword));
@@ -424,7 +419,8 @@ public class XmlMetadataTemplate {
      * 7, Contributor (with optional given name, family name, name identifier and
      * affiliation sub-properties)
      *
-     * @see #writeContributorElement(javax.xml.stream.XMLStreamWriter,
+     * @see #writeEntityElements(javax.xml.stream.XMLStreamWriter,
+     *      java.lang.String, java.lang.String, jakarta.json.JsonObject,
      *      java.lang.String, java.lang.String, java.lang.String)
      *
      * @param xmlw
@@ -569,7 +565,7 @@ public class XmlMetadataTemplate {
     //List from https://schema.datacite.org/meta/kernel-4/include/datacite-contributorType-v4.xsd
     private Set<String> contributorTypes = new HashSet<>(Arrays.asList("ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", 
                 "HostingInstitution", "Other", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", 
-                "RelatedPerson", "ResearchGroup", "RightsHolder", "Researcher", "Sponsor", "Supervisor", "WorkPackageLeader"));
+                "RelatedPerson", "ResearchGroup", "RightsHolder", "Researcher", "Sponsor", "Supervisor", "Translator", "WorkPackageLeader"));
 
     private String getCanonicalContributorType(String contributorType) {
         if(StringUtils.isBlank(contributorType) || !contributorTypes.contains(contributorType)) {
@@ -757,17 +753,17 @@ public class XmlMetadataTemplate {
                 for (DatasetField subField : collectionDateFieldValue.getChildDatasetFields()) {
                     switch (subField.getDatasetFieldType().getName()) {
                     case DatasetFieldConstant.dateOfCollectionStart:
-                        startDate = subField.getValue();
+                        startDate = subField.getValue().trim();
                         break;
                     case DatasetFieldConstant.dateOfCollectionEnd:
-                        endDate = subField.getValue();
+                        endDate = subField.getValue().trim();
                         break;
                     }
                 }
-                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
-                // exception would clear the date so we don't send nonsense
-                startDate = cleanUpDate(startDate);
-                endDate = cleanUpDate(endDate);
+                // Verify valid date format
+
+                startDate = isValidYearMonthOrDay(startDate) ? startDate:"";
+                endDate = isValidYearMonthOrDay(endDate) ? endDate:"";
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
@@ -783,17 +779,16 @@ public class XmlMetadataTemplate {
                 for (DatasetField subField : timePeriodFieldValue.getChildDatasetFields()) {
                     switch (subField.getDatasetFieldType().getName()) {
                     case DatasetFieldConstant.timePeriodCoveredStart:
-                        startDate = subField.getValue();
+                        startDate = subField.getValue().trim();
                         break;
                     case DatasetFieldConstant.timePeriodCoveredEnd:
-                        endDate = subField.getValue();
+                        endDate = subField.getValue().trim();
                         break;
                     }
                 }
-                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
-                // exception would clear the date so we don't send nonsense
-                startDate = cleanUpDate(startDate);
-                endDate = cleanUpDate(endDate);
+                // Verify valid date format
+                startDate = isValidYearMonthOrDay(startDate) ? startDate:"";
+                endDate = isValidYearMonthOrDay(endDate) ? endDate:"";
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Other");
@@ -807,26 +802,67 @@ public class XmlMetadataTemplate {
         }
     }
 
-    private String cleanUpDate(String date) {
-        String newDate = null;
-        if (!StringUtils.isBlank(date)) {
-            try {
-                SimpleDateFormat sdf = Util.getDateFormat();
-                Date start = sdf.parse(date);
-                newDate = sdf.format(start);
-            } catch (ParseException e) {
-                logger.warning("Could not parse date: " + date);
-            }
+    /** Checks for yyyy, yyyy-MM, or yyyy-MM-dd format
+     * @param value
+     * @return true if valid date format, false otherwise
+     */
+    private boolean isValidYearMonthOrDay(String value) {
+        if (StringUtils.isBlank(value)) {
+            return false;
         }
-        return newDate;
+
+        try {
+            if (value.matches("\\d{4}")) {
+                Year.parse(value);
+                return true;
+            }
+
+            if (value.matches("\\d{4}-\\d{2}")) {
+                YearMonth.parse(value);
+                return true;
+            }
+
+            if (value.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                LocalDate.parse(value);
+                return true;
+            }
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+
+        return false;
     }
 
     // 9, Language (MA), language
     private void writeLanguage(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
-        // Currently not supported. Spec indicates one 'primary' language. Could send
-        // the first entry in DatasetFieldConstant.language or send iff there is only
-        // one entry, and/or default to the machine's default lang, or the dataverse metadatalang?
+        // Spec indicates one 'primary' language. Sending a language iff there is only
+        // one citation mdb language entry (Could send first entry if there are several and/or default to the machine's default lang, or use the dataset's metadatalang?)
+        if (dvObject.isInstanceofDataFile()) {
+            dvObject = dvObject.getOwner();
+        }
+        if (!(dvObject instanceof Dataset dataset)) {
+            return;
+        }
+
+        DatasetVersion dv = dataset.getLatestVersionForCopy();
+        if (dv == null) {
+            return;
+        }
+        Optional<DatasetField> dsf = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)).findFirst();
+        if (dsf.isPresent()) {
+            String languageIdentifier = null;
+            List<ControlledVocabularyValue> controlledVocabularyValues = dsf.get().getControlledVocabularyValues();
+            if (controlledVocabularyValues != null && controlledVocabularyValues.size() == 1) {
+                ControlledVocabularyValue cvv = controlledVocabularyValues.get(0);
+                languageIdentifier = cvv.getIdentifier();
+            }
+            // 'Not applicable' has no identifier - we want to skip it.
+            if (StringUtils.isNotBlank(languageIdentifier)) {
+                XmlWriterUtil.writeFullElement(xmlw, "language", StringEscapeUtils.escapeXml10(languageIdentifier));
+            }
+        }
         return;
+
     }
 
     // 10, ResourceType (with mandatory general type
@@ -1691,7 +1727,7 @@ public class XmlMetadataTemplate {
                                     funder = jo.getString("termName");
                                 }
                             }
-                          
+
                             xmlw.writeStartElement("fundingReference"); // <fundingReference>
                             XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(funder));
                             if (isROR) {

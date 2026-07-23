@@ -164,8 +164,85 @@ public class XmlMetadataTemplateTest {
         testDatasetField.setDatasetVersion(dv);
         testDatasetField.setDatasetFieldType(primitiveDSFType);
         testDatasetField.setSingleValue("First Title");
+
+        DatasetFieldType keywordType = new DatasetFieldType(DatasetFieldConstant.keyword, FieldType.NONE, true);
+        DatasetFieldType keywordValueType = new DatasetFieldType(DatasetFieldConstant.keywordValue, FieldType.TEXT, false);
+        DatasetFieldType keywordTermURIType = new DatasetFieldType(DatasetFieldConstant.keywordTermURI, FieldType.URL, false);
+
+        DatasetField keywordField = new DatasetField();
+        keywordField.setDatasetVersion(dv);
+        keywordField.setDatasetFieldType(keywordType);
+
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        compoundValue.setParentDatasetField(keywordField);
+
+        DatasetField valField = new DatasetField();
+        valField.setDatasetFieldType(keywordValueType);
+        DatasetFieldValue val = new DatasetFieldValue();
+        val.setDatasetField(valField);
+        val.setValue("Keyword1");
+        valField.setDatasetFieldValues(new ArrayList<>(List.of(val)));
+
+        DatasetField uriField = new DatasetField();
+        uriField.setDatasetFieldType(keywordTermURIType);
+        DatasetFieldValue uriVal = new DatasetFieldValue();
+        uriVal.setDatasetField(uriField);
+        uriVal.setValue("https://example.com/keyword1");
+        uriField.setDatasetFieldValues(new ArrayList<>(List.of(uriVal)));
+
+        compoundValue.setChildDatasetFields(new ArrayList<>(List.of(valField, uriField)));
+        keywordField.setDatasetFieldCompoundValues(new ArrayList<>(List.of(compoundValue)));
+
         List<DatasetField> fields = new ArrayList<>();
         fields.add(testDatasetField);
+        fields.add(keywordField);
+
+        DatasetFieldType contributorTypeFieldType = new DatasetFieldType(DatasetFieldConstant.contributor,
+                DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType contributorNameFieldType = new DatasetFieldType(DatasetFieldConstant.contributorName,
+                DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType contributorRoleFieldType = new DatasetFieldType(DatasetFieldConstant.contributorType,
+                DatasetFieldType.FieldType.TEXT, false);
+
+        DatasetField translatorField = new DatasetField();
+        translatorField.setDatasetVersion(dv);
+        translatorField.setDatasetFieldType(contributorTypeFieldType);
+        DatasetFieldCompoundValue translatorValue = new DatasetFieldCompoundValue();
+
+        DatasetField translatorName = new DatasetField();
+        translatorName.setDatasetVersion(dv);
+        translatorName.setDatasetFieldType(contributorNameFieldType);
+        translatorName.setSingleValue("Translator Name");
+
+        DatasetField translatorRole = new DatasetField();
+        translatorRole.setDatasetVersion(dv);
+        translatorRole.setDatasetFieldType(contributorRoleFieldType);
+        translatorRole.setSingleValue("Translator");
+
+        List<DatasetField> translatorChildren = new ArrayList<>();
+        translatorChildren.add(translatorName);
+        translatorChildren.add(translatorRole);
+        translatorValue.setChildDatasetFields(translatorChildren);
+
+        List<DatasetFieldCompoundValue> translatorValues = new ArrayList<>();
+        translatorValues.add(translatorValue);
+        translatorField.setDatasetFieldCompoundValues(translatorValues);
+        fields.add(translatorField);
+
+        DatasetFieldType languageFieldType = new DatasetFieldType(DatasetFieldConstant.language,
+                DatasetFieldType.FieldType.TEXT, false);
+        DatasetField languageField = new DatasetField();
+        languageField.setDatasetVersion(dv);
+        languageField.setDatasetFieldType(languageFieldType);
+        languageField.setSingleValue("en");
+        ControlledVocabularyValue languageCvv = new ControlledVocabularyValue();
+        languageCvv.setId(1L);
+        languageCvv.setIdentifier("en");
+        languageCvv.setStrValue("English");
+        languageCvv.setDatasetFieldType(languageFieldType);
+        languageField.setControlledVocabularyValues(List.of(languageCvv));
+        fields.add(languageField);
+
         dv.setDatasetFields(fields);
         ArrayList<DatasetVersion> dsvs = new ArrayList<>();
         dsvs.add(0, dv);
@@ -200,6 +277,11 @@ public class XmlMetadataTemplateTest {
         assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));
         assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@schemeURI"));
         assertEquals("Dataverse", XmlPath.from(xml).getString("resource.publisher"));
+        assertEquals("Keyword1", XmlPath.from(xml).getString("resource.subjects.subject"));
+        assertEquals("https://example.com/keyword1", XmlPath.from(xml).getString("resource.subjects.subject.@valueURI"));
+        assertEquals("Translator", XmlPath.from(xml).getString("resource.contributors.contributor[0].@contributorType"));
+        assertEquals("Translator Name", XmlPath.from(xml).getString("resource.contributors.contributor[0].contributorName"));
+        assertEquals("en", XmlPath.from(xml).getString("resource.language"));
 
         dv.setVersionNumber(1L);
         dv.setMinorVersionNumber(0l);
@@ -260,7 +342,8 @@ public class XmlMetadataTemplateTest {
         d.setDatasetType(dType);
         String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
                 new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
-        System.out.println("Output from dataset-all-defaults is " + xml);
+        assertTrue(xml.contains("valueURI=\"http://keywordTermURI1.org\""));
+        assertTrue(xml.contains("valueURI=\"http://keywordTermURI2.org\""));
         try {
             StreamSource source = new StreamSource(new StringReader(xml));
             source.setSystemId("DataCite XML for test dataset");
