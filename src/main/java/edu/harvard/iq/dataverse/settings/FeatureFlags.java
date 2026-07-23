@@ -99,6 +99,17 @@ public enum FeatureFlags {
     API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH("api-bearer-auth-use-oauth-user-on-id-match"),
 
     /**
+     * When creating a dataset via API, if neither a license nor any terms of use are provided,
+     * the system normally assigns the default license.
+     *
+     * <p>If this feature flag is enabled, no license is assigned (and no terms) in this case.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.do-not-assume-default-license"
+     * @since Dataverse 6.5
+     */
+    DO_NOT_ASSUME_DEFAULT_LICENSE("do-not-assume-default-license"),
+
+    /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
      * in order to add the boolean publicObject_b:true field to all the public
