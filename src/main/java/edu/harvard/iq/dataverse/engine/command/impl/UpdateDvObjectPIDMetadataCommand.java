@@ -26,7 +26,7 @@ import java.util.Date;
 @RequiredPermissions({})
 public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
 
-    private final Dataset target;
+    private Dataset target;
 
     public UpdateDvObjectPIDMetadataCommand(Dataset target, DataverseRequest aRequest) {
         super(aRequest, target);
@@ -53,8 +53,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
             Boolean doiRetString = pidProvider.updateIdentifier(target);
             if (doiRetString) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                ctxt.em().merge(target);
-                ctxt.em().flush();
+                target = ctxt.em().merge(target);
                 // When updating, we want to traverse through files even if the dataset itself
                 // didn't need updating.
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabledForCollection(target.getOwner());
@@ -75,8 +74,6 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                         doiRetString = pidProvider.updateIdentifier(df);
                         if (doiRetString) {
                             df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                            ctxt.em().merge(df);
-                            ctxt.em().flush();
                         }
                     }
                 }
