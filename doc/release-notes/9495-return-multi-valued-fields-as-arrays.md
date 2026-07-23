@@ -1,0 +1,1 @@
+When calling (GET) the /api/datasets/{id}/metadata endpoint or requesting JSON-LD (application/ld+json) from the /api/datasets/{id}/versions/{versionId}/metadata endpoint, all multivalued fields as arrays instead of String for 1 entry and Array for more than 1 entry. This consistancy makes parsing the JSON-LD as JSON easier for users of the API.

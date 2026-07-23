@@ -47,7 +47,7 @@ public class OREMap {
     public static final String NAME = "OREMap";
     
     //NOTE: Update this value whenever the output of this class is changed
-    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.3";
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.4";
     //v1.0.1 - added versionNote
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
@@ -490,9 +490,9 @@ public class OREMap {
                 vals.add(child);
             }
         }
-        // Add metadata value to aggregation, suppress array when only one value
+        // Add metadata value to aggregation, suppress array when multiples not allowed
         JsonArray valArray = vals.build();
-        return (valArray.size() != 1) ? valArray : valArray.get(0);
+        return (dfType.isAllowMultiples()) ? valArray : valArray.get(0);
     }
 
     private static void addCvocValue(String val, JsonArrayBuilder vals, JsonObject cvocEntry,
