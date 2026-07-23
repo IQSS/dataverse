@@ -1,13 +1,12 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.joda.time.LocalDateTime;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -45,19 +44,12 @@ public class UrlSignerUtil {
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
 
-        // check for reserved parameter names ("until","user", "method", or "token")
-        String[] urlQP = baseUrl.split("\\?");
-        if (urlQP.length > 1) {
-            try {
-                URIBuilder uriBuilder = new URIBuilder(baseUrl);
-                List<NameValuePair> params = uriBuilder.getQueryParams();
-                params.removeIf(pair -> reservedParameters.contains(pair.getName()));
-                uriBuilder.setParameters(params);
-                baseUrl = uriBuilder.build().toString();
-            } catch (URISyntaxException e) {
-                logger.severe("Invalid URL for signing: " + baseUrl + " " + e.getMessage());
-            }
-        }
+        // Strip reserved signing params that may already be in the base URL, using exact-string
+        // surgery rather than URIBuilder. The URL must be signed exactly as provided (the pre-6.10
+        // behavior): validation reconstructs the signing string from the URL-decoded request, so
+        // re-encoding here (e.g. percent-encoding ':' and '/' in DOIs) would change the signed bytes
+        // and the signature would no longer match.
+        baseUrl = stripReservedParameters(baseUrl);
         boolean firstParam = !baseUrl.contains("?");
         StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
 
@@ -85,6 +77,113 @@ public class UrlSignerUtil {
                     "URL signature is " + (isValidUrl(signedUrl, user, method, key) ? "valid" : "invalid"));
         }
         return signedUrl;
+    }
+
+    /**
+     * The configured API signing secret ({@code dataverse.api.signing-secret}), or an empty string if
+     * unset. This is the single definition of what "the signing secret" is; everything else derives
+     * from it so the sign side and the validation side cannot drift apart.
+     */
+    private static String signingSecret() {
+        return JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("");
+    }
+
+    /**
+     * Whether a non-empty API signing secret ({@code dataverse.api.signing-secret}) is configured.
+     * Every signed URL whose key is derived from a user's API token must be guarded by this: without
+     * the secret the signing key would be only the caller-supplied value (for a guest, even a value
+     * derived from the public URL), which is too weak. Callers either refuse the request or skip
+     * signing when this returns false, so a weakly-signed URL is never emitted.
+     */
+    public static boolean isSigningSecretConfigured() {
+        return !signingSecret().isEmpty();
+    }
+
+    /**
+     * Composes the full signing key (the configured API signing secret + the given per-user key,
+     * typically a user's API token). This is the one place that defines how the two are combined, so
+     * the signing side ({@link #signUrlWithApiKey}) and the validation side (SignedUrlAuthMechanism)
+     * stay in lockstep.
+     */
+    public static String getApiSigningKey(String apiKey) {
+        return signingSecret() + apiKey;
+    }
+
+    /**
+     * Signs a URL using the configured API signing secret prepended to the given per-user key
+     * (typically the user's API token). This is the single place that combines the server-side
+     * signing secret with a user key, so every API-token-based signed URL is produced the same way.
+     *
+     * <p>Stores that sign with their own per-store secret (the remote and Globus overlay stores) are
+     * the exception and must keep calling {@link #signUrl} directly with that secret.
+     *
+     * @throws IllegalStateException if no signing secret is configured - callers should normally
+     *                               guard with {@link #isSigningSecretConfigured()} first, or use
+     *                               {@link #trySignUrlWithApiKey} to degrade to an unsigned URL
+     */
+    public static String signUrlWithApiKey(String baseUrl, Integer timeout, String user, String method, String apiKey) {
+        if (!isSigningSecretConfigured()) {
+            throw new IllegalStateException(
+                    "Cannot sign a URL: no signing secret is configured. Please set the dataverse.api.signing-secret JVM option.");
+        }
+        return signUrl(baseUrl, timeout, user, method, getApiSigningKey(apiKey));
+    }
+
+    /**
+     * Signs the URL like {@link #signUrlWithApiKey} when a signing secret is configured; otherwise logs
+     * a warning naming {@code context} and returns the URL unsigned. This is the single home for the
+     * "sign if we can, otherwise degrade to an unsigned URL" policy used by the internal callback
+     * signers (external tools, Globus, allowed API calls), so a caller can never forget the guard and
+     * trip the {@link IllegalStateException} at runtime.
+     */
+    public static String trySignUrlWithApiKey(String baseUrl, Integer timeout, String user, String method, String apiKey, String context) {
+        if (!isSigningSecretConfigured()) {
+            logger.warning("Cannot sign " + context + ": no signing secret configured (dataverse.api.signing-secret). Sending an unsigned URL.");
+            return baseUrl;
+        }
+        return signUrlWithApiKey(baseUrl, timeout, user, method, apiKey);
+    }
+
+    /**
+     * Removes the reserved signing parameters from the query, preserving the exact bytes of the path,
+     * of every other parameter - including empty segments such as {@code ?&a=b} or {@code a=b&&} - and
+     * of any fragment (unlike URIBuilder, which would re-encode and break the MAC). Note that while
+     * fragments are preserved byte-for-byte, a fragment is never sent to the server, so a
+     * fragment-bearing URL cannot produce a signed URL that validates - as was the case before 6.10.
+     */
+    static String stripReservedParameters(String baseUrl) {
+        // Split off the fragment first: everything from the first '#' on is the fragment (a '?'
+        // inside it is not a query) and survives the query surgery byte-for-byte, even when the
+        // fragment is attached to a reserved parameter that gets stripped.
+        String fragment = "";
+        String prefix = baseUrl;
+        int fragmentStart = baseUrl.indexOf('#');
+        if (fragmentStart >= 0) {
+            fragment = baseUrl.substring(fragmentStart);
+            prefix = baseUrl.substring(0, fragmentStart);
+        }
+        int queryStart = prefix.indexOf('?');
+        if (queryStart < 0) {
+            return baseUrl;
+        }
+        String path = prefix.substring(0, queryStart);
+        String query = prefix.substring(queryStart + 1);
+        StringBuilder kept = new StringBuilder();
+        boolean anyKept = false;
+        // limit -1 so empty segments (leading '&', '&&', trailing '&') are preserved, not collapsed
+        for (String pair : query.split("&", -1)) {
+            int equals = pair.indexOf('=');
+            String name = (equals < 0) ? pair : pair.substring(0, equals);
+            if (reservedParameters.contains(name)) {
+                continue;
+            }
+            if (anyKept) {
+                kept.append('&');
+            }
+            kept.append(pair);
+            anyKept = true;
+        }
+        return anyKept ? path + "?" + kept + fragment : path + fragment;
     }
 
     /**

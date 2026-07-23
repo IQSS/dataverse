@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -640,9 +639,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     key = apiToken.getTokenString();
                 }
             }
-            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-            if(key.length() >= 36) {
-                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", key);
+            if (key != null) {
+                if (UrlSignerUtil.isSigningSecretConfigured()) {
+                    return UrlSignerUtil.signUrlWithApiKey(fullApiPath, 10, userId, "GET", key);
+                }
+                logger.warning("Cannot sign the permissions-history CSV link: no signing secret configured (dataverse.api.signing-secret). The download link will not be shown.");
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);

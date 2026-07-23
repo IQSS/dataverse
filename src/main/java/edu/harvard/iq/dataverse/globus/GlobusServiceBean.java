@@ -776,13 +776,15 @@ public class GlobusServiceBean implements java.io.Serializable {
                     + "/globusDownloadParameters?locale=" + localeCode + "&downloadId=" + downloadId;
 
         }
-        if (apiToken != null) {
-            callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                    HttpMethod.GET,
-                    JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
-        } else {
+        if (apiToken == null) {
             // Shouldn't happen
             logger.warning("Unable to get api token for user: " + user.getIdentifier());
+        } else {
+            // Note: without a signing secret the callback is sent unsigned, which the dataverse-globus
+            // app cannot use - the Globus upload/download callback endpoints require an authenticated,
+            // signed request. Globus transfers therefore require dataverse.api.signing-secret.
+            callback = UrlSignerUtil.trySignUrlWithApiKey(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                    HttpMethod.GET, apiToken.getTokenString(), "Globus callback");
         }
         appUrl = appUrl + "&callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
 

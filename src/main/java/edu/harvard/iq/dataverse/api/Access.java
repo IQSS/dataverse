@@ -29,7 +29,6 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.mydata.Pager;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -462,6 +461,10 @@ public class Access extends AbstractApiBean {
                                                   @RequestBody(description = "Guestbook response JSON for the requested data file.")
                                                   String jsonBody) {
 
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         fileId = normalizeFileId(fileId, req);
         return processDatafileWithGuestbookResponse(crc, req, headers, fileId, uriInfo, gbrecs, jsonBody);
@@ -494,6 +497,22 @@ public class Access extends AbstractApiBean {
     // for bundle arg list
     private List<String> getGuestbookIdFromDatafile(DataFile df) {
          return df != null && df.getOwner() != null && df.getOwner().getGuestbook() != null ? List.of(df.getOwner().getGuestbook().getId().toString()) : List.of();
+    }
+
+    // Gate for the endpoints whose outcome is a signed download URL. It must run before
+    // processDatafileWithGuestbookResponse so no guestbook-response or MakeDataCount records are
+    // persisted for a download URL that is never issued - but it must NOT sit inside that method,
+    // which is also called purely for its guestbook side effects (with the response discarded) by
+    // endpoints that never issue signed URLs. Without the secret the key would be only the user's
+    // API token (or, for a guest, a guessable value derived from the URL), which is too weak. The
+    // response is reachable by unauthenticated users, so the message stays generic and the
+    // actionable detail goes to the server log. Mirrors Admin.getSignedUrl.
+    private Response requireSigningSecretForSignedUrl() {
+        if (UrlSignerUtil.isSigningSecretConfigured()) {
+            return null;
+        }
+        logger.warning("Cannot issue a signed download URL: no signing secret configured. Please set the dataverse.api.signing-secret JVM option.");
+        return error(INTERNAL_SERVER_ERROR, "Signed URLs are not available on this server.");
     }
 
     // Process the guestbook response from JSON and return a signedUrl to the matching GET call
@@ -582,6 +601,21 @@ public class Access extends AbstractApiBean {
     }
 
     private Response returnSignedUrl(ContainerRequestContext crc, UriInfo uriInfo, User user, String id, String gbrids) {
+        // Record the guestbook-response id for the side-effect-only callers
+        // (datafileBundleWithGuestbookResponse, postDownloadDatafiles) that discard the Response we
+        // return and then read this property to drive the actual download. This must happen even when
+        // no signing secret is configured and we bail out below, otherwise those downloads lose the
+        // guestbook response that processDatafileWithGuestbookResponse just saved (leading to a
+        // spurious "guestbookResponseMissing" 400 or a duplicate guestbook/MakeDataCount entry).
+        crc.setProperty("gbrids", gbrids);
+        // The signed-URL endpoints already check this before any guestbook side effects (see
+        // requireSigningSecretForSignedUrl). This check protects the callers that invoke
+        // processDatafileWithGuestbookResponse only for its guestbook side effects and discard this
+        // response: on a server without a signing secret they must not trip the IllegalStateException
+        // in signUrlWithApiKey below. No warning is logged here - for those callers this is routine.
+        if (!UrlSignerUtil.isSigningSecretConfigured()) {
+            return error(INTERNAL_SERVER_ERROR, "Signed URLs are not available on this server.");
+        }
         // Create the signed URL
         String userIdentifier = null;
         String key = null;
@@ -613,12 +647,10 @@ public class Access extends AbstractApiBean {
             builder.replaceQueryParam("gbrids", gbrids);
         }
         builder.replaceQueryParam("persistentId", null); // remove this as a parm and add the id to the path
-        crc.setProperty("gbrids", gbrids);
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
-        key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
+        String signedUrl = UrlSignerUtil.signUrlWithApiKey(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
         return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
 
@@ -986,6 +1018,10 @@ public class Access extends AbstractApiBean {
                                                                @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
                                                                @RequestBody(description = "Guestbook response JSON for the dataset file download.")
                                                                String jsonBody) throws WebApplicationException {
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -1080,6 +1116,10 @@ public class Access extends AbstractApiBean {
                                                                 @RequestBody(description = "Guestbook response JSON for the dataset version file download.")
                                                                 String jsonBody,
                                                                 @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionFromVersion(crc, datasetIdOrPersistentId, versionId);
@@ -1187,6 +1227,10 @@ public class Access extends AbstractApiBean {
                                                    @RequestBody(description = "Guestbook response JSON for the selected data file download.")
                                                    String jsonBody) throws WebApplicationException {
 
+        Response requireSecretError = requireSigningSecretForSignedUrl();
+        if (requireSecretError != null) {
+            return requireSecretError;
+        }
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         return processDatafileWithGuestbookResponse(crc, req, headers, fileIds, uriInfo, gbrecs, jsonBody);
     }

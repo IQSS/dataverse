@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.*;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import jakarta.inject.Inject;
@@ -52,6 +51,14 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
 
     private User getAuthenticatedUserFromSignedUrl(ContainerRequestContext containerRequestContext) {
         User user = null;
+        // Without a signing secret we never issue signed URLs (signUrlWithApiKey refuses on the sign
+        // side), so we must not accept them here either. Otherwise a bare API token - or, for a guest,
+        // the public request URL - would be enough to forge a URL whose signature validates against the
+        // "" + token key computed below. Reject so findUserFromRequest returns the standard 401.
+        if (!UrlSignerUtil.isSigningSecretConfigured()) {
+            logger.warning("Rejecting signed URL authentication: no signing secret configured (dataverse.api.signing-secret).");
+            return null;
+        }
         // The signedUrl contains a param telling which user this is supposed to be for.
         // We don't trust this. So we look up that user, and get their API key, and use
         // that as a secret in validating the signedURL. If the signature can't be
@@ -60,6 +67,11 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         // If User is Guest we can return a generic guest user with key made from URI
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         String userId = uriInfo.getQueryParameters().getFirst(SIGNED_URL_USER);
+        if (userId == null) {
+            // A token param was present (that is why this mechanism ran) but no user param: this can
+            // never be a URL we signed, and dereferencing userId below would throw a NullPointerException.
+            return null;
+        }
         User targetUser = null;
         ApiToken userApiToken = null;
         if (userId.equalsIgnoreCase("guest")) {
@@ -90,7 +102,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             }
 
             String requestMethod = containerRequestContext.getMethod();
-            String signedUrlSigningKey = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + userApiToken.getTokenString();
+            String signedUrlSigningKey = UrlSignerUtil.getApiSigningKey(userApiToken.getTokenString());
             boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
             if (isSignedUrlValid) {
                 user = targetUser;

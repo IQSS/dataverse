@@ -180,6 +180,10 @@ The signed URL mechanism is more secure than exposing API tokens and therefore r
 
 .. note::
 
+   **For Dataverse site administrators:** Signing these URLs requires a non-empty :ref:`dataverse.api.signing-secret` to be configured on the Dataverse installation. Without it, the callback and ``allowedApiCalls`` URLs are sent unsigned (a warning is logged), so tools cannot use them to access draft datasets or restricted files.
+
+.. note::
+
    **For Dataverse site administrators:** When Dataverse is behind a proxy, signed URLs may not work correctly due to protocol mismatches (HTTP vs HTTPS). Please refer to the :ref:`signed-urls-forwarded-proto-header` section to ensure signed URLs work properly in proxy environments.
 
 API Token
