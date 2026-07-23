@@ -51,6 +51,7 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.primefaces.PrimeFaces;
 
 import com.google.gson.Gson;
+import com.rometools.utils.Lists;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -74,13 +75,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.JsonNumber;
-import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
-import org.apache.http.util.EntityUtils;
 
 @Stateless
 @Named("GlobusServiceBean")
@@ -516,17 +514,19 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         
         if (result.status != 200) {
-            // @todo It should probably retry it 2-3 times before giving up;
-            // similarly, it should probably differentiate between a "no such task" 
-            // response and something intermittent like a server/network error or 
-            // an expired token... i.e. something that's recoverable (?)
-            // edit: yes, but, should be done outside of this method, in the code
-            // that uses it
+            
+            String failureReason; 
+            if (result.jsonResponse != null) {
+                failureReason = result.jsonResponse;
+            } else {
+                failureReason = "unknown";
+            }
+            
             myLogger.warning("Cannot find information for the task " + taskId
                     + " status: "
                     + result.status
                     + " : Reason :   "
-                    + result.jsonResponse != null ? result.jsonResponse.toString() : "unknown" );
+                    + failureReason);
         }
         
         if (result.status == 401) {
@@ -940,6 +940,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             fileHandler.close();
         }
     }
+    
+    
     /**
      * As the name suggests, the method completes and finalizes an upload task, 
      * whether it completed successfully or failed. (In the latter case, it 
@@ -954,6 +956,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      *                          user will need to be obtained from the saved api token, when this
      *                          method is called via the TaskMonitoringService
      * @param ruleId            Globus rule/permission id associated with the task
+     * @param deleteRule        delete the rule above when done
      * @param myLogger          the Logger; if null, the main logger of the service bean will be used
      * @param fileHandler       FileHandler associated with the Logger, when not null
      * @param taskSuccess       boolean task status of the completed task
@@ -964,16 +967,20 @@ public class GlobusServiceBean implements java.io.Serializable {
     private void processCompletedUploadTask(Dataset dataset, 
             JsonArray filesJsonArray, 
             AuthenticatedUser authUser, 
-            String ruleId, 
+            String ruleId,
+            boolean deleteRule,
             Logger globusLogger,
             boolean taskSuccess, 
             String taskStatus) {
         
         Logger myLogger = globusLogger == null ? logger : globusLogger;
         
-        if (ruleId != null) {
-            // Transfer is complete, so delete rule
-            deletePermission(ruleId, dataset, myLogger);
+        if (deleteRule) {
+            // Transfer is complete, and there must be no other tasks using the rule so, delete it
+            myLogger.fine("Deleting access (upload) rule "+ruleId);
+            if (ruleId != null) {
+                deletePermission(ruleId, dataset, myLogger);
+            }
         }
         
         // If success, switch to an EditInProgress lock - do this before removing the
@@ -1047,16 +1054,22 @@ public class GlobusServiceBean implements java.io.Serializable {
                 myLogger.info("Exception from processUploadedFiles call " + e.getMessage());
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
-        }
-        
-        // @todo: this appears to be redundant - it was already deleted above - ?
-        if (ruleId != null) {
-            deletePermission(ruleId, dataset, myLogger);
-            myLogger.info("Removed upload permission: " + ruleId);
-        }
-        
+        }        
     }
     
+    /**
+     * Conveniece version of the method above that defaults to deleting the 
+     * access rule. 
+     */
+    private void processCompletedUploadTask(Dataset dataset, 
+            JsonArray filesJsonArray, 
+            AuthenticatedUser authUser, 
+            String ruleId,
+            Logger globusLogger,
+            boolean taskSuccess, 
+            String taskStatus) {
+        processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, true, globusLogger, taskSuccess, taskStatus);
+    }
     
     /**
      * The code in this method is copy-and-pasted from the previous Borealis 
@@ -1700,6 +1713,25 @@ public class GlobusServiceBean implements java.io.Serializable {
         return em.createQuery("select object(o) from GlobusTaskInProgress as o where o.taskType=:taskType order by o.startTime", GlobusTaskInProgress.class).setParameter("taskType", taskType).getResultList();
     }
     
+    public List<GlobusTaskInProgress> findAllOngoingTasksForDataset(GlobusTaskInProgress.TaskType taskType, Long datasetId) {
+        return em.createQuery("select object(o) from GlobusTaskInProgress as o where o.taskType=:taskType and o.dataset.id=:datasetId order by o.startTime", GlobusTaskInProgress.class)
+                .setParameter("taskType", taskType)
+                .setParameter("datasetId", datasetId)
+                .getResultList();
+    }
+    
+    /**
+     * (prod. patch 6.8)
+     * @param datasetId
+     * @return 
+     */
+    public boolean isUploadTaskInProgressForDataset(Long datasetId) {
+        if (!FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
+            return false; 
+        }
+        return Lists.isNotEmpty(findAllOngoingTasksForDataset(GlobusTaskInProgress.TaskType.UPLOAD, datasetId));
+    }
+    
     public boolean isRuleInUseByOtherTasks(String ruleId) {
         Long numTask = em.createQuery("select count(o) from GlobusTaskInProgress as o where o.ruleId=:ruleId", Long.class).setParameter("ruleId", ruleId).getSingleResult();
         return numTask > 1;
@@ -1721,6 +1753,10 @@ public class GlobusServiceBean implements java.io.Serializable {
             boolean deleteRule,
             Logger taskLogger) {
     
+        if (globusTask.getDataset() == null) {
+            return; 
+        }
+        
         String ruleId = globusTask.getRuleId();
         Dataset dataset = globusTask.getDataset();
         AuthenticatedUser authUser = globusTask.getLocalUser();
@@ -1746,7 +1782,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
                 JsonArray filesJsonArray = filesJsonArrayBuilder.build();
 
-                processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, taskLogger, taskSuccess, taskStatus);
+                processCompletedUploadTask(dataset, filesJsonArray, authUser, ruleId, deleteRule, taskLogger, taskSuccess, taskStatus);
                 break;
                 
             case DOWNLOAD:
@@ -1786,8 +1822,10 @@ public class GlobusServiceBean implements java.io.Serializable {
                     // It is possible that, for whatever reason, we failed to look up 
                     // the rule id when the monitoring of the task was initiated - but 
                     // now that it has completed, let's try and look it up again:
-                    getRuleId(endpoint, taskState.getOwner_id(), "r");
+                    ruleId = getRuleId(endpoint, taskState.getOwner_id(), "r");
                 }
+                
+                taskLogger.fine("Deleting access (download) rule "+ruleId);
 
                 if (ruleId != null) {
                     deletePermission(ruleId, endpoint, taskLogger);
