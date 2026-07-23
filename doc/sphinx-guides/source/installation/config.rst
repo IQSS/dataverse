@@ -1461,6 +1461,12 @@ You may provide the values for these via any `supported MicroProfile Config API 
 Reported Working S3-Compatible Storage
 ######################################
 
+
+`BackBlaze B2 <https://www.backblaze.com/cloud-storage>`_
+  (as of 6/11/2026)
+  Set ``dataverse.files.<id>.disable-tagging=true``, as B2 does not support tagging (and will fail without this setting).
+  Tested with ``.path-style-access=true``, ``.download-redirect=true``, and ``.upload-redirect=true``.
+
 `StorJ Object Store <https://www.storj.io>`_
  StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configuration to use a StorJ object store: ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
 

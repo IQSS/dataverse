@@ -696,56 +696,53 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return targetFile;
     }
 
+    private List<S3Object> listObjects(String prefix, String methodName) throws IOException {
+        List<S3Object> objects = new ArrayList<>();
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix(prefix)
+                .maxKeys(1000) // Required for storJ
+                .build();
+
+        try {
+            ListObjectsV2Response listResponse;
+            String nextToken = null;
+            do {
+                ListObjectsV2Request.Builder reqBuilder = listRequest.toBuilder();
+                if (nextToken != null) {
+                    reqBuilder = reqBuilder.continuationToken(nextToken);
+                }
+                ListObjectsV2Request req = reqBuilder.build();
+                listResponse = s3.listObjectsV2(req).get();
+                objects.addAll(listResponse.contents());
+                nextToken = listResponse.nextContinuationToken();
+                if (listResponse.isTruncated() && nextToken == null) {
+                    logger.warning("S3 " + methodName + ": list is truncated but nextContinuationToken is null; stopping to avoid infinite loop");
+                    break;
+                }
+            } while (listResponse.isTruncated());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IOException("S3AccessIO: Failed to get objects for listing in " + methodName + ".", e);
+        }
+        return objects;
+    }
+
     @Override
     public List<String> listAuxObjects() throws IOException {
         if (!this.canWrite()) {
             open();
         }
         String prefix = getDestinationKey("");
+        List<S3Object> contents = listObjects(prefix, "listAuxObjects");
 
-        List<String> ret = new ArrayList<>();
-        ListObjectsV2Request listObjectsReqManual = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-                .build();
-
-        ListObjectsV2Response listObjectsResponse = null;
-        try {
-            listObjectsResponse = s3.listObjectsV2(listObjectsReqManual).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3 listAuxObjects: failed to get a listing for " + prefix, e);
-        }
-
-        if (listObjectsResponse == null) {
-            return ret;
-        }
-
-        List<S3Object> storedAuxFilesSummary = new ArrayList<>(listObjectsResponse.contents());
-
-        try {
-            String nextContinuationToken = listObjectsResponse.nextContinuationToken();
-            while (nextContinuationToken != null) {
-                logger.fine("S3 listAuxObjects: going to next page of list");
-                ListObjectsV2Request nextReq = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-                        .continuationToken(nextContinuationToken).build();
-
-                ListObjectsV2Response nextResponse = s3.listObjectsV2(nextReq).get();
-                if (nextResponse != null) {
-                    storedAuxFilesSummary.addAll(nextResponse.contents());
-                    nextContinuationToken = nextResponse.nextContinuationToken();
-                } else {
-                    nextContinuationToken = null;
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3AccessIO: Failed to get aux objects for listing.", e);
-        }
-
-        for (S3Object item : storedAuxFilesSummary) {
-            String destinationKey = item.key();
-            String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
-            logger.fine("S3 cached aux object fileName: " + fileName);
-            ret.add(fileName);
-        }
-        return ret;
+        return contents.stream()
+                .map(item -> {
+                    String destinationKey = item.key();
+                    String fileName = destinationKey.substring(destinationKey.lastIndexOf(".") + 1);
+                    logger.fine("S3 cached aux object fileName: " + fileName);
+                    return fileName;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -773,22 +770,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         String prefix = getDestinationKey("");
-
-        List<S3Object> storedAuxFilesSummary = new ArrayList<>();
-        try {
-            ListObjectsV2Request listRequest = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix).build();
-
-            ListObjectsV2Response listResponse;
-            do {
-                listResponse = s3.listObjectsV2(listRequest).get();
-                storedAuxFilesSummary.addAll(listResponse.contents());
-
-                listRequest = listRequest.toBuilder().continuationToken(listResponse.nextContinuationToken()).build();
-            } while (listResponse.isTruncated());
-
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.", e);
-        }
+        List<S3Object> storedAuxFilesSummary = listObjects(prefix, "deleteAllAuxObjects");
 
         if (storedAuxFilesSummary.isEmpty()) {
             logger.fine("S3AccessIO: No auxiliary objects to delete.");
@@ -986,7 +968,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * @param auxiliaryFileName (optional) - file name, if different from the main
      *                          file label.
      * @return redirect url
-     * @throws IOException.
+     * @throws IOException
      */
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
             throws IOException {
@@ -1314,6 +1296,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     public void removeTempTag() throws IOException {
+        final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
+                .orElse(false);
+        if (taggingDisabled) {
+            logger.fine("S3 tagging disabled for storage driver " + driverId + "; skipping temp tag removal.");
+            return;
+        }
         if (!(dvObject instanceof DataFile)) {
             logger.warning("Attempt to remove tag from non-file DVObject id: " + dvObject.getId());
             throw new IOException("Attempt to remove temp tag from non-file S3 Object");
@@ -1453,47 +1441,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
 
-        List<String> ret = new ArrayList<>();
-        ListObjectsV2Request listObjectsReqManual = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-                .build();
+        List<S3Object> contents = listObjects(prefix, "listAllFiles");
 
-        ListObjectsV2Response listObjectsResponse = null;
-        try {
-            listObjectsResponse = s3.listObjectsV2(listObjectsReqManual).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3 listObjects: failed to get a listing for " + prefix, e);
-        }
-
-        if (listObjectsResponse == null) {
-            return ret;
-        }
-
-        List<S3Object> storedFilesSummary = new ArrayList<>(listObjectsResponse.contents());
-
-        try {
-            String nextContinuationToken = listObjectsResponse.nextContinuationToken();
-            while (nextContinuationToken != null) {
-                logger.fine("S3 listObjects: going to next page of list");
-                ListObjectsV2Request nextReq = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-                        .continuationToken(nextContinuationToken).build();
-
-                ListObjectsV2Response nextResponse = s3.listObjectsV2(nextReq).get();
-                if (nextResponse != null) {
-                    storedFilesSummary.addAll(nextResponse.contents());
-                    nextContinuationToken = nextResponse.nextContinuationToken();
-                } else {
-                    nextContinuationToken = null;
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException("S3AccessIO: Failed to get objects for listing.", e);
-        }
-
-        for (S3Object item : storedFilesSummary) {
-            String fileName = item.key().substring(prefix.length());
-            ret.add(fileName);
-        }
-        return ret;
+        return contents.stream()
+                .map(item -> item.key().substring(prefix.length()))
+                .collect(Collectors.toList());
     }
 
     private void deleteFile(String fileName) throws IOException {
