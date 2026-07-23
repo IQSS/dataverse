@@ -1,11 +1,9 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -16,6 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 
 import java.util.*;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.mydata.Pager;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -60,19 +60,10 @@ public class PermissionServiceBean {
                     .collect(Collectors.toList()));
 
     @EJB
-    BuiltinUserServiceBean userService;
-
-    @EJB
-    AuthenticationServiceBean authenticationService;
-
-    @EJB
     DataverseRoleServiceBean roleService;
 
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
-
-    @EJB
-    DataverseServiceBean dataverseService;
     
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
@@ -87,16 +78,13 @@ public class PermissionServiceBean {
     GroupServiceBean groupService;
 
     @Inject
-    DataverseSession session;
-
-    @Inject
     DataverseRequestServiceBean dvRequestService;
 
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     private static final String LIST_ALL_DATAVERSES_SUPERUSER_HAS_PERMISSION = """
-        SELECT id, name, alias FROM DATAVERSE dv
+        SELECT id, name, alias, ROW_NUMBER() OVER (ORDER BY id) AS row_num FROM DATAVERSE dv
     """;
 
     private static final String LIST_ALL_DATAVERSES_USER_HAS_PERMISSION = """
@@ -104,8 +92,8 @@ public class PermissionServiceBean {
                   SELECT explicitgroup_authenticateduser.explicitgroup_id as id FROM explicitgroup_authenticateduser
                   WHERE explicitgroup_authenticateduser.containedauthenticatedusers_id = @USERID
                 )
-                        
-                SELECT * FROM DATAVERSE dv WHERE id IN (
+
+                SELECT *, ROW_NUMBER() OVER (ORDER BY id) AS row_num FROM DATAVERSE dv WHERE id IN (
                   SELECT definitionpoint_id
                   FROM roleassignment
                   WHERE roleassignment.assigneeidentifier IN (
@@ -178,6 +166,11 @@ public class PermissionServiceBean {
                                                                      or (LOWER(dv.name) NOT LIKE ? and ((LOWER(dv.name) LIKE ?)
                                                                      or (LOWER(dv.name) LIKE ?))))
                                                      """;
+
+    private static final String PAGE_PARAMS  = """
+                                               select * from ( @SQL@ )
+                                               where row_num BETWEEN @START AND @END
+                                               """;
 
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -939,33 +932,51 @@ public class PermissionServiceBean {
     }
     
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission) {
-        return findPermittedCollections(request, user, 1 << permission.ordinal(), "");
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), "", null);
     }
 
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, String searchTerm) {
-        return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm);
+        return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm, null);
     }
     
     public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
-        return findPermittedCollections(request, user, permissionBit, "");
+        return findPermittedCollections(request, user, permissionBit, "", null);
     }
     
     
-    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm) {
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm, Pager pager) {
         if (user != null) {
+            List<Dataverse> dataverses = new ArrayList<>();
             var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, permissionBit);
-            if (searchTerm == null || searchTerm.isEmpty()) {
-                return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
-            } else if (user.isSuperuser()) {
-                Query query = em.createNativeQuery(sqlCode.concat(WHERE).concat(SEARCH_PARAMS), Dataverse.class);
-                setSearchParamValues(searchTerm, query);
-                return query.getResultList();
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                if (user.isSuperuser()) {
+                    sqlCode = sqlCode.concat(WHERE).concat(SEARCH_PARAMS);
+                } else {
+                    sqlCode = sqlCode.concat(AND).concat(SEARCH_PARAMS);
+                }
             }
-            else {
-                Query query = em.createNativeQuery(sqlCode.concat(AND).concat(SEARCH_PARAMS), Dataverse.class);
-                setSearchParamValues(searchTerm, query);
-                return query.getResultList();
+            if (pager != null) {
+                // Add a pagination wrapper around the sqlCode
+                int pageSize = pager.getDocsPerPage();
+                int pageStart = (pager.getSelectedPageNumber()-1) * pageSize + 1;
+                int pageEnd = pageStart + pageSize - 1;
+                sqlCode = PAGE_PARAMS
+                        .replace("@START", String.valueOf(pageStart))
+                        .replace("@END", String.valueOf(pageEnd))
+                        .replace("@SQL@", sqlCode);
             }
+
+            Query query = em.createNativeQuery(sqlCode, Dataverse.class);
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                setSearchParamValues(searchTerm, query);
+            }
+
+            List resultList = query.getResultList();
+            if (pager != null) {
+                pager.setNumResults((pager.getSelectedPageNumber()-1) * pager.getDocsPerPage() + resultList.size());
+            }
+            dataverses.addAll(resultList);
+            return dataverses;
         }
         return null;
     }

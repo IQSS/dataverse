@@ -335,11 +335,19 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @Produces("application/json")
     @Operation(summary = "Lists collections for My Data",
             description = "Returns collections where the requester or selected user may add datasets.")
-    public Response retrieveMyCollectionList(@Context ContainerRequestContext crc, @Parameter(description = "User identifier filter.") @QueryParam("userIdentifier") String userIdentifier) {
+    public Response retrieveMyCollectionList(@Context ContainerRequestContext crc,
+                                             @Parameter(description = "User identifier filter.") @QueryParam("userIdentifier") String userIdentifier,
+                                             @Parameter(description = "Search term filter.") @QueryParam("searchTerm") String searchTerm,
+                                             @Parameter(description = "Offset used to override the starting point of the list.")
+                                             @QueryParam("offset") Integer start,
+                                             @Parameter(description = "Page size to limit the number of items in the list.")
+                                             @QueryParam("pageSize") Integer pageSize) {
         try {
             verifyAuth(crc, userIdentifier);
-            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name()));
-            return ok(JsonPrinter.jsonArray(collections));
+            Pager pager = getPager(pageSize, start);
+            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name(),
+                    searchTerm, pager));
+            return ok(JsonPrinter.jsonArray(collections, pager));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

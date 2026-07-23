@@ -8719,6 +8719,12 @@ The ``$identifier`` is the username of the requested user.
 The ``$permission`` is the permission (tied to the roles) that gives the user access to the collection.
 Passing ``$permission`` as 'any' will return the collection as long as the user has any access/permission on the collection
 
+**For filtering and pagination these query parameters can be used:**
+
+- ``searchTerm``: To filter the results.
+- ``offset``: Starting row ('nextOffset' or 'prevOffset' from the Json output can be used to get the next or previous page).
+- ``pageSize``: Number of items to limit the output.
+
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
@@ -8726,6 +8732,7 @@ Passing ``$permission`` as 'any' will return the collection as long as the user 
   export PERMISSION=PublishDataverse
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/allowedCollections/$PERMISSION"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/allowedCollections/$PERMISSION?pageSize=10&offset=0&searchTerm=bio"
 
 Show Role Assignee
 ~~~~~~~~~~~~~~~~~~
@@ -9313,6 +9320,12 @@ MyData Collection List
 The MyData Collection List API is used to get a list of the collections an authenticated user can create a Dataset in.
 Param userIdentifier={userName} is used by a superuser to get the collections for a specific user.
 
+**For filtering and pagination these query parameters can be used:**
+
+- ``searchTerm``: To filter the results.
+- ``offset``: Starting row ('nextOffset' or 'prevOffset' from the Json output can be used to get the next or previous page).
+- ``pageSize``: Number of items to limit the output.
+
 A curl example listing collections:
 
 .. code-block:: bash
@@ -9322,4 +9335,5 @@ A curl example listing collections:
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList"
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser&pageSize=10&offset=11&searchTerm=bio"
 

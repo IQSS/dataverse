@@ -155,6 +155,7 @@ public class Pager {
      */
     public void setNumResults(int numResults){
         this.numResults = numResults;
+        makePageStats();
     }
     
 

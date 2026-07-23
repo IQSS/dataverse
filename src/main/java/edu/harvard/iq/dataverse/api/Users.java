@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -323,7 +324,11 @@ public class Users extends AbstractApiBean {
             @Parameter(description = "Authenticated user identifier whose permitted collections are returned.", required = true)
             @PathParam("identifier") String identifier,
             @Parameter(description = "Permission name used to select permitted collections.", required = true)
-            @PathParam("permission") String permission) {
+            @PathParam("permission") String permission,
+            @Parameter(description = "Offset used to override the starting point of the list.")
+            @QueryParam("offset") Integer start,
+            @Parameter(description = "Page size to limit the number of items in the list.")
+            @QueryParam("pageSize") Integer pageSize) {
         AuthenticatedUser authenticatedUser = null;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -335,8 +340,9 @@ public class Users extends AbstractApiBean {
         }
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission));
-            return ok(JsonPrinter.jsonArray(collections));
+            Pager pager = getPager(pageSize, start);
+            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission, null, pager));
+            return ok(JsonPrinter.jsonArray(collections, pager));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
