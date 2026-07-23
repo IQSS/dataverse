@@ -7540,6 +7540,66 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
     }
 
+    @Test
+    public void testUpdateDatasetMetadataNoOp() {
+        String apiToken = getSuperuserToken();
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+        UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        String updateJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+
+        // 1. Create a dataset and update it with known metadata from a file
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        UtilIT.updateDatasetMetadataViaNative(datasetPid, updateJsonFile, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // 2. Call API with identical metadata (Published case)
+        UtilIT.updateDatasetMetadataViaNative(datasetPid, updateJsonFile, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // 3. Verify no draft was created
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // 4. Test the scenario where a draft ALREADY exists
+        String currentMetadata = UtilIT.getDatasetJson(updateJsonFile);
+        String draftJson = currentMetadata.replace("\"newTitle\"", "\"Updated Title\"");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(draftJson)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response draftResponse = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        draftResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String lastUpdateTimeBefore = draftResponse.jsonPath().getString("data.lastUpdateTime");
+
+        // 5. Call API with identical metadata to the current draft
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(draftJson)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // 6. Verify it was a no-op (lastUpdateTime should NOT have changed)
+        Response draftResponseAfter = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        String lastUpdateTimeAfter = draftResponseAfter.jsonPath().getString("data.lastUpdateTime");
+
+        assertEquals(lastUpdateTimeBefore, lastUpdateTimeAfter, "Last update time should not change for no-op metadata update on draft");
+    }
+
     private String getSuperuserToken() {
         Response createResponse = UtilIT.createRandomUser();
         String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
