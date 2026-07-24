@@ -1,5 +1,5 @@
 {
-  "name": "my test guestbook",
+  "name": "my test guestbook {@}",
   "enabled": true,
   "emailRequired": true,
   "nameRequired": true,

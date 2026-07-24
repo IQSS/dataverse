@@ -190,8 +190,8 @@ public class Guestbooks extends AbstractApiBean {
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
-            Long totalUsageCount = guestbookService.findCountUsages(guestbook.getId(), dataverse.getId());
-            Long totalResponseCount = guestbookResponseService.findCountByGuestbookId(guestbook.getId(), dataverse.getId());
+            Long totalUsageCount = guestbookService.findCountUsages(guestbook.getId(), null);
+            Long totalResponseCount = guestbookResponseService.findCountByGuestbookId(guestbook.getId(), null);
             guestbook.setUsageCount(totalUsageCount);
             guestbook.setResponseCount(totalResponseCount);
 

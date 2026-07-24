@@ -3872,6 +3872,73 @@ public class FilesIT {
     }
 
     @Test
+    public void testDownloadFileWithParentGuestbookResponse() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithParentGuestbookResponse");
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
+        publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+
+        // Create user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        // Create Dataset with parent dataverse guestbook
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String directoryLabel = "data/store/" + persistentId.substring(4);
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+        // Create a Parent Guestbook and assign to this dataset
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, persistentId, ownerApiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish dataset
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        // Generate a guestbook response for the parent guestbook
+        String guestbookResponse = UtilIT.generateGuestbookResponse(parentGuestbook);
+        guestbookResponse = guestbookResponse.replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+        Response downloadResponse = UtilIT.postDownloadFile(fileId1, guestbookResponse);
+        downloadResponse.prettyPrint();
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // Download the file using the signed url
+        Response signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(parentGuestbook.getId(), 0, 100, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        int responseListSize = guestbookListResponses.jsonPath().getList("data.responses").size();
+        int totalCountFromJson = guestbookListResponses.jsonPath().getInt("data.pagination.totalResponses");
+        assertEquals(responseListSize, totalCountFromJson);
+    }
+
+    @Test
     public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponse");
         // Create superuser
