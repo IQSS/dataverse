@@ -19,6 +19,7 @@ import io.gdcc.spi.export.ExportDataProvider;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.xml.XmlUtil;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.DatasetExportQuery;
 import io.gdcc.spi.export.DatasetMetadataPredicates;
@@ -27,7 +28,6 @@ import io.gdcc.spi.export.FileMetadataPredicates;
 import io.gdcc.spi.export.PageRequest;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilder;
@@ -123,14 +123,14 @@ public class InternalExportDataProvider implements ExportDataProvider {
         // Note that the query parameter is ignored, for now
         String dataciteXmlString = getDataCiteXml();
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = XmlUtil.getSecureDocumentBuilderFactory();
 
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
 
             return builder.parse(new InputSource(new StringReader(dataciteXmlString)));
         } catch (ParserConfigurationException | SAXException | IOException px) {
-            return null;
+            throw new ExportException("Failed to parse the DataCite metadata fragment as valid XML");
         }
 
     }
