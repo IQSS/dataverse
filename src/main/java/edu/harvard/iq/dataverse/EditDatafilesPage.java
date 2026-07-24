@@ -1068,7 +1068,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         storageSizeStr = null; // Let this re-calculate after the calling save()
         Collection<String> duplicates = IngestUtil.findDuplicateFilenames(workingVersion, newFiles);
         if (!duplicates.isEmpty()) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.filesFailure"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.duplicateFilenames", new ArrayList<>(duplicates)));
+            var arguments = List.of(String.join(", ", duplicates));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.filesFailure"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.duplicateFilenames",
+                arguments));
             return null;
         }
         if (!saveEnabled) {
