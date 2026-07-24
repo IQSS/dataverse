@@ -150,15 +150,12 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
     @Override
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query) {
-        if (fileAndDataDetails == null) {
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
-                DataFile dataFile = fileMetadata.getDataFile();
-                jab.add(JsonPrinter.json(dataFile, fileMetadata, true, false, true));
-            }
-            fileAndDataDetails = jab.build();
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            jab.add(JsonPrinter.json(dataFile, fileMetadata, true, false, true));
         }
-        return fileAndDataDetails.stream().map(jsonValue -> jsonValue.asJsonObject());
+        return jab.build().stream().map(jsonValue -> jsonValue.asJsonObject());
     }
 
     @Override
