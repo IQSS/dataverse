@@ -17,6 +17,9 @@ import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -84,12 +87,18 @@ public class Metadata extends AbstractApiBean {
     @Path("{id}/reExportDataset")
     @Operation(summary = "Starts a dataset metadata re-export",
             description = "Starts a background metadata re-export for the specified dataset.")
-    public Response indexDatasetByPersistentId(
+    public Response exportDatasetByPersistentId(
             @Parameter(description = "Dataset id or persistent identifier to re-export.", required = true)
-            @PathParam("id") String id) {
+            @PathParam("id") String id, 
+            @QueryParam("formats") String formats) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            datasetService.reExportDatasetAsync(dataset);
+            if (formats != null) {
+                List<String> formatNames = new ArrayList<>(Arrays.asList(formats.split(",")));
+                datasetService.reExportDatasetAsync(dataset, formatNames);
+            } else {
+                datasetService.reExportDatasetAsync(dataset);
+            }
             return ok("export started");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -116,8 +125,7 @@ public class Metadata extends AbstractApiBean {
             description = "Marks the specified OAI set as updating and starts its metadata export in the background.")
     public Response exportOaiSet(
             @Parameter(description = "OAI set specification name to export.", required = true)
-            @PathParam("specname") String spec)
-    {
+            @PathParam("specname") String spec) {
 	    // assuming this belongs here (because it's a metadata export), but open to moving it elsewhere
 	    OAISet set = null;
 	    try

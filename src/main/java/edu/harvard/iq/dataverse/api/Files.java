@@ -1133,7 +1133,7 @@ public class Files extends AbstractApiBean {
         if (!dataFile.isTabularData()) {
             return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
         }
-        return ok(jsonDT(dataFile.getDataTables()));
+        return ok(jsonDT(dataFile.getDataTables(), true));
     }
 
     @POST

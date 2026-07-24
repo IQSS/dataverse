@@ -20,6 +20,7 @@ public class DataFileDTO {
     private String md5;
     private String description;
     private String pidURL;
+    private List<String> tabularTags;
 
     public String getPidURL() {
         return pidURL;
@@ -119,5 +120,11 @@ public class DataFileDTO {
         this.description = description;
     }
     
+    public List<String> getTabularTags() {
+        return tabularTags;
+    }
     
+    public void setTabularTags(List<String> tabularTags) {
+        this.tabularTags = tabularTags;
+    }
 }

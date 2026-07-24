@@ -775,7 +775,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                                             || dataset.getLastExportTime().before(publicationDate))))) {
                         countAll++;
                         try {
-                            recordService.exportAllFormatsInNewTransaction(dataset);
+                            recordService.exportFormatsInNewTransaction(dataset, List.of());
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
@@ -803,13 +803,18 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @Asynchronous
     public void reExportDatasetAsync(Dataset dataset) {
-        exportDataset(dataset, true);
+        exportDataset(dataset, true, List.of());
+    }
+    
+    @Asynchronous
+    public void reExportDatasetAsync(Dataset dataset, List<String> formatNames) {
+        exportDataset(dataset, true, formatNames);
     }
 
-    public void exportDataset(Dataset dataset, boolean forceReExport) {
+    private void exportDataset(Dataset dataset, boolean forceReExport, List<String> formatNames) {
         if (dataset != null) {
             // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets,
-            // but when only one dataset is exported we do not log in a separate export logging file
+            // but when only one dataset is exported we do not use a dedicated log file
             if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
                 // can't trust dataset.getPublicationDate(), no.
@@ -818,7 +823,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                         && (dataset.getLastExportTime() == null
                         || dataset.getLastExportTime().before(publicationDate)))) {
                     try {
-                        recordService.exportAllFormatsInNewTransaction(dataset);
+                        recordService.exportFormatsInNewTransaction(dataset, formatNames);
                         logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                     } catch (Exception ex) {
                         logger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);

@@ -48,7 +48,7 @@ public class DDIExporter implements XMLExporter {
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-            DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider.getDatasetFileDetails(),
+            DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider,
                     outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export", xse);
