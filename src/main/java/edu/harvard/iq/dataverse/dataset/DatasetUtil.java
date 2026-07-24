@@ -709,11 +709,15 @@ public class DatasetUtil {
             }
         }
         catch (Exception e) {
-            localizedLicenseValue = licenseName;
+            localizedLicenseValue = null;
         }
 
         if (localizedLicenseValue == null) {
-            localizedLicenseValue = licenseName ;
+            if (LicenseOption.DESCRIPTION.name().equals(keyPart) && license.getShortDescription() != null) {
+                localizedLicenseValue = license.getShortDescription();
+            } else {
+                localizedLicenseValue = licenseName;
+            }
         }
         return localizedLicenseValue;
     }
