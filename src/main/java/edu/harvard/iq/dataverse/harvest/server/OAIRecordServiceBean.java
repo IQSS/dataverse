@@ -260,7 +260,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(REQUIRES_NEW)
     public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
-        exportFormatsInNewTransaction(dataset, null);
+        exportFormatsInNewTransaction(dataset, List.of());
     }
     
     @TransactionAttribute(REQUIRES_NEW)
