@@ -87,17 +87,18 @@ public class Metadata extends AbstractApiBean {
     @Path("{id}/reExportDataset")
     @Operation(summary = "Starts a dataset metadata re-export",
             description = "Starts a background metadata re-export for the specified dataset.")
-    public Response indexDatasetByPersistentId(
+    public Response exportDatasetByPersistentId(
             @Parameter(description = "Dataset id or persistent identifier to re-export.", required = true)
             @PathParam("id") String id, 
             @QueryParam("formats") String formats) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            List<String> formatNames = null;
             if (formats != null) {
-                formatNames = new ArrayList<>(Arrays.asList(formats.split(",")));
+                List<String> formatNames = new ArrayList<>(Arrays.asList(formats.split(",")));
+                datasetService.reExportDatasetAsync(dataset, formatNames);
+            } else {
+                datasetService.reExportDatasetAsync(dataset);
             }
-            datasetService.reExportDatasetAsync(dataset, formatNames);
             return ok("export started");
         } catch (WrappedResponse wr) {
             return wr.getResponse();

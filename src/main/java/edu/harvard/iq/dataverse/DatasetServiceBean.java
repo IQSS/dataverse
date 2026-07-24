@@ -775,7 +775,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                                             || dataset.getLastExportTime().before(publicationDate))))) {
                         countAll++;
                         try {
-                            recordService.exportFormatsInNewTransaction(dataset, null);
+                            recordService.exportFormatsInNewTransaction(dataset, List.of());
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
@@ -803,7 +803,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @Asynchronous
     public void reExportDatasetAsync(Dataset dataset) {
-        exportDataset(dataset, true, null);
+        exportDataset(dataset, true, List.of());
     }
     
     @Asynchronous

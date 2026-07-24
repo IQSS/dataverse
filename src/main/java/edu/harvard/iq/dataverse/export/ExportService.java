@@ -272,15 +272,30 @@ public class ExportService {
 
     }
 
-    // A convenience wrapper method 
+    // A convenience wrapper method; the actual implementation has been moved
+    // into exportFormats() below.
     public void exportAllFormats(Dataset dataset) throws ExportException {
         exportFormats(dataset, List.of());
     }
     
-    // This method calls the cacheExport() method for every valid/supported
-    // format name supplied, or for every Exporter available, if an empty List
-    // is passed. 
-    // Only the latest published version is used for exports.
+    /** 
+     * This method is added to supplement the classic exportAllFormats() in order
+     * to allow the metadata export APIs to selectively re-export only the formats
+     * specified. This is to finally allow an instance admin to avoid running
+     * a complete, from-scratch reexport when only _some_, or just one of them
+     * actually needs to be refreshed. On a large instance this can waste a
+     * significant amount of time and CPU cycles. (new as of 6.12)
+     * This method calls the cacheExport() method for every valid/supported
+     * format name supplied, or for every Exporter available, if an empty List
+     * is passed.
+     * Only the latest published version is used for exports.
+     * exportAllFormats() above is now a convenience wrapper, with the
+     * implementation moved here.
+     *
+     * @param dataset
+     * @param formatNames
+     * @throws ExportException
+     */
     public void exportFormats(Dataset dataset, List<String> formatNames) throws ExportException {
         if (dataset == null) {
             throw new ExportException("exportFormats called with null Dataset");
