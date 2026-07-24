@@ -17,6 +17,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.multipart.MultipartConfiguration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -57,11 +58,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -104,14 +105,15 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     static final String PATH_STYLE_ACCESS = "path-style-access";
     static final String CHUNKED_ENCODING = "chunked-encoding";
     static final String PROFILE = "profile";
+    static final String DISABLE_MULTIPART_DOWNLOAD_FOR_INDIRECT_DOWNLOAD = "disable-multipart-download-for-indirect-download";
 
     private boolean mainDriver = true;
-    boolean s3pathStyleAccess = false;
 
-    private static HashMap<String, S3AsyncClient> driverClientMap = new HashMap<String, S3AsyncClient>();
-    private static HashMap<String, S3Presigner> driverPresignerMap = new HashMap<String, S3Presigner>();
-    private static HashMap<String, AwsCredentialsProvider> driverCredentialsProviderMap = new HashMap<String, AwsCredentialsProvider>();
-    private static HashMap<String, S3TransferManager> driverTMMap = new HashMap<String, S3TransferManager>();
+    private static final ConcurrentHashMap<String, S3AsyncClient> driverDownloadClientMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, S3AsyncClient> driverUploadClientMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, S3Presigner> driverPresignerMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, AwsCredentialsProvider> driverCredentialsProviderMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, S3TransferManager> driverTMMap = new ConcurrentHashMap<>();
 
     public S3AccessIO(T dvObject, DataAccessRequest req, String driverId) {
         super(dvObject, req, driverId);
@@ -121,7 +123,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             bucketName = getBucketName(driverId);
             minPartSize = getMinPartSize(driverId);
             credentialsProvider = getCredentialsProvider(driverId);
-            s3 = getClient(driverId);
+            s3WriteClient = getWriteClient(driverId);
+            boolean disabledMultiPartDownload = Boolean.parseBoolean(getConfigParam(DISABLE_MULTIPART_DOWNLOAD_FOR_INDIRECT_DOWNLOAD, "false"));
+            s3ReadClient = disabledMultiPartDownload? getReadClient(driverId) : s3WriteClient;
             tm = getTransferManager(driverId);
             s3Presigner = getPresigner(driverId);
             endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");
@@ -151,10 +155,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         super(dvObject, req, driverId);
         bucketName = getBucketName(driverId);
         this.setIsLocalFile(false);
-        this.s3 = s3client;
+        this.s3ReadClient = s3client;
+        this.s3WriteClient = s3client;
     }
 
-    private S3AsyncClient s3 = null;
+    private S3AsyncClient s3ReadClient = null;
+    private S3AsyncClient s3WriteClient = null;
     private S3Presigner s3Presigner = null;
     private AwsCredentialsProvider credentialsProvider;
     private S3TransferManager tm = null;
@@ -166,7 +172,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
-        if (s3 == null) {
+        if (s3ReadClient == null || s3WriteClient == null) {
             throw new IOException("ERROR: s3 not initialised. ");
         }
 
@@ -175,7 +181,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
             isReadAccess = false;
-        } else {
+        }
+        else {
             isWriteAccess = false;
             isReadAccess = true;
         }
@@ -189,7 +196,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 this.setNoVarHeader(true);
             }
 
-            if (storageIdentifier == null || "".equals(storageIdentifier)) {
+            if (storageIdentifier == null || storageIdentifier.isEmpty()) {
                 throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
             }
 
@@ -268,8 +275,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 while (retries > 0) {
                     try {
                         // Since s3 is an S3AsyncClient, we need to call .get() to wait for the result.
-                        HeadObjectResponse headObjectResponse = s3
-                                .headObject(HeadObjectRequest.builder().bucket(bucketName).key(key).build()).get();
+                        HeadObjectResponse headObjectResponse = s3ReadClient
+                            .headObject(HeadObjectRequest.builder().bucket(bucketName).key(key).build()).get();
                         contentLength = headObjectResponse.contentLength();
                         if (retries != 20) {
                             logger.warning("Success for key: " + key + " after " + ((20 - retries) * 3) + " seconds");
@@ -305,18 +312,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (super.getInputStream() == null) {
             ResponseInputStream<GetObjectResponse> responseInputStream;
             try {
-                responseInputStream = s3.getObject(GetObjectRequest.builder().bucket(bucketName).key(key).build(),
-                        AsyncResponseTransformer.toBlockingInputStream()).get(); // Since s3 is an S3AsyncClient, we
-                                                                                 // need to call .get() to wait for the
-                                                                                 // result
+                responseInputStream = s3ReadClient.getObject(GetObjectRequest.builder().bucket(bucketName).key(key).build(),
+                    AsyncResponseTransformer.toBlockingInputStream()).get(); // Since s3 is an S3AsyncClient, we
+                // need to call .get() to wait for the
+                // result
                 setInputStream(responseInputStream);
-            } catch (InterruptedException | ExecutionException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
-        }
-        if (super.getInputStream() == null) {
-            throw new IOException("Cannot get InputStream for S3 Object" + key);
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted while getting InputStream for S3 Object " + key, e);
+            }
+            catch (ExecutionException e) {
+                throw new IOException("Failed to get InputStream for S3 Object " + key, e);
+            }
         }
 
         setChannel(Channels.newChannel(super.getInputStream()));
@@ -357,10 +365,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
                 newFileSize = Files.size(fileSystemPath);
             } catch (Exception e) {
-                logger.warning(e.getMessage());
-                e.printStackTrace();
+                logger.warning("Caught an exception in S3AccessIO.savePath(): " + e.getMessage());
                 throw new IOException(
-                        "S3AccessIO: Exception occurred while uploading a local file into S3Object " + key, e);
+                    "S3AccessIO: Exception occurred while uploading a local file into S3Object " + key, e);
             }
         } else {
             throw new IOException("DvObject type other than datafile is not yet supported");
@@ -407,16 +414,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 asyncRequestBody = AsyncRequestBody.fromFile(tempFile);
             }
 
-            s3.putObject(putObjectRequestBuilder.build(), asyncRequestBody).get();
+            s3WriteClient.putObject(putObjectRequestBuilder.build(), asyncRequestBody).get();
 
             if (filesize == null) {
-                HeadObjectResponse headObjectResponse = s3
-                        .headObject(HeadObjectRequest.builder().bucket(bucketName).key(key).build()).get();
+                HeadObjectResponse headObjectResponse = s3ReadClient
+                    .headObject(HeadObjectRequest.builder().bucket(bucketName).key(key).build()).get();
                 setSize(headObjectResponse.contentLength());
             } else {
                 setSize(filesize);
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while saving InputStream to S3 Object " + key, e);
+        }
+        catch (ExecutionException e) {
             String failureMsg = e.getMessage();
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occurred while uploading a file into S3 Storage.";
@@ -442,9 +453,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         // - ?)
         try {
             DeleteObjectRequest deleteObjRequest = DeleteObjectRequest.builder().bucket(bucketName).key(key).build();
-            s3.deleteObject(deleteObjRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
-                                                     // the result
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.deleteObject(deleteObjRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
+            // the result
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while deleting S3 Object " + key, e);
+        } catch (ExecutionException e) {
             logger.warning("Caught an exception in S3AccessIO.delete(): " + e.getMessage());
             throw new IOException("Failed to delete storage location " + getStorageLocation(), e);
         }
@@ -479,10 +493,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(destinationKey)
                     .build();
 
-            s3.headObject(headObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
-                                                    // the result
+            s3ReadClient.headObject(headObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
+            // the result
             return true;
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3AccessIO: Interrupted while checking if auxiliary object is cached: " + auxItemTag, e);
+        }
+        catch (ExecutionException e) {
             if (e.getCause() instanceof NoSuchKeyException) {
                 // Object doesn't exist
                 return false;
@@ -497,24 +515,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         open();
         String destinationKey = getDestinationKey(auxItemTag);
         try {
-            HeadObjectResponse headObjectResponse = s3
-                    .headObject(HeadObjectRequest.builder().bucket(bucketName).key(destinationKey).build()).get(); // Since
-                                                                                                                   // s3
-                                                                                                                   // is
-                                                                                                                   // an
-                                                                                                                   // S3AsyncClient,
-                                                                                                                   // we
-                                                                                                                   // need
-                                                                                                                   // to
-                                                                                                                   // call
-                                                                                                                   // .get()
-                                                                                                                   // to
-                                                                                                                   // wait
-                                                                                                                   // for
-                                                                                                                   // the
-                                                                                                                   // result
+            HeadObjectResponse headObjectResponse = s3ReadClient
+                .headObject(HeadObjectRequest.builder().bucket(bucketName).key(destinationKey).build()).get();
             return headObjectResponse.contentLength();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3AccessIO: Interrupted while getting size of auxiliary object: " + auxItemTag, e);
+        }
+        catch (ExecutionException e) {
             if (e.getCause() instanceof NoSuchKeyException) {
                 // Object doesn't exist
                 logger.warning("Auxiliary object not found: " + destinationKey);
@@ -536,11 +544,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().sourceBucket(bucketName).sourceKey(key)
-                    .destinationBucket(bucketName).destinationKey(destinationKey).build();
+                .destinationBucket(bucketName).destinationKey(destinationKey).build();
 
-            s3.copyObject(copyObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
-                                                    // the result
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.copyObject(copyObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
+            // the result
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("Caught an exception in S3AccessIO.backupAsAux: " + e.getMessage());
+            throw new IOException("S3AccessIO: Unable to backup original auxiliary object", e);
+        }
+        catch (ExecutionException e) {
             logger.warning("Caught an exception in S3AccessIO.backupAsAux: " + e.getMessage());
             throw new IOException("S3AccessIO: Unable to backup original auxiliary object", e);
         }
@@ -551,12 +564,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder().sourceBucket(bucketName)
-                    .sourceKey(destinationKey).destinationBucket(bucketName).destinationKey(key).build();
+                .sourceKey(destinationKey).destinationBucket(bucketName).destinationKey(key).build();
 
-            s3.copyObject(copyObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
-                                                    // the result
+            s3WriteClient.copyObject(copyObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait for
+            // the result
             deleteAuxObject(auxItemTag);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("Caught an exception in S3AccessIO.revertBackupAsAux: " + e.getMessage());
+            throw new IOException("S3AccessIO: Unable to revert backup auxiliary object", e);
+        } catch (ExecutionException e) {
             logger.warning("Caught an exception in S3AccessIO.revertBackupAsAux: " + e.getMessage());
             throw new IOException("S3AccessIO: Unable to revert backup auxiliary object", e);
         }
@@ -572,9 +589,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucketName).key(destinationKey)
                     .build();
             AsyncRequestBody asyncRequestBody = AsyncRequestBody.fromFile(fileSystemPath);
-            s3.putObject(putObjectRequest, asyncRequestBody).get(); // Since s3 is an S3AsyncClient, we need to call
-                                                                    // .get() to wait for the result
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.putObject(putObjectRequest, asyncRequestBody).get(); // Since s3 is an S3AsyncClient, we need to call
+            // .get() to wait for the result
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("Caught an exception in S3AccessIO.savePathAsAux(): " + e.getMessage());
+            throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.", e);
+        }
+        catch (ExecutionException e) {
             logger.warning("Caught an exception in S3AccessIO.savePathAsAux(): " + e.getMessage());
             throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.", e);
         }
@@ -596,9 +618,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 AsyncRequestBody asyncRequestBody = AsyncRequestBody.fromInputStream(inputStream, filesize,
                         executorService);
 
-                s3.putObject(putObjectRequest, asyncRequestBody).get(); // Since s3 is an S3AsyncClient, we need to call
-                                                                        // .get() to wait for the result
-            } catch (InterruptedException | ExecutionException e) {
+                s3WriteClient.putObject(putObjectRequest, asyncRequestBody).get(); // Since s3 is an S3AsyncClient, we need to call
+                // .get() to wait for the result
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                String failureMsg = e.getMessage();
+
+                if (failureMsg == null) {
+                    failureMsg = "S3AccessIO: Exception occurred while saving a local InputStream as S3Object";
+                }
+                throw new IOException(failureMsg, e);
+            }
+            catch (ExecutionException e) {
                 String failureMsg = e.getMessage();
 
                 if (failureMsg == null) {
@@ -622,7 +653,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * implement this method in the S3 driver, and make it throw the
      * UnsupportedDataAccessOperationException, similarly to how we handle attempts
      * to open OutputStreams, in this and the Swift driver.
-     * 
+     *
      * @param inputStream InputStream we want to save
      * @param auxItemTag  String representing this Auxiliary type ("extension")
      * @throws IOException if anything goes wrong.
@@ -651,15 +682,24 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             AsyncRequestBody requestBody = AsyncRequestBody.fromFile(tempFile);
 
             // Use the async client to put the object
-            s3.putObject(putObjectRequest, requestBody).get();
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.putObject(putObjectRequest, requestBody).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             String failureMsg = e.getMessage();
 
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Exception occurred while saving a local InputStream as S3Object";
             }
             throw new IOException(failureMsg, e);
-        } finally {
+        } catch (ExecutionException e) {
+            String failureMsg = e.getMessage();
+
+            if (failureMsg == null) {
+                failureMsg = "S3AccessIO: Exception occurred while saving a local InputStream as S3Object";
+            }
+            throw new IOException(failureMsg, e);
+        }
+        finally {
             // Close the input stream
             if (inputStream != null) {
                 try {
@@ -709,8 +749,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         ListObjectsV2Response listObjectsResponse = null;
         try {
-            listObjectsResponse = s3.listObjectsV2(listObjectsReqManual).get();
-        } catch (InterruptedException | ExecutionException e) {
+            listObjectsResponse = s3ReadClient.listObjectsV2(listObjectsReqManual).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3 listAuxObjects: failed to get a listing for " + prefix, e);
+        } catch (ExecutionException e) {
             throw new IOException("S3 listAuxObjects: failed to get a listing for " + prefix, e);
         }
 
@@ -725,9 +768,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             while (nextContinuationToken != null) {
                 logger.fine("S3 listAuxObjects: going to next page of list");
                 ListObjectsV2Request nextReq = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
-                        .continuationToken(nextContinuationToken).build();
+                    .continuationToken(nextContinuationToken).build();
 
-                ListObjectsV2Response nextResponse = s3.listObjectsV2(nextReq).get();
+                ListObjectsV2Response nextResponse = s3ReadClient.listObjectsV2(nextReq).get();
                 if (nextResponse != null) {
                     storedAuxFilesSummary.addAll(nextResponse.contents());
                     nextContinuationToken = nextResponse.nextContinuationToken();
@@ -735,7 +778,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     nextContinuationToken = null;
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3AccessIO: Failed to get aux objects for listing.", e);
+        }
+        catch (ExecutionException e) {
             throw new IOException("S3AccessIO: Failed to get aux objects for listing.", e);
         }
 
@@ -758,9 +805,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName)
                     .key(destinationKey).build();
 
-            s3.deleteObject(deleteObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait
-                                                        // for the result
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.deleteObject(deleteObjectRequest).get(); // Since s3 is an S3AsyncClient, we need to call .get() to wait
+            // for the result
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("S3AccessIO: Unable to delete object: " + e.getMessage());
+            throw new IOException("Failed to delete auxiliary object", e);
+        } catch (ExecutionException e) {
             logger.warning("S3AccessIO: Unable to delete object: " + e.getMessage());
             throw new IOException("Failed to delete auxiliary object", e);
         }
@@ -780,13 +831,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             ListObjectsV2Response listResponse;
             do {
-                listResponse = s3.listObjectsV2(listRequest).get();
+                listResponse = s3ReadClient.listObjectsV2(listRequest).get();
                 storedAuxFilesSummary.addAll(listResponse.contents());
 
                 listRequest = listRequest.toBuilder().continuationToken(listResponse.nextContinuationToken()).build();
             } while (listResponse.isTruncated());
 
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.", e);
+        } catch (ExecutionException e) {
             throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.", e);
         }
 
@@ -796,7 +850,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         List<ObjectIdentifier> objectsToDelete = storedAuxFilesSummary.stream()
-                .map(s3Object -> ObjectIdentifier.builder().key(s3Object.key()).build()).collect(Collectors.toList());
+            .map(s3Object -> ObjectIdentifier.builder().key(s3Object.key()).build()).collect(Collectors.toList());
 
         Delete delete = Delete.builder().objects(objectsToDelete).quiet(true).build();
 
@@ -804,8 +858,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         logger.fine("Trying to delete auxiliary files...");
         try {
-            s3.deleteObjects(deleteRequest).get();
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.deleteObjects(deleteRequest).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.", e);
+        } catch (ExecutionException e) {
             throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.", e);
         }
     }
@@ -824,7 +881,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public Path getFileSystemPath() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException(
-                "S3AccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
+            "S3AccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
     }
 
     @Override
@@ -848,9 +905,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(destinationKey)
                     .build();
 
-            s3.headObject(headObjectRequest).get();
+            s3ReadClient.headObject(headObjectRequest).get();
             return true;
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("Caught an exception in S3AccessIO.exists(): " + e.getMessage());
+            return false;
+        } catch (ExecutionException e) {
             if (e.getCause() instanceof NoSuchKeyException) {
                 // Object does not exist
                 return false;
@@ -879,13 +940,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(destinationKey)
                     .build();
 
-            ResponseInputStream<GetObjectResponse> s3ObjectContent = s3
-                    .getObject(getObjectRequest, AsyncResponseTransformer.toBlockingInputStream()).get();
+            ResponseInputStream<GetObjectResponse> s3ObjectContent = s3ReadClient
+                .getObject(getObjectRequest, AsyncResponseTransformer.toBlockingInputStream()).get();
             if (s3ObjectContent != null) {
                 return s3ObjectContent;
             }
             return null;
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("Caught an exception in S3AccessIO.getAuxFileAsInputStream(): " + e.getMessage());
+            throw new IOException("Failed to get auxiliary file as input stream", e);
+        } catch (ExecutionException e) {
             if (e.getCause() instanceof NoSuchKeyException) {
                 logger.fine("S3AccessIO.getAuxFileAsInputStream(): Object not found (not cached?): " + e.getMessage());
                 return null;
@@ -916,7 +981,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * Extract the file key from a file stored on S3. Follows template: "owner
      * authority name"/"owner identifier"/"storage identifier without bucketname and
      * protocol"
-     * 
+     *
      * @return Main File Key
      * @throws IOException
      */
@@ -979,7 +1044,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     /**
      * Generates a temporary URL for a direct S3 download; either for the main
      * physical file, or (optionally) for an auxiliary.
-     * 
+     *
      * @param auxiliaryTag      (optional)
      * @param auxiliaryType     (optional) - aux. mime type, if different from the
      *                          main type
@@ -989,8 +1054,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * @throws IOException.
      */
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
-            throws IOException {
-        if (s3 == null) {
+        throws IOException {
+        if (s3ReadClient == null || s3WriteClient == null) {
             throw new IOException("ERROR: s3 not initialised. ");
         }
         if (dvObject instanceof DataFile) {
@@ -1014,8 +1079,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             } catch (S3Exception e) {
                 logger.warning("Exception generating temporary S3 url for " + key + " (" + e.getMessage() + ")");
                 return null;
-            } finally {
-                s3Presigner.close();
             }
 
             if (presignedRequest != null) {
@@ -1047,14 +1110,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private String generateTemporaryS3UploadUrl(String key, Date expiration) throws IOException {
-        if (s3 == null) {
+        if (s3ReadClient == null || s3WriteClient == null) {
             throw new IOException("ERROR: s3 not initialised. ");
         }
 
         Duration expirationDuration = Duration.between(Instant.now(), expiration.toInstant());
 
         PutObjectPresignRequest.Builder presignRequestBuilder = PutObjectPresignRequest.builder()
-                .signatureDuration(expirationDuration);
+            .signatureDuration(expirationDuration);
 
         // Add tagging if not disabled
         final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
@@ -1072,8 +1135,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } catch (S3Exception e) {
             logger.warning("Exception generating temporary S3 upload url for " + key + " (" + e.getMessage() + ")");
             return null;
-        } finally {
-            s3Presigner.close();
         }
 
         String urlString = presignedRequest.url().toString();
@@ -1111,7 +1172,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     .builder().bucket(bucketName).key(key);
 
             // Use the existing s3 async client for the createMultipartUpload operation
-            CompletableFuture<CreateMultipartUploadResponse> createMultipartUploadFuture = s3.createMultipartUpload(createMultipartUploadRequestBuilder.build());
+            CompletableFuture<CreateMultipartUploadResponse> createMultipartUploadFuture = s3WriteClient.createMultipartUpload(createMultipartUploadRequestBuilder.build());
             CreateMultipartUploadResponse createMultipartUploadResponse = createMultipartUploadFuture.join();
             String uploadId = createMultipartUploadResponse.uploadId();
 
@@ -1134,8 +1195,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     + "&storageidentifier=" + storageIdentifier);
             response.add("complete", "/api/datasets/mpupload?globalid=" + globalId + "&uploadid=" + uploadId
                     + "&storageidentifier=" + storageIdentifier);
-
-            s3Presigner.close();
         }
 
         response.add("partSize", minPartSize);
@@ -1189,38 +1248,49 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private static S3TransferManager getTransferManager(String driverId) {
-        if (driverTMMap.containsKey(driverId)) {
-            return driverTMMap.get(driverId);
-        } else {
+        return driverTMMap.computeIfAbsent(driverId, id -> {
             // building a TransferManager instance to support multipart uploading for files
             // over 4gb.
-            S3TransferManager manager = S3TransferManager.builder().s3Client(getClient(driverId)).build();
-            driverTMMap.put(driverId, manager);
-            return manager;
-        }
+            return S3TransferManager.builder().s3Client(getWriteClient(id)).build();
+        });
     }
 
-    private static S3AsyncClient getClient(String driverId) {
+    private static S3AsyncClient getReadClient(String driverId) {
+        return getClient(driverId, false);
+    }
 
-        if (driverClientMap.containsKey(driverId)) {
-            return driverClientMap.get(driverId);
-        } else {
+    private static S3AsyncClient getWriteClient(String driverId) {
+        return getClient(driverId, true);
+    }
+
+    private static S3AsyncClient getClient(String driverId, boolean upload) {
+        ConcurrentHashMap<String, S3AsyncClient> clientMap = upload ? driverUploadClientMap : driverDownloadClientMap;
+        return clientMap.computeIfAbsent(driverId, id -> {
             // Create a builder for the S3AsyncClient
             S3AsyncClientBuilder s3CB = S3AsyncClient.builder().requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED);
 
-            // Always enable multipart upload. It is only used when necessary
-            s3CB.multipartEnabled(true);
-
             // Create a custom HTTP client with the desired pool size
-            Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
+            Integer poolSize = Integer.getInteger("dataverse.files." + id + ".connection-pool-size", 256);
             Builder httpClientBuilder = NettyNioAsyncHttpClient.builder().maxConcurrency(poolSize);
 
             // Apply the custom HTTP client to the S3AsyncClientBuilder
             s3CB.httpClientBuilder(httpClientBuilder);
 
+            if (upload) {
+                // Enable multipart and configure it to be used if the file is larger than minPartSize.
+                s3CB.multipartEnabled(true);
+                long minPartSize = getMinPartSize(id);
+                s3CB.multipartConfiguration(MultipartConfiguration.builder()
+                    .thresholdInBytes(minPartSize)
+                    .minimumPartSizeInBytes(minPartSize).build());
+            }
+            else {
+                s3CB.multipartEnabled(false);
+            }
+
             // Configure endpoint and region
-            String s3CEUrl = getConfigParamForDriver(driverId, CUSTOM_ENDPOINT_URL, "");
-            String s3CERegion = getConfigParamForDriver(driverId, CUSTOM_ENDPOINT_REGION, "dataverse");
+            String s3CEUrl = getConfigParamForDriver(id, CUSTOM_ENDPOINT_URL, "");
+            String s3CERegion = getConfigParamForDriver(id, CUSTOM_ENDPOINT_REGION, "dataverse");
 
             if (!s3CEUrl.isEmpty()) {
                 s3CB.endpointOverride(URI.create(s3CEUrl));
@@ -1229,71 +1299,67 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             // Configure path style access
             boolean s3pathStyleAccess = Boolean
-                    .parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
+                .parseBoolean(getConfigParamForDriver(id, PATH_STYLE_ACCESS, "false"));
             s3CB.forcePathStyle(s3pathStyleAccess);
             // Configure chunked encoding
 
             Boolean s3chunkedEncoding = Boolean
-                    .parseBoolean(getConfigParamForDriver(driverId, CHUNKED_ENCODING, "true"));
+                .parseBoolean(getConfigParamForDriver(id, CHUNKED_ENCODING, "true"));
             s3CB.serviceConfiguration(S3Configuration.builder().chunkedEncodingEnabled(s3chunkedEncoding).build());
 
             // Configure credentials
-            s3CB.credentialsProvider(getCredentialsProvider(driverId));
+            s3CB.credentialsProvider(getCredentialsProvider(id));
 
             // Build the client
-            S3AsyncClient client = s3CB.build();
-            driverClientMap.put(driverId, client);
-            return client;
-        }
+            return s3CB.build();
+        });
+    }
+
+    private static S3AsyncClient getClient(String driverId) {
+        return getWriteClient(driverId);
     }
 
     private static S3Presigner getPresigner(String driverId) {
-        if (driverPresignerMap.containsKey(driverId)) {
-            return driverPresignerMap.get(driverId);
-        } else {
-            S3AsyncClient s3 = getClient(driverId);
+        return driverPresignerMap.computeIfAbsent(driverId, id -> {
+            S3AsyncClient s3 = getClient(id);
             S3Presigner.Builder s3PresignerBuilder = S3Presigner.builder()
-                    .region(Region.of(s3.serviceClientConfiguration().region().toString()))
-                    .credentialsProvider(getCredentialsProvider(driverId));
+                .region(Region.of(s3.serviceClientConfiguration().region().toString()))
+                .credentialsProvider(getCredentialsProvider(id));
 
             s3.serviceClientConfiguration().endpointOverride()
-                    .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
+                .ifPresent(uri -> s3PresignerBuilder.endpointOverride(uri));
 
             // Add path style access configuration
             Boolean s3pathStyleAccess = Boolean
-                    .parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
+                .parseBoolean(getConfigParamForDriver(id, PATH_STYLE_ACCESS, "false"));
             s3PresignerBuilder
-                    .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(s3pathStyleAccess).build());
-            S3Presigner s3Presigner = s3PresignerBuilder.build();
-            driverPresignerMap.put(driverId, s3Presigner);
-            return s3Presigner;
-        }
-
+                .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(s3pathStyleAccess).build());
+            return s3PresignerBuilder.build();
+        });
     }
-    
+
     private static AwsCredentialsProvider getCredentialsProvider(String driverId) {
-        if (driverCredentialsProviderMap.containsKey(driverId)) {
-            return driverCredentialsProviderMap.get(driverId);
-        } else {
+        return driverCredentialsProviderMap.computeIfAbsent(driverId, id -> {
             List<AwsCredentialsProvider> providers = new ArrayList<>();
 
-            String s3profile = getConfigParamForDriver(driverId, PROFILE);
+            String s3profile = getConfigParamForDriver(id, PROFILE);
             boolean allowInstanceCredentials = true;
 
             if (s3profile != null) {
                 allowInstanceCredentials = false;
             }
 
-            Optional<String> accessKey = config.getOptionalValue("dataverse.files." + driverId + ".access-key",
-                    String.class);
-            Optional<String> secretKey = config.getOptionalValue("dataverse.files." + driverId + ".secret-key",
-                    String.class);
+            Optional<String> accessKey = config.getOptionalValue("dataverse.files." + id + ".access-key",
+                String.class);
+            Optional<String> secretKey = config.getOptionalValue("dataverse.files." + id + ".secret-key",
+                String.class);
 
             if (accessKey.isPresent() && secretKey.isPresent()) {
                 allowInstanceCredentials = false;
                 providers.add(
-                        StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey.get(), secretKey.get())));
-            } else if (s3profile == null) {
+                    StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey.get(), secretKey.get())));
+            }
+            else if (s3profile == null) {
                 s3profile = "default";
             }
 
@@ -1306,11 +1372,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             Collections.reverse(providers);
-            AwsCredentialsProvider provider = AwsCredentialsProviderChain.builder().credentialsProviders(providers)
-                    .build();
-            driverCredentialsProviderMap.put(driverId, provider);
-            return provider;
-        }
+            return AwsCredentialsProviderChain.builder().credentialsProviders(providers)
+                .build();
+        });
     }
 
     public void removeTempTag() throws IOException {
@@ -1321,13 +1385,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             key = getMainFileKey();
             DeleteObjectTaggingRequest deleteObjectTaggingRequest = DeleteObjectTaggingRequest.builder()
-                    .bucket(bucketName).key(key).build();
+                .bucket(bucketName).key(key).build();
             // Note - currently we only use one tag so delete is the fastest and cheapest
             // way to get rid of that one tag
             // Otherwise you have to get tags, remove the one you don't want and post new
             // tags and get charged for the operations
-            s3.deleteObjectTagging(deleteObjectTaggingRequest).get();
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.deleteObjectTagging(deleteObjectTaggingRequest).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.severe("Unexpected error while removing temp tag: " + e.getMessage());
+            throw new IOException("Failed to remove temp tag", e);
+        } catch (ExecutionException e) {
             if (e.getCause() instanceof S3Exception) {
                 S3Exception s3e = (S3Exception) e.getCause();
                 if (s3e.statusCode() == 501) {
@@ -1369,7 +1437,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         try {
             s3Client.abortMultipartUpload(req).get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Failed to abort multipart upload", e);
+        }
+        catch (ExecutionException e) {
             throw new IOException("Failed to abort multipart upload", e);
         }
     }
@@ -1398,7 +1470,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         try {
             s3Client.completeMultipartUpload(completeMultipartUploadRequest).get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Failed to complete multipart upload", e);
+        } catch (ExecutionException e) {
             throw new IOException("Failed to complete multipart upload", e);
         }
     }
@@ -1459,8 +1534,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         ListObjectsV2Response listObjectsResponse = null;
         try {
-            listObjectsResponse = s3.listObjectsV2(listObjectsReqManual).get();
-        } catch (InterruptedException | ExecutionException e) {
+            listObjectsResponse = s3ReadClient.listObjectsV2(listObjectsReqManual).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3 listObjects: failed to get a listing for " + prefix, e);
+        } catch (ExecutionException e) {
             throw new IOException("S3 listObjects: failed to get a listing for " + prefix, e);
         }
 
@@ -1477,7 +1555,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 ListObjectsV2Request nextReq = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
                         .continuationToken(nextContinuationToken).build();
 
-                ListObjectsV2Response nextResponse = s3.listObjectsV2(nextReq).get();
+                ListObjectsV2Response nextResponse = s3ReadClient.listObjectsV2(nextReq).get();
                 if (nextResponse != null) {
                     storedFilesSummary.addAll(nextResponse.contents());
                     nextContinuationToken = nextResponse.nextContinuationToken();
@@ -1485,7 +1563,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     nextContinuationToken = null;
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("S3AccessIO: Failed to get objects for listing.", e);
+        } catch (ExecutionException e) {
             throw new IOException("S3AccessIO: Failed to get objects for listing.", e);
         }
 
@@ -1510,23 +1591,30 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 .key(prefix + fileName).build();
 
         try {
-            s3.deleteObject(deleteObjectRequest).get();
-        } catch (InterruptedException | ExecutionException e) {
+            s3WriteClient.deleteObject(deleteObjectRequest).get();
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("S3AccessIO: Unexpected error while deleting object " + e.getMessage());
+            throw new IOException("Failed to delete file", e);
+        }
+        catch (ExecutionException e) {
             if (e.getCause() instanceof S3Exception) {
                 S3Exception s3e = (S3Exception) e.getCause();
                 logger.warning("S3AccessIO: Unable to delete object " + s3e.getMessage());
-            } else {
+            }
+            else {
                 logger.warning("S3AccessIO: Unexpected error while deleting object " + e.getMessage());
             }
             throw new IOException("Failed to delete file", e);
         }
     }
-    
+
     @Override
     public void closeInputStream() {
         try {
             ResponseInputStream<GetObjectResponse> responseInputStream = (ResponseInputStream<GetObjectResponse>) getInputStream();
-            if(responseInputStream!= null && responseInputStream.available()>0) {
+            if (responseInputStream != null && responseInputStream.available() > 0) {
                 responseInputStream.abort();
             }
         } catch (IOException e) {
@@ -1553,13 +1641,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         HeadObjectRequest headObjectRequest = HeadObjectRequest.builder().bucket(bucketName).key(key).build();
 
         try {
-            HeadObjectResponse headObjectResponse = s3.headObject(headObjectRequest).get();
+            HeadObjectResponse headObjectResponse = s3ReadClient.headObject(headObjectRequest).get();
             return headObjectResponse.contentLength();
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Unexpected error while retrieving S3 object metadata", e);
+        }
+        catch (ExecutionException e) {
             if (e.getCause() instanceof S3Exception) {
                 S3Exception s3e = (S3Exception) e.getCause();
                 throw new IOException("Cannot get S3 object " + key + " (" + s3e.getMessage() + ")", s3e);
-            } else {
+            }
+            else {
                 throw new IOException("Unexpected error while retrieving S3 object metadata", e);
             }
         }
