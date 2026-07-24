@@ -1723,6 +1723,40 @@ public class Admin extends AbstractApiBean {
         return ok(info);
     }
 
+    @Path("datafiles/integrity/fixmissingfilesizes")
+    @AuthRequired
+    @POST
+    public Response fixMissingFileSizes(@Context final ContainerRequestContext crc, @QueryParam("limit") Integer limit) {
+
+        User u = getRequestUser(crc);
+        if (!u.isSuperuser()) {
+            return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
+        }
+        JsonObjectBuilder info = Json.createObjectBuilder();
+
+        List<String> accessibleDriverIds = DataAccess.getIdsForStorageDriversWithReadableFiles();
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingSizes(accessibleDriverIds);
+
+        if (affectedFileIds.isEmpty()) {
+            info.add("message",
+                    BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.noFilesFound"));
+        } else {
+            int howmany = affectedFileIds.size();
+            String message = BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.found", Arrays.asList(String.valueOf(howmany)));
+
+            if (limit != null && howmany > limit) {
+                affectedFileIds = affectedFileIds.subList(0, limit);
+                message = message.concat(BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.kickingOffWithLimit", Arrays.asList(String.valueOf(limit))));
+            } else {
+                message = message.concat(BundleUtil.getStringFromBundle("admin.api.datafiles.integrity.fixMissingFileSizes.kickingOff"));
+            }
+            info.add("message", message);
+            fileService.fixMissingFileSizes(affectedFileIds);
+        }
+
+        return ok(info);
+    }
+
     /**
      * This method is used in API tests, called from UtilIt.java.
      */
