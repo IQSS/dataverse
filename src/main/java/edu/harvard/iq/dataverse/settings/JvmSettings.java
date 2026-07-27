@@ -109,6 +109,10 @@ public enum JvmSettings {
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
     
+    // LEGACY BEHAVIOUR SETTINGS
+    SCOPE_LEGACY(PREFIX, "legacy"),
+    LEGACY_API_RESPONSE_MESSAGE_STYLE(SCOPE_LEGACY, "api-response-message-style"),
+    
     // METADATA SETTINGS
     SCOPE_METADATA(PREFIX, "metadata"),
     MDB_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
@@ -309,7 +313,6 @@ public enum JvmSettings {
     LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
 
     // LEGACY SETTINGS
-    SCOPE_LEGACY(PREFIX, "legacy"),
     SCHEMAORG_IN_HTML_HEAD(SCOPE_LEGACY, "schemaorg-in-html-head"),
     
     // LinkedDataNotification
