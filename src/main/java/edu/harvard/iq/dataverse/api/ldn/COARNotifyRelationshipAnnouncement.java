@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
@@ -72,7 +71,6 @@ public class COARNotifyRelationshipAnnouncement {
      * Process a COAR Notify Relationship Announcement message.
      *
      * @param msgObject The JSON-LD message object
-     * @return true if the message was successfully processed, false otherwise
      */
     public void processMessage(JsonObject msgObject) {
         // Extract subject, object, and relationship from the message
@@ -195,10 +193,6 @@ public class COARNotifyRelationshipAnnouncement {
         return metadata;
     }
 
-    /**
-     * Extract DataCite XML URL from Signposting Link headers.
-     */
-
 /**
  * Extract DataCite XML URL from Signposting Link headers.
  */
@@ -246,6 +240,7 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
         if (url == null || url.isBlank()) {
             return false;
         }
+        url = url.toLowerCase();
 
         String doiPart = null;
         if (url.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL)) {
@@ -256,14 +251,6 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
             doiPart = url.substring(AbstractDOIProvider.DXDOI_RESOLVER_URL.length());
         } else if (url.startsWith(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
             doiPart = url.substring(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL.length());
-        } else if (url.startsWith("https://api.datacite.org/dois/")) {
-            doiPart = url.substring("https://api.datacite.org/dois/".length());
-        } else if (url.startsWith("http://api.datacite.org/dois/")) {
-            doiPart = url.substring("http://api.datacite.org/dois/".length());
-        } else if (url.startsWith("https://api.test.datacite.org/dois/")) {
-            doiPart = url.substring("https://api.test.datacite.org/dois/".length());
-        } else if (url.startsWith("http://api.test.datacite.org/dois/")) {
-            doiPart = url.substring("http://api.test.datacite.org/dois/".length());
         }
 
         if (doiPart != null) {
