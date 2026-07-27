@@ -288,7 +288,7 @@ For additional details about security practices by the Dataverse team, see the :
 Reporting Security Issues
 +++++++++++++++++++++++++
 
-If you have a security issue to report, please email it to security@dataverse.org.
+If you have a security issue to report, please email it to security@dataverse.org. We usually give credit to security researchers in our release notes. We expect security researchers to look for this information in SECURITY.md (:download:`plain-text <../../../../.github/SECURITY.md>`, `HTML <https://github.com/IQSS/dataverse/security>`_) and include it there.
 
 .. _network-ports:
 
