@@ -12,13 +12,18 @@ These instructions are oriented around Docker but the "classic" instructions we 
 Quickstart
 ----------
 
-First, install Java 21, Maven, and Docker.
+First, install Java 21, Maven, and Docker or Podman.
 
 After cloning the `dataverse repo <https://github.com/IQSS/dataverse>`_, run this:
 
 ``mvn -Pct clean package docker:run``
 
 (Note that if you are Windows, you must run the command above in `WSL <https://learn.microsoft.com/windows/wsl>`_ rather than cmd.exe. See :doc:`windows`.)
+
+If using Podman, assuming ``podman.sock`` is located at ``/run/user/1000/podman/podman.sock``
+and a symlink ``docker`` pointing to ``podman`` executable exists, run this:
+
+``DOCKER_HOST=unix:///run/user/1000/podman/podman.sock mvn -Pct clean package docker:run``
 
 After some time you should be able to log in:
 
@@ -49,12 +54,26 @@ If you are using SKDMAN, run this command:
 
 Otherwise, follow instructions at https://maven.apache.org.
 
-Install and Start Docker
-~~~~~~~~~~~~~~~~~~~~~~~~
+Install and Start Docker/Podman
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Follow instructions at https://www.docker.com
 
 Be sure to start Docker.
+
+For Podman, follow instructions at https://podman.io/docs/installation. Once Podman is
+installed, ensure to start Podman socket service. This can be verified by running
+``podman info`` command in the output look for the following output:
+
+.. code-block:: yaml
+
+	remoteSocket:
+	  exists: true
+	  path: /run/user/1000/podman/podman.sock
+
+In case if exists is ``false``, start the socket using command ``systemctl --user start podman.socket``.
+To ensure the socket service starts automatically on system boot, run ``systemctl --user enable podman.socket``.
+Finally, create a symlink named ``docker`` pointing to ``podman`` executable as ``ln -s /usr/bin/podman /usr/bin/docker``. 
 
 Git Clone Repo
 ~~~~~~~~~~~~~~
@@ -69,6 +88,11 @@ Build and Run
 Change into the ``dataverse`` directory you just cloned and run the following command:
 
 ``mvn -Pct clean package docker:run``
+
+In the case of Podman, if ``podman.sock`` is running at ``/run/user/1000/podman/podman.sock``, the
+command becomes:
+
+``DOCKER_HOST=unix:///run/user/1000/podman/podman.sock mvn -Pct clean package docker:run``
 
 Verify 
 ~~~~~~

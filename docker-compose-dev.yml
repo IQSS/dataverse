@@ -21,6 +21,7 @@ services:
       DATAVERSE_FEATURE_API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS: "1"
       DATAVERSE_MAIL_SYSTEM_EMAIL: "dataverse@localhost"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
+      DATAVERSE_MAIL_MTA_PORT: "1025"
       DATAVERSE_AUTH_OIDC_ENABLED: "1"
       DATAVERSE_AUTH_OIDC_HIDDEN_JSF: "1"
       DATAVERSE_AUTH_OIDC_CLIENT_ID: test
@@ -82,8 +83,11 @@ services:
       - ./docker-dev-volumes/app/secrets:/secrets
       - ./target/dataverse:/opt/payara/deployments/dataverse:ro
     tmpfs:
-      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
-      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+      # Podman does not support uid and gid options for tmpfs and to maintain a single
+      # compose file for Docker and Podman, uid and gid have been omitted. As it is
+      # a dev environment, the risk introduced is minimal by removing these options.
+      - /dumps:mode=1777,size=2052M #,uid=1000,gid=1000
+      - /tmp:mode=1777,size=2052M #,uid=1000,gid=1000
     mem_limit: 2684354560 # 2.5 GiB
     mem_reservation: 1024m
     privileged: false
@@ -185,17 +189,17 @@ services:
     image: maildev/maildev:2.0.5
     restart: on-failure
     ports:
-      - "25:25" # smtp server
+      - "1025:1025" # smtp server
       - "1080:1080" # web ui
     environment:
-      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_SMTP_PORT=1025
       - MAILDEV_MAIL_DIRECTORY=/mail
     networks:
       - dataverse
     #volumes:
     #  - ./docker-dev-volumes/smtp/data:/mail
     tmpfs:
-      - /mail:mode=770,size=128M,uid=1000,gid=1000
+      - /mail:mode=1777,size=128M #,uid=1000,gid=1000
 
   dev_keycloak:
     container_name: "dev_keycloak"
@@ -250,7 +254,7 @@ services:
     volumes:
       - ./conf/localstack:/etc/localstack/init/ready.d
     tmpfs:
-      - /localstack:mode=770,size=128M,uid=1000,gid=1000
+      - /localstack:mode=1777,size=128M #,uid=1000,gid=1000
 
   previewers-provider:
     container_name: previewers-provider
