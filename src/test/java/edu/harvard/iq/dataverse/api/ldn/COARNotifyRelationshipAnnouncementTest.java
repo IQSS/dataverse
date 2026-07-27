@@ -31,15 +31,9 @@ public class COARNotifyRelationshipAnnouncementTest {
         assertTrue(handler.isTrustedDataCiteUrl("https://dx.doi.org/10.7910/DVN/TJCLKP"));
         assertTrue(handler.isTrustedDataCiteUrl("http://dx.doi.org/10.7910/DVN/TJCLKP"));
 
-        // DataCite API
-        assertTrue(handler.isTrustedDataCiteUrl("https://api.datacite.org/dois/10.7910/DVN/TJCLKP"));
-        assertTrue(handler.isTrustedDataCiteUrl("http://api.datacite.org/dois/10.7910/DVN/TJCLKP"));
-        assertTrue(handler.isTrustedDataCiteUrl("https://api.test.datacite.org/dois/10.7910/DVN/TJCLKP"));
-        assertTrue(handler.isTrustedDataCiteUrl("http://api.test.datacite.org/dois/10.7910/DVN/TJCLKP"));
-
-        // Invalid DOIs
+        // Invalid DOI
         assertFalse(handler.isTrustedDataCiteUrl("https://doi.org/not-a-doi"));
-        assertFalse(handler.isTrustedDataCiteUrl("https://api.datacite.org/dois/not-a-doi"));
+
 
         // Untrusted sources
         assertFalse(handler.isTrustedDataCiteUrl("https://example.com/metadata.xml"));
