@@ -420,6 +420,128 @@ public class XmlMetadataTemplateTest {
 
     }
 
+    @Test
+    public void testDataCiteXMLCreationInvalidDates() throws IOException {
+        Dataverse collection = new Dataverse();
+        collection.setCitationDatasetFieldTypes(new ArrayList<>());
+        Dataset d = new Dataset();
+        d.setOwner(collection);
+        DatasetVersion dv = new DatasetVersion();
+        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        toa.setTermsOfUse("Some terms");
+        dv.setTermsOfUseAndAccess(toa);
+        dv.setDataset(d);
+        dv.setVersionState(VersionState.DRAFT);
+
+        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        JsonObject datasetJson = JsonUtil.getJsonObject(datasetVersionAsJson);
+
+        GlobalId doi = new GlobalId("doi", datasetJson.getString("authority"), datasetJson.getString("identifier"),
+                null, null, null);
+        d.setGlobalId(doi);
+
+        List<DatasetField> fields = assertDoesNotThrow(() -> XmlMetadataTemplateTest
+                .parseMetadataBlocks(datasetJson.getJsonObject("datasetVersion").getJsonObject("metadataBlocks")));
+
+        // Add invalid dates to dateOfCollection
+        DatasetFieldType dateOfCollectionType = new DatasetFieldType(DatasetFieldConstant.dateOfCollection, FieldType.NONE, true);
+        DatasetFieldType dateOfCollectionStartType = new DatasetFieldType(DatasetFieldConstant.dateOfCollectionStart, FieldType.DATE, false);
+        DatasetFieldType dateOfCollectionEndType = new DatasetFieldType(DatasetFieldConstant.dateOfCollectionEnd, FieldType.DATE, false);
+        
+        DatasetField dateOfCollectionField = new DatasetField();
+        dateOfCollectionField.setDatasetFieldType(dateOfCollectionType);
+        dateOfCollectionField.setDatasetVersion(dv);
+        
+        List<DatasetFieldCompoundValue> compoundValues = new ArrayList<>();
+        
+        // 1. Valid start, invalid end
+        compoundValues.add(createDateRangeValue(dateOfCollectionField, dateOfCollectionStartType, "2020-01-01", dateOfCollectionEndType, "Invalid"));
+        // 2. Invalid start, valid end
+        compoundValues.add(createDateRangeValue(dateOfCollectionField, dateOfCollectionStartType, "BadDate", dateOfCollectionEndType, "2020-02-02"));
+        // 3. Valid start, null end
+        compoundValues.add(createDateRangeValue(dateOfCollectionField, dateOfCollectionStartType, "2020-03-03", dateOfCollectionEndType, null));
+        // 4. Null start, valid end
+        compoundValues.add(createDateRangeValue(dateOfCollectionField, dateOfCollectionStartType, null, dateOfCollectionEndType, "2020-04-04"));
+        // 5. Invalid start, invalid end
+        compoundValues.add(createDateRangeValue(dateOfCollectionField, dateOfCollectionStartType, "Foo", dateOfCollectionEndType, "Bar"));
+
+        dateOfCollectionField.setDatasetFieldCompoundValues(compoundValues);
+        fields.add(dateOfCollectionField);
+
+        // Add invalid dates to timePeriodCovered
+        DatasetFieldType timePeriodCoveredType = new DatasetFieldType(DatasetFieldConstant.timePeriodCovered, FieldType.NONE, true);
+        DatasetFieldType timePeriodCoveredStartType = new DatasetFieldType(DatasetFieldConstant.timePeriodCoveredStart, FieldType.DATE, false);
+        DatasetFieldType timePeriodCoveredEndType = new DatasetFieldType(DatasetFieldConstant.timePeriodCoveredEnd, FieldType.DATE, false);
+
+        DatasetField timePeriodCoveredField = new DatasetField();
+        timePeriodCoveredField.setDatasetFieldType(timePeriodCoveredType);
+        timePeriodCoveredField.setDatasetVersion(dv);
+
+        List<DatasetFieldCompoundValue> timePeriodCompoundValues = new ArrayList<>();
+        // Valid start, invalid end for timePeriod
+        timePeriodCompoundValues.add(createDateRangeValue(timePeriodCoveredField, timePeriodCoveredStartType, "2021-01-01", timePeriodCoveredEndType, "BadDate"));
+        timePeriodCoveredField.setDatasetFieldCompoundValues(timePeriodCompoundValues);
+        fields.add(timePeriodCoveredField);
+        
+        dv.setDatasetFields(fields);
+        ArrayList<DatasetVersion> dsvs = new ArrayList<>();
+        dsvs.add(0, dv);
+        d.setVersions(dsvs);
+        DatasetType dType = new DatasetType();
+        dType.setName(DatasetType.DATASET_TYPE_DATASET);
+        d.setDatasetType(dType);
+        
+        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
+                new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+        
+        assertTrue(xml.contains("dateType=\"Collected\">2020-01-01/</date>"));
+        assertTrue(xml.contains("dateType=\"Collected\">/2020-02-02</date>"));
+        assertTrue(xml.contains("dateType=\"Collected\">2020-03-03/</date>"));
+        assertTrue(xml.contains("dateType=\"Collected\">/2020-04-04</date>"));
+        // Item 5 should not be written as "Foo/Bar" or "/"
+        assertFalse(xml.contains("Foo/Bar"));
+        // RIght now, there are no other "/" entries in the result, so this test works. If we ever have a legitimate one, this would
+        // need to be tightened.
+        assertFalse(xml.contains("\"/\""));
+        
+        // timePeriodCovered check
+        assertTrue(xml.contains("dateType=\"Other\""));
+        assertTrue(xml.contains("dateInformation=\"Time period covered by the data\""));
+        assertTrue(xml.contains(">2021-01-01/</date>"));
+        
+        try {
+            StreamSource source = new StreamSource(new StringReader(xml));
+            source.setSystemId("DataCite XML for test dataset");
+            assertTrue(XmlValidator.validateXmlSchema(source,
+                    new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+        } catch (SAXException e) {
+            fail("Schema validation failed: " + e.getMessage());
+        }
+    }
+
+    private DatasetFieldCompoundValue createDateRangeValue(DatasetField parent, DatasetFieldType startType, String startVal, DatasetFieldType endType, String endVal) {
+        DatasetFieldCompoundValue cvv = new DatasetFieldCompoundValue();
+        cvv.setParentDatasetField(parent);
+        List<DatasetField> children = new ArrayList<>();
+        if (startVal != null) {
+            DatasetField sf = new DatasetField();
+            sf.setDatasetFieldType(startType);
+            sf.setSingleValue(startVal);
+            sf.setParentDatasetFieldCompoundValue(cvv);
+            children.add(sf);
+        }
+        if (endVal != null) {
+            DatasetField ef = new DatasetField();
+            ef.setDatasetFieldType(endType);
+            ef.setSingleValue(endVal);
+            ef.setParentDatasetFieldCompoundValue(cvv);
+            children.add(ef);
+        }
+        cvv.setChildDatasetFields(children);
+        return cvv;
+    }
+
     /**
      * Mock Utility Methods - These methods support importing DatasetFields from the
      * Dataverse JSON export format. They assume that any DatasetFieldType

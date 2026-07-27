@@ -753,10 +753,10 @@ public class XmlMetadataTemplate {
                 for (DatasetField subField : collectionDateFieldValue.getChildDatasetFields()) {
                     switch (subField.getDatasetFieldType().getName()) {
                     case DatasetFieldConstant.dateOfCollectionStart:
-                        startDate = subField.getValue().trim();
+                        startDate = StringUtils.strip(subField.getValue());
                         break;
                     case DatasetFieldConstant.dateOfCollectionEnd:
-                        endDate = subField.getValue().trim();
+                        endDate = StringUtils.strip(subField.getValue());
                         break;
                     }
                 }
@@ -767,7 +767,7 @@ public class XmlMetadataTemplate {
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
-                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate));
                 }
             }
         }
@@ -779,10 +779,10 @@ public class XmlMetadataTemplate {
                 for (DatasetField subField : timePeriodFieldValue.getChildDatasetFields()) {
                     switch (subField.getDatasetFieldType().getName()) {
                     case DatasetFieldConstant.timePeriodCoveredStart:
-                        startDate = subField.getValue().trim();
+                        startDate = StringUtils.strip(subField.getValue());
                         break;
                     case DatasetFieldConstant.timePeriodCoveredEnd:
-                        endDate = subField.getValue().trim();
+                        endDate = StringUtils.strip(subField.getValue());
                         break;
                     }
                 }
@@ -793,7 +793,7 @@ public class XmlMetadataTemplate {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Other");
                     attributes.put("dateInformation", "Time period covered by the data");
-                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate));
                 }
             }
         }
