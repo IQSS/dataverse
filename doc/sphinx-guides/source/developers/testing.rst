@@ -496,6 +496,19 @@ Developers who contribute front-end UI code are responsible for understanding th
 
 There are browser developer tools such as the `Wave toolbar <https://wave.webaim.org/extension/>`__ by WebAIM (available for Chrome, Firefox) and the `Siteimprove Accessibility Checker <https://siteimprove.com/en-us/core-platform/integrations/browser-extensions/>`__  (available for Chrome, Firefox) that will generate reports for a single page. It is required that developers utilize these tools to catch any accessibility issues with pages or features that are being added to the application UI.
 
+Browser-Based Testing
+---------------------
+
+Browser-Based Testing of JSF
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526).
+
+Browser-Based Testing of the SPA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://github.com/IQSS/dataverse-frontend uses Cypress.
+
 Future Work
 -----------
 
@@ -517,11 +530,6 @@ Future Work on Integration Tests
 - Generate code coverage reports for **integration** tests: https://github.com/pkainulainen/maven-examples/issues/3 and https://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/
 - Consistent logging of API Tests. Show test name at the beginning and end and status codes returned.
 - expected passing and known/expected failing integration tests: https://github.com/IQSS/dataverse/issues/4438
-
-Browser-Based Testing
-~~~~~~~~~~~~~~~~~~~~~
-
-- Revisit Selenium/Open Sauce: https://github.com/IQSS/dataverse/commit/8a26404 and https://saucelabs.com/u/esodvn and https://saucelabs.com/u/wdjs and http://sauceio.com/index.php/2013/05/a-browser-matrix-widget-for-the-open-source-community/
 
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
