@@ -24,3 +24,8 @@ We use a private GitHub issue tracker at <https://github.com/IQSS/dataverse-secu
 ## Sending Security Advisories
 
 See our [how to send a security advisory](https://docs.google.com/document/d/1sYhi-_U1xP2ZEjWtqVqkuuMxncG_VZZYQRKDEv6N-KQ/edit?usp=sharing) doc.
+
+(security-researcher-credit)=
+## Giving Credit to Security Researchers
+
+We usually give credit to security researchers in release notes. See {ref}`write-release-notes` and {ref}`reporting-security-issues`.
