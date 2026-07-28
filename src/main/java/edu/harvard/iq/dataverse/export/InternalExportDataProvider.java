@@ -150,12 +150,12 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
     @Override
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
-        for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            jab.add(JsonPrinter.json(dataFile, fileMetadata, true, false, true));
-        }
-        return jab.build().stream().map(jsonValue -> jsonValue.asJsonObject());
+        // @todo All supported FileExportQuery predicates need to be properly 
+        // handled here. Waiting for the addition of the helper methods to the 
+        // spi, as agreed last week. 
+        return dv.getFileMetadatas().stream()
+                .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
+                .map(JsonObjectBuilder::build);
     }
 
     @Override
@@ -214,15 +214,9 @@ public class InternalExportDataProvider implements ExportDataProvider {
      * @return
      */
     private boolean isOnlyDatasetLevelMetadataRequested(DatasetExportQuery query) {
-
-        Set<DatasetMetadataPredicates> predicates = query.getDatasetPredicates();
-
-        for (DatasetMetadataPredicates p : predicates) {
-            // @todo This is pending on adding a dedicated DATASET_LEVEL_ONLY predicate
-            // to the enum
-            //if (p.equals(DatasetMetadataPredicates.DATASET_LEVEL_ONLY)) return true;
-        }
-
+        // @todo This needs to be properly implemented; 
+        // Waiting for the addition of the helper functions to the interface
+        // as agreed last week. 
         // The default assumption is we pack both the Dataset, and the File-level
         // metadata in the Json
         return false;
