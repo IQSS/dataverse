@@ -187,18 +187,15 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
         if (isOnlyTabularMetadataRequested(query) && isDataVariableMetadataRequested(query)) {
 
-            for (FileMetadata fileMetadata : datasetVersionFilesService.getTabularDataFileMetadatas(dv,
+            return datasetVersionFilesService.getTabularDataFileMetadatas(dv,
                     pageRequest.getLimit(),
                     pageRequest.getOffset(),
-                    isOnlyPublicMetadataRequested(query))) {
-                DataFile dataFile = fileMetadata.getDataFile();
-                jab.add(JsonPrinter.jsonDatafileWithDatatableForExport(dataFile, fileMetadata));
-            }
-
-            return jab.build().stream().map(jsonValue -> jsonValue.asJsonObject());
+                    isOnlyPublicMetadataRequested(query)).stream()
+                    .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
+                    .map(JsonObjectBuilder::build);
         } else {
             throw new ExportException("This implementation of getDatasetFileDetails() (paginated version) "
-            + "only supports request for detailed DataVariable metadata, for tabular DataFiles only");
+                    + "only supports request for detailed DataVariable metadata, for tabular DataFiles only");
         }
     }
 
