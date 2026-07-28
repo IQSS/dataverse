@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.FileSearchCriteria;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DOIDataCiteRegisterService;
 import io.gdcc.spi.export.ExportDataProvider;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
@@ -185,17 +186,32 @@ public class InternalExportDataProvider implements ExportDataProvider {
             throw new ExportException("EJB DatasetVersionFilesService is not available");
         }
 
-        if (isOnlyTabularMetadataRequested(query) && isDataVariableMetadataRequested(query)) {
+        if (isDataVariableMetadataRequested(query)) {
+            if (isOnlyTabularMetadataRequested(query)) {
 
-            return datasetVersionFilesService.getTabularDataFileMetadatas(dv,
-                    pageRequest.getLimit(),
-                    pageRequest.getOffset(),
-                    isOnlyPublicMetadataRequested(query)).stream()
-                    .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
-                    .map(JsonObjectBuilder::build);
+                return datasetVersionFilesService.getTabularDataFileMetadatas(dv,
+                        pageRequest.getLimit(),
+                        pageRequest.getOffset(),
+                        isOnlyPublicMetadataRequested(query)).stream()
+                        .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
+                        .map(JsonObjectBuilder::build);
+            } else {
+                return datasetVersionFilesService.getFileMetadatas(dv,
+                        pageRequest.getLimit(),
+                        pageRequest.getOffset(),
+                        createFileSearchCriteria(isOnlyPublicMetadataRequested(query)),
+                        DatasetVersionFilesServiceBean.FileOrderCriteria.Oldest).stream()
+                        .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
+                        .map(JsonObjectBuilder::build);
+            }
         } else {
-            throw new ExportException("This implementation of getDatasetFileDetails() (paginated version) "
-                    + "only supports request for detailed DataVariable metadata, for tabular DataFiles only");
+            return datasetVersionFilesService.getFileMetadatas(dv,
+                        pageRequest.getLimit(),
+                        pageRequest.getOffset(),
+                        createFileSearchCriteria(isOnlyPublicMetadataRequested(query)),
+                        DatasetVersionFilesServiceBean.FileOrderCriteria.Oldest).stream()
+                        .map(fileMetadata -> JsonPrinter.json(fileMetadata.getDataFile(), fileMetadata, true))
+                        .map(JsonObjectBuilder::build);
         }
     }
 
@@ -263,5 +279,27 @@ public class InternalExportDataProvider implements ExportDataProvider {
      */
     private boolean checkForPredicate(FileExportQuery query, FileMetadataPredicates predicate) {
         return query.getFilePredicates().contains(predicate);
+    }
+    
+    /**
+     * Service method for creating a FileSearchCriteria that the paginated 
+     * getFileMetadatas() method in the DatasetVersionFilesServiceBean understands.
+     * Only used for "all files" vs "public only" at present.
+     * 
+     * @param publicOnly
+     * @return FileSearchCriteria
+     */
+    private FileSearchCriteria createFileSearchCriteria(boolean publicOnly) {
+        try {
+            return new FileSearchCriteria(
+                    null,
+                    publicOnly ? FileSearchCriteria.FileAccessStatus.valueOf("Public") : null,
+                    null,
+                    null,
+                    null
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ExportException("Failed to create FileSearchCriteria");
+        }
     }
 }
