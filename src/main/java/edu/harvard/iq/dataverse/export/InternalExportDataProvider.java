@@ -268,13 +268,6 @@ public class InternalExportDataProvider implements ExportDataProvider {
      * @return
      */
     private boolean checkForPredicate(FileExportQuery query, FileMetadataPredicates predicate) {
-
-        Set<FileMetadataPredicates> predicates = query.getFilePredicates();
-
-        for (FileMetadataPredicates p : predicates) {
-            if (p.equals(predicate)) return true;
-        }
-
-        return false;
+        return query.getFilePredicates().contains(predicate);
     }
 }
