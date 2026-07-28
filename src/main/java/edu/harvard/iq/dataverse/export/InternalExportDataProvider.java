@@ -200,7 +200,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
                         pageRequest.getLimit(),
                         pageRequest.getOffset(),
                         createFileSearchCriteria(isOnlyPublicMetadataRequested(query)),
-                        DatasetVersionFilesServiceBean.FileOrderCriteria.Oldest).stream()
+                        DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ).stream()
                         .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
                         .map(JsonObjectBuilder::build);
             }
@@ -209,7 +209,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
                         pageRequest.getLimit(),
                         pageRequest.getOffset(),
                         createFileSearchCriteria(isOnlyPublicMetadataRequested(query)),
-                        DatasetVersionFilesServiceBean.FileOrderCriteria.Oldest).stream()
+                        DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ).stream()
                         .map(fileMetadata -> JsonPrinter.json(fileMetadata.getDataFile(), fileMetadata, true))
                         .map(JsonObjectBuilder::build);
         }
