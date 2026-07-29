@@ -151,6 +151,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setLicense(License license) {
         this.license = license;
         if(license!=null) {
+            //Enforce restriction that customTerms can't be used with a license
             clearCustomTermsVariables();
         }
     }
@@ -162,6 +163,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setTermsOfUse(String termsOfUse) {
         this.termsOfUse = termsOfUse;
         if (termsOfUse != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
@@ -181,6 +183,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setConfidentialityDeclaration(String confidentialityDeclaration) {
         this.confidentialityDeclaration = confidentialityDeclaration;
         if (confidentialityDeclaration != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
@@ -192,6 +195,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setSpecialPermissions(String specialPermissions) {
         this.specialPermissions = specialPermissions;
         if (specialPermissions != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
@@ -203,6 +207,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setRestrictions(String restrictions) {
         this.restrictions = restrictions;
         if (restrictions != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
@@ -214,6 +219,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setCitationRequirements(String citationRequirements) {
         this.citationRequirements = citationRequirements;
         if (citationRequirements != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
@@ -225,6 +231,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setDepositorRequirements(String depositorRequirements) {
         this.depositorRequirements = depositorRequirements;
         if (depositorRequirements != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
@@ -236,6 +243,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setConditions(String conditions) {
         this.conditions = conditions;
         if (conditions != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
@@ -247,6 +255,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setDisclaimer(String disclaimer) {
         this.disclaimer = disclaimer;
         if (disclaimer != null) {
+            //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
     }
