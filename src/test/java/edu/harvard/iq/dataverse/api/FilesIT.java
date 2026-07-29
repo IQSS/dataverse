@@ -4191,7 +4191,7 @@ public class FilesIT {
         int totalCountFromJson = 0;
         for (int i = 0; i < pages; i++) {
             int offset = limit * i;
-            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), offset, limit, ownerApiToken);
+            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), "User", "asc", offset, limit, ownerApiToken);
             guestbookListResponses.prettyPrint();
             jsonPath = JsonPath.from(guestbookListResponses.body().asString());
             pagedTotalCount += jsonPath.getList("data.responses").size();

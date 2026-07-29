@@ -174,12 +174,11 @@ public class Guestbooks extends AbstractApiBean {
     @Operation(summary = "Lists guestbook responses",
             description = "Returns guestbook metadata and response records, with pagination links when a limit is supplied.")
     public Response getResponses(@Context ContainerRequestContext crc,
-                                 @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true)
-                                 @PathParam("id") Long id,
-                                 @Parameter(description = "Maximum number of response records to return.")
-                                 @QueryParam("limit") Integer limit,
-                                 @Parameter(description = "Response record offset.")
-                                 @QueryParam("offset") Integer offset) {
+                                 @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true) @PathParam("id") Long id,
+                                 @Parameter(description = "Sort Field. One of: 'Dataset'; 'Date'; 'Type'; 'File'; 'User'") @QueryParam("sort") String sortField,
+                                 @Parameter(description = "Sort order. ('asc' or 'desc')") @QueryParam("order") String sortOrder,
+                                 @Parameter(description = "Maximum number of response records to return.") @QueryParam("limit") Integer limit,
+                                 @Parameter(description = "Response record offset.") @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Guestbook guestbook = guestbookService.find(id);
@@ -195,7 +194,7 @@ public class Guestbooks extends AbstractApiBean {
             guestbook.setUsageCount(totalUsageCount);
             guestbook.setResponseCount(totalResponseCount);
 
-            List<GuestbookResponse> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), offset, limit);
+            List<GuestbookResponse> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), sortField, sortOrder, offset, limit);
 
             JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
             guestbookResponseObject.add("guestbook", JsonPrinter.json(guestbook));
