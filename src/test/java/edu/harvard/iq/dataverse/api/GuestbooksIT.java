@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -12,8 +11,6 @@ import jakarta.json.JsonObject;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -40,9 +37,9 @@ public class GuestbooksIT {
         String guestbookAsJson = data.getJsonObject("data").toString();
 
         // Test Update Guestbook
-        guestbookAsJson = guestbookAsJson.replace("my test guestbook", "my modified test guestbook")
-                .replace("positionRequired\":false", "positionRequired\": true")
-                .replace("displayOrder\":3}", "displayOrder\":3},{\"value\":\"Green\",\"displayOrder\":4}"); // add a new option (Green)
+        guestbookAsJson = guestbookAsJson.replace("my test guestbook","my modified test guestbook")
+            .replace("positionRequired\":false", "positionRequired\": true")
+            .replace("displayOrder\":3}", "displayOrder\":3},{\"value\":\"Green\",\"displayOrder\":4}"); // add a new option (Green)
 
         Response updateGuestbookResponse = UtilIT.updateGuestbook(guestbook.getId(), guestbookAsJson, apiToken);
         updateGuestbookResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -85,12 +82,5 @@ public class GuestbooksIT {
         updateGuestbookResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", containsString("enabled=false"));
-    }
-
-    @Test
-    public void testSort2() {
-        String ownerApiToken = "02996486-52da-4b83-8b86-df4b8e9898e0";
-        Response guestbookListResponses = UtilIT.getGuestbooksResponses(2L, "dataset", null, null, null, ownerApiToken);
-        guestbookListResponses.prettyPrint();
     }
 }
