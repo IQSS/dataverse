@@ -105,7 +105,7 @@ public enum FeatureFlags {
      * <p>If this feature flag is enabled, no license is assigned (and no terms) in this case.</p>
      *
      * @apiNote Raise flag by setting "dataverse.feature.do-not-assume-default-license"
-     * @since Dataverse 6.5
+     * @since Dataverse 6.12
      */
     DO_NOT_ASSUME_DEFAULT_LICENSE("do-not-assume-default-license"),
 
