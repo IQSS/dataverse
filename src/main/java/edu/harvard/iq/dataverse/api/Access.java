@@ -12,10 +12,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.*;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -2236,13 +2233,16 @@ public class Access extends AbstractApiBean {
 
     private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
         // Check if guestbook response is required
-        Dataset d = df.getOwner();
-        boolean required = df.getOwner().hasEnabledGuestbook() && !d.getEffectiveGuestbookEntryAtRequest();
+        Dataset ds = df.getOwner();
+        boolean required = ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest();
         boolean wasWrittenInPost = false;
         if (required) {
             User requestor = getRequestor(user);
-            if (requestor instanceof AuthenticatedUser && permissionService.userOn(requestor, df.getOwner()).has(Permission.EditDataset)) {
+            if (requestor instanceof AuthenticatedUser && permissionService.userOn(requestor, ds).has(Permission.EditDataset)) {
                 required = false;
+            } else if (requestor instanceof PrivateUrlUser) {
+                // PrivateUrlUser access to draft files is exempt from guestbook responses in JSF https://github.com/IQSS/dataverse/issues/12535
+                required = (ds.getId() == ((PrivateUrlUser) requestor).getDatasetId());
             }
             // Check if we are downloading a thumbnail image which doesn't require a guestbook response
             boolean imageThumb = uriInfo.getQueryParameters().containsKey("imageThumb");
@@ -2258,7 +2258,7 @@ public class Access extends AbstractApiBean {
                         throw new NotFoundException("GuestbookResponse Not Found for id:" + gbrids);
                     }
                     Long delta = Instant.now().toEpochMilli() - gbr.getResponseTime().getTime();
-                    wasWrittenInPost = gbr.getDataset().getId().equals(df.getOwner().getId()) && delta <= (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L);
+                    wasWrittenInPost = gbr.getDataset().getId().equals(ds.getId()) && delta <= (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L);
                 } catch (NumberFormatException | DateTimeParseException ex) {
                     throw new BadRequestException(ex.getMessage());
                 }
