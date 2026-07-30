@@ -4184,6 +4184,12 @@ public class FilesIT {
         assertTrue(totalCount > 0);
         assertNotNull(jsonPath.getString("data.responses[0].name"));
 
+        // Test Get All Responses Sorted
+        testSortByField(guestbook.getId(), "file", "asc", ownerApiToken);
+        testSortByField(guestbook.getId(), "user", "asc", ownerApiToken);
+        testSortByField(guestbook.getId(), "user", "desc", ownerApiToken);
+        testSortByField(guestbook.getId(), "dataset", null, ownerApiToken);
+
         // Test Get Responses with pagination
         int pages = 4; // total should be 17. set to 4 pages
         int limit = (totalCount / pages) + 1; // should be 5 per page. we should see 5, 5, 5, 2
@@ -4191,7 +4197,7 @@ public class FilesIT {
         int totalCountFromJson = 0;
         for (int i = 0; i < pages; i++) {
             int offset = limit * i;
-            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), "User", "asc", offset, limit, ownerApiToken);
+            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), "date", null, offset, limit, ownerApiToken);
             guestbookListResponses.prettyPrint();
             jsonPath = JsonPath.from(guestbookListResponses.body().asString());
             pagedTotalCount += jsonPath.getList("data.responses").size();
@@ -4201,6 +4207,27 @@ public class FilesIT {
         // verify all counts are good and equal
         assertEquals(totalCount, pagedTotalCount);
         assertEquals(pagedTotalCount, totalCountFromJson);
+    }
+
+    private void testSortByField(Long id, String sortField, String order, String token) {
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(id, sortField, order, 0, Integer.MAX_VALUE, token);
+        Map<String,String> fieldMap = Map.of("dataset", "dataset", "type", "type", "user", "name", "file", "fileName", "date", "date");
+        String fieldName = fieldMap.get(sortField);
+        boolean isDescending = order != null && order.equalsIgnoreCase("desc");
+        guestbookListResponses.prettyPrint();
+        guestbookListResponses.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        int totalCount = jsonPath.getList("data.responses").size();
+        assertTrue(totalCount > 0);
+        String lastFieldValue = jsonPath.getString("data.responses[0]." + fieldName).toLowerCase(); // The sort seems to be case-insensitive
+        for (int i = 1; i < totalCount; i++) {
+            String fieldValue = jsonPath.getString("data.responses[" + i + "]." + fieldName).toLowerCase();
+            System.out.println("lastFieldValue:" + lastFieldValue + "   fieldValue:" + fieldValue + "     "  + fieldValue.compareTo(lastFieldValue));
+            assertTrue(isDescending ? fieldValue.compareTo(lastFieldValue) <= 0 : fieldValue.compareTo(lastFieldValue) >= 0);
+            lastFieldValue = fieldValue;
+        }
+        System.out.println("total rows: " + totalCount);
     }
 
     @Test

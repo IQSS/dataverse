@@ -126,12 +126,16 @@ public class GuestbookResponseServiceBean {
             String orderField = (sortField == null) ? "" : sortField.toLowerCase();
             switch(orderField) {
                 case "dataset":
-                    Join<GuestbookResponse, DatasetVersion> datasetVersionJoin = guestbookResponseRoot.join("datasetVersion", JoinType.INNER);
-                    Join<DatasetVersion, DatasetField> datasetFieldJoin = datasetVersionJoin.join("datasetFields", JoinType.INNER);
+                    Join<GuestbookResponse, Dataset> datasetJoin = guestbookResponseRoot.join("dataset", JoinType.INNER);
+                    ListJoin<Dataset, DatasetVersion> datasetVersionJoin = datasetJoin.joinList("versions", JoinType.INNER);
+                    ListJoin<DatasetVersion, DatasetField> datasetFieldJoin = datasetVersionJoin.joinList("datasetFields", JoinType.INNER);
                     Join<DatasetField, DatasetFieldType> datasetFieldTypeJoin = datasetFieldJoin.join("datasetFieldType", JoinType.INNER);
-                    Join<DatasetField, DatasetFieldValue> datasetFieldValueJoin = datasetFieldJoin.join("datasetFieldValues", JoinType.INNER);
+                    ListJoin<DatasetField, DatasetFieldValue> datasetFieldValueJoin = datasetFieldJoin.joinList("datasetFieldValues", JoinType.INNER);
                     datasetFieldTypeJoin.on(cb.equal(datasetFieldTypeJoin.get("id"), 1)); // 1 -> title TODO get this instead of hard coding it
                     order = getOrderBy(cb, datasetFieldValueJoin.get("value"), isDescending);
+                    break;
+                case "date":
+                    order = getOrderBy(cb, guestbookResponseRoot.get("responseTime"), isDescending);
                     break;
                 case "type":
                     order = getOrderBy(cb, guestbookResponseRoot.get("eventType"), isDescending);
@@ -144,14 +148,17 @@ public class GuestbookResponseServiceBean {
                     order = getOrderBy(cb, guestbookResponseRoot.get("name"), isDescending);
                     break;
                 default:
-                    order = getOrderBy(cb, guestbookResponseRoot.get("responseTime"), isDescending);
+                    order = null;
             }
 
             cq.where(cb.equal(guestbookResponseRoot.get("guestbook").get("id"), guestbookId));
-            cq.orderBy(order);
+            if (order != null) {
+                cq.orderBy(order);
+            }
+            cq.distinct(true);
 
             int firstResult = offset == null ? 0 : offset;
-            int pageSize = limit == null ? 10 : limit;
+            int pageSize = limit == null ? Integer.MAX_VALUE : limit;
 
             List<GuestbookResponse> result = em.createQuery(cq)
                     .setFirstResult(firstResult)
