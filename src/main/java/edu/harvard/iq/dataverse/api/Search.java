@@ -37,12 +37,16 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 
 /**
  * User-facing documentation:
  * <a href="http://guides.dataverse.org/en/latest/api/search.html">http://guides.dataverse.org/en/latest/api/search.html</a>
  */
 @Path("search")
+@Tag(name = "Search", description = "Search and search service discovery operations.")
 public class Search extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Search.class.getCanonicalName());
@@ -56,27 +60,29 @@ public class Search extends AbstractApiBean {
 
     @GET
     @AuthRequired
+    @Operation(summary = "Searches Dataverse content",
+            description = "Searches dataverses, datasets, and files using query text, type filters, subtree filters, facets, sorting, and pagination options.")
     public Response search(
             @Context ContainerRequestContext crc,
-            @QueryParam("q") String query,
-            @QueryParam("type") final List<String> types,
-            @QueryParam("subtree") final List<String> subtrees,
-            @QueryParam("sort") String sortField,
-            @QueryParam("order") String sortOrder,
-            @QueryParam("per_page") final int numResultsPerPageRequested,
-            @QueryParam("start") final int paginationStart,
-            @QueryParam("show_relevance") boolean showRelevance,
-            @QueryParam("show_facets") boolean showFacets,
-            @QueryParam("fq") final List<String> filterQueries,
-            @QueryParam("show_entity_ids") boolean showEntityIds,
-            @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("query_entities") @DefaultValue("true") boolean queryEntities,
-            @QueryParam("metadata_fields") List<String> metadataFields,
-            @QueryParam("geo_point") String geoPointRequested,
-            @QueryParam("geo_radius") String geoRadiusRequested,
-            @QueryParam("show_type_counts") boolean showTypeCounts,
-            @QueryParam("show_collections") boolean showCollections,
-            @QueryParam("search_service") String searchServiceName,
+            @Parameter(description = "Search query string.") @QueryParam("q") String query,
+            @Parameter(description = "Resource type filter.") @QueryParam("type") final List<String> types,
+            @Parameter(description = "Dataverse subtree alias filter.") @QueryParam("subtree") final List<String> subtrees,
+            @Parameter(description = "Sort field.") @QueryParam("sort") String sortField,
+            @Parameter(description = "Sort order.") @QueryParam("order") String sortOrder,
+            @Parameter(description = "Number of results to return per page.") @QueryParam("per_page") final int numResultsPerPageRequested,
+            @Parameter(description = "Result offset.") @QueryParam("start") final int paginationStart,
+            @Parameter(description = "Whether relevance scores are included.") @QueryParam("show_relevance") boolean showRelevance,
+            @Parameter(description = "Whether facet counts are included.") @QueryParam("show_facets") boolean showFacets,
+            @Parameter(description = "Filter query.") @QueryParam("fq") final List<String> filterQueries,
+            @Parameter(description = "Whether entity ids are included.") @QueryParam("show_entity_ids") boolean showEntityIds,
+            @Parameter(description = "Whether API URLs are included.") @QueryParam("show_api_urls") boolean showApiUrls,
+            @Parameter(description = "Whether search queries entity fields.") @QueryParam("query_entities") @DefaultValue("true") boolean queryEntities,
+            @Parameter(description = "Metadata fields to include.") @QueryParam("metadata_fields") List<String> metadataFields,
+            @Parameter(description = "Geographic point used for spatial search.") @QueryParam("geo_point") String geoPointRequested,
+            @Parameter(description = "Geographic radius used for spatial search.") @QueryParam("geo_radius") String geoRadiusRequested,
+            @Parameter(description = "Whether object type counts are included.") @QueryParam("show_type_counts") boolean showTypeCounts,
+            @Parameter(description = "Whether collection results are included.") @QueryParam("show_collections") boolean showCollections,
+            @Parameter(description = "Search service name to use.") @QueryParam("search_service") String searchServiceName,
             @Context HttpServletResponse response
     ) {
 
@@ -289,6 +295,8 @@ public class Search extends AbstractApiBean {
 
     @GET
     @Path("/services")
+    @Operation(summary = "Lists search services",
+            description = "Returns the configured search service names, display names, and the default search service.")
     public Response getSearchEngines() {
         Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
         String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse(SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME);

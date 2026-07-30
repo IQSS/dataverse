@@ -203,6 +203,9 @@ public class DatasetVersion implements Serializable {
     //The Json version of the archivalCopyLocation string
     @Transient 
     private JsonObject archivalCopyLocationJson;
+
+    @Transient
+    private Boolean hasFiles = null;
     
     public Long getId() {
         return this.id;
@@ -2191,6 +2194,13 @@ public class DatasetVersion implements Serializable {
         }
 
         this.versionNote = note;
+    }
+
+    public Boolean hasFiles() {
+        return hasFiles;
+    }
+    public void setHasFiles(Boolean hasFiles) {
+        this.hasFiles =  hasFiles;
     }
 }
 

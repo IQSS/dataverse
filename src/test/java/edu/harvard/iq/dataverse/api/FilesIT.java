@@ -4114,6 +4114,8 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
         int totalCount = jsonPath.getList("data.responses").size();
+        assertTrue(totalCount > 0);
+        assertNotNull(jsonPath.getString("data.responses[0].name"));
 
         // Test Get Responses with pagination
         int pages = 4; // total should be 17. set to 4 pages

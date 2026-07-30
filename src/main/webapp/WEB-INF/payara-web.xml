@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN" "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
-<glassfish-web-app error-url="">
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 7.2026.2//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-web-app_6_1-0.dtd">
+<payara-web-app error-url="">
   <context-root>/</context-root>
   <class-loader delegate="true"/>
   <jsp-config>
@@ -24,4 +24,4 @@
   <!-- NOTE: As we cannot use variables in defaults of ${MPCONFIG}, there is a workaround for containers necessary;
              see src/main/docker/Dockerfile. Once Payara upstream fixes this, we can use STORAGE_DIR here. -->
   <property name="tempdir" value="${MPCONFIG=dataverse.files.uploads:./uploads}"/>
-</glassfish-web-app>
+</payara-web-app>

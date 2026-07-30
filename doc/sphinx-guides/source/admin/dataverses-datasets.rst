@@ -22,14 +22,14 @@ Moves a Dataverse collection whose id is passed to an existing Dataverse collect
 Link a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Creates a link between a Dataverse collection and another Dataverse collection (see the :ref:`dataverse-linking` section of the User Guide for more information). Only accessible to superusers. ::
+Creates a link between a Dataverse collection and another Dataverse collection (see the :ref:`dataverse-linking` section of the User Guide for more information). ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/dataverses/$linked-dataverse-alias/link/$linking-dataverse-alias
 
 Unlink a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Removes a link between a Dataverse collection and another Dataverse collection. Only accessible to superusers. ::
+Removes a link between a Dataverse collection and another Dataverse collection. Accessible to users with Link Dataverse permission on the linking Dataverse collection.  ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$linked-dataverse-alias/deleteLink/$linking-dataverse-alias
 

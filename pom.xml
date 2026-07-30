@@ -26,6 +26,9 @@
         <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
         <failsafe.jacoco.args>-Ddummy.jacoco.property=true</failsafe.jacoco.args>
         
+        <jacoco.merged.outputdir>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</jacoco.merged.outputdir>
+        <sonar.coverage.jacoco.xmlReportPaths>${jacoco.merged.outputdir}/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
@@ -357,7 +360,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>4.7.5</version>
+            <version>4.7.12</version>
         </dependency>
         
         <!-- Jakarta Validation API & runtime -->
@@ -1031,7 +1034,7 @@
                         </goals>
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <outputDirectory>${jacoco.merged.outputdir}</outputDirectory>
                             <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
@@ -1128,6 +1131,7 @@
                             <operationIdStrategy>CLASS_METHOD</operationIdStrategy>
                             <scanPackages>edu.harvard.iq.dataverse</scanPackages>
                             <scanDependenciesDisable>true</scanDependenciesDisable>
+                            <filter>edu.harvard.iq.dataverse.openapi.DataverseOpenApiFilter</filter>
                         </configuration>
                     </execution>
                 </executions>

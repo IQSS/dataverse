@@ -41,11 +41,15 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  * Note that there are makeDataCount endpoints in Datasets.java as well.
  */
 @Path("admin/makeDataCount")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class MakeDataCountApi extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(MakeDataCountApi.class.getCanonicalName());
@@ -87,6 +91,8 @@ public class MakeDataCountApi extends AbstractApiBean {
      */
     @POST
     @Path("sendToHub")
+    @Operation(summary = "Reports Make Data Count hub submission",
+            description = "Returns a confirmation message for Make Data Count hub submission.")
     public Response sendDataToHub() {
         String msg = "Data has been sent to Make Data Count";
         return ok(msg);
@@ -94,7 +100,13 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{id}/addUsageMetricsFromSushiReport")
-    public Response addUsageMetricsFromSushiReport(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
+    @Operation(summary = "Adds usage metrics from a SUSHI report",
+            description = "Parses a SUSHI report from disk, saves usage metrics for the specified dataset, and reports completion.")
+    public Response addUsageMetricsFromSushiReport(
+            @Parameter(description = "Dataset id or persistent identifier that receives the usage metrics.", required = true)
+            @PathParam("id") String id,
+            @Parameter(description = "Server-side path to the SUSHI report JSON file.", required = true)
+            @QueryParam("reportOnDisk") String reportOnDisk) {
 
         try {
             JsonObject report = JsonUtil.getJsonObjectFromFile(reportOnDisk);
@@ -119,7 +131,11 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("/addUsageMetricsFromSushiReport")
-    public Response addUsageMetricsFromSushiReportAll(@QueryParam("reportOnDisk") String reportOnDisk) {
+    @Operation(summary = "Adds usage metrics from a SUSHI report for all datasets",
+            description = "Parses a SUSHI report from disk, saves usage metrics for all datasets represented in the report, and reports completion.")
+    public Response addUsageMetricsFromSushiReportAll(
+            @Parameter(description = "Server-side path to the SUSHI report JSON file.", required = true)
+            @QueryParam("reportOnDisk") String reportOnDisk) {
 
         try {
             JsonObject report = JsonUtil.getJsonObjectFromFile(reportOnDisk);
@@ -141,7 +157,11 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{id}/updateCitationsForDataset")
-    public Response updateCitationsForDataset(@PathParam("id") String id) {
+    @Operation(summary = "Queues citation updates for a dataset",
+            description = "Validates that the dataset uses a DataCite DOI provider and queues a background citation update from DataCite EventData.")
+    public Response updateCitationsForDataset(
+            @Parameter(description = "Dataset id or persistent identifier whose citation metrics are updated.", required = true)
+            @PathParam("id") String id) {
         try {
             // First validate that the dataset exists and has a valid DOI
             final Dataset dataset = findDatasetOrDie(id);
@@ -327,7 +347,11 @@ public class MakeDataCountApi extends AbstractApiBean {
     
     @GET
     @Path("{yearMonth}/processingState")
-    public Response getProcessingState(@PathParam("yearMonth") String yearMonth) {
+    @Operation(summary = "Returns Make Data Count processing state",
+            description = "Returns the processing state, state-change timestamp, and server for the specified year and month.")
+    public Response getProcessingState(
+            @Parameter(description = "Year and month for the processing state, formatted as YYYY-MM.", required = true)
+            @PathParam("yearMonth") String yearMonth) {
         MakeDataCountProcessState mdcps;
         try {
             mdcps = makeDataCountProcessStateService.getMakeDataCountProcessState(yearMonth);
@@ -350,7 +374,15 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{yearMonth}/processingState")
-    public Response updateProcessingState(@PathParam("yearMonth") String yearMonth, @QueryParam("state") String state, @QueryParam("server") String server) {
+    @Operation(summary = "Sets Make Data Count processing state",
+            description = "Creates or updates the processing state for the specified year and month.")
+    public Response updateProcessingState(
+            @Parameter(description = "Year and month for the processing state, formatted as YYYY-MM.", required = true)
+            @PathParam("yearMonth") String yearMonth,
+            @Parameter(description = "Processing state value to store.", required = true)
+            @QueryParam("state") String state,
+            @Parameter(description = "Server name associated with the processing state.")
+            @QueryParam("server") String server) {
         MakeDataCountProcessState mdcps;
         try {
             mdcps = makeDataCountProcessStateService.setMakeDataCountProcessState(yearMonth, state, server);
@@ -370,7 +402,11 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @DELETE
     @Path("{yearMonth}/processingState")
-    public Response deleteProcessingState(@PathParam("yearMonth") String yearMonth) {
+    @Operation(summary = "Deletes Make Data Count processing state",
+            description = "Deletes the processing state for the specified year and month.")
+    public Response deleteProcessingState(
+            @Parameter(description = "Year and month for the processing state, formatted as YYYY-MM.", required = true)
+            @PathParam("yearMonth") String yearMonth) {
         boolean deleted = makeDataCountProcessStateService.deleteMakeDataCountProcessState(yearMonth);
         if (deleted) {
             return ok("Processing State deleted for " + yearMonth);
