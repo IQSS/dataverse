@@ -853,6 +853,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return - true: valid
      */
     public boolean isValidCVocValue(DatasetFieldType dft, String value) {
+        if (StringUtils.isBlank(value)) {
+            return true;
+        }
+
         JsonObject jo = getCVocConf(true).get(dft.getId());
         JsonObject vocabs = jo.getJsonObject("vocabs");
         boolean valid = false;
@@ -888,6 +892,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             // example, to allow use of the common cvocutils.js script along with a main
             // script for the field.)
             JsonValue scriptValue = jo.get("js-url");
+            if (scriptValue == null) {
+                continue;
+            }
             ValueType scriptType = scriptValue.getValueType();
             if (scriptType.equals(ValueType.STRING)) {
                 scripts.add(((JsonString) scriptValue).getString());
