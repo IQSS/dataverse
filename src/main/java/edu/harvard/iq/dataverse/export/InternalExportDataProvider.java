@@ -73,24 +73,32 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     @Override
-    public JsonObject getDatasetJson(DatasetExportQuery query) {
-        if (isOnlyDatasetLevelMetadataRequested(query)) {
-            // If we already have the "full" Json representation (with files)
-            // generated, should we return it (potentially moving MUCH more json
-            // than the client needs, or spend extra cycles generating the short
-            // form from scratch? - I'm choosing to go with latter.
-            if (jsonRepresentationNoFiles == null) {
-                final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.datasetAsJsonForDTO(dv, false);
-                jsonRepresentationNoFiles = datasetAsJsonBuilder.build();
-            }
-            return jsonRepresentationNoFiles;
-        }
-
+    /**
+     * The legacy/deprecated version of getDatasetJson()
+     * The spi now provides the default, so this implementation is not required.
+     * It is here however to continue caching the generated fragment - legacy behavior.
+     * Note that no attempt has been made to make this cache thread-safe. 
+     * @return JsonObject representing the complete metadata record (this includes
+     *         files; again, legacy behavior).
+     */
+    public JsonObject getDatasetJson() {
         if (jsonRepresentation == null) {
             final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.datasetAsJsonForDTO(dv);
             jsonRepresentation = datasetAsJsonBuilder.build();
         }
         return jsonRepresentation;
+
+    }
+    
+    @Override
+    public JsonObject getDatasetJson(DatasetExportQuery query) {
+        // One can now specifically ask for that json fragment _without_ 
+        // any file-level info (if the exporter has no use for it)
+        if (query.fileQuery().requires(FileMetadataPredicates.SKIP_FILES)) {
+           return JsonPrinter.datasetAsJsonForDTO(dv, false).build();
+        }
+
+        return JsonPrinter.datasetAsJsonForDTO(dv).build();
     }
 
     @Override
@@ -152,8 +160,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     @Override
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query) {
         // @todo All supported FileExportQuery predicates need to be properly 
-        // handled here. Waiting for the addition of the helper methods to the 
-        // spi, as agreed last week. 
+        // handled here.  
         return dv.getFileMetadatas().stream()
                 .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
                 .map(JsonObjectBuilder::build);
@@ -186,29 +193,32 @@ public class InternalExportDataProvider implements ExportDataProvider {
             throw new ExportException("EJB DatasetVersionFilesService is not available");
         }
 
-        if (isDataVariableMetadataRequested(query)) {
-            if (isOnlyTabularMetadataRequested(query)) {
+        if (query.requires(FileMetadataPredicates.INCLUDE_TABULAR_DATA_VARIABLES)) {
+            if (query.requires(FileMetadataPredicates.ONLY_TABULAR_FILES)) {
 
                 return datasetVersionFilesService.getTabularDataFileMetadatas(dv,
                         pageRequest.getLimit(),
                         pageRequest.getOffset(),
-                        isOnlyPublicMetadataRequested(query)).stream()
+                        query.requires(FileMetadataPredicates.ONLY_PUBLIC_FILES)).stream()
                         .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
                         .map(JsonObjectBuilder::build);
             } else {
                 return datasetVersionFilesService.getFileMetadatas(dv,
                         pageRequest.getLimit(),
                         pageRequest.getOffset(),
-                        createFileSearchCriteria(isOnlyPublicMetadataRequested(query)),
+                        createFileSearchCriteria(query.requires(FileMetadataPredicates.ONLY_PUBLIC_FILES)),
                         DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ).stream()
                         .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
                         .map(JsonObjectBuilder::build);
             }
         } else {
+            // @todo there is a weird possible case of only the filemetadatas for 
+            // the files that have datavariable metadata requested; but without
+            // the actual datavariable metadata
             return datasetVersionFilesService.getFileMetadatas(dv,
                         pageRequest.getLimit(),
                         pageRequest.getOffset(),
-                        createFileSearchCriteria(isOnlyPublicMetadataRequested(query)),
+                        createFileSearchCriteria(query.requires(FileMetadataPredicates.ONLY_PUBLIC_FILES)),
                         DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ).stream()
                         .map(fileMetadata -> JsonPrinter.json(fileMetadata.getDataFile(), fileMetadata, true))
                         .map(JsonObjectBuilder::build);
@@ -224,63 +234,6 @@ public class InternalExportDataProvider implements ExportDataProvider {
         this.is=prereqStream;
     }
 
-    /**
-     * Only one context object is supported
-     * @param DatasetExportQuery
-     * @return
-     */
-    private boolean isOnlyDatasetLevelMetadataRequested(DatasetExportQuery query) {
-        // @todo This needs to be properly implemented; 
-        // Waiting for the addition of the helper functions to the interface
-        // as agreed last week. 
-        // The default assumption is we pack both the Dataset, and the File-level
-        // metadata in the Json
-        return false;
-    }
-
-    /**
-     * Are we skipping non-public, restricted and embargoed files?
-     *
-     * @param FileExportQuery
-     * @return yes or no
-     */
-    private boolean isOnlyPublicMetadataRequested(FileExportQuery query) {
-        return checkForPredicate(query, FileMetadataPredicates.ONLY_PUBLIC_FILES);
-    }
-
-    /**
-     * Is this metadata request only for ingested tabular files (i.e., files
-     * with linked DataTable objects)
-     *
-     * @param FileExportQuery
-     * @return yes or no
-     */
-    private boolean isOnlyTabularMetadataRequested(FileExportQuery query) {
-        return checkForPredicate(query, FileMetadataPredicates.ONLY_TABULAR_FILES);
-    }
-
-    /**
-     * Is detailed information about DataVariable objects associated with the
-     * tabular DataTable requested?
-     *
-     * @param FileExportQuery
-     * @return yes or no
-     */
-    private boolean isDataVariableMetadataRequested(FileExportQuery query) {
-        return checkForPredicate(query, FileMetadataPredicates.INCLUDE_TABULAR_DATA_VARIABLES);
-    }
-
-    /**
-     * Service method for checking a FileExportQuery for a specific predicate specified.
-     *
-     * @param query
-     * @param predicate
-     * @return
-     */
-    private boolean checkForPredicate(FileExportQuery query, FileMetadataPredicates predicate) {
-        return query.getFilePredicates().contains(predicate);
-    }
-    
     /**
      * Service method for creating a FileSearchCriteria that the paginated 
      * getFileMetadatas() method in the DatasetVersionFilesServiceBean understands.

@@ -95,6 +95,7 @@ public class Metadata extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(id);
             if (formats != null) {
                 List<String> formatNames = new ArrayList<>(Arrays.asList(formats.split(",")));
+                // @todo validate
                 datasetService.reExportDatasetAsync(dataset, formatNames);
             } else {
                 datasetService.reExportDatasetAsync(dataset);
