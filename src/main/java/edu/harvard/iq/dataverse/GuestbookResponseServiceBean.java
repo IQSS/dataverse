@@ -126,12 +126,11 @@ public class GuestbookResponseServiceBean {
             String orderField = (sortField == null) ? "" : sortField.toLowerCase();
             switch(orderField) {
                 case "dataset":
-                    Join<GuestbookResponse, Dataset> datasetJoin = guestbookResponseRoot.join("dataset", JoinType.INNER);
-                    ListJoin<Dataset, DatasetVersion> datasetVersionJoin = datasetJoin.joinList("versions", JoinType.INNER);
-                    ListJoin<DatasetVersion, DatasetField> datasetFieldJoin = datasetVersionJoin.joinList("datasetFields", JoinType.INNER);
+                    Join<GuestbookResponse, DatasetVersion> datasetVersionJoin = guestbookResponseRoot.join("datasetVersion", JoinType.INNER);
+                    Join<DatasetVersion, DatasetField> datasetFieldJoin = datasetVersionJoin.join("datasetFields", JoinType.INNER);
                     Join<DatasetField, DatasetFieldType> datasetFieldTypeJoin = datasetFieldJoin.join("datasetFieldType", JoinType.INNER);
-                    ListJoin<DatasetField, DatasetFieldValue> datasetFieldValueJoin = datasetFieldJoin.joinList("datasetFieldValues", JoinType.INNER);
                     datasetFieldTypeJoin.on(cb.equal(datasetFieldTypeJoin.get("id"), 1)); // 1 -> title TODO get this instead of hard coding it
+                    Join<DatasetField, DatasetFieldValue> datasetFieldValueJoin = datasetFieldJoin.join("datasetFieldValues", JoinType.INNER);
                     order = getOrderBy(cb, datasetFieldValueJoin.get("value"), isDescending);
                     break;
                 case "date":

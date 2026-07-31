@@ -173,8 +173,8 @@ public class GuestbookResponse implements Serializable {
         this.setInstitution(source.getInstitution());
         this.setPosition(source.getPosition());
         this.setResponseTime(source.getResponseTime());
-        this.setDataset(source.getDataset());
         this.setDatasetVersion(source.getDatasetVersion());
+        this.setDataset(source.getDataset()); // will default DatasetVersion if null
         this.setAuthenticatedUser(source.getAuthenticatedUser());
         this.setSessionId(source.getSessionId());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
@@ -287,6 +287,18 @@ public class GuestbookResponse implements Serializable {
 
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
+        // If not set the DatasetVersion will default
+        setDatasetVersion(getDefaultDatasetVersion(getDatasetVersion()));
+    }
+
+    private DatasetVersion getDefaultDatasetVersion(DatasetVersion version) {
+        if (version == null && dataset != null) {
+            version = dataset.getReleasedVersion();
+            if (version == null) {
+                version = dataset.getLatestVersion();
+            }
+        }
+        return version;
     }
 
     public DataFile getDataFile() {
@@ -302,7 +314,7 @@ public class GuestbookResponse implements Serializable {
     }
 
     public void setDatasetVersion(DatasetVersion datasetVersion) {
-        this.datasetVersion = datasetVersion;
+        this.datasetVersion = getDefaultDatasetVersion(datasetVersion);
     }
 
     public AuthenticatedUser getAuthenticatedUser() {

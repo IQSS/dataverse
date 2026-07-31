@@ -4223,11 +4223,12 @@ public class FilesIT {
         String lastFieldValue = jsonPath.getString("data.responses[0]." + fieldName).toLowerCase(); // The sort seems to be case-insensitive
         for (int i = 1; i < totalCount; i++) {
             String fieldValue = jsonPath.getString("data.responses[" + i + "]." + fieldName).toLowerCase();
-            System.out.println("lastFieldValue:" + lastFieldValue + "   fieldValue:" + fieldValue + "     "  + fieldValue.compareTo(lastFieldValue));
+            //System.out.println("lastFieldValue:" + lastFieldValue + "   fieldValue:" + fieldValue + "     "  + fieldValue.compareTo(lastFieldValue));
             assertTrue(isDescending ? fieldValue.compareTo(lastFieldValue) <= 0 : fieldValue.compareTo(lastFieldValue) >= 0);
             lastFieldValue = fieldValue;
         }
-        System.out.println("total rows: " + totalCount);
+        int totalCountFromJson = jsonPath.getInt("data.pagination.totalResponses");
+        assertEquals(totalCountFromJson, totalCount);
     }
 
     @Test
