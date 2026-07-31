@@ -143,10 +143,10 @@
         </dependency>
         
         <!-- TECHNICAL DEBT
-             For a very long time, in a lots of places people used org.apache.commons.httpclient to access
-             HTTP resources, wrap responses in exceptions etc.
+             For a very long time, in a lot of places people used org.apache.commons.httpclient to access
+             HTTP resources, wrap responses in exceptions, etc.
              
-             This library had been used via an transitive dependency of sword2-server. During its recent updates,
+             This library had been used via a transitive dependency of sword2-server. During its recent updates,
              the dependency was dropped, went missing, eventually breaking our code. Re-adding this 2007 goodie here
              as a direct dependency.
              
