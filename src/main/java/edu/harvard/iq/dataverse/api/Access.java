@@ -281,6 +281,8 @@ public class Access extends AbstractApiBean {
         DataFile df = null;
 
         if (req.getUser() instanceof GuestUser) {
+            // For JSF/UI requests, the ContainerRequestContext user can be GuestUser even when the session is authenticated.
+            // Locally FAIR visibility checks rely on the DataverseRequest user, so pull the session-backed request here.
             req = dvRequestService.getDataverseRequest();
         }
         
