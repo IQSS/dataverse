@@ -279,6 +279,10 @@ public class Access extends AbstractApiBean {
     private DataFile findDataFileUserCanSeeOrDieWrapper(String fileId, DataverseRequest req){
         
         DataFile df = null;
+
+        if (req.getUser() instanceof GuestUser) {
+            req = dvRequestService.getDataverseRequest();
+        }
         
         try {
             df = findDataFileUserCanSeeOrDie(fileId, req);
