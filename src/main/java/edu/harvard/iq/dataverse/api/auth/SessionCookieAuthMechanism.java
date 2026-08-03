@@ -23,7 +23,7 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
     }
 
     private boolean isAccessApi(ContainerRequestContext containerRequestContext) {
-        if (containerRequestContext.getMethod().equals("GET")) {
+        if (containerRequestContext.getMethod() != null && containerRequestContext.getMethod().equals("GET")) {
             Pattern pattern = Pattern.compile("/api.*/access/"); // /api/v1/access/ or /api/access/
             Matcher matcher = pattern.matcher(containerRequestContext.getUriInfo().getAbsolutePath().toString().toLowerCase());
             return matcher.find();
