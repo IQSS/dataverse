@@ -2232,21 +2232,23 @@ public class Access extends AbstractApiBean {
     }
 
     private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
+        // checkAuthorization must be called first to verify the user's permission to download this file
         // Check if guestbook response is required
         Dataset ds = df.getOwner();
-        boolean required = ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest() && !(user instanceof PrivateUrlUser);
+        boolean required = ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest();
         boolean wasWrittenInPost = false;
         if (required) {
-            if (permissionService.userOn(user, ds).has(Permission.ViewUnpublishedDataset)) {
-                required = false;
+            // PrivateUrlUsers are exempt from this requirement
+            if (user instanceof PrivateUrlUser) {
+                return false;
             }
             // Check if we are downloading a thumbnail image which doesn't require a guestbook response
             boolean imageThumb = uriInfo.getQueryParameters().containsKey("imageThumb");
             if (imageThumb) {
-                required = false;
+                return false;
             }
 
-            if (required && gbrids != null && !gbrids.isEmpty()) {
+            if (gbrids != null && !gbrids.isEmpty()) {
                 try {
                     // verify that this id is good
                     GuestbookResponse gbr = guestbookResponseService.findById(Long.valueOf(gbrids));
