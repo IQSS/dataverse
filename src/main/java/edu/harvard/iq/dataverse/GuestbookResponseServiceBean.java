@@ -40,8 +40,6 @@ public class GuestbookResponseServiceBean {
     
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB
-    DatasetFieldServiceBean datasetFieldService;
     
     // The query below is used for retrieving guestbook responses used to download 
     // the collected data, in CSV format, from the manage-guestbooks and 
@@ -116,14 +114,6 @@ public class GuestbookResponseServiceBean {
         return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
     }
 
-    private Long getTitleFieldTypeId() {
-        if (datasetFieldTypeTitleId == null) {
-            DatasetFieldType type = datasetFieldService.findByName(DatasetFieldConstant.getTitle());
-            datasetFieldTypeTitleId = type != null ? type.getId() : 1L;
-        }
-        return datasetFieldTypeTitleId;
-    }
-
     private Order getOrderBy(CriteriaBuilder cb, Path<Object> pathObj, boolean isDescending) {
         return isDescending ? cb.desc(pathObj) : cb.asc(pathObj);
     }
@@ -137,14 +127,6 @@ public class GuestbookResponseServiceBean {
             Order order;
             String orderField = (sortField == null) ? "" : sortField.toLowerCase();
             switch(orderField) {
-                case "dataset":
-                    Join<GuestbookResponse, DatasetVersion> datasetVersionJoin = guestbookResponseRoot.join("datasetVersion", JoinType.INNER);
-                    Join<DatasetVersion, DatasetField> datasetFieldJoin = datasetVersionJoin.join("datasetFields", JoinType.INNER);
-                    Join<DatasetField, DatasetFieldType> datasetFieldTypeJoin = datasetFieldJoin.join("datasetFieldType", JoinType.INNER);
-                    datasetFieldTypeJoin.on(cb.equal(datasetFieldTypeJoin.get("id"), getTitleFieldTypeId()));
-                    Join<DatasetField, DatasetFieldValue> datasetFieldValueJoin = datasetFieldJoin.join("datasetFieldValues", JoinType.INNER);
-                    order = getOrderBy(cb, datasetFieldValueJoin.get("value"), isDescending);
-                    break;
                 case "date":
                     order = getOrderBy(cb, guestbookResponseRoot.get("responseTime"), isDescending);
                     break;

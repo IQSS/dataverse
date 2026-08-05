@@ -1445,7 +1445,6 @@ For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 In order to retrieve the Guestbook Responses for a Guestbook within a Dataverse collection, you must know the ID if the Guestbook. This API also supports pagination by passing a page limit and an optional offset (starting point). The resulting Json will include 'Next' and 'Prev' urls for navigation as well as the total number of responses.
 The Responses can be sorted by specifying one of the following in query parameter 'sort' and 'order':
 
-* ``dataset``: Dataset Name
 * ``type``: Event Type
 * ``file``: File Name
 * ``user``: User Name
@@ -1464,7 +1463,7 @@ The resulting Json will be more detailed than that of the :ref:`download-guestbo
   export ID=1
 
   curl -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/$ID/responses"
-  curl -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/$ID/responses?limit10&offset=0&sort=dataset&order=asc"
+  curl -H  "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/guestbooks/$ID/responses?limit10&offset=0&sort=file&order=asc"
 
 The fully expanded example above (without environment variables) looks like this:
 

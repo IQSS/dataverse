@@ -178,7 +178,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
      * The following getters are needed so we can use them as properties in JSP 
      */
     
-    public static String getTitle() {
+    public String getTitle() {
         return title;
     }
     

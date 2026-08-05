@@ -4188,7 +4188,8 @@ public class FilesIT {
         testSortByField(guestbook.getId(), "file", "asc", ownerApiToken);
         testSortByField(guestbook.getId(), "user", "asc", ownerApiToken);
         testSortByField(guestbook.getId(), "user", "desc", ownerApiToken);
-        testSortByField(guestbook.getId(), "dataset", null, ownerApiToken);
+        testSortByField(guestbook.getId(), "date", "asc", ownerApiToken);
+        testSortByField(guestbook.getId(), "date", "desc", ownerApiToken);
 
         // Test Get Responses with pagination
         int pages = 4; // total should be 17. set to 4 pages
@@ -4211,7 +4212,7 @@ public class FilesIT {
 
     private void testSortByField(Long id, String sortField, String order, String token) {
         Response guestbookListResponses = UtilIT.getGuestbooksResponses(id, sortField, order, 0, Integer.MAX_VALUE, token);
-        Map<String,String> fieldMap = Map.of("dataset", "dataset", "type", "type", "user", "name", "file", "fileName", "date", "date");
+        Map<String,String> fieldMap = Map.of("type", "type", "user", "name", "file", "fileName", "date", "date");
         String fieldName = fieldMap.get(sortField);
         boolean isDescending = order != null && order.equalsIgnoreCase("desc");
         guestbookListResponses.prettyPrint();
