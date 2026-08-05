@@ -4055,6 +4055,15 @@ In a future Dataverse version, the (currently) experimental response message sty
 
 See also :ref:`dataverse.legacy.api-response-message-style`.
 
+.. _dataverse.feature.do-not-assume-default-license:
+
+dataverse.feature.do-not-assume-default-license
++++++++++++++++++++++++++++++++++++++++++++++++
+
+When creating a dataset via API, if neither a license nor any terms of use are provided, the system normally assigns the default license. If this feature flag is enabled, no license is assigned (and no terms) in this case.
+
+Defaults to ``false``.
+
 .. _dataverse.feature.avoid-expensive-solr-join:
 
 dataverse.feature.avoid-expensive-solr-join
