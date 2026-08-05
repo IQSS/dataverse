@@ -2232,12 +2232,12 @@ public class Access extends AbstractApiBean {
     }
 
     private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
-        // checkAuthorization must be called first to verify the user's permission to download this file
         // Check if guestbook response is required
         Dataset ds = df.getOwner();
         boolean required = ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest();
         boolean wasWrittenInPost = false;
         if (required) {
+            checkAuthorization(user, df);
             // PrivateUrlUsers are exempt from this requirement
             if (user instanceof PrivateUrlUser) {
                 return false;
