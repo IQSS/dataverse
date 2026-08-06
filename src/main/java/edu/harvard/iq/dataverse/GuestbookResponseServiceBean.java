@@ -97,8 +97,6 @@ public class GuestbookResponseServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    private static Long datasetFieldTypeTitleId = null;
-
     public List<GuestbookResponse> findAll() {
         return em.createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc", GuestbookResponse.class).getResultList();
     }
@@ -153,12 +151,10 @@ public class GuestbookResponseServiceBean {
             int firstResult = offset == null ? 0 : offset;
             int pageSize = limit == null ? Integer.MAX_VALUE : limit;
 
-            List<GuestbookResponse> result = em.createQuery(cq)
+            return em.createQuery(cq)
                     .setFirstResult(firstResult)
                     .setMaxResults(pageSize)
                     .getResultList();
-
-            return result;
         }
         return null;
     }
