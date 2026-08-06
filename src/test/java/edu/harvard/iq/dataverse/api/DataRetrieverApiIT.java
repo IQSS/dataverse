@@ -169,12 +169,13 @@ public class DataRetrieverApiIT {
 
         // User1 gets the list of Dataverses/Collections it has access to (with pagination)
         // Get the first page
+        int offset = 0;
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null, null, 10);
         retrieveMyCollectionListResponse.prettyPrint();
         int count = retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.count");
+        int totalCount = retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.totalCount");
         // get the second page
-        int offset = retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.nextOffset");
-        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null, offset, 10);
+        retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null, offset + count + 1, 10);
         retrieveMyCollectionListResponse.prettyPrint();
         count = count + retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.count");
         // The count should show the list size to be User1's + Root Dataverse count

@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.util.Pagination;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -340,9 +341,9 @@ public class Users extends AbstractApiBean {
         }
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            Pager pager = getPager(pageSize, start);
-            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission, null, pager));
-            return ok(JsonPrinter.jsonArray(collections, pager));
+            Pagination pagination = (start != null || pageSize != null) ? new Pagination(pageSize, start) : null;
+            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission, null, pagination));
+            return ok(JsonPrinter.jsonArray(collections, pagination));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

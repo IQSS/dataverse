@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.util.Pagination;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
@@ -15,7 +16,6 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.*;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.mydata.Pager;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -172,6 +172,9 @@ public class PermissionServiceBean {
                                                where row_num BETWEEN @START AND @END
                                                """;
 
+    private static final String TOTAL_COUNT  = """
+                                               select count(*) from ( @SQL@ )
+                                               """;
     /**
      * A request-level permission query (e.g includes IP ras).
      */
@@ -939,12 +942,7 @@ public class PermissionServiceBean {
         return findPermittedCollections(request, user, 1 << permission.ordinal(), searchTerm, null);
     }
     
-    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
-        return findPermittedCollections(request, user, permissionBit, "", null);
-    }
-    
-    
-    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm, Pager pager) {
+    public List<Dataverse> findPermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit, String searchTerm, Pagination pagination) {
         if (user != null) {
             List<Dataverse> dataverses = new ArrayList<>();
             var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, permissionBit);
@@ -955,11 +953,20 @@ public class PermissionServiceBean {
                     sqlCode = sqlCode.concat(AND).concat(SEARCH_PARAMS);
                 }
             }
-            if (pager != null) {
+            if (pagination != null) {
+                if (pagination.getNumResults() < 0) {
+                    // Get the total count
+                    String sqlCodeCount = TOTAL_COUNT.replace("@SQL@", sqlCode);
+                    Query queryCount = em.createNativeQuery(sqlCodeCount);
+                    if (searchTerm != null && !searchTerm.isEmpty()) {
+                        setSearchParamValues(searchTerm, queryCount);
+                    }
+                    Number countResult = (Number) queryCount.getSingleResult();
+                    pagination.setNumResults(countResult.intValue());
+                }
                 // Add a pagination wrapper around the sqlCode
-                int pageSize = pager.getDocsPerPage();
-                int pageStart = (pager.getSelectedPageNumber()-1) * pageSize + 1;
-                int pageEnd = pageStart + pageSize - 1;
+                int pageStart = pagination.getOffset();
+                int pageEnd = pageStart + pagination.getLimitPerPage();
                 sqlCode = PAGE_PARAMS
                         .replace("@START", String.valueOf(pageStart))
                         .replace("@END", String.valueOf(pageEnd))
@@ -972,9 +979,6 @@ public class PermissionServiceBean {
             }
 
             List resultList = query.getResultList();
-            if (pager != null) {
-                pager.setNumResults((pager.getSelectedPageNumber()-1) * pager.getDocsPerPage() + resultList.size());
-            }
             dataverses.addAll(resultList);
             return dataverses;
         }

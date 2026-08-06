@@ -5,6 +5,7 @@ package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.util.Pagination;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -344,10 +345,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                              @QueryParam("pageSize") Integer pageSize) {
         try {
             verifyAuth(crc, userIdentifier);
-            Pager pager = getPager(pageSize, start);
+            Pagination pagination = (start != null || pageSize != null) ? new Pagination(pageSize, start) : null;
             List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name(),
-                    searchTerm, pager));
-            return ok(JsonPrinter.jsonArray(collections, pager));
+                    searchTerm, pagination));
+            return ok(JsonPrinter.jsonArray(collections, pagination));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

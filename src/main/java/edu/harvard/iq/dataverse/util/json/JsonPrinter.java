@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.util.Pagination;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -388,10 +389,13 @@ public class JsonPrinter {
     public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
         return jsonArray(dataverses, null);
     }
-    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses, Pager pager) {
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses, Pagination pagination) {
         JsonObjectBuilder job = Json.createObjectBuilder();
         int count = dataverses.size();
         job.add("count", count);
+        if (pagination != null) {
+            job.add("totalCount", pagination.getNumResults());
+        }
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (Dataverse dataverse : dataverses) {
             NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
@@ -401,17 +405,6 @@ public class JsonPrinter {
             jsonArrayBuilder.add(jsonObject);
         }
         job.add("items", jsonArrayBuilder);
-        if (pager != null) {
-            job.add("pageSize", pager.getDocsPerPage());
-            int nextOffset = pager.getSelectedPageNumber() * pager.getDocsPerPage() + 1;
-            int prevOffset = nextOffset - (2 * pager.getDocsPerPage());
-            if (count >= pager.getDocsPerPage()) {
-                job.add("nextOffset", nextOffset);
-            }
-            if (prevOffset > 0) {
-                job.add("prevOffset", prevOffset);
-            }
-        }
         return job;
     }
 
