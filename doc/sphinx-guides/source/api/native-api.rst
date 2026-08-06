@@ -8722,7 +8722,7 @@ Passing ``$permission`` as 'any' will return the collection as long as the user 
 **For filtering and pagination these query parameters can be used:**
 
 - ``searchTerm``: To filter the results.
-- ``offset``: Starting row ('nextOffset' or 'prevOffset' from the Json output can be used to get the next or previous page).
+- ``offset``: Starting row.
 - ``limit``: Number of items to limit the output.
 
 .. code-block:: bash
@@ -9323,8 +9323,8 @@ Param userIdentifier={userName} is used by a superuser to get the collections fo
 **For filtering and pagination these query parameters can be used:**
 
 - ``searchTerm``: To filter the results.
-- ``offset``: Starting row ('nextOffset' or 'prevOffset' from the Json output can be used to get the next or previous page).
-- ``pageSize``: Number of items to limit the output.
+- ``offset``: Starting row.
+- ``limit``: Number of items to limit the output.
 
 A curl example listing collections:
 
@@ -9335,5 +9335,5 @@ A curl example listing collections:
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList"
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser"
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser&pageSize=10&offset=11&searchTerm=bio"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser&limit=10&offset=11&searchTerm=bio"
 
