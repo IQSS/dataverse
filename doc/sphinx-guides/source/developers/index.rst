@@ -21,6 +21,7 @@ Developer Guide
    testing
    api-design
    security
+   patterns
    performance
    dependencies
    debugging
