@@ -8723,7 +8723,7 @@ Passing ``$permission`` as 'any' will return the collection as long as the user 
 
 - ``searchTerm``: To filter the results.
 - ``offset``: Starting row ('nextOffset' or 'prevOffset' from the Json output can be used to get the next or previous page).
-- ``pageSize``: Number of items to limit the output.
+- ``limit``: Number of items to limit the output.
 
 .. code-block:: bash
 
@@ -8732,7 +8732,7 @@ Passing ``$permission`` as 'any' will return the collection as long as the user 
   export PERMISSION=PublishDataverse
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/allowedCollections/$PERMISSION"
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/allowedCollections/$PERMISSION?pageSize=10&offset=0&searchTerm=bio"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/allowedCollections/$PERMISSION?limit=10&offset=0&searchTerm=bio"
 
 Show Role Assignee
 ~~~~~~~~~~~~~~~~~~
