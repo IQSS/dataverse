@@ -390,8 +390,7 @@ public class JsonPrinter {
     }
     public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses, Pagination pagination) {
         JsonObjectBuilder job = Json.createObjectBuilder();
-        int count = dataverses.size();
-        job.add("count", count);
+        job.add("count", dataverses.size());
         if (pagination != null) {
             job.add("totalCount", pagination.getNumResults());
         }

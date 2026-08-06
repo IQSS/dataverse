@@ -342,7 +342,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                              @Parameter(description = "Offset used to override the starting point of the list.")
                                              @QueryParam("offset") Integer start,
                                              @Parameter(description = "Page size to limit the number of items in the list.")
-                                             @QueryParam("pageSize") Integer pageSize) {
+                                             @QueryParam("limit") Integer pageSize) {
         try {
             verifyAuth(crc, userIdentifier);
             Pagination pagination = (start != null || pageSize != null) ? new Pagination(pageSize, start) : null;
