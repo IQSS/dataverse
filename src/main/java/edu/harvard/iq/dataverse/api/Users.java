@@ -328,7 +328,7 @@ public class Users extends AbstractApiBean {
             @Parameter(description = "Offset used to override the starting point of the list.")
             @QueryParam("offset") Integer start,
             @Parameter(description = "Page size to limit the number of items in the list.")
-            @QueryParam("pageSize") Integer pageSize) {
+            @QueryParam("limit") Integer pageSize) {
         AuthenticatedUser authenticatedUser = null;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);

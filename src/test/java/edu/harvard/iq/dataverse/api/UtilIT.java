@@ -4397,7 +4397,7 @@ public class UtilIT {
         return  retrieveMyCollectionList(apiToken, userIdentifier, null, null);
     }
 
-    static Response retrieveMyCollectionList(String apiToken, String userIdentifier, Integer offset, Integer pageSize) {
+    static Response retrieveMyCollectionList(String apiToken, String userIdentifier, Integer offset, Integer limit) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
@@ -4408,8 +4408,8 @@ public class UtilIT {
         if (offset != null) {
             requestSpecification.queryParam("offset", offset);
         }
-        if (pageSize != null) {
-            requestSpecification.queryParam("pageSize", pageSize);
+        if (limit != null) {
+            requestSpecification.queryParam("limit", limit);
         }
 
         return requestSpecification.get("/api/mydata/retrieve/collectionList");
