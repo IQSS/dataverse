@@ -1,0 +1,176 @@
+package edu.harvard.iq.dataverse.export.service;
+
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.gdcc.spi.export.Exporter;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * ExporterRegistry is responsible for managing the registration, retrieval, and lifecycle of {@code Exporter}s.
+ * It dynamically loads exporters from external JAR files and provides access to those exporters via their format names.
+ * <p>
+ * This class is designed as a Jakarta EJB Singleton and is initialized at application startup.
+ * It uses a non-modifiable {@link Map} internally to store exporters under their format name, ensuring the state of
+ * the map is always consistent and thread-safe.
+ * <p>
+ * Key responsibilities:
+ * <ul>
+ *   <li>Locates and loads exporter JAR files from a specified directory.</li>
+ *   <li>Use {@code ServiceLoader} to discover and register {@code Exporter} implementations dynamically.</li>
+ *   <li>Allows external exporters to replace internal ones for the same format name.</li>
+ *   <li>Provides thread-safe access to registered exporters and their metadata.</li>
+ * </ul>
+ * @implNote <p>Note on Concurrency: EJB singletons use container-managed concurrency by default, where every business
+ *           method implicitly runs under an exclusive {@code @Lock(LockType.WRITE)}, meaning only one caller at
+ *           a time may use the bean. Since this registry is populated once in and is effectively immutable afterwards,
+ *           that exclusivity is unnecessary.</p>
+ *           <p>The class-level {@code @Lock(LockType.READ)} instead allows any number of callers to read from the
+ *           registry concurrently, avoiding an application-wide bottleneck on exporter lookups. If a method that
+ *           mutates the registry is ever added (e.g. a reload operation), it must be annotated with
+ *           {@code @Lock(LockType.WRITE)} to regain exclusive access for that method.</p>
+ */
+@Singleton
+@Startup
+@Lock(LockType.READ)
+public class ExporterRegistryBean {
+    
+    /**
+     * Represents a set of labels associated with an exporter.
+     */
+    public record Labels(
+        String localizedDisplayName,
+        String formatName
+    ) {}
+    
+    private static final Logger logger = Logger.getLogger(ExporterRegistryBean.class.getCanonicalName());
+    
+    // When the class is initialized, the exporter map is an empty, non-modifiable map (key = format name).
+    // Once the exporters have been located and loaded, the map is replaced, fully loaded, still unmodifiable.
+    // No half-initialized state is exposable this way. Future optimizations may use @Lock on it, too, for example,
+    // when implementing a reload mechanism.
+    private Map<String, Exporter> exporters = Map.of();
+    // Caching the classloader used to load plugin JAR files, keeping it open, will allow reuse for reloads
+    // or loading more resources from plugin JARs. May be dropped later if not necessary.
+    private URLClassLoader exporterClassLoader;
+    
+    /**
+     * Retrieves an exporter associated with the specified format name.
+     *
+     * @param formatName the name of the format for which to retrieve the exporter
+     * @return an {@code Optional} containing the exporter if found, or
+     *         an empty {@code Optional} if no exporter is associated with the given format name
+     */
+    public Optional<Exporter> get(String formatName) {
+        return Optional.ofNullable(exporters.get(formatName));
+    }
+    
+    /**
+     * Retrieves a list of all registered exporters in the system.
+     * @return an unmodifiable list of {@link Exporter} instances representing all the exporters currently available
+     */
+    public List<Exporter> getAll() {
+        return List.copyOf(exporters.values());
+    }
+    
+    /**
+     * Retrieves a list of {@link Labels} representing the exporters registered in the system.
+     * @return a list of {@code Labels} objects
+     */
+    public List<Labels> getLabels() {
+        return exporters.values().stream()
+            .map(exporter -> new Labels(
+                exporter.getDisplayName(BundleUtil.getCurrentLocale()),
+                exporter.getFormatName()))
+            .toList();
+    }
+    
+    @PostConstruct
+    private void initialize() {
+        /*
+         * Step 1 - find the EXPORTERS dir and add all jar files there to a class loader
+         */
+        List<URL> jarUrls = new ArrayList<>();
+        Optional<String> exportPathSetting = JvmSettings.EXPORTERS_DIRECTORY.lookupOptional(String.class);
+        if (exportPathSetting.isPresent()) {
+            Path exporterDir = Paths.get(exportPathSetting.get());
+            // Get all JAR files from the configured directory
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir, "*.jar")) {
+                // Using the foreach loop here to enable catching the URI/URL exceptions
+                for (Path path : stream) {
+                    logger.log(Level.FINE, "Adding {0}", path.toUri().toURL());
+                    // This is the syntax required to indicate a jar file from which classes should
+                    // be loaded (versus a class file).
+                    jarUrls.add(new URL("jar:" + path.toUri().toURL() + "!/"));
+                }
+            } catch (IOException e) {
+                logger.warning("Problem accessing external Exporters: " + e.getLocalizedMessage());
+            }
+        }
+        this.exporterClassLoader = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
+        
+        /*
+         * Step 2 - load all Exporters that can be found, using the jars as additional sources
+         */
+        ServiceLoader<Exporter> loader = ServiceLoader.load(Exporter.class, this.exporterClassLoader);
+        
+        /*
+         * Step 3 - Fill exporterMap with providerName as the key, allow external
+         * exporters to replace internal ones for the same providerName. FWIW: From the
+         * logging it appears that ServiceLoader returns classes in ~ alphabetical order
+         * rather than by class loader, so internal classes handling a given
+         * providerName may be processed before or after external ones.
+         */
+        Map<String, Exporter> loadedExporters = new HashMap<>();
+        loader.forEach(exp -> {
+            String formatName = exp.getFormatName();
+            // If no entry for this providerName yet or if it is an external exporter
+            if (!exporters.containsKey(formatName) || exp.getClass().getClassLoader().equals(this.exporterClassLoader)) {
+                loadedExporters.put(formatName, exp);
+            }
+            logger.log(
+                Level.FINE,
+                "SL: {0} from {1} and classloader: {2}",
+                new Object[]{
+                    formatName,
+                    exp.getClass().getCanonicalName(),
+                    exp.getClass().getClassLoader().getClass().getCanonicalName()
+                });
+        });
+        this.exporters = loadedExporters;
+        
+    }
+    
+    @PreDestroy
+    private void tearDown() {
+        if (exporterClassLoader == null) {
+            return;
+        }
+        
+        try {
+            exporterClassLoader.close();
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Could not close exporter classloader", e);
+        }
+    }
+}

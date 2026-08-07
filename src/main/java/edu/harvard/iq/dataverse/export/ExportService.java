@@ -9,11 +9,11 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import jakarta.ejb.EJB;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -42,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,77 +56,11 @@ import org.apache.commons.io.IOUtils;
  */
 public class ExportService {
 
-    private static ExportService service;
-    private ServiceLoader<Exporter> loader;
-    private Map<String, Exporter> exporterMap = new HashMap<>();
-
     private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
+
+    @EJB
+    ExporterRegistryBean exporterRegistry;
     
-    private ExportService() {
-        /*
-         * Step 1 - find the EXPORTERS dir and add all jar files there to a class loader
-         */
-        List<URL> jarUrls = new ArrayList<>();
-        Optional<String> exportPathSetting = JvmSettings.EXPORTERS_DIRECTORY.lookupOptional(String.class);
-        if (exportPathSetting.isPresent()) {
-            Path exporterDir = Paths.get(exportPathSetting.get());
-            // Get all JAR files from the configured directory
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir, "*.jar")) {
-                // Using the foreach loop here to enable catching the URI/URL exceptions
-                for (Path path : stream) {
-                    logger.log(Level.FINE, "Adding {0}", path.toUri().toURL());
-                    // This is the syntax required to indicate a jar file from which classes should
-                    // be loaded (versus a class file).
-                    jarUrls.add(new URL("jar:" + path.toUri().toURL() + "!/"));
-                }
-            } catch (IOException e) {
-                logger.warning("Problem accessing external Exporters: " + e.getLocalizedMessage());
-            }
-        }
-        URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
-
-        /*
-         * Step 2 - load all Exporters that can be found, using the jars as additional
-         * sources
-         */
-        loader = ServiceLoader.load(Exporter.class, cl);
-        /*
-         * Step 3 - Fill exporterMap with providerName as the key, allow external
-         * exporters to replace internal ones for the same providerName. FWIW: From the
-         * logging it appears that ServiceLoader returns classes in ~ alphabetical order
-         * rather than by class loader, so internal classes handling a given
-         * providerName may be processed before or after external ones.
-         */
-        loader.forEach(exp -> {
-            String formatName = exp.getFormatName();
-            // If no entry for this providerName yet or if it is an external exporter
-            if (!exporterMap.containsKey(formatName) || exp.getClass().getClassLoader().equals(cl)) {
-                exporterMap.put(formatName, exp);
-            }
-            logger.log(Level.FINE, "SL: " + exp.getFormatName() + " from " + exp.getClass().getCanonicalName()
-                    + " and classloader: " + exp.getClass().getClassLoader().getClass().getCanonicalName());
-        });
-    }
-
-    public static synchronized ExportService getInstance() {
-        if (service == null) {
-            service = new ExportService();
-        }
-        return service;
-    }
-
-    public List<String[]> getExportersLabels() {
-        List<String[]> retList = new ArrayList<>();
-
-        exporterMap.values().forEach(exp -> {
-            String[] temp = new String[2];
-            temp[0] = exp.getDisplayName(BundleUtil.getCurrentLocale());
-            temp[1] = exp.getFormatName();
-            retList.add(temp);
-        });
-        return retList;
-    }
-
     public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException, IOException {
 
         Dataset dataset = datasetVersion.getDataset();
