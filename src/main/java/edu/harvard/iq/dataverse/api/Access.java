@@ -191,8 +191,10 @@ public class Access extends AbstractApiBean {
         if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids)) {
             throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
-        // Assumes gbrecs is always true if gbrids is sent
-        if (gbrecs != true && df.isReleased()) {
+        if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
+            throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.submittingGuestbookResponseTwice"));
+        }
+        if (!gbrecs && df.isReleased()) {
             // Write Guestbook record if not done previously and file is released
             GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, req.getUser());
             guestbookResponseService.save(gbr);
@@ -322,8 +324,10 @@ public class Access extends AbstractApiBean {
         if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
-        // Assumes gbrecs is always true if gbrids is sent
-        if (gbrecs != true && df.isReleased()){
+        if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
+            throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.submittingGuestbookResponseTwice"));
+        }
+        if (!gbrecs && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, req.getUser());
         }
