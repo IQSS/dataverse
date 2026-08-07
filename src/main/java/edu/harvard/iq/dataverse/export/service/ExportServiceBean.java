@@ -1,8 +1,7 @@
-package edu.harvard.iq.dataverse.export;
+package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
@@ -25,9 +24,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless
-public class ExportService {
+public class ExportServiceBean {
 
-    private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(ExportServiceBean.class.getCanonicalName());
 
     @EJB
     ExporterRegistryBean exporterRegistry;
