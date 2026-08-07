@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.util.template.TemplateBuilder;
 import jakarta.json.*;
 import org.assertj.core.util.Lists;
@@ -27,10 +28,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 public class JsonPrinterTest {
 
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    
+    /*
+    try (MockedStatic<BrandingUtil> mockedBranding = Mockito.mockStatic(BrandingUtil.class)) {
+        mockedBranding.when(BrandingUtil::getInstallationBrandName).thenReturn("Root");
+
+        // Your existing test execution:
+        JsonObject result = JsonPrinter.json(dataset);
+        // assert statements...
+    }
+}
+    */
 
     @BeforeEach
     public void setUp() {
@@ -477,16 +491,32 @@ public class JsonPrinterTest {
         
         Dataset dataset = createDataset(42);
         dataset.setDatasetType(foobar);
-        
-        var jsob = JsonPrinter.json(dataset.getLatestVersion(), false, false).build();
-        String result = jsob.getString("datasetType");
-        
-        assertNotNull(result);
-        assertEquals(sut, result);
+        Dataverse dv = new Dataverse();
+        dv.setId(41L);
+        dataset.setOwner(dv);
+        try (MockedStatic<BrandingUtil> mockedBranding = Mockito.mockStatic(BrandingUtil.class)) {
+            mockedBranding.when(BrandingUtil::getInstallationBrandName).thenReturn("Root");
+            var jsob = JsonPrinter.json(dataset.getLatestVersion(), false, false).build();
+            String result = jsob.getString("datasetType");
+
+            assertNotNull(result);
+            assertEquals(sut, result);
+        }
     }
 
     @Test
     public void testDatasetWithGuestbook() {
+        
+        /*
+        try (MockedStatic<BrandingUtil> mockedBranding = Mockito.mockStatic(BrandingUtil.class)) {
+        mockedBranding.when(BrandingUtil::getInstallationBrandName).thenReturn("Root");
+
+        // Your existing test execution:
+        JsonObject result = JsonPrinter.json(dataset);
+        // assert statements...
+    }
+}
+        */
         String sut = "foobar";
         DatasetType foobar = new DatasetType();
         foobar.setName(sut);
@@ -553,6 +583,9 @@ public class JsonPrinterTest {
         dataset.setOwner(dv);
         guestbook.setDataverse(dataset.getOwner());
         dataset.setGuestbook(guestbook);
+        
+        try (MockedStatic<BrandingUtil> mockedBranding = Mockito.mockStatic(BrandingUtil.class)) {
+        mockedBranding.when(BrandingUtil::getInstallationBrandName).thenReturn("Root");
 
         // verify that the guestbook id is in the dataset response
         var jsob = JsonPrinter.json(dataset.getLatestVersion(), null, false, false, false, false).build();
@@ -576,6 +609,7 @@ public class JsonPrinterTest {
         assertEquals(3, result_cq3_options.size());
         var result_cq3_options2 = result_cq3_options.getJsonObject(1); // option 2 is index 1
         assertEquals("White", result_cq3_options2.getString("value"));
+        }
     }
 
     @Test
