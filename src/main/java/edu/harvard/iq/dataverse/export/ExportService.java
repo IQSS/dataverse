@@ -2,54 +2,27 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.ws.rs.core.MediaType;
+import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceConfigurationError;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ws.rs.core.MediaType;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-
-import org.apache.commons.io.IOUtils;
 
 @Stateless
 public class ExportService {
@@ -305,127 +278,7 @@ public class ExportService {
         }
         throw new ExportException("No such Exporter: " + formatName);
     }
-
-    // This method runs the selected metadata exporter, caching the output
-    // in a file in the dataset directory / container based on its DOI:
-    private void cacheExport(Dataset dataset, InternalExportDataProvider dataProvider, String format, Exporter exporter)
-            throws ExportException {
-        
-        OutputStream outputStream = null;
-        try {
-            boolean tempFileUsed = false;
-            File tempFile = null;
-            StorageIO<Dataset> storageIO = null;
-
-            // With some storage drivers, we can open a WritableChannel, or OutputStream
-            // to directly write the generated metadata export that we want to cache;
-            // Some drivers (like Swift) do not support that, and will give us an
-            // "operation not supported" exception. If that's the case, we'll have
-            // to save the output into a temp file, and then copy it over to the
-            // permanent storage using the IO "save" command:
-            try {
-                storageIO = DataAccess.getStorageIO(dataset);
-                Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached",
-                        DataAccessOption.WRITE_ACCESS);
-                outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
-            } catch (IOException ioex) {
-                // A common case = an IOException in openAuxChannel which is not supported by S3
-                // stores for WRITE_ACCESS
-                tempFileUsed = true;
-                tempFile = File.createTempFile("tempFileToExport", ".tmp");
-                outputStream = new FileOutputStream(tempFile);
-            }
-
-            try {
-                // Write the metadata export file to the outputStream, which may be the final
-                // location or a temp file
-                exporter.exportDataset(dataProvider, outputStream);
-                outputStream.flush();
-                outputStream.close();
-                if (tempFileUsed) {
-                    logger.fine("Saving export_" + format + ".cached aux file from temp file: "
-                            + Paths.get(tempFile.getAbsolutePath()));
-                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
-                    boolean tempFileDeleted = tempFile.delete();
-                    logger.fine("tempFileDeleted: " + tempFileDeleted);
-                }
-            } catch (ExportException exex) {
-                /*
-                 * This exception is from the particular exporter and may not affect other
-                 * exporters (versus other exceptions in this method which are from the basic
-                 * mechanism to create a file) So we'll catch it here and report so that loops
-                 * over other exporters can continue. Todo: Might be better to create a new
-                 * exception subtype and send it upward, but the callers currently just log and
-                 * ignore beyond terminating any loop over exporters.
-                 */
-                logger.warning("Exception thrown while creating export_" + format + ".cached : " + exex.getMessage());
-            } catch (IOException ioex) {
-                throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
-            }
-
-        } catch (IOException ioex) {
-            // This catches any problem creating a local temp file in the catch clause above
-            throw new ExportException("IO Exception thrown before exporting as " + "export_" + format + ".cached");
-        } finally {
-            IOUtils.closeQuietly(outputStream);
-        }
-
-    }
-
-    private void clearCachedExport(Dataset dataset, String format) throws IOException {
-        try {
-            StorageIO<Dataset> storageIO = getStorageIO(dataset);
-            storageIO.deleteAuxObject("export_" + format + ".cached");
-
-        } catch (IOException ex) {
-            throw new IOException("IO Exception caught deleting export_" + format + ".cached");
-        }
-    }
-
-    // This method checks if the metadata has already been exported in this
-    // format and cached on disk. If it has, it'll open the file and retun
-    // the file input stream. If not, it'll return null.
-    private InputStream getCachedExportFormat(Dataset dataset, String formatName) throws ExportException, IOException {
-
-        StorageIO<Dataset> dataAccess = null;
-
-        try {
-            dataAccess = DataAccess.getStorageIO(dataset);
-        } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
-        }
-
-        InputStream cachedExportInputStream = null;
-
-        try {
-            cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
-            return cachedExportInputStream;
-        } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
-        }
-
-    }
-
-    /*
-     * The below method, getCachedExportSize(), is not currently used. An exercise
-     * for the reader could be to refactor it if it's needed to be compatible with
-     * storage drivers other than local filesystem. Files.exists() would need to be
-     * discarded. -- L.A. 4.8
-     */
-//    public Long getCachedExportSize(Dataset dataset, String formatName) {
-//        try {
-//            if (dataset.getFileSystemDirectory() != null) {
-//                Path cachedMetadataFilePath = Paths.get(dataset.getFileSystemDirectory().toString(), "export_" + formatName + ".cached");
-//                if (Files.exists(cachedMetadataFilePath)) {
-//                    return cachedMetadataFilePath.toFile().length();
-//                }
-//            }
-//        } catch (Exception ioex) {
-//            // don't do anything - we'll just return null
-//        }
-//
-//        return null;
-//    }
+    
     public Boolean isXMLFormat(String provider) {
         Exporter e = exporterMap.get(provider);
         if (e != null) {
