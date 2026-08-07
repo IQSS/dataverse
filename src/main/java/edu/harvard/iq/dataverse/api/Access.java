@@ -12,10 +12,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.*;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -197,7 +194,7 @@ public class Access extends AbstractApiBean {
         // Assumes gbrecs is always true if gbrids is sent
         if (gbrecs != true && df.isReleased()) {
             // Write Guestbook record if not done previously and file is released
-            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getRequestor(req.getUser()));
+            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, req.getUser());
             guestbookResponseService.save(gbr);
             MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
@@ -328,7 +325,7 @@ public class Access extends AbstractApiBean {
         // Assumes gbrecs is always true if gbrids is sent
         if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
-            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, getRequestor(req.getUser()));
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, req.getUser());
         }
 
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -1240,7 +1237,7 @@ public class Access extends AbstractApiBean {
         String customZipServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.CustomZipDownloadServiceUrl);
         boolean useCustomZipService = customZipServiceUrl != null;
 
-        User user = getRequestor(getRequestUser(crc));
+        User user = getRequestUser(crc);
         DataverseRequest req = createDataverseRequest(user);
 
         Boolean getOrig = false;
@@ -1416,7 +1413,7 @@ public class Access extends AbstractApiBean {
         }
         return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.noFiles"));
     }
-    
+
     /* 
      * Geting rid of the tempPreview API - it's always been a big, fat hack. 
      * the edit files page is now using the Base64 image strings in the preview 
@@ -2240,17 +2237,17 @@ public class Access extends AbstractApiBean {
         boolean required = ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest();
         boolean wasWrittenInPost = false;
         if (required) {
-            User requestor = getRequestor(user);
-            if (requestor instanceof AuthenticatedUser && permissionService.userOn(requestor, ds).has(Permission.EditDataset)) {
+
+            if ((user instanceof PrivateUrlUser) || (user instanceof AuthenticatedUser && permissionService.userOn(user, ds).has(Permission.EditDataset)) {
                 required = false;
             }
             // Check if we are downloading a thumbnail image which doesn't require a guestbook response
             boolean imageThumb = uriInfo.getQueryParameters().containsKey("imageThumb");
             if (imageThumb) {
-                required = false;
+                return false;
             }
 
-            if (required && gbrids != null && !gbrids.isEmpty()) {
+            if (gbrids != null && !gbrids.isEmpty()) {
                 try {
                     // verify that this id is good
                     GuestbookResponse gbr = guestbookResponseService.findById(Long.valueOf(gbrids));
@@ -2283,19 +2280,10 @@ public class Access extends AbstractApiBean {
 
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, and throws a 403 exception if not.
-    private void checkAuthorization(User initialUser, DataFile df) throws WebApplicationException {
-        User user = getRequestor(initialUser);
-        if (!isAccessAuthorized(user, df)) {
+    private void checkAuthorization(User requestUser, DataFile df) throws WebApplicationException {
+        if (!isAccessAuthorized(requestUser, df)) {
             throw new ForbiddenException();
         }        
-    }
-    private User getRequestor(User user) {
-        // CompoundAuthMechanism should find the user by API Key/Token, Workflow, etc. And for SPA the Bearer Token
-        // For JSF check if CompoundAuthMechanism couldn't find the user then try to get it from the session
-        if (session!=null && user instanceof GuestUser) {
-            user = session.getUser();
-        }
-        return user;
     }
 
     private boolean isAccessAuthorized(User requestUser, DataFile df) {

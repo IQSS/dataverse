@@ -159,13 +159,34 @@ jobs:
             continue-on-error: true
             run: >
                 mvn -B
-                -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+                -DrepoToken="${COVERALLS_SECRET}" -DpullRequest=${{ github.event.number }}
                 jacoco:report coveralls:report
+
+  # Note: The SONAR_TOKEN secret is required to push analysis results to Sonarcloud.
+  # We check for them here and subsequent jobs can rely on this to decide if they shall run.
+    check-secrets:
+      needs: integration-test
+      name: Check for Secrets Availability
+      runs-on: ubuntu-latest
+      outputs:
+        available: ${{ steps.secret-check.outputs.available }}
+      steps:
+        - id: secret-check
+          # perform secret check & put boolean result as an output
+          shell: bash
+          run: |
+            if [ "${{ secrets.SONAR_TOKEN }}" != '' ]; then
+                echo "available=true" >> "$GITHUB_OUTPUT";
+            else
+                echo "available=false" >> "$GITHUB_OUTPUT";
+            fi
 
     sonarcloud:
       runs-on: ubuntu-latest
-      needs: integration-test
+      needs: check-secrets
       name: SonarQube Analysis and Coverage
+      # Only run in upstream repo - avoid unnecessary runs in forks (they don't have access to SONAR_TOKEN)
+      if: needs.check-secrets.outputs.available == 'true'
       steps:
         # TODO: As part of #10618 change to setup-maven custom action
         # Basic setup chores

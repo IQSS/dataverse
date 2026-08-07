@@ -3951,8 +3951,10 @@ Linked Data Notifications (LDN) Allowed Hosts
 +++++++++++++++++++++++++++++++++++++++++++++
 
 Dataverse supports receiving LDN notifications via the /api/inbox endpoint. The dataverse.ldn.allowed-hosts allows you to specify the list of host IP addresses from which LDN notifications can be received, or ``*`` to receive messages from anywhere.
+Note that since the Inbox endpoint does not require authentication, allowing un-trusted hosts via ``*`` is not recommended for production.
 
 Example: ``dataverse.ldn.allowed-hosts=*``
+Example: ``dataverse.ldn.allowed-hosts=172.16.234.56,172.16.234.57``
 
 COAR Notify Relationship Announcement Notify Superusers Only
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -4054,6 +4056,15 @@ It is mandatory to test instance clients and integrations thoroughly and it is n
 In a future Dataverse version, the (currently) experimental response message style will be made the only supported one.
 
 See also :ref:`dataverse.legacy.api-response-message-style`.
+
+.. _dataverse.feature.do-not-assume-default-license:
+
+dataverse.feature.do-not-assume-default-license
++++++++++++++++++++++++++++++++++++++++++++++++
+
+When creating a dataset via API, if neither a license nor any terms of use are provided, the system normally assigns the default license. If this feature flag is enabled, no license is assigned (and no terms) in this case.
+
+Defaults to ``false``.
 
 .. _dataverse.feature.avoid-expensive-solr-join:
 
