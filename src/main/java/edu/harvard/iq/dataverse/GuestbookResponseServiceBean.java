@@ -878,6 +878,13 @@ public class GuestbookResponseServiceBean {
         return em.find(GuestbookResponse.class, id);
     }
 
+    public Object[] getDatasetIdAndResponseTime(Long id) {
+        List<Object[]> results = em.createQuery("SELECT g.dataset.id, g.responseTime FROM GuestbookResponse g WHERE g.id = :id", Object[].class)
+                .setParameter("id", id)
+                .getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void save(GuestbookResponse guestbookResponse) {
         em.persist(guestbookResponse);

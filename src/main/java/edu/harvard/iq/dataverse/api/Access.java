@@ -2244,12 +2244,14 @@ public class Access extends AbstractApiBean {
             if (StringUtil.nonEmpty(gbrids)) {
                 try {
                     // verify that this id is good
-                    GuestbookResponse gbr = guestbookResponseService.findById(Long.valueOf(gbrids));
-                    if (gbr == null) {
+                    Object[] gbrData = guestbookResponseService.getDatasetIdAndResponseTime(Long.valueOf(gbrids));
+                    if (gbrData == null) {
                         throw new NotFoundException("GuestbookResponse Not Found for id:" + gbrids);
                     }
-                    Long delta = Instant.now().toEpochMilli() - gbr.getResponseTime().getTime();
-                    return gbr.getDataset().getId().equals(ds.getId()) && delta > (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L);
+                    Long datasetId = (Long) gbrData[0];
+                    Date responseTime = (Date) gbrData[1];
+                    Long delta = Instant.now().toEpochMilli() - responseTime.getTime();
+                    return !(datasetId.equals(ds.getId()) && delta <= (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L));
                     // We're only checking one guestbookresponse - for performance.
                 } catch (NumberFormatException | DateTimeParseException ex) {
                     throw new BadRequestException(ex.getMessage());
