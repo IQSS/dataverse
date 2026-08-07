@@ -11,7 +11,7 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
     @Inject
     DataverseSession session;
 
-    public static final String ACCESS_DATAFILE_PATH_PREFIX = "access/datafile/";
+    public static final String ACCESS_PATH_PREFIX = "access/";
 
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
@@ -24,6 +24,6 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
     private boolean isAccessApi(ContainerRequestContext containerRequestContext) {
         String requestPath = containerRequestContext.getUriInfo() != null ? containerRequestContext.getUriInfo().getPath() : "";
         return ("GET".equalsIgnoreCase(containerRequestContext.getMethod()) &&
-                requestPath.startsWith(ACCESS_DATAFILE_PATH_PREFIX));
+                requestPath.startsWith(ACCESS_PATH_PREFIX));
     }
 }
