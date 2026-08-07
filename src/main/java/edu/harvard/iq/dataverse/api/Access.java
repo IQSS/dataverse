@@ -2269,7 +2269,7 @@ public class Access extends AbstractApiBean {
             }
 
             // Since the user is authorized to see these files (verified in callers), the question here is just whether the file is in the draft version (GB response not required) or not (GB response required)
-            // If all files are in the draft, no guestbook response required, and we can return false here, otherwise the follow-on checks are needed
+            // If all files are in the draft, no guestbook response required, and we can return false
             boolean availableInDraft = true;
             for (DataFile df : authorizedFiles) {
                 if (df.getDraftFileMetadata() == null) {
