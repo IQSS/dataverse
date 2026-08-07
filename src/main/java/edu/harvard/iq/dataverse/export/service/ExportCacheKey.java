@@ -14,8 +14,4 @@ public record ExportCacheKey(Dataset dataset, DatasetVersion version, String for
     public String auxTag() {
         return "export_" + formatName + "_" + version.getFriendlyVersionNumber() + ".cached";
     }
-    
-    public boolean isLatestReleased() {
-        return version.equals(dataset.getReleasedVersion());
-    }
 }
