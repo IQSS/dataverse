@@ -59,17 +59,7 @@ public final class StorageIOCache implements ExportCache {
     @Override
     public Optional<InputStream> read(ExportCacheKey key) throws IOException {
         StorageIO<Dataset> storage = storageFor(key.dataset());
-        
-        Optional<InputStream> versioned = tryRead(storage, key.auxTag());
-        if (versioned.isPresent()) {
-            return versioned;
-        }
-        // Legacy fallback: pre-versioning cache entries carried no version identity and only ever described the
-        // latest released version. For any other version they are unattributable and must be ignored!
-        if (key.isLatestReleased()) {
-            return tryRead(storage, legacyLatestAuxTag(key.formatName()));
-        }
-        return Optional.empty();
+        return tryRead(storage, key.auxTag());
     }
     
     /**
@@ -104,13 +94,7 @@ public final class StorageIOCache implements ExportCache {
     
     @Override
     public void evict(ExportCacheKey key) throws IOException {
-        StorageIO<Dataset> storage = storageFor(key.dataset());
-        deleteQuietly(storage, key.auxTag());
-        // Paired eviction:
-        // Without this, the next read would fall through to the stale legacy entry and resurrect what we just invalidated!
-        if (key.isLatestReleased()) {
-            deleteQuietly(storage, legacyLatestAuxTag(key.formatName()));
-        }
+        deleteQuietly(storageFor(key.dataset()), key.auxTag());
     }
     
     @Override
@@ -122,18 +106,6 @@ public final class StorageIOCache implements ExportCache {
                 deleteQuietly(storage, tag);
             }
         }
-    }
-    
-    /**
-     * The pre-versioning aux tag, kept for reading and deleting existing caches only.
-     *
-     * @deprecated Never write under this name.
-     *             Remove the fallback entirely once instances have had a release cycle to regenerate their caches.
-     *             (Worst case on removal: one redundant re-export per dataset. Cache is fully derivable state).
-     */
-    @Deprecated(forRemoval = true)
-    private static String legacyLatestAuxTag(String formatName) {
-        return TAG_PREFIX + formatName + TAG_SUFFIX;
     }
     
     private static Optional<InputStream> tryRead(StorageIO<Dataset> storage, String auxTag) {
