@@ -2184,6 +2184,17 @@ public class DataversesIT {
                 .body("data[2].type", equalTo("custom"))
                 .statusCode(OK.getStatusCode());
 
+        // Verify that the unpublished image can be downloaded by its creator and not by a user without ViewUnpublishedDataverse permissions
+        JsonPath path = JsonPath.from(listDataverseFeaturedItemsResponse.body().asString());
+        String imageUrl = path.getString("data[2].imageFileUrl");
+        Response downloadResponse = given().get(imageUrl + "?key=" + apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createUserResponse2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUserResponse2);
+        Response downloadResponse2 = given().get(imageUrl + "?key=" + apiToken2);
+        downloadResponse2.then().assertThat().statusCode(NO_CONTENT.getStatusCode());
+
         // Should return not found error when dataverse does not exist
 
         listDataverseFeaturedItemsResponse = UtilIT.listDataverseFeaturedItems("thisDataverseDoesNotExist", apiToken);
