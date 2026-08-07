@@ -14,6 +14,7 @@ import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
 import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,10 +51,7 @@ import java.io.FileInputStream;
 
 import org.apache.commons.io.IOUtils;
 
-/**
- *
- * @author skraffmi
- */
+@Stateless
 public class ExportService {
 
     private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
