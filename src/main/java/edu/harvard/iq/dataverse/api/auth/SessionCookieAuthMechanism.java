@@ -23,7 +23,6 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
 
     private boolean isAccessApi(ContainerRequestContext containerRequestContext) {
         String requestPath = containerRequestContext.getUriInfo() != null ? containerRequestContext.getUriInfo().getPath() : "";
-        return ("GET".equalsIgnoreCase(containerRequestContext.getMethod()) &&
-                requestPath.startsWith(ACCESS_PATH_PREFIX));
+        return (requestPath.startsWith(ACCESS_PATH_PREFIX));
     }
 }
