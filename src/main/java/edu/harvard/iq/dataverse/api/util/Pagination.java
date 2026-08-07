@@ -6,9 +6,11 @@ public class Pagination {
     private int offset;
     private int limitPerPage;
 
+    private static int DEFAULT_PAGE_SIZE = 10;
+
     public Pagination(Integer limitPerPage, Integer offset) {
         this.offset = offset != null ? Math.max(offset, 0) : 0;
-        this.limitPerPage = limitPerPage != null ? Math.max(limitPerPage, 1) : 10;
+        this.limitPerPage = limitPerPage != null ? Math.max(limitPerPage, 1) : DEFAULT_PAGE_SIZE;
     }
 
     public void setNumResults(int numResults) {
