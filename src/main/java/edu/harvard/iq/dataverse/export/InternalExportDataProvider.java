@@ -158,12 +158,11 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     @Override
-    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query) {
-        // @todo All supported FileExportQuery predicates need to be properly 
-        // handled here.  
-        return dv.getFileMetadatas().stream()
-                .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
-                .map(JsonObjectBuilder::build);
+    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query) {        
+        // We may have a prettier implementation going forward, but for now 
+        // we are just calling the paginated version of the method with a null
+        // pageRequest - i.e., no limit/no offset. 
+        return getDatasetFileDetails(query, null); 
     }
 
     @Override
@@ -181,6 +180,14 @@ public class InternalExportDataProvider implements ExportDataProvider {
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query, PageRequest pageRequest) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
 
+        Integer limit = null; 
+        Integer offset = null; 
+        
+        if (pageRequest != null) {
+            limit = pageRequest.getLimit();
+            offset = pageRequest.getOffset();
+        }
+        
         if (datasetVersionFilesService == null) {
             try {
                 datasetVersionFilesService = CDI.current().select(DatasetVersionFilesServiceBean.class).get();
@@ -193,35 +200,48 @@ public class InternalExportDataProvider implements ExportDataProvider {
             throw new ExportException("EJB DatasetVersionFilesService is not available");
         }
 
+        // These if/else blocks below are distinctly un-pretty. 
+        // My brain hurts having worked on thie PR for 7 years and I cannot think
+        // of how to prettify it without obfuscating what each case actually serves. 
         if (query.requires(FileMetadataPredicates.INCLUDE_TABULAR_DATA_VARIABLES)) {
             if (query.requires(FileMetadataPredicates.ONLY_TABULAR_FILES)) {
 
                 return datasetVersionFilesService.getTabularDataFileMetadatas(dv,
-                        pageRequest.getLimit(),
-                        pageRequest.getOffset(),
+                        limit,
+                        offset,
                         query.requires(FileMetadataPredicates.ONLY_PUBLIC_FILES)).stream()
                         .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
                         .map(JsonObjectBuilder::build);
             } else {
                 return datasetVersionFilesService.getFileMetadatas(dv,
-                        pageRequest.getLimit(),
-                        pageRequest.getOffset(),
+                        limit,
+                        offset,
                         createFileSearchCriteria(query.requires(FileMetadataPredicates.ONLY_PUBLIC_FILES)),
                         DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ).stream()
                         .map(fileMetadata -> JsonPrinter.jsonDatafileWithDatatableForExport(fileMetadata.getDataFile(), fileMetadata))
                         .map(JsonObjectBuilder::build);
             }
         } else {
-            // @todo there is a weird possible case of only the filemetadatas for 
+            // First is a weird, but possible case of only the filemetadatas for 
             // the files that have datavariable metadata requested; but without
-            // the actual datavariable metadata
-            return datasetVersionFilesService.getFileMetadatas(dv,
-                        pageRequest.getLimit(),
-                        pageRequest.getOffset(),
+            // the actual datavariable metadata requested:
+            if (query.requires(FileMetadataPredicates.ONLY_TABULAR_FILES)) {
+
+                return datasetVersionFilesService.getTabularDataFileMetadatas(dv,
+                        limit,
+                        offset,
+                        query.requires(FileMetadataPredicates.ONLY_PUBLIC_FILES)).stream()
+                        .map(fileMetadata -> JsonPrinter.json(fileMetadata.getDataFile(), fileMetadata, true))
+                        .map(JsonObjectBuilder::build);
+            } else {
+                return datasetVersionFilesService.getFileMetadatas(dv,
+                        limit,
+                        offset,
                         createFileSearchCriteria(query.requires(FileMetadataPredicates.ONLY_PUBLIC_FILES)),
                         DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ).stream()
                         .map(fileMetadata -> JsonPrinter.json(fileMetadata.getDataFile(), fileMetadata, true))
                         .map(JsonObjectBuilder::build);
+            }
         }
     }
 

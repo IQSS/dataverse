@@ -701,8 +701,8 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     // reExportAll with a date *forces* a reexport on all published datasets that were not exported or were exported before the date;
     @Asynchronous
-    public void reExportAllAsync(Date reExportDate) {
-        exportAllDatasets(true, reExportDate);
+    public void reExportAllAsync(Date reExportDate, List<String> formatNames) {
+        exportAllDatasets(true, reExportDate, formatNames);
         
     }
 
@@ -724,11 +724,14 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     private void exportAllDatasets(boolean b) {
-     exportAllDatasets(b, null);
+     exportAllDatasets(b, null, List.of());
     }
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    private void exportAllDatasets(boolean forceReExport, Date reExportDate) {
+    private void exportAllDatasets(boolean forceReExport, Date reExportDate, List<String> formatNames) {
+        if (formatNames == null) {
+            throw new IllegalArgumentException("exportAllDatasets called with null formatNames (use an empty List for \"all\"");
+        }
         Integer countAll = 0;
         Integer countSuccess = 0;
         Integer countError = 0;
@@ -775,7 +778,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                                             || dataset.getLastExportTime().before(publicationDate))))) {
                         countAll++;
                         try {
-                            recordService.exportFormatsInNewTransaction(dataset, List.of());
+                            recordService.exportFormatsInNewTransaction(dataset, formatNames);
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
