@@ -309,7 +309,7 @@ public class ImportServiceBean {
             if (existingDataset == null) {
                 // Creating a new dataset from scratch:
                 
-                harvestedDataset = parser.parseDataset(obj);
+                harvestedDataset = parser.parseDataset(obj, owner);
 
                 harvestedDataset.setHarvestedFrom(harvestingClient);
                 harvestedDataset.setHarvestIdentifier(harvestIdentifier);
@@ -435,7 +435,7 @@ public class ImportServiceBean {
         try {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, templateService);
             parser.setLenient(!importType.equals(ImportType.NEW));
-            Dataset ds = parser.parseDataset(obj);
+            Dataset ds = parser.parseDataset(obj, owner);
 
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
@@ -446,7 +446,6 @@ public class ImportServiceBean {
                 }
             }
 
-            ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
             // Check data against required constraints

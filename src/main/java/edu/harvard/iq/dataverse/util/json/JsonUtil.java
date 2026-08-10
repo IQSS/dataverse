@@ -10,14 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonException;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
+
+import jakarta.json.*;
 import jakarta.json.stream.JsonGenerator;
 
 public class JsonUtil {
@@ -162,5 +156,30 @@ public class JsonUtil {
                 }
             }
         }
+    }
+
+    /**
+     * Safely return an int from a JsonValue represented as a string x="5" or as an int x=5
+     * @param obj
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public static int getIntSafely(JsonObject obj, String key, int defaultValue) {
+        int value = defaultValue;
+        if (obj.containsKey(key) && !obj.isNull(key)) {
+            JsonValue jsonValue = obj.get(key);
+            JsonValue.ValueType type = jsonValue.getValueType();
+            if (type == JsonValue.ValueType.NUMBER) {
+                value = ((JsonNumber) jsonValue).intValue();
+            }
+            if (type == JsonValue.ValueType.STRING) {
+                try {
+                    value = Integer.parseInt(((JsonString) jsonValue).getString());
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+        return value;
     }
 }

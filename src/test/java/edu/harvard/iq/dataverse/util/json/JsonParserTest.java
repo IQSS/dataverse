@@ -507,7 +507,7 @@ public class JsonParserTest {
             InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
             dsJson = Json.createReader(reader).readObject();
             System.out.println(dsJson != null);
-            assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson));
+            assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson, null));
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
