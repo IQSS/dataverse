@@ -2237,9 +2237,9 @@ public class Access extends AbstractApiBean {
         boolean required = ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest();
         boolean wasWrittenInPost = false;
         if (required) {
-            checkAuthorization(user, df);
-            // PrivateUrlUsers are exempt from this requirement
-            if (user instanceof PrivateUrlUser) {
+            // PrivateUrlUsers and AuthenticatedUser with ViewUnpublishedDataset are exempt from this requirement
+            if ((user instanceof PrivateUrlUser) ||
+                    (user instanceof AuthenticatedUser && permissionService.userOn(user, ds).has(Permission.ViewUnpublishedDataset))) {
                 return false;
             }
             // Check if we are downloading a thumbnail image which doesn't require a guestbook response
