@@ -389,12 +389,12 @@ public class JsonPrinter {
         return jsonArray(dataverses, null);
     }
     public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses, Pagination pagination) {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("count", dataverses.size());
         if (pagination != null) {
             job.add("totalCount", pagination.getNumResults());
         }
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArrayBuilder = JsonUtil.createArrayBuilder();
         for (Dataverse dataverse : dataverses) {
             NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
             jsonObject.add("id", dataverse.getId());
