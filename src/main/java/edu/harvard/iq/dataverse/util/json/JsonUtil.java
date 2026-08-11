@@ -32,6 +32,19 @@ public class JsonUtil {
 
     private static final Logger logger = Logger.getLogger(JsonUtil.class.getCanonicalName());
 
+    /**
+     * A provider to create Jakarta JSON-P Factories and Builders such as {@code JsonObjectBuilder} and {@code JsonArrayBuilder}.
+     * This is a thread-safe, static, and final instance to manage JSON builder creation.
+     *
+     * <p>Using a one-time initialized factory avoids a classpath-scan on every invocation of
+     * {@code JsonUtil.createArrayBuilder()} or {@code JsonUtil.createObjectBuilder()}, creating non-neglible performance issues.
+     * </p>
+     *
+     * <p>See also <a href="https://github.com/jakartaee/jsonp-api/issues/26">JSON-P #26</a>,
+     * <a href="https://github.com/eclipse-ee4j/yasson/issues/698">Yasson #698</a> and others.</p>
+     */
+    private static final JsonProvider provider = JsonProvider.provider();
+
     private JsonUtil() {}
 
     /**
@@ -54,7 +67,7 @@ public class JsonUtil {
     public static String prettyPrint(JsonArray jsonArray) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
+        JsonWriterFactory jsonWriterFactory = provider.createWriterFactory(config);
         StringWriter stringWriter = new StringWriter();
         try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
             jsonWriter.writeArray(jsonArray);
@@ -65,7 +78,7 @@ public class JsonUtil {
     public static String prettyPrint(JsonObject jsonObject) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
+        JsonWriterFactory jsonWriterFactory = provider.createWriterFactory(config);
         StringWriter stringWriter = new StringWriter();
         try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
             jsonWriter.writeObject(jsonObject);
@@ -85,7 +98,7 @@ public class JsonUtil {
      */
     public static JsonObject getJsonObject(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 return jsonReader.readObject();
             }
         }
@@ -103,7 +116,7 @@ public class JsonUtil {
      * @see #getJsonObjectFromFile(String)
      */
     public static JsonObject getJsonObjectFromInputStream(InputStream stream) {
-        try (JsonReader jsonReader = Json.createReader(stream)) {
+        try (JsonReader jsonReader = provider.createReader(stream)) {
             return jsonReader.readObject();
         }
     }
@@ -120,7 +133,7 @@ public class JsonUtil {
      */
     public static JsonObject getJsonObjectFromFile(String fileName) throws IOException {
         try (FileReader rdr = new FileReader(fileName)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 return jsonReader.readObject();
             }
         }
@@ -136,7 +149,7 @@ public class JsonUtil {
      */
     public static JsonArray getJsonArray(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 return jsonReader.readArray();
             }
         }
@@ -159,7 +172,7 @@ public class JsonUtil {
         }
         
         try (StringReader rdr = new StringReader(serializedJson)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 JsonValue jsonValue = jsonReader.read();
                 if (jsonValue.getValueType() == JsonValue.ValueType.OBJECT) {
                     return jsonValue.asJsonObject();
@@ -172,18 +185,6 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * A provider to create Jakarta JSON-P Builders such as {@code JsonObjectBuilder} and {@code JsonArrayBuilder}.
-     * This is a thread-safe, static, and final instance to manage JSON builder creation.
-     *
-     * <p>Using a one-time initialized factory avoids a classpath-scan on every invocation of
-     * {@code JsonUtil.createArrayBuilder()} or {@code JsonUtil.createObjectBuilder()}, creating non-neglible performance issues.
-     * </p>
-     *
-     * <p>See also <a href="https://github.com/jakartaee/jsonp-api/issues/26">JSON-P #26</a>,
-     * <a href="https://github.com/eclipse-ee4j/yasson/issues/698">Yasson #698</a> and others.</p>
-     */
-    private static final JsonProvider provider = JsonProvider.provider();
 
     /**
      * Create a new {@link JsonObjectBuilder} from a cached provider instance.
@@ -300,5 +301,9 @@ public class JsonUtil {
      */
     public static JsonNumber createValue(BigInteger value){
         return provider.createValue(value);
+    }
+
+    public static JsonWriterFactory createWriterFactory(Map<String, Object> properties) {
+        return provider.createWriterFactory(properties);
     }
 }
