@@ -4,10 +4,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,13 +26,22 @@ import jakarta.json.JsonWriterFactory;
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonException;
+import jakarta.json.JsonMergePatch;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonNumber;
+import jakarta.json.JsonPatch;
+import jakarta.json.JsonPatchBuilder;
+import jakarta.json.JsonPointer;
+import jakarta.json.JsonReaderFactory;
 import jakarta.json.JsonString;
+import jakarta.json.JsonStructure;
 import jakarta.json.spi.JsonProvider;
 import jakarta.json.stream.JsonGenerator;
+import jakarta.json.stream.JsonGeneratorFactory;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParserFactory;
 
 public class JsonUtil {
 
@@ -303,7 +318,95 @@ public class JsonUtil {
         return provider.createValue(value);
     }
 
-    public static JsonWriterFactory createWriterFactory(Map<String, Object> properties) {
+    public static JsonWriterFactory createWriterFactory(Map<String, ?> properties) {
         return provider.createWriterFactory(properties);
+    }
+
+    public static JsonReader createReader(InputStream in) {
+        return provider.createReader(in);
+    }
+
+    public static JsonReader createReader(Reader reader) {
+        return provider.createReader(reader);
+    }
+
+    public static JsonReader createReader(InputStream in, Charset charset) {
+        return provider.createReader(new InputStreamReader(in, charset));
+    }
+
+    public static JsonWriter createWriter(OutputStream out) {
+        return provider.createWriter(out);
+    }
+
+    public static JsonWriter createWriter(Writer writer) {
+        return provider.createWriter(writer);
+    }
+
+    public static JsonWriter createWriter(OutputStream out, Charset charset) {
+        return provider.createWriter(new OutputStreamWriter(out, charset));
+    }
+
+    public static JsonReaderFactory createReaderFactory(Map<String, ?> config) {
+        return provider.createReaderFactory(config);
+    }
+
+    public static JsonParser createParser(InputStream in) {
+        return provider.createParser(in);
+    }
+
+    public static JsonParser createParser(Reader reader) {
+        return provider.createParser(reader);
+    }
+
+    public static JsonParser createParser(InputStream in, Charset charset) {
+        return provider.createParser(new InputStreamReader(in, charset));
+    }
+
+    public static JsonParserFactory createParserFactory(Map<String, ?> config) {
+        return provider.createParserFactory(config);
+    }
+
+    public static JsonGenerator createGenerator(OutputStream out) {
+        return provider.createGenerator(out);
+    }
+
+    public static JsonGenerator createGenerator(Writer writer) {
+        return provider.createGenerator(writer);
+    }
+
+    public static JsonGenerator createGenerator(OutputStream out, Charset charset) {
+        return provider.createGenerator(new OutputStreamWriter(out, charset));
+    }
+
+    public static JsonGeneratorFactory createGeneratorFactory(Map<String, ?> config) {
+        return provider.createGeneratorFactory(config);
+    }
+
+    public static JsonPatch createPatch(JsonArray array) {
+        return provider.createPatch(array);
+    }
+
+    public static JsonPatch createDiff(JsonStructure source, JsonStructure target) {
+        return provider.createDiff(source, target);
+    }
+
+    public static JsonMergePatch createMergePatch(JsonValue patch) {
+        return provider.createMergePatch(patch);
+    }
+
+    public static JsonMergePatch createMergeDiff(JsonValue source, JsonValue target) {
+        return provider.createMergeDiff(source, target);
+    }
+
+    public static JsonPatchBuilder createPatchBuilder() {
+        return provider.createPatchBuilder();
+    }
+
+    public static JsonPatchBuilder createPatchBuilder(JsonArray array) {
+        return provider.createPatchBuilder(array);
+    }
+
+    public static JsonPointer createPointer(String path) {
+        return provider.createPointer(path);
     }
 }
