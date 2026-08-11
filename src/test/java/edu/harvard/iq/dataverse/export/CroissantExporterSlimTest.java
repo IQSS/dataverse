@@ -11,6 +11,7 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -24,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -77,7 +79,11 @@ public class CroissantExporterSlimTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/minimal/in/datasetFileDetails.json";
-                        try { return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8)); } catch (IOException ex) { return null; }
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
+                            return null;
+                        }
                     }
 
                     @Override
@@ -133,7 +139,11 @@ public class CroissantExporterSlimTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/max/in/datasetFileDetails.json";
-                        try { return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8)); } catch (IOException ex) { return null; }
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
+                            return null;
+                        }
                     }
 
                     @Override
@@ -189,7 +199,11 @@ public class CroissantExporterSlimTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/cars/in/datasetFileDetails.json";
-                        try { return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8)); } catch (IOException ex) { return null; }
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
+                            return null;
+                        }
                     }
 
                     @Override
@@ -245,7 +259,11 @@ public class CroissantExporterSlimTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/restricted/in/datasetFileDetails.json";
-                        try { return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8)); } catch (IOException ex) { return null; }
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
+                            return null;
+                        }
                     }
 
                     @Override
@@ -301,7 +319,11 @@ public class CroissantExporterSlimTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/junk/in/datasetFileDetails.json";
-                        try { return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8)); } catch (IOException ex) { return null; }
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
+                            return null;
+                        }
                     }
 
                     @Override
@@ -357,7 +379,11 @@ public class CroissantExporterSlimTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/draft/in/datasetFileDetails.json";
-                        try { return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8)); } catch (IOException ex) { return null; }
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
+                            return null;
+                        }
                     }
 
                     @Override
@@ -455,7 +481,9 @@ public class CroissantExporterSlimTest {
         assertEquals(prettyPrint(expected), prettyPrint(outputStreamCars.toString()));
     }
 
-    /** Same as the cars data but the stata13-auto.dta file is restricted. */
+    /**
+     * Same as the cars data but the stata13-auto.dta file is restricted.
+     */
     @Test
     public void testExportDatasetRestricted() throws Exception {
         exporter.exportDataset(dataProviderRestricted, outputStreamRestricted);
