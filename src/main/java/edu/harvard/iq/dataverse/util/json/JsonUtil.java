@@ -4,16 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +34,7 @@ import jakarta.json.JsonPointer;
 import jakarta.json.JsonReaderFactory;
 import jakarta.json.JsonString;
 import jakarta.json.JsonStructure;
+import jakarta.json.JsonBuilderFactory;
 import jakarta.json.spi.JsonProvider;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonGeneratorFactory;
@@ -338,10 +336,6 @@ public class JsonUtil {
         return provider.createWriter(writer);
     }
 
-    public static JsonWriter createWriter(OutputStream out, Charset charset) {
-        return provider.createWriter(new OutputStreamWriter(out, charset));
-    }
-
     public static JsonReaderFactory createReaderFactory(Map<String, ?> config) {
         return provider.createReaderFactory(config);
     }
@@ -354,10 +348,6 @@ public class JsonUtil {
         return provider.createParser(reader);
     }
 
-    public static JsonParser createParser(InputStream in, Charset charset) {
-        return provider.createParser(new InputStreamReader(in, charset));
-    }
-
     public static JsonParserFactory createParserFactory(Map<String, ?> config) {
         return provider.createParserFactory(config);
     }
@@ -368,10 +358,6 @@ public class JsonUtil {
 
     public static JsonGenerator createGenerator(Writer writer) {
         return provider.createGenerator(writer);
-    }
-
-    public static JsonGenerator createGenerator(OutputStream out, Charset charset) {
-        return provider.createGenerator(new OutputStreamWriter(out, charset));
     }
 
     public static JsonGeneratorFactory createGeneratorFactory(Map<String, ?> config) {
@@ -404,5 +390,9 @@ public class JsonUtil {
 
     public static JsonPointer createPointer(String path) {
         return provider.createPointer(path);
+    }
+
+    public static JsonBuilderFactory createBuilderFactory(Map<String, ?> config) {
+        return provider.createBuilderFactory(config);
     }
 }
