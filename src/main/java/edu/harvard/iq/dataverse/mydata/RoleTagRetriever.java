@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 
@@ -465,7 +467,7 @@ public class RoleTagRetriever {
             return null;
         }
                
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
         
         for (String roleName : this.finalIdToRolesHash.get(dvObjectId)){            
             jsonArray.add(roleName);            

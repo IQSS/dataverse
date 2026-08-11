@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -671,19 +672,19 @@ public class JsonParserTest {
 
     @Test
     public void testparseFiles() throws JsonParseException {
-        JsonArrayBuilder metadatasJsonBuilder = Json.createArrayBuilder();
-        JsonObjectBuilder fileMetadataGood = Json.createObjectBuilder();
+        JsonArrayBuilder metadatasJsonBuilder = JsonUtil.createArrayBuilder();
+        JsonObjectBuilder fileMetadataGood = JsonUtil.createObjectBuilder();
         fileMetadataGood.add("label", "myLabel");
-        JsonObjectBuilder fileGood = Json.createObjectBuilder();
+        JsonObjectBuilder fileGood = JsonUtil.createObjectBuilder();
         fileMetadataGood.add("dataFile", fileGood);
-        fileMetadataGood.add("categories", Json.createArrayBuilder()
+        fileMetadataGood.add("categories", JsonUtil.createArrayBuilder()
                 .add("Documentation")
         );
-        JsonObjectBuilder fileMetadataBad = Json.createObjectBuilder();
+        JsonObjectBuilder fileMetadataBad = JsonUtil.createObjectBuilder();
         fileMetadataBad.add("label", "bad");
-        JsonObjectBuilder fileBad = Json.createObjectBuilder();
+        JsonObjectBuilder fileBad = JsonUtil.createObjectBuilder();
         fileMetadataBad.add("dataFile", fileBad);
-        fileMetadataBad.add("categories", Json.createArrayBuilder()
+        fileMetadataBad.add("categories", JsonUtil.createArrayBuilder()
                 .add(BigDecimal.ONE)
         );
         metadatasJsonBuilder.add(fileMetadataGood);
@@ -697,7 +698,7 @@ public class JsonParserTest {
         assertEquals("myLabel", fileMetadatas.get(0).getLabel());
         assertEquals("Documentation", fileMetadatas.get(0).getCategories().get(0).getName());
         assertEquals(null, fileMetadatas.get(1).getCategories());
-        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
+        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("label", "myLabel").add("dataFile", JsonUtil.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
         assertEquals(null, codeCoverage.get(0).getCategories());
     }
 
@@ -758,7 +759,42 @@ public class JsonParserTest {
         throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
     }
     
+    @Test
+    public void testParseDatasetVersion_LicenseAndTerms() throws JsonParseException {
+        // Prepare mocks
+        License defaultLicense = new License();
+        defaultLicense.setName("CC0 1.0");
+        Mockito.when(licenseService.getDefault()).thenReturn(defaultLicense);
+
+        String baseJson = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}}";
+        
+        // Case 1: Flag false (default), terms NOT provided -> should pick default
+        System.setProperty("dataverse.feature.do-not-assume-default-license", "false");
+        DatasetVersion dsv1 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
+        assertEquals(defaultLicense, dsv1.getTermsOfUseAndAccess().getLicense());
+
+        // Case 2: Flag false (default), terms PROVIDED -> should NOT pick default
+        String jsonWithTerms = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}, \"termsOfUse\":\"Some terms\"}";
+        DatasetVersion dsv2 = sut.parseDatasetVersion(JsonUtil.getJsonObject(jsonWithTerms));
+        assertNull(dsv2.getTermsOfUseAndAccess().getLicense());
+        assertEquals("Some terms", dsv2.getTermsOfUseAndAccess().getTermsOfUse());
+
+        // Case 3: Flag true, terms NOT provided -> should NOT pick default
+        System.setProperty("dataverse.feature.do-not-assume-default-license", "true");
+        DatasetVersion dsv3 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
+        assertNull(dsv3.getTermsOfUseAndAccess().getLicense());
+        
+        // Cleanup
+        System.clearProperty("dataverse.feature.do-not-assume-default-license");
+    }
+
     private static class MockSettingsSvc extends SettingsServiceBean {
+        private boolean allowCustomTermsOfUse = false;
+        
+        public void setAllowCustomTermsOfUse(boolean allow) {
+            this.allowCustomTermsOfUse = allow;
+        }
+
         @Override
         public String getValueForKey( Key key /*, String defaultValue */) {
             switch (key) {
@@ -775,7 +811,7 @@ public class JsonParserTest {
         @Override
         public boolean isTrueForKey(Key key, boolean safeDefaultIfKeyNotFound) {
             if (key == Key.AllowCustomTermsOfUse) {
-                return false;
+                return this.allowCustomTermsOfUse;
             }
             return safeDefaultIfKeyNotFound;
         }
@@ -783,7 +819,7 @@ public class JsonParserTest {
 
     @Test
     public void testEnum() throws JsonParseException {
-        JsonArrayBuilder arr = Json.createArrayBuilder();
+        JsonArrayBuilder arr = JsonUtil.createArrayBuilder();
         for (Type entry : Arrays.asList(Type.REVOKEROLE, Type.ASSIGNROLE)) {
             arr.add(entry.name());
         }

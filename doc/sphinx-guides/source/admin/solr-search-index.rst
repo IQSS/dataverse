@@ -96,6 +96,37 @@ This API will clear the Solr entry for the dataset specified. It can be useful i
 This can be reversed of course by re-indexing the dataset with the API above. 
 
 
+Reindexing Permissions
+----------------------
+
+It is possible to just re-index the permissions on Solr entries without re-indexing the content.
+
+Reindexing Permissions for All Objects
+++++++++++++++++++++++++++++++++++++++
+
+Re-index permissions for all Dataverse collections, datasets, and files. This is an asynchronous operation that may take a long time to complete on large installations. This endpoint requires the API token of a superuser.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/index/perms"
+
+If indexing is already in progress, the API will return a 409 ("CONFLICT") response. Otherwise, it will return a 200 ("OK") response and the indexing process will start in the background. Check the server logs for progress.
+
+Reindexing Permissions for a Single Object
+++++++++++++++++++++++++++++++++++++++++++
+
+It is also possible to re-index permissions for a single object by database ID:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=42
+  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/index/perms/$ID"
+
+This operation is performed synchronously.
+
+
 Manually Querying Solr
 ----------------------
 
