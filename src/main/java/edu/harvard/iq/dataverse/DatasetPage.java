@@ -7041,4 +7041,78 @@ public class DatasetPage implements java.io.Serializable {
     public void validateEmbargoReason(FacesContext context, UIComponent component, Object value) {
         FileUtil.validateEmbargoReason(context, component, value, removeEmbargo);
     }
+
+    private final Map<String, Integer> autocompleteLimits = new HashMap<>();
+    private final Map<String, String> autocompleteLastQueries = new HashMap<>();
+    private final Set<Long> slowModeFieldTypeIds = new HashSet<>();
+
+    public List<ControlledVocabularyValue> completeControlledVocabularyValue(String query) {
+        UIComponent component = UIComponent.getCurrentComponent(FacesContext.getCurrentInstance());
+        DatasetField dsf = (DatasetField) component.getAttributes().get("dsf");
+        if (dsf == null || dsf.getDatasetFieldType() == null || dsf.getDatasetFieldType().getControlledVocabularyValues() == null) {
+            return Collections.emptyList();
+        }
+
+        String clientId = component.getClientId();
+        String lastQuery = autocompleteLastQueries.get(clientId);
+        Integer limit = autocompleteLimits.get(clientId);
+
+        if (limit == null || !StringUtils.equals(StringUtils.trimToEmpty(query), StringUtils.trimToEmpty(lastQuery))) {
+            limit = 100;
+            autocompleteLimits.put(clientId, limit);
+        }
+        autocompleteLastQueries.put(clientId, query != null ? query : "");
+
+        List<ControlledVocabularyValue> results = new ArrayList<>();
+        String queryLower = query.toLowerCase();
+        String mdLangCode = null;
+        if (dsf.getDatasetVersion() != null && dsf.getDatasetVersion().getDataset() != null) {
+            mdLangCode = dsf.getDatasetVersion().getDataset().getMetadataLanguage();
+        }
+
+        for (ControlledVocabularyValue cvv : dsf.getDatasetFieldType().getControlledVocabularyValues()) {
+            if (cvv.getLocaleStrValue(mdLangCode).toLowerCase().contains(queryLower)) {
+                results.add(cvv);
+            }
+            if (results.size() >= limit + 1) {
+                break;
+            }
+        }
+        return results;
+    }
+
+    public void onMoreText() {
+        Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        String clientId = params.get("autocompleteClientId");
+        String query = params.get("autocompleteQuery");
+        String widgetVar = params.get("autocompleteWidgetVar");
+        if (clientId != null) {
+            Integer limit = autocompleteLimits.get(clientId);
+            if (limit == null) {
+                limit = 100;
+            }
+            autocompleteLimits.put(clientId, limit + 100);
+            autocompleteLastQueries.put(clientId, query != null ? query : "");
+
+            if (widgetVar != null) {
+                PrimeFaces.current().ajax().addCallbackParam("widgetVar", widgetVar);
+                PrimeFaces.current().ajax().addCallbackParam("query", query);
+                PrimeFaces.current().ajax().addCallbackParam("scrollPos", params.get("autocompleteScrollPos"));
+            }
+        }
+    }
+
+    public Map<String, Integer> getAutocompleteLimits() {
+        return autocompleteLimits;
+    }
+
+    public boolean isSlowMode(Long fieldTypeId) {
+        return fieldTypeId != null && slowModeFieldTypeIds.contains(fieldTypeId);
+    }
+
+    public void switchToSlowMode(Long fieldTypeId) {
+        if (fieldTypeId != null) {
+            slowModeFieldTypeIds.add(fieldTypeId);
+        }
+    }
 }

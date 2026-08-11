@@ -15,17 +15,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
 
 @ViewScoped
 @Named("AdvancedSearchPage")
@@ -263,6 +268,81 @@ public class AdvancedSearchPage implements java.io.Serializable {
     public Collection<ControlledVocabularyValue> getDvFieldSubjectValues() {
         DatasetFieldType subjectType = datasetFieldService.findByName(DatasetFieldConstant.subject);
         return subjectType.getControlledVocabularyValues();
+    }
+
+    public DatasetFieldType getSubjectDatasetFieldType() {
+        return datasetFieldService.findByName(DatasetFieldConstant.subject);
+    }
+
+    private final Map<String, Integer> autocompleteLimits = new HashMap<>();
+    private final Map<String, String> autocompleteLastQueries = new HashMap<>();
+    private final Set<Long> slowModeFieldTypeIds = new java.util.HashSet<>();
+
+    public List<ControlledVocabularyValue> completeControlledVocabularyValue(String query) {
+        UIComponent component = UIComponent.getCurrentComponent(FacesContext.getCurrentInstance());
+        DatasetFieldType dsft = (DatasetFieldType) component.getAttributes().get("dsft");
+        if (dsft == null || dsft.getControlledVocabularyValues() == null || query == null) {
+            return Collections.emptyList();
+        }
+
+        String clientId = component.getClientId();
+        String lastQuery = autocompleteLastQueries.get(clientId);
+        Integer limit = autocompleteLimits.get(clientId);
+
+        if (limit == null || !StringUtils.equals(StringUtils.trimToEmpty(query), StringUtils.trimToEmpty(lastQuery))) {
+            limit = 100;
+            autocompleteLimits.put(clientId, limit);
+        }
+        autocompleteLastQueries.put(clientId, query != null ? query : "");
+
+        List<ControlledVocabularyValue> results = new ArrayList<>();
+        String queryLower = query.toLowerCase();
+
+        for (ControlledVocabularyValue cvv : dsft.getControlledVocabularyValues()) {
+            String localeLabel = cvv.getLocaleStrValue();
+            if (localeLabel != null && localeLabel.toLowerCase().contains(queryLower)) {
+                results.add(cvv);
+            }
+            if (results.size() >= limit + 1) {
+                break;
+            }
+        }
+        return results;
+    }
+
+    public void onMoreText() {
+        Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        String clientId = params.get("autocompleteClientId");
+        String query = params.get("autocompleteQuery");
+        String widgetVar = params.get("autocompleteWidgetVar");
+        if (clientId != null) {
+            Integer limit = autocompleteLimits.get(clientId);
+            if (limit == null) {
+                limit = 100;
+            }
+            autocompleteLimits.put(clientId, limit + 100);
+            autocompleteLastQueries.put(clientId, query != null ? query : "");
+
+            if (widgetVar != null) {
+                PrimeFaces.current().ajax().addCallbackParam("widgetVar", widgetVar);
+                PrimeFaces.current().ajax().addCallbackParam("query", query);
+                PrimeFaces.current().ajax().addCallbackParam("scrollPos", params.get("autocompleteScrollPos"));
+            }
+        }
+    }
+
+    public Map<String, Integer> getAutocompleteLimits() {
+        return autocompleteLimits;
+    }
+
+    public boolean isSlowMode(Long fieldTypeId) {
+        return fieldTypeId != null && slowModeFieldTypeIds.contains(fieldTypeId);
+    }
+
+    public void switchToSlowMode(Long fieldTypeId) {
+        if (fieldTypeId != null) {
+            slowModeFieldTypeIds.add(fieldTypeId);
+        }
     }
 
     public String getDsPublicationDate() {

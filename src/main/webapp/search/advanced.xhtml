@@ -90,12 +90,32 @@
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.dataverses.subject.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
-                                        <div class="ui-inputfield form-control select-scroll-block">
-                                            <p:selectManyCheckbox value="#{AdvancedSearchPage.dvFieldSubject}" layout="pageDirection">
-                                                <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
-                                                               itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"/>
-                                            </p:selectManyCheckbox>
-                                        </div>
+                                        <h:panelGroup id="vocab_widget_subject" layout="block">
+                                            <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{AdvancedSearchPage.dvFieldSubjectValues.size() lt 501 or AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}">
+                                                <p:selectManyCheckbox value="#{AdvancedSearchPage.dvFieldSubject}" layout="pageDirection">
+                                                    <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
+                                                                   itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"/>
+                                                </p:selectManyCheckbox>
+                                            </div>
+                                            <p:autoComplete value="#{AdvancedSearchPage.dvFieldSubject}"
+                                                             id="dvFieldSubject_autocomplete"
+                                                             rendered="#{AdvancedSearchPage.dvFieldSubjectValues.size() gt 500 and not AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
+                                                             completeMethod="#{AdvancedSearchPage.completeControlledVocabularyValue}"
+                                                             var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"
+                                                             forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
+                                                             multiple="true" maxResults="#{AdvancedSearchPage.autocompleteLimits[component.clientId] == null ? 100 : AdvancedSearchPage.autocompleteLimits[component.clientId]}"
+                                                             moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
+                                                             placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
+                                                <f:attribute name="dsft" value="#{AdvancedSearchPage.subjectDatasetFieldType}"/>
+                                            </p:autoComplete>
+                                            <p:commandLink value="#{bundle['controlledvocabulary.showAll']}"
+                                                           title="#{bundle['controlledvocabulary.showAll.tooltip']}"
+                                                           styleClass="vocab-slow-link"
+                                                           rendered="#{AdvancedSearchPage.dvFieldSubjectValues.size() gt 500 and not AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
+                                                           actionListener="#{AdvancedSearchPage.switchToSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
+                                                           process="@this"
+                                                           update="@parent"/>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
                             </div>
@@ -133,12 +153,32 @@
                                                         <f:passThroughAttribute name="data-cvoc-placeholder" value=""/>
                                                     </p:inputText>
                                                 </ui:fragment>
-                                                <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{!empty item.controlledVocabularyValues}">
-                                                    <p:selectManyCheckbox value="#{item.listValues}" layout="pageDirection">
-                                                        <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
-                                                                       itemLabel="#{cvs.localeStrValue}" itemValue="#{cvs.strValue}"/>
-                                                    </p:selectManyCheckbox>
-                                                </div>
+                                                <h:panelGroup id="vocab_widget_mdb" layout="block">
+                                                    <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{!empty item.controlledVocabularyValues and (item.controlledVocabularyValues.size() lt 501 or AdvancedSearchPage.isSlowMode(item.id))}">
+                                                        <p:selectManyCheckbox value="#{item.listValues}" layout="pageDirection">
+                                                            <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
+                                                                           itemLabel="#{cvs.localeStrValue}" itemValue="#{cvs.strValue}"/>
+                                                        </p:selectManyCheckbox>
+                                                    </div>
+                                                    <p:autoComplete value="#{item.listValues}"
+                                                                     id="searchValue_autocomplete"
+                                                                     rendered="#{!empty item.controlledVocabularyValues and item.controlledVocabularyValues.size() gt 500 and not AdvancedSearchPage.isSlowMode(item.id)}"
+                                                                     completeMethod="#{AdvancedSearchPage.completeControlledVocabularyValue}"
+                                                                     var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"
+                                                                     forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
+                                                                     multiple="true" maxResults="#{AdvancedSearchPage.autocompleteLimits[component.clientId] == null ? 100 : AdvancedSearchPage.autocompleteLimits[component.clientId]}"
+                                                                     moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
+                                                                     placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
+                                                        <f:attribute name="dsft" value="#{item}"/>
+                                                    </p:autoComplete>
+                                                    <p:commandLink value="#{bundle['controlledvocabulary.showAll']}"
+                                                                   title="#{bundle['controlledvocabulary.showAll.tooltip']}"
+                                                                   styleClass="vocab-slow-link"
+                                                                   rendered="#{!empty item.controlledVocabularyValues and item.controlledVocabularyValues.size() gt 500 and not AdvancedSearchPage.isSlowMode(item.id)}"
+                                                                   actionListener="#{AdvancedSearchPage.switchToSlowMode(item.id)}"
+                                                                   process="@this"
+                                                                   update="@parent"/>
+                                                </h:panelGroup>
                                             </div>
                                         </div>
                                     </ui:repeat>
@@ -249,10 +289,58 @@
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.find}" action="#{AdvancedSearchPage.find()}"/>
                         </div>
+                        <p:remoteCommand name="loadMoreResults" actionListener="#{AdvancedSearchPage.onMoreText()}"
+                                         oncomplete="if(args.widgetVar && PF(args.widgetVar)) {
+                                             var widget = PF(args.widgetVar);
+                                             var scrollPos = args.scrollPos;
+                                             var query = args.query;
+
+                                             var originalHide = widget.hide;
+                                             widget.hide = function() {}; // Disable hide temporarily
+
+                                             var originalHandleResponse = widget.handleResponse;
+                                             widget.handleResponse = function(data) {
+                                                 this.hide = originalHide; // Restore hide
+                                                 originalHandleResponse.apply(this, arguments);
+                                                 this.panel.scrollTop(scrollPos);
+                                                 this.handleResponse = originalHandleResponse;
+                                             };
+                                             widget.input.focus();
+                                             widget.search(query);
+                                         }" />
                     </h:form>
                 </div>
                 <script>
                     //<![CDATA[
+                    $(document).off('mousedown.autocomplete-moretext mouseup.autocomplete-moretext click.autocomplete-moretext').on('mousedown.autocomplete-moretext mouseup.autocomplete-moretext click.autocomplete-moretext', '.ui-autocomplete-moretext', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (e.type !== 'mousedown') return false;
+
+                        var panel = $(this).closest('.ui-autocomplete-panel');
+                        var clientId = panel.attr('id').replace(/_panel$/, '');
+                        var widget = null;
+                        var widgetVar = null;
+                        for (var property in PF()) {
+                            if (PF()[property] instanceof PrimeFaces.widget.AutoComplete && PF()[property].id === clientId) {
+                                widget = PF()[property];
+                                widgetVar = property;
+                                break;
+                            }
+                        }
+                        if (widget && typeof loadMoreResults === 'function') {
+                            var query = widget.input.val();
+                            var scrollPos = panel.scrollTop();
+                            loadMoreResults([
+                                {name: 'autocompleteClientId', value: clientId},
+                                {name: 'autocompleteQuery', value: query},
+                                {name: 'autocompleteWidgetVar', value: widgetVar},
+                                {name: 'autocompleteScrollPos', value: scrollPos}
+                            ]);
+                        }
+                        return false;
+                    });
+
                     $(document).ready(function() {
                         //The select2 widget used in external vocab scripts has trouble determining the width of an input field if it is initially hidden
                         //Starting with the metadatablocks displayed and collapsing them here is a work-around to fix that.

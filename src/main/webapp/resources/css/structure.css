@@ -109,6 +109,18 @@ td.col-select-width, th.col-select-width {width:36px;}
 .clear-both {clear:both;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
+
+/* Controlled Vocabulary Autocomplete / Slow Mode */
+.vocab-slow-link {
+    font-size: 0.85em;
+    color: #666;
+    display: block;
+    margin-top: 4px;
+}
+.vocab-slow-link:hover {
+    color: #333;
+    text-decoration: underline;
+}
 table.selectManyCheckboxBlock label {font-weight:normal;}
 .normal-text {font-weight:normal;}
 .normal-text input {margin-right:4px;}
