@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -40,7 +41,7 @@ public class SendFeedbackApiIT {
 
     @Test
     public void testSupportRequest() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("fromEmail", "from@mailinator.com");
         job.add("subject", "Help!");
         job.add("body", "I need help.");
@@ -54,7 +55,7 @@ public class SendFeedbackApiIT {
 
     @Test
     public void testSendFeedbackOnRootDataverse() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         long rootDataverseId = 1;
         job.add("targetId", rootDataverseId);
         job.add("fromEmail", "from@mailinator.com");
@@ -67,7 +68,7 @@ public class SendFeedbackApiIT {
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        job = Json.createObjectBuilder();
+        job = JsonUtil.createObjectBuilder();
         job.add("identifier", "root");
         job.add("fromEmail", "from@mailinator.com");
         job.add("toEmail", "to@mailinator.com");
@@ -119,14 +120,14 @@ public class SendFeedbackApiIT {
         UtilIT.setSetting(SettingsServiceBean.Key.ContactFeedbackMessageSizeLimit, "0");
 
         // Test with no body/body length =0
-        response = UtilIT.sendFeedback(Json.createObjectBuilder().add("targetId", datasetId).add("subject", "collaboration").add("body", ""), apiToken);
+        response = UtilIT.sendFeedback(JsonUtil.createObjectBuilder().add("targetId", datasetId).add("subject", "collaboration").add("body", ""), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo(BundleUtil.getStringFromBundle("sendfeedback.body.error.isEmpty")));
 
         // Test with missing subject
-        response = UtilIT.sendFeedback(Json.createObjectBuilder().add("targetId", datasetId).add("body", ""), apiToken);
+        response = UtilIT.sendFeedback(JsonUtil.createObjectBuilder().add("targetId", datasetId).add("body", ""), apiToken);
         response.prettyPrint();
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -172,7 +173,7 @@ public class SendFeedbackApiIT {
     }
 
     private JsonObjectBuilder buildJsonEmail(long targetId, String identifier, String fromEmail) {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         if (targetId > 0) {
             job.add("targetId", targetId);
         }

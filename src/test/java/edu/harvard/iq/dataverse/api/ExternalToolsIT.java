@@ -208,19 +208,19 @@ public class ExternalToolsIT {
         assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToTabularFile);
         Integer tabularFileId = JsonPath.from(uploadTabularFile.getBody().asString()).getInt("data.files[0].dataFile.id");
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
-        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("types", JsonUtil.createArrayBuilder().add("explore"));
         job.add("scope", "file");
         job.add("contentType", "text/tab-separated-values");
         job.add("toolUrl", "http://awesometool.com");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("fileid", "{fileId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
                         .build())
@@ -296,18 +296,18 @@ public class ExternalToolsIT {
 
         int fileId = JsonPath.from(getFileIdRequest.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "DatasetTool1");
         job.add("description", "This tool is awesome.");
-        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("types", JsonUtil.createArrayBuilder().add("explore"));
         job.add("scope", "dataset");
         job.add("toolUrl", "http://datasettool1.com");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("datasetPid", "{datasetPid}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
                         .build())
@@ -402,16 +402,16 @@ public class ExternalToolsIT {
 
     @Test
     public void testAddFilelToolNoFileId() throws IOException {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
         job.add("contentType", "application/pdf");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
                         .build())
@@ -425,15 +425,15 @@ public class ExternalToolsIT {
 
     @Test
     public void testAddDatasetToolNoDatasetId() throws IOException {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "dataset");
         job.add("toolUrl", "http://awesometool.com");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
                         .build())
@@ -447,22 +447,22 @@ public class ExternalToolsIT {
 
     @Test
     public void testAddExternalToolNonReservedWord() throws IOException {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("scope", "file");
         job.add("toolUrl", "http://awesometool.com");
         job.add("contentType", "application/pdf");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("fileid", "{fileId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("mode", "mode1")
                                 .build())
                         .build())
@@ -499,32 +499,32 @@ public class ExternalToolsIT {
     @Disabled
     @Test
     public void createToolShellScript() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "View Code");
         job.add("description", "");
-        job.add("types", Json.createArrayBuilder().add("preview"));
+        job.add("types", JsonUtil.createArrayBuilder().add("preview"));
         job.add("scope", "file");
         job.add("hasPreviewMode", "true");
         job.add("contentType", "application/x-sh");
         job.add("toolUrl", "http://localhost:8000/dataverse-previewers/previewers/TextPreview.html");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("fileid", "{fileId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("siteUrl", "{siteUrl}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("datasetid", "{datasetId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("datasetversion", "{datasetVersion}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("locale", "{localeCode}")
                                 .build())
                         .build())
@@ -547,25 +547,25 @@ public class ExternalToolsIT {
     @Test
     public void createToolDataExplorer() {
     /*    
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "Data Explorer");
         job.add("description", "");
-        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("types", JsonUtil.createArrayBuilder().add("explore"));
         job.add("scope", "file");
         job.add("contentType", "text/tab-separated-values");
         job.add("toolUrl", "https://scholarsportal.github.io/Dataverse-Data-Explorer-v2/");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("fileId", "{fileId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("siteUrl", "{siteUrl}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("dvLocale", "{localeCode}")
                                 .build())
                         .build())
@@ -588,10 +588,10 @@ public class ExternalToolsIT {
     @Disabled
     @Test
     public void createToolSpreadsheetViewer() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "View Data");
         job.add("description", "");
-        job.add("types", Json.createArrayBuilder()
+        job.add("types", JsonUtil.createArrayBuilder()
                 .add("preview")
                 .add("explore")
         );
@@ -599,24 +599,24 @@ public class ExternalToolsIT {
         job.add("hasPreviewMode", "true");
         job.add("contentType", "text/tab-separated-values");
         job.add("toolUrl", "http://localhost:8000/dataverse-previewers/previewers/SpreadsheetPreview.html");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("fileid", "{fileId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("siteUrl", "{siteUrl}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("datasetid", "{datasetId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("datasetversion", "{datasetVersion}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("locale", "{localeCode}")
                                 .build())
                         .build())
@@ -671,29 +671,29 @@ public class ExternalToolsIT {
 
         Integer trueHdf5 = JsonPath.from(uploadTrueHdf5.getBody().asString()).getInt("data.files[0].dataFile.id");
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("displayName", "HDF5 Tool");
         job.add("description", "Operates on HDF5 files");
-        job.add("types", Json.createArrayBuilder().add("preview"));
+        job.add("types", JsonUtil.createArrayBuilder().add("preview"));
         job.add("scope", "file");
         job.add("contentType", "application/x-hdf5");
         job.add("toolUrl", "/dataexplore/dataverse-previewers/previewers/v1.3/TextPreview.html");
-        job.add("toolParameters", Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("toolParameters", JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("fileid", "{fileId}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("siteUrl", "{siteUrl}")
                                 .build())
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key", "{apiToken}")
                                 .build())
                         .build())
                 .build());
-        job.add("requirements", Json.createObjectBuilder()
-                .add("auxFilesExist", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        job.add("requirements", JsonUtil.createObjectBuilder()
+                .add("auxFilesExist", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("formatTag", "NcML")
                                 .add("formatVersion", "0.1")
                         )
@@ -769,24 +769,24 @@ public void testExternalToolUrlApi() {
     Integer textFileId = JsonPath.from(uploadTextFile.getBody().asString()).getInt("data.files[0].dataFile.id");
     
     // Create a dataset-level tool
-    JsonObjectBuilder datasetToolJob = Json.createObjectBuilder();
+    JsonObjectBuilder datasetToolJob = JsonUtil.createObjectBuilder();
     datasetToolJob.add("displayName", "Dataset API Tool");
     datasetToolJob.add("description", "Tests the dataset-level tool URL API");
-    datasetToolJob.add("types", Json.createArrayBuilder().add("explore"));
+    datasetToolJob.add("types", JsonUtil.createArrayBuilder().add("explore"));
     datasetToolJob.add("scope", "dataset");
     datasetToolJob.add("toolUrl", "http://example.org/dataset-tool");
-    datasetToolJob.add("toolParameters", Json.createObjectBuilder()
-            .add("queryParameters", Json.createArrayBuilder()
-                    .add(Json.createObjectBuilder()
+    datasetToolJob.add("toolParameters", JsonUtil.createObjectBuilder()
+            .add("queryParameters", JsonUtil.createArrayBuilder()
+                    .add(JsonUtil.createObjectBuilder()
                             .add("datasetId", "{datasetId}")
                             .build())
-                    .add(Json.createObjectBuilder()
+                    .add(JsonUtil.createObjectBuilder()
                             .add("key", "{apiToken}")
                             .build())
                     .build())
             .build());
-    datasetToolJob.add("allowedApiCalls", Json.createArrayBuilder()
-            .add(Json.createObjectBuilder()
+    datasetToolJob.add("allowedApiCalls", JsonUtil.createArrayBuilder()
+            .add(JsonUtil.createObjectBuilder()
                     .add("name", "retrieveDatasetJson")
                     .add("httpMethod", "GET")
                     .add("urlTemplate", "/api/v1/datasets/{datasetId}")
@@ -802,25 +802,25 @@ public void testExternalToolUrlApi() {
     Long datasetToolId = JsonPath.from(addDatasetTool.getBody().asString()).getLong("data.id");
     
     // Create a file-level tool for text/plain
-    JsonObjectBuilder fileToolJob = Json.createObjectBuilder();
+    JsonObjectBuilder fileToolJob = JsonUtil.createObjectBuilder();
     fileToolJob.add("displayName", "Text File Tool");
     fileToolJob.add("description", "Tests the file-level tool URL API");
-    fileToolJob.add("types", Json.createArrayBuilder().add("explore"));
+    fileToolJob.add("types", JsonUtil.createArrayBuilder().add("explore"));
     fileToolJob.add("scope", "file");
     fileToolJob.add("contentType", "text/plain");
     fileToolJob.add("toolUrl", "http://example.org/text-tool");
-    fileToolJob.add("toolParameters", Json.createObjectBuilder()
-            .add("queryParameters", Json.createArrayBuilder()
-                    .add(Json.createObjectBuilder()
+    fileToolJob.add("toolParameters", JsonUtil.createObjectBuilder()
+            .add("queryParameters", JsonUtil.createArrayBuilder()
+                    .add(JsonUtil.createObjectBuilder()
                             .add("fileId", "{fileId}")
                             .build())
-                    .add(Json.createObjectBuilder()
+                    .add(JsonUtil.createObjectBuilder()
                             .add("key", "{apiToken}")
                             .build())
                     .build())
             .build());
-    fileToolJob.add("allowedApiCalls", Json.createArrayBuilder()
-            .add(Json.createObjectBuilder()
+    fileToolJob.add("allowedApiCalls", JsonUtil.createArrayBuilder()
+            .add(JsonUtil.createObjectBuilder()
                     .add("name", "retrieveFileContents")
                     .add("httpMethod", "GET")
                     .add("urlTemplate", "/api/v1/access/datafile/{fileId}?gbrecs=true")
@@ -916,7 +916,7 @@ public void testExternalToolUrlApi() {
             "File callback response should contain the query parameter");
     
     // Test with preview mode
-    JsonObjectBuilder previewParams = Json.createObjectBuilder()
+    JsonObjectBuilder previewParams = JsonUtil.createObjectBuilder()
             .add("preview", true)
             .add("locale", "fr");
     
