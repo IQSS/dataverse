@@ -330,10 +330,6 @@ public class JsonUtil {
         return provider.createReader(reader);
     }
 
-    public static JsonReader createReader(InputStream in, Charset charset) {
-        return provider.createReader(new InputStreamReader(in, charset));
-    }
-
     public static JsonWriter createWriter(OutputStream out) {
         return provider.createWriter(out);
     }

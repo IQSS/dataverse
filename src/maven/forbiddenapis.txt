@@ -20,7 +20,6 @@ jakarta.json.Json#createValue(java.math.BigInteger)
 @defaultMessage Use edu.harvard.iq.dataverse.util.json.JsonUtil.getJsonObject(...) or getJsonArray(...) instead
 jakarta.json.Json#createReader(java.io.InputStream)
 jakarta.json.Json#createReader(java.io.Reader)
-jakarta.json.Json#createReader(java.io.InputStream,java.nio.charset.Charset)
 
 @defaultMessage Use edu.harvard.iq.dataverse.util.json.JsonUtil instead
 jakarta.json.Json#createWriter(java.io.OutputStream)
