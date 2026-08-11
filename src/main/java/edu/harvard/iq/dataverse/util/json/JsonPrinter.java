@@ -146,7 +146,7 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder jsonRoleAssignments(List<RoleAssignment> roleAssignments) {
-        JsonArrayBuilder bld = Json.createArrayBuilder();
+        JsonArrayBuilder bld = JsonUtil.createArrayBuilder();
         roleAssignments.forEach(roleAssignment -> bld.add(json(roleAssignment)));
         return bld;
     }
