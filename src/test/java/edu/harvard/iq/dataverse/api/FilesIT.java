@@ -3910,7 +3910,7 @@ public class FilesIT {
         Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, persistentId, ownerApiToken);
 
         // Upload files
-        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", Json.createArrayBuilder().add("Data"));
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
         Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
