@@ -424,10 +424,10 @@ public class JsonParser {
             throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
         }
 
-        int templateId = JsonUtil.getIntSafely(obj, "templateId", 0);
-        if (templateId > 0) {
+        if (obj.containsKey("templateId")) {
+            int templateId = obj.getInt("templateId", -1);
             Template template = templateService.find(Long.valueOf(templateId));
-            if (template != null && DataverseUtil.isTemplateValid(dataset.getOwner(), template)) {
+            if (DataverseUtil.isTemplateValid(dataset.getOwner(), template)) {
                 dataset.setTemplate(template);
             } else {
                 throw new JsonParseException("Invalid template id: " + templateId);

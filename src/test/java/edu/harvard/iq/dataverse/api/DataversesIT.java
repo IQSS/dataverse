@@ -2668,7 +2668,7 @@ public class DataversesIT {
     }
 
     @Test
-    public void testCreateAndGetTemplates() throws JsonParseException  {
+    public void testCreateAndGetTemplates() {
         /*
           Also Delete...and get single template
         */
@@ -2681,6 +2681,10 @@ public class DataversesIT {
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
         String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
+        Response createSuperUserResponse = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUserResponse);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperUserResponse);
+        UtilIT.setSuperuserStatus(superuserUsername, true);
         
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
@@ -2772,7 +2776,10 @@ public class DataversesIT {
 
         Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
-
+        // Create a separate template on "root"
+        createTemplateResponse = UtilIT.createTemplate("root", jsonString, superuserApiToken);
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Long templateId2 = createTemplateResponse.body().jsonPath().getLong("data.id");
         
         //Check for failure due unauthorized user.
         Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
@@ -2823,9 +2830,17 @@ public class DataversesIT {
 
         // Create Dataset with template
         String datasetJson = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1-nolicense.json");
-        // Insert "templateId" to the Dataset json
-        datasetJson = "{\"templateId\":" + templateId + "," + datasetJson.substring(1);
-        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJson, apiToken);
+        // Insert Bad "templateId" to the Dataset json
+        String datasetJsonWithTemplate = "{\"templateId\":0," + datasetJson.substring(1);
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Insert "templateId" from another dataverse to the Dataset json
+        datasetJsonWithTemplate = "{\"templateId\":" + templateId2 + "," + datasetJson.substring(1);
+        createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Insert Good "templateId" to the Dataset json
+        datasetJsonWithTemplate = "{\"templateId\":" + templateId + "," + datasetJson.substring(1);
+        createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);

@@ -157,29 +157,4 @@ public class JsonUtil {
             }
         }
     }
-
-    /**
-     * Safely return an int from a JsonValue represented as a string x="5" or as an int x=5
-     * @param obj
-     * @param key
-     * @param defaultValue
-     * @return
-     */
-    public static int getIntSafely(JsonObject obj, String key, int defaultValue) {
-        int value = defaultValue;
-        if (obj.containsKey(key) && !obj.isNull(key)) {
-            JsonValue jsonValue = obj.get(key);
-            JsonValue.ValueType type = jsonValue.getValueType();
-            if (type == JsonValue.ValueType.NUMBER) {
-                value = ((JsonNumber) jsonValue).intValue();
-            }
-            if (type == JsonValue.ValueType.STRING) {
-                try {
-                    value = Integer.parseInt(((JsonString) jsonValue).getString());
-                } catch (NumberFormatException e) {
-                }
-            }
-        }
-        return value;
-    }
 }

@@ -123,16 +123,17 @@ public class DataverseUtil {
     }
 
     public static boolean isTemplateValid(Dataverse dataverse, Template template) {
-        List<Template> dataverseTemplates = dataverse.getTemplates();
-        if (dataverseTemplates != null && dataverseTemplates.contains(template)) {
-            return true;
-        }
-        if (!dataverse.isTemplateRoot()) {
-            DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
-            Dataverse ownerId = dataverse.getOwner();
-            List<Template> ownerTemplates = dataverseService.find(ownerId).getParentTemplates();
-            if (ownerTemplates != null && ownerTemplates.contains(template)) {
+        if (template != null) {
+            List<Template> dataverseTemplates = dataverse.getTemplates();
+            if (dataverseTemplates != null && dataverseTemplates.contains(template)) {
                 return true;
+            }
+            if (!dataverse.isTemplateRoot() && dataverse.getOwner() != null) {
+                DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
+                List<Template> ownerTemplates = dataverseService.find(dataverse.getOwner().getId()).getParentTemplates();
+                if (ownerTemplates != null && ownerTemplates.contains(template)) {
+                    return true;
+                }
             }
         }
         return false;
