@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
@@ -211,7 +212,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
         String currentErrorMessage = POLICY_ERROR_MESSAGES.getOrDefault(policy,
                 "Endpoint blocked. Please contact the dataverse administrator.");
 
-        errorJson = Json.createObjectBuilder().add("status", "error").add("message", currentErrorMessage).build();
+        errorJson = JsonUtil.createObjectBuilder().add("status", "error").add("message", currentErrorMessage).build();
 
         for (String endpoint : endpointList.split(",")) {
             String endpointPrefix = canonicalize(endpoint);
