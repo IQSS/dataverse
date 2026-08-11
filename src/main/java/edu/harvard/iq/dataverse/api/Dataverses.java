@@ -476,7 +476,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             return created("/datasets/" + managedDs.getId(),
-                    Json.createObjectBuilder()
+                    JsonUtil.createObjectBuilder()
                             .add("id", managedDs.getId())
                             .add("persistentId", managedDs.getGlobalId().asString())
             );
@@ -525,7 +525,7 @@ public class Dataverses extends AbstractApiBean {
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
-                    Json.createObjectBuilder()
+                    JsonUtil.createObjectBuilder()
                             .add("id", managedDs.getId())
                             .add("persistentId", managedDs.getGlobalId().asString())
             );
@@ -610,7 +610,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
-            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+            JsonObjectBuilder responseBld = JsonUtil.createObjectBuilder()
                     .add("id", managedDs.getId())
                     .add("persistentId", managedDs.getGlobalId().asString());
 
@@ -685,7 +685,7 @@ public class Dataverses extends AbstractApiBean {
                 managedDs = execCommand(new CreateNewDatasetCommand(ds, request));
             }
 
-            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+            JsonObjectBuilder responseBld = JsonUtil.createObjectBuilder()
                     .add("id", managedDs.getId())
                     .add("persistentId", managedDs.getGlobalId().toString());
 
@@ -760,7 +760,7 @@ public class Dataverses extends AbstractApiBean {
             DataverseRequest request = createDataverseRequest(u);
 
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
-            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+            JsonObjectBuilder responseBld = JsonUtil.createObjectBuilder()
                     .add("id", managedDs.getId())
                     .add("persistentId", managedDs.getGlobalId().toString());
 
@@ -1124,7 +1124,7 @@ public class Dataverses extends AbstractApiBean {
             if (returnDetails) {
                 return ok(jsonDataverseFacets(dataverseFacets));
             } else {
-                JsonArrayBuilder facetsBuilder = Json.createArrayBuilder();
+                JsonArrayBuilder facetsBuilder = JsonUtil.createArrayBuilder();
                 for (DataverseFacet facet : dataverseFacets) {
                     facetsBuilder.add(facet.getDatasetFieldType().getName());
                 }
@@ -1154,7 +1154,7 @@ public class Dataverses extends AbstractApiBean {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
             Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, r);
-            JsonArrayBuilder fs = Json.createArrayBuilder();
+            JsonArrayBuilder fs = JsonUtil.createArrayBuilder();
             for (Dataverse f : execCommand(new ListFeaturedCollectionsCommand(r, dataverse))) {
                 fs.add(f.getAlias());
             }
@@ -1400,7 +1400,7 @@ public class Dataverses extends AbstractApiBean {
         DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
             @Override
             public JsonObjectBuilder visit(Dataverse dv) {
-                return Json.createObjectBuilder().add("type", "dataverse")
+                return JsonUtil.createObjectBuilder().add("type", "dataverse")
                         .add("id", dv.getId())
                         .add("title", dv.getName());
             }
@@ -1940,9 +1940,9 @@ public class Dataverses extends AbstractApiBean {
             }
 
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
-            JsonArrayBuilder dvsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder dvsThisDvHasLinkedToBuilder = JsonUtil.createArrayBuilder();
             for (Dataverse dataverse : dvsThisDvHasLinkedToList) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 job.add("id", dataverse.getId());
                 job.add("alias", dataverse.getAlias());
                 job.add("displayName", dataverse.getDisplayName());
@@ -1950,9 +1950,9 @@ public class Dataverses extends AbstractApiBean {
             }
 
             List<Dataverse> dvsThatLinkToThisDvList = dataverseSvc.findDataversesThatLinkToThisDvId(dv.getId());
-            JsonArrayBuilder dvsThatLinkToThisDvBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder dvsThatLinkToThisDvBuilder = JsonUtil.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDvList) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 job.add("id", dataverse.getId());
                 job.add("alias", dataverse.getAlias());
                 job.add("displayName", dataverse.getDisplayName());
@@ -1960,7 +1960,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());
-            JsonArrayBuilder datasetsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder datasetsThisDvHasLinkedToBuilder = JsonUtil.createArrayBuilder();
             for (Dataset dataset : datasetsThisDvHasLinkedToList) {
                 JsonObjectBuilder ds = new NullSafeJsonBuilder();
                 ds.add("title", dataset.getLatestVersion().getTitle());
@@ -1968,7 +1968,7 @@ public class Dataverses extends AbstractApiBean {
                 datasetsThisDvHasLinkedToBuilder.add(ds);
             }
 
-            JsonObjectBuilder response = Json.createObjectBuilder();
+            JsonObjectBuilder response = JsonUtil.createObjectBuilder();
             response.add("linkedDataverses", dvsThisDvHasLinkedToBuilder);
             response.add("dataversesLinkingToThis", dvsThatLinkToThisDvBuilder);
             response.add("linkedDatasets", datasetsThisDvHasLinkedToBuilder);
@@ -2062,7 +2062,7 @@ public class Dataverses extends AbstractApiBean {
                     alreadyLinking
             ));
 
-            JsonArrayBuilder dvBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder dvBuilder = JsonUtil.createArrayBuilder();
             if (dataversesForLinking != null && !dataversesForLinking.isEmpty()) {
                 for (Dataverse dv : dataversesForLinking) {
                     dvBuilder.add(json(dv, true));
@@ -2091,7 +2091,7 @@ public class Dataverses extends AbstractApiBean {
             return wr.getResponse();
         }
         User requestUser = getRequestUser(crc);
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         jsonObjectBuilder.add("canAddDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.AddDataverse));
         jsonObjectBuilder.add("canAddDataset", permissionService.userOn(requestUser, dataverse).has(Permission.AddDataset));
         jsonObjectBuilder.add("canViewUnpublishedDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.ViewUnpublishedDataverse));
@@ -2721,7 +2721,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            JsonArrayBuilder assignees = Json.createArrayBuilder();
+            JsonArrayBuilder assignees = JsonUtil.createArrayBuilder();
             dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
                     .sorted()
                     .forEach(assignees::add);

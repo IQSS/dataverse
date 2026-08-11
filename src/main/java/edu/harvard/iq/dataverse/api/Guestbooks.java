@@ -86,7 +86,7 @@ public class Guestbooks extends AbstractApiBean {
                     guestbookService.findEffectiveGuestbooksForGivenDataverse(dataverse):
                     guestbookService.findGuestbooksForGivenDataverse(dataverse);
 
-            JsonArrayBuilder guestbookArray = Json.createArrayBuilder();
+            JsonArrayBuilder guestbookArray = JsonUtil.createArrayBuilder();
             JsonPrinter jsonPrinter = new JsonPrinter();
             for (Guestbook gb : guestbooks) {
                 if (includeStats) {
@@ -200,7 +200,7 @@ public class Guestbooks extends AbstractApiBean {
             JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
             guestbookResponseObject.add("guestbook", JsonPrinter.json(guestbook));
 
-            JsonArrayBuilder responseObjects = Json.createArrayBuilder();
+            JsonArrayBuilder responseObjects = JsonUtil.createArrayBuilder();
             for (GuestbookResponse gr : responses) {
                 responseObjects.add(JsonPrinter.json(gr));
             }

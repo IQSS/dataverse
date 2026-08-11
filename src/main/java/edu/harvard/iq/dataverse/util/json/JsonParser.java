@@ -327,7 +327,7 @@ public class JsonParser {
         if ( obj.containsKey("domains") ) {
             List<String> domains =
                 Optional.ofNullable(obj.getJsonArray("domains"))
-                    .orElse(Json.createArrayBuilder().build())
+                    .orElse(JsonUtil.createArrayBuilder().build())
                     .getValuesAs(JsonString.class)
                     .stream()
                     .map(JsonString::getString)

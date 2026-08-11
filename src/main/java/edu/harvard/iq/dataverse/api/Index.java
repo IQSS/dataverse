@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
@@ -167,10 +168,10 @@ public class Index extends AbstractApiBean {
 
             }
 
-            JsonObjectBuilder args = Json.createObjectBuilder();
+            JsonObjectBuilder args = JsonUtil.createObjectBuilder();
             args.add("numPartitions", numPartitions);
             args.add("partitionIdToProcess", partitionIdToProcess);
-            JsonArrayBuilder availablePartitionIdsBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder availablePartitionIdsBuilder = JsonUtil.createArrayBuilder();
             for (long i : availablePartitionIds) {
                 availablePartitionIdsBuilder.add(i);
             }
@@ -182,7 +183,7 @@ public class Index extends AbstractApiBean {
                 return ok(preview);
             }
 
-            JsonObjectBuilder response = Json.createObjectBuilder();
+            JsonObjectBuilder response = JsonUtil.createObjectBuilder();
             response.add("availablePartitionIds", availablePartitionIdsBuilder);
             response.add("args", args);
             /**
@@ -342,13 +343,13 @@ public class Index extends AbstractApiBean {
         if (dataset != null) {
             boolean doNormalSolrDocCleanUp = true;
             indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
-            JsonObjectBuilder data = Json.createObjectBuilder();
+            JsonObjectBuilder data = JsonUtil.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
             data.add("persistentId", dataset.getGlobalId().asString());
-            JsonArrayBuilder versions = Json.createArrayBuilder();
+            JsonArrayBuilder versions = JsonUtil.createArrayBuilder();
             for (DatasetVersion version : dataset.getVersions()) {
-                JsonObjectBuilder versionObject = Json.createObjectBuilder();
+                JsonObjectBuilder versionObject = JsonUtil.createObjectBuilder();
                 versionObject.add("semanticVersion", version.getSemanticVersion());
                 versionObject.add("id", version.getId());
                 versions.add(versionObject);
@@ -401,7 +402,7 @@ public class Index extends AbstractApiBean {
             dvObjectsIds.add(i);
         }
         List<Long> mine = IndexUtil.findDvObjectIdsToProcessMod(dvObjectsIds, partitions, which);
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         response.add("partitions", partitions);
         response.add("which", which);
         response.add("mine", mine.toString());
@@ -601,7 +602,7 @@ public class Index extends AbstractApiBean {
     }
 
     static String error(String message) {
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         response.add("status", "ERROR");
         response.add("message", message);
 
@@ -641,7 +642,7 @@ public class Index extends AbstractApiBean {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }
 
-        JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder itemsArrayBuilder = JsonUtil.createArrayBuilder();
         List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
         for (SolrSearchResult solrSearchResult : solrSearchResults) {
             itemsArrayBuilder.add(solrSearchResult.getType() + ":" + solrSearchResult.getNameSort());
@@ -672,15 +673,15 @@ public class Index extends AbstractApiBean {
         }
         List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectToLookUp);
 
-        JsonObjectBuilder data = Json.createObjectBuilder();
+        JsonObjectBuilder data = JsonUtil.createObjectBuilder();
 
-        JsonArrayBuilder permissionsData = Json.createArrayBuilder();
+        JsonArrayBuilder permissionsData = JsonUtil.createArrayBuilder();
 
         for (DvObjectSolrDoc solrDoc : solrDocs) {
-            JsonObjectBuilder dataDoc = Json.createObjectBuilder();
+            JsonObjectBuilder dataDoc = JsonUtil.createObjectBuilder();
             dataDoc.add(SearchFields.ID, solrDoc.getSolrId());
             dataDoc.add(SearchFields.NAME_SORT, solrDoc.getNameOrTitle());
-            JsonArrayBuilder perms = Json.createArrayBuilder();
+            JsonArrayBuilder perms = JsonUtil.createArrayBuilder();
             for (String perm : solrDoc.getPermissions()) {
                 perms.add(perm);
             }
@@ -696,7 +697,7 @@ public class Index extends AbstractApiBean {
         timestamps.add(permsChanged, SearchUtil.getTimestampOrNull(dvObject.getPermissionModificationTime()));
         timestamps.add(permsIndexed, SearchUtil.getTimestampOrNull(dvObject.getPermissionIndexTime()));
         Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
-        JsonArrayBuilder roleAssignmentsData = Json.createArrayBuilder();
+        JsonArrayBuilder roleAssignmentsData = JsonUtil.createArrayBuilder();
         for (RoleAssignment roleAssignment : roleAssignments) {
             roleAssignmentsData.add(roleAssignment.getRole() + " has been granted to " + roleAssignment.getAssigneeIdentifier() + " on " + roleAssignment.getDefinitionPoint());
         }
@@ -751,32 +752,32 @@ public class Index extends AbstractApiBean {
         if (fileView == null) {
             return error(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
         }
-        JsonArrayBuilder filesFound = Json.createArrayBuilder();
-        JsonArrayBuilder cards = Json.createArrayBuilder();
-        JsonArrayBuilder fileIds = Json.createArrayBuilder();
+        JsonArrayBuilder filesFound = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder cards = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder fileIds = JsonUtil.createArrayBuilder();
         for (SolrSearchResult result : fileView.getSolrSearchResults()) {
             cards.add(result.getNameSort());
             fileIds.add(result.getEntityId());
-            JsonObjectBuilder fileFound = Json.createObjectBuilder();
+            JsonObjectBuilder fileFound = JsonUtil.createObjectBuilder();
             fileFound.add("name", result.getNameSort());
             fileFound.add("entityId", result.getEntityId().toString());
             fileFound.add("datasetVersionId", result.getDatasetVersionId());
             fileFound.add("datasetId", result.getParent().get(SearchFields.ID));
             filesFound.add(fileFound);
         }
-        JsonArrayBuilder facets = Json.createArrayBuilder();
+        JsonArrayBuilder facets = JsonUtil.createArrayBuilder();
         for (FacetCategory facetCategory : fileView.getFacetCategoryList()) {
             facets.add(facetCategory.getFriendlyName());
         }
-        JsonArrayBuilder filterQueries = Json.createArrayBuilder();
+        JsonArrayBuilder filterQueries = JsonUtil.createArrayBuilder();
         for (String filterQuery : fileView.getFilterQueries()) {
             filterQueries.add(filterQuery);
         }
-        JsonArrayBuilder allDatasetVersionIds = Json.createArrayBuilder();
+        JsonArrayBuilder allDatasetVersionIds = JsonUtil.createArrayBuilder();
         for (DatasetVersion dsVersion : dataset.getVersions()) {
             allDatasetVersionIds.add(dsVersion.getId());
         }
-        JsonObjectBuilder data = Json.createObjectBuilder();
+        JsonObjectBuilder data = JsonUtil.createObjectBuilder();
         data.add("filesFound", filesFound);
         data.add("cards", cards);
         data.add("fileIds", fileIds);
@@ -800,7 +801,7 @@ public class Index extends AbstractApiBean {
             @Parameter(description = "Sort field.") @QueryParam("sort") String sortField,
             @Parameter(description = "Sort order.") @QueryParam("order") String sortOrder
     ) {
-        JsonArrayBuilder data = Json.createArrayBuilder();
+        JsonArrayBuilder data = JsonUtil.createArrayBuilder();
         List<FileMetadata> fileMetadatasFound = new ArrayList<>();
         try {
             fileMetadatasFound = dataFileService.findFileMetadataByDatasetVersionId(datasetIdToLookUp, maxResults, sortField, sortOrder);
