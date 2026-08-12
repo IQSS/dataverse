@@ -136,7 +136,7 @@ Conduct Performance Testing
 
 |dedicated|
 
-See :doc:`/qa/performance-tests` for details.
+See :ref:`locust` and <https://github.com/IQSS/dataverse/issues/12284>, for example.
 
 Conduct Regression Testing
 ---------------------------
@@ -144,8 +144,6 @@ Conduct Regression Testing
 |dedicated|
 
 Regression testing should be conducted on production data.
-See :doc:`/qa/testing-approach` for details.
-Refer to the provided regression checklist for the list of items to verify during the testing process: `Regression Checklist <https://docs.google.com/document/d/1OsGJV0sMLDSmfkU9-ee8h_ozbQcUDJ1EOwNPm4dC63Q/edit?usp=sharing>`_.
 
 Build the Guides for the Release Candidate
 ------------------------------------------
