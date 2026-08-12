@@ -296,7 +296,7 @@ public class Datasets extends AbstractApiBean {
                         .getReviews(commandEngine.submit(new GetDatasetReviewsCommand(req, dataset)));
                 String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject croissantJson = JsonUtil.getJsonObject(content);
-                String updatedContent = Json.createObjectBuilder(croissantJson)
+                String updatedContent = JsonUtil.createObjectBuilder(croissantJson)
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                 is = new ByteArrayInputStream(updatedContent.getBytes(StandardCharsets.UTF_8));
             }
@@ -649,7 +649,7 @@ public class Datasets extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers, includeDeaccessioned, false);
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
             jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
             jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion, fileSearchCriteria)));
             jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion, fileSearchCriteria)));
@@ -678,7 +678,7 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        JsonObjectBuilder job = Json.createObjectBuilder()
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder()
                 .add("id", id)
                 .add("downloadCount", count);
         if (date != null) {
@@ -799,7 +799,7 @@ public class Datasets extends AbstractApiBean {
         try {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers);
             return Response
-                    .ok(Json.createObjectBuilder()
+                    .ok(JsonUtil.createObjectBuilder()
                             .add("linkset",
                                     new SignpostingResources(systemConfig, dsv,
                                             JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
@@ -1039,7 +1039,7 @@ public class Datasets extends AbstractApiBean {
             Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
             managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
-            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+            return ok(JsonUtil.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1074,7 +1074,7 @@ public class Datasets extends AbstractApiBean {
             Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
             managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
-            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+            return ok(JsonUtil.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
         } catch (WrappedResponse ex) {
             ex.printStackTrace();
@@ -1441,7 +1441,7 @@ public class Datasets extends AbstractApiBean {
                         if ((status == null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                             // Delete the record of any existing copy since it is now out of
                             // date/incorrect
-                            JsonObjectBuilder job = Json.createObjectBuilder();
+                            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                             job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                             updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                             datasetVersionSvc.persistArchivalCopyLocation(updateVersion);
@@ -1475,7 +1475,7 @@ public class Datasets extends AbstractApiBean {
                 if (errorMsg != null) {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
                 } else {
-                    return Response.ok(Json.createObjectBuilder()
+                    return Response.ok(JsonUtil.createObjectBuilder()
                             .add("status", ApiConstants.STATUS_OK)
                             .add("status_details", successMsg)
                             .add("data", json(ds)).build())
@@ -1737,7 +1737,7 @@ public class Datasets extends AbstractApiBean {
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(filesToEmbargo)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : filesToEmbargo) {
                 // superuser can overrule an existing embargo, even on released files
@@ -1787,7 +1787,7 @@ public class Datasets extends AbstractApiBean {
                                     .setUserIdentifier(authenticatedUser.getIdentifier()));
                 }
             }
-            return ok(Json.createObjectBuilder().add("message", "Files were embargoed"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "Files were embargoed"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -1863,7 +1863,7 @@ public class Datasets extends AbstractApiBean {
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(embargoFilesToUnset)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : embargoFilesToUnset) {
                 // superuser can overrule an existing embargo, even on released files
@@ -1904,7 +1904,7 @@ public class Datasets extends AbstractApiBean {
                 removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
                 actionLogSvc.log(removeRecord);
             }
-            return ok(Json.createObjectBuilder().add("message", "Embargo(es) were removed from files"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "Embargo(es) were removed from files"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -2039,7 +2039,7 @@ public class Datasets extends AbstractApiBean {
         List<Retention> orphanedRetentions = new ArrayList<Retention>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(filesToRetention)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : filesToRetention) {
                 // superuser can overrule an existing retention, even on released files
@@ -2089,7 +2089,7 @@ public class Datasets extends AbstractApiBean {
                                     .setUserIdentifier(authenticatedUser.getIdentifier()));
                 }
             }
-            return ok(Json.createObjectBuilder().add("message", "File(s) retention period has been set or updated"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "File(s) retention period has been set or updated"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -2174,7 +2174,7 @@ public class Datasets extends AbstractApiBean {
         List<Retention> orphanedRetentions = new ArrayList<Retention>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(retentionFilesToUnset)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : retentionFilesToUnset) {
                 // superuser can overrule an existing retention, even on released files
@@ -2215,7 +2215,7 @@ public class Datasets extends AbstractApiBean {
                 removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
                 actionLogSvc.log(removeRecord);
             }
-            return ok(Json.createObjectBuilder().add("message", "Retention periods were removed from file(s)"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "Retention periods were removed from file(s)"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -2351,17 +2351,17 @@ public class Datasets extends AbstractApiBean {
 
             long datasetId = dataset.getId();
             List<Dataverse> dvsThatLinkToThisDatasetId = dataverseSvc.findDataversesThatLinkToThisDatasetId(datasetId);
-            JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = JsonUtil.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDatasetId) {
                 if (dataverse.isReleased() || this.permissionService.hasPermissionsFor(u, dataverse, EnumSet.of(Permission.ViewUnpublishedDataverse))) {
-                    JsonObjectBuilder datasetBuilder = Json.createObjectBuilder();
+                    JsonObjectBuilder datasetBuilder = JsonUtil.createObjectBuilder();
                     datasetBuilder.add("id", dataverse.getId());
                     datasetBuilder.add("alias", dataverse.getAlias());
                     datasetBuilder.add("displayName", dataverse.getDisplayName());
                     dataversesThatLinkToThisDatasetIdBuilder.add(datasetBuilder.build());
                 }
             }
-            JsonObjectBuilder response = Json.createObjectBuilder();
+            JsonObjectBuilder response = JsonUtil.createObjectBuilder();
             response.add("id", datasetId);
             response.add("identifier", dataset.getIdentifier());
             response.add("linked-dataverses", dataversesThatLinkToThisDatasetIdBuilder);
@@ -2551,10 +2551,10 @@ public class Datasets extends AbstractApiBean {
             if (!canUpdateThumbnail) {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
             }
-            JsonArrayBuilder data = Json.createArrayBuilder();
+            JsonArrayBuilder data = JsonUtil.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
             for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
-                JsonObjectBuilder candidate = Json.createObjectBuilder();
+                JsonObjectBuilder candidate = JsonUtil.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {
                     logger.fine("found a candidate!");
@@ -2747,7 +2747,7 @@ public class Datasets extends AbstractApiBean {
                         JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, new Long(totalSize), importMode));
                         long jobId = jsonFromImportJobKickoff.getInt("executionId");
                         String message = jsonFromImportJobKickoff.getString("message");
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add("jobId", jobId);
                         job.add("message", message);
                         return ok(job);
@@ -2791,7 +2791,7 @@ public class Datasets extends AbstractApiBean {
                             logger.log(Level.SEVERE, constraintError);
                         }
 
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         return ok(job);
 
                     } catch (IOException e) {
@@ -2830,7 +2830,7 @@ public class Datasets extends AbstractApiBean {
     public Response submitForReview(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied)));
-            JsonObjectBuilder result = Json.createObjectBuilder();
+            JsonObjectBuilder result = JsonUtil.createObjectBuilder();
 
             boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
 
@@ -2867,7 +2867,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
 
-            JsonObjectBuilder result = Json.createObjectBuilder();
+            JsonObjectBuilder result = JsonUtil.createObjectBuilder();
             result.add("inReview", false);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
             return ok(result);
@@ -2888,7 +2888,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetUserCanSeeOrDie(idSupplied, req, false);
             List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(ds.getCategories());
-            JsonArrayBuilder fileCategoriesArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder fileCategoriesArrayBuilder = JsonUtil.createArrayBuilder();
             for (String fieldName : datasetFileCategories) {
                 fileCategoriesArrayBuilder.add(fieldName);
             }
@@ -2931,7 +2931,7 @@ public class Datasets extends AbstractApiBean {
             if (canSeeStatus) {
                 List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
                 if (includeHistory) {
-                    JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                    JsonArrayBuilder arrayBuilder = JsonUtil.createArrayBuilder();
                     for (CurationStatus status : statuses) {
                         arrayBuilder.add(curationStatusToJson(status));
                     }
@@ -2949,7 +2949,7 @@ public class Datasets extends AbstractApiBean {
 
     private JsonObject curationStatusToJson(CurationStatus status) {
         if (status == null) {
-            return Json.createObjectBuilder().build();
+            return JsonUtil.createObjectBuilder().build();
         }
         return NullSafeJsonBuilder.jsonObjectBuilder()
                 .add("label", status.getLabel())
@@ -3788,10 +3788,10 @@ public class Datasets extends AbstractApiBean {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
-            JsonArrayBuilder datasetsCitations = Json.createArrayBuilder();
+            JsonArrayBuilder datasetsCitations = JsonUtil.createArrayBuilder();
             List<DatasetExternalCitations> externalCitations = datasetExternalCitationsService.getDatasetExternalCitationsByDataset(dataset);
             for (DatasetExternalCitations citation : externalCitations) {
-                JsonObjectBuilder candidateObj = Json.createObjectBuilder();
+                JsonObjectBuilder candidateObj = JsonUtil.createObjectBuilder();
                 /**
                  * In the future we can imagine storing and presenting more
                  * information about the citation such as the title of the paper
@@ -3870,7 +3870,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetUserCanSeeOrDie(dvIdtf, req, false), uriInfo, headers, includeDeaccessioned, false);
             long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileSearchCriteria, fileDownloadSizeMode);
             String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
             jsonObjectBuilder.add("message", message);
             jsonObjectBuilder.add("storageSize", datasetStorageSize);
             return ok(jsonObjectBuilder);
@@ -4241,7 +4241,7 @@ public class Datasets extends AbstractApiBean {
             Set<Permission> perms = new HashSet<Permission>();
             perms.add(Permission.ViewUnpublishedDataset);
             boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
-            JsonObjectBuilder timestamps = Json.createObjectBuilder();
+            JsonObjectBuilder timestamps = JsonUtil.createObjectBuilder();
             logger.fine("CSD: " + canSeeDraft);
             logger.fine("IT: " + dataset.getIndexTime());
             logger.fine("MT: " + dataset.getModificationTime());
@@ -4386,15 +4386,15 @@ public class Datasets extends AbstractApiBean {
             referenceEndpointsWithPaths = GlobusAccessibleStore.getReferenceEndpointsWithPaths(storeId);
         }
 
-        JsonObjectBuilder queryParams = Json.createObjectBuilder();
+        JsonObjectBuilder queryParams = JsonUtil.createObjectBuilder();
         queryParams.add("queryParameters",
-                Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
-                        .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
-                        .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
-                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
-                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}")));
+                JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("datasetId", "{datasetId}"))
+                        .add(JsonUtil.createObjectBuilder().add("siteUrl", "{siteUrl}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
+                        .add(JsonUtil.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetPid", "{datasetPid}")));
         JsonObject substitutedParams = tokenUtil.getParams(queryParams.build());
-        JsonObjectBuilder params = Json.createObjectBuilder();
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder();
         substitutedParams.keySet().forEach((key) -> {
             params.add(key, substitutedParams.get(key));
         });
@@ -4415,29 +4415,29 @@ public class Datasets extends AbstractApiBean {
             params.add("referenceEndpointsWithPaths", referenceEndpointsWithPaths);
         }
         int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
-        JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
+        JsonArrayBuilder allowedApiCalls = JsonUtil.createArrayBuilder();
         String requestCallName = managed ? "requestGlobusTransferPaths" : "requestGlobusReferencePaths";
         allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
+                JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusUploadPaths")
                         .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         if(managed) {
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         } else {
-            allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addFiles")
+            allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "addFiles")
                     .add(URLTokenUtil.HTTP_METHOD, "POST")
                     .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addFiles")
                     .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         }
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
                 .add(URLTokenUtil.HTTP_METHOD, "GET")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
                 .add(URLTokenUtil.TIMEOUT, 5));
         allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
+                JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
                         .add(URLTokenUtil.TIMEOUT, 5));
 
@@ -4724,15 +4724,15 @@ public class Datasets extends AbstractApiBean {
         boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
         String transferEndpoint = null;
 
-        JsonObjectBuilder queryParams = Json.createObjectBuilder();
+        JsonObjectBuilder queryParams = JsonUtil.createObjectBuilder();
         queryParams.add("queryParameters",
-                Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
-                        .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
-                        .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
-                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
-                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}")));
+                JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("datasetId", "{datasetId}"))
+                        .add(JsonUtil.createObjectBuilder().add("siteUrl", "{siteUrl}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
+                        .add(JsonUtil.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetPid", "{datasetPid}")));
         JsonObject substitutedParams = tokenUtil.getParams(queryParams.build());
-        JsonObjectBuilder params = Json.createObjectBuilder();
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder();
         substitutedParams.keySet().forEach((key) -> {
             params.add(key, substitutedParams.get(key));
         });
@@ -4743,22 +4743,22 @@ public class Datasets extends AbstractApiBean {
         }
         params.add("files", files);
         int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
-        JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
+        JsonArrayBuilder allowedApiCalls = JsonUtil.createArrayBuilder();
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/monitorGlobusDownload")
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusDownload")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusDownload")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE,
                         "/api/v1/datasets/{datasetId}/requestGlobusDownload?downloadId=" + downloadId)
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
                 .add(URLTokenUtil.HTTP_METHOD, "GET")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
                 .add(URLTokenUtil.TIMEOUT, 5));
         allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
+                JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
                         .add(URLTokenUtil.TIMEOUT, 5));
 
@@ -5645,7 +5645,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         // Return the URL in a JSON response
-        return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
+        return ok(JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
                 .add("datasetId", dataset.getId()).add("preview", preview));
 
     } catch (Exception ex) {
@@ -5703,7 +5703,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetSummaryFieldNames() {
         String customFieldNames = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
         String[] fieldNames = DatasetUtil.getDatasetSummaryFieldNames(customFieldNames);
-        JsonArrayBuilder fieldNamesArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder fieldNamesArrayBuilder = JsonUtil.createArrayBuilder();
         for (String fieldName : fieldNames) {
             fieldNamesArrayBuilder.add(fieldName);
         }
@@ -6007,7 +6007,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return wr.getResponse();
         }
 
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         jsonObjectBuilder.add("canViewUnpublishedDataset", permissionService.userOn(requestUser, dataset).has(Permission.ViewUnpublishedDataset));
         jsonObjectBuilder.add("canEditDataset", permissionService.userOn(requestUser, dataset).has(Permission.EditDataset));
         jsonObjectBuilder.add("canPublishDataset", permissionService.userOn(requestUser, dataset).has(Permission.PublishDataset));
@@ -6173,7 +6173,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetTypes(@Parameter(description = "Language preference for localized dataset type labels.")
             @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
         Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         for (DatasetType datasetType : datasetTypeSvc.listAll()) {
             jab.add(datasetType.toJson(locale));
         }
@@ -6235,7 +6235,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         String displayNameIn = null;
         String descriptionIn = null;
 
-        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        JsonArrayBuilder datasetTypesAfter = JsonUtil.createArrayBuilder();
         List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
         List<License> licensesToSave = new ArrayList<>();
 
@@ -6379,11 +6379,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         } else {
             datasetType = datasetTypeSvc.getByName(idOrName);
         }
-        JsonArrayBuilder datasetTypesBefore = Json.createArrayBuilder();
+        JsonArrayBuilder datasetTypesBefore = JsonUtil.createArrayBuilder();
         for (MetadataBlock metadataBlock : datasetType.getMetadataBlocks()) {
             datasetTypesBefore.add(metadataBlock.getName());
         }
-        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        JsonArrayBuilder datasetTypesAfter = JsonUtil.createArrayBuilder();
         List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
         if (jsonBody != null && !jsonBody.isEmpty()) {
             JsonArray json = JsonUtil.getJsonArray(jsonBody);
@@ -6401,8 +6401,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
         try {
             execCommand(new UpdateDatasetTypeLinksToMetadataBlocksCommand(createDataverseRequest(getRequestUser(crc)), datasetType, metadataBlocksToSave));
-            return ok(Json.createObjectBuilder()
-                    .add("linkedMetadataBlocks", Json.createObjectBuilder()
+            return ok(JsonUtil.createObjectBuilder()
+                    .add("linkedMetadataBlocks", JsonUtil.createObjectBuilder()
                             .add("before", datasetTypesBefore)
                             .add("after", datasetTypesAfter))
             );
@@ -6433,11 +6433,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         } else {
             datasetType = datasetTypeSvc.getByName(idOrName);
         }
-        JsonArrayBuilder licensesBefore = Json.createArrayBuilder();
+        JsonArrayBuilder licensesBefore = JsonUtil.createArrayBuilder();
         for (License license : datasetType.getLicenses()) {
             licensesBefore.add(license.getName());
         }
-        JsonArrayBuilder licensesAfter = Json.createArrayBuilder();
+        JsonArrayBuilder licensesAfter = JsonUtil.createArrayBuilder();
         List<License> licensesToSave = new ArrayList<>();
         if (jsonBody != null && !jsonBody.isEmpty()) {
             JsonArray json = JsonUtil.getJsonArray(jsonBody);
@@ -6455,8 +6455,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
         try {
             execCommand(new UpdateDatasetTypeAvailableLicensesCommand(createDataverseRequest(getRequestUser(crc)), datasetType, licensesToSave));
-            return ok(Json.createObjectBuilder()
-                    .add("availableLicenses", Json.createObjectBuilder()
+            return ok(JsonUtil.createObjectBuilder()
+                    .add("availableLicenses", JsonUtil.createObjectBuilder()
                             .add("before", licensesBefore)
                             .add("after", licensesAfter))
             );
@@ -6609,7 +6609,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers);
             String note = datasetVersion.getVersionNote();
             if(note == null) {
-                return ok(Json.createObjectBuilder());
+                return ok(JsonUtil.createObjectBuilder());
             }
             return ok(note);
         }, getRequestUser(crc));

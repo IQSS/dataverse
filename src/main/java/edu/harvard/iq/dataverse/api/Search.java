@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -222,18 +224,18 @@ public class Search extends AbstractApiBean {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, message);
             }
 
-            JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder itemsArrayBuilder = JsonUtil.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
                 itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields));
             }
 
-            JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
+            JsonObjectBuilder spelling_alternatives = JsonUtil.createObjectBuilder();
             for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
                 spelling_alternatives.add(entry.getKey(), entry.getValue().toString());
             }
 
-            JsonObjectBuilder value = Json.createObjectBuilder()
+            JsonObjectBuilder value = JsonUtil.createObjectBuilder()
                     .add("q", query)
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
@@ -241,13 +243,13 @@ public class Search extends AbstractApiBean {
                     .add("items", itemsArrayBuilder.build());
 
             if (showFacets) {
-                JsonArrayBuilder facets = Json.createArrayBuilder();
-                JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
+                JsonArrayBuilder facets = JsonUtil.createArrayBuilder();
+                JsonObjectBuilder facetCategoryBuilder = JsonUtil.createObjectBuilder();
                 for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
-                    JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
-                    JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
+                    JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = JsonUtil.createObjectBuilder();
+                    JsonArrayBuilder facetLabelBuilderData = JsonUtil.createArrayBuilder();
                     for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                        JsonObjectBuilder countBuilder = Json.createObjectBuilder();
+                        JsonObjectBuilder countBuilder = JsonUtil.createObjectBuilder();
                         countBuilder.add(facetLabel.getName(), facetLabel.getCount());
                         facetLabelBuilderData.add(countBuilder);
                     }
@@ -269,7 +271,7 @@ public class Search extends AbstractApiBean {
                         }
                     }
                 }
-                JsonObjectBuilder objectTypeCounts = Json.createObjectBuilder();
+                JsonObjectBuilder objectTypeCounts = JsonUtil.createObjectBuilder();
                 objectTypeCountsMap.forEach((k,v) -> objectTypeCounts.add(k,v));
                 value.add("total_count_per_object_type", objectTypeCounts);
             }
@@ -301,15 +303,15 @@ public class Search extends AbstractApiBean {
         Map<String, SearchService> availableEngines = searchServiceFactory.getAvailableServices();
         String defaultServiceName = JvmSettings.DEFAULT_SEARCH_SERVICE.lookupOptional().orElse(SearchServiceFactory.INTERNAL_SOLR_SERVICE_NAME);
 
-        JsonArrayBuilder enginesArray = Json.createArrayBuilder();
+        JsonArrayBuilder enginesArray = JsonUtil.createArrayBuilder();
 
         for (String engine : availableEngines.keySet()) {
-            JsonObjectBuilder engineObject = Json.createObjectBuilder()
+            JsonObjectBuilder engineObject = JsonUtil.createObjectBuilder()
                 .add("name", engine)
                 .add("displayName", availableEngines.get(engine).getDisplayName());
             enginesArray.add(engineObject);
         }
-        JsonObjectBuilder response = Json.createObjectBuilder()
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder()
                 .add("services", enginesArray)
                 .add("defaultService", defaultServiceName);
 
