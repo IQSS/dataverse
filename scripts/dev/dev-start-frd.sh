@@ -28,7 +28,6 @@ mkdir -p docker-dev-volumes/app/secrets
 mkdir -p docker-dev-volumes/postgresql/data
 mkdir -p docker-dev-volumes/solr/data
 mkdir -p docker-dev-volumes/solr/conf
-mkdir -p docker-dev-volumes/minio_storage
 
 # Only disable DDL generation if database is already initialized
 # (on first run, we need create-tables to bootstrap the schema)

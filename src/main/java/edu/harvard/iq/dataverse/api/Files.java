@@ -635,7 +635,7 @@ public class Files extends AbstractApiBean {
             mdcLogService.logEntry(entry);
         } 
                     
-        return Response.ok(Json.createObjectBuilder()
+        return Response.ok(JsonUtil.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
                 .add("data", json(fileMetadata, returnOwners, returnDatasetVersion)).build())
                 .type(MediaType.APPLICATION_JSON)
@@ -1037,7 +1037,7 @@ public class Files extends AbstractApiBean {
             }
 
             // Return the URL in a JSON response
-            return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
+            return ok(JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
                     .add("fileId", dataFile.getId()).add("preview", preview));
 
         } catch (Exception ex) {
