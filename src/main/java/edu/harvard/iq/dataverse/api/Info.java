@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -88,8 +89,8 @@ public class Info extends AbstractApiBean {
         String versionStr = systemConfig.getVersion(true);
         String[] comps = versionStr.split("build",2);
         String version = comps[0].trim();
-        JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
-        return ok(Json.createObjectBuilder()
+        JsonValue build = comps.length > 1 ? JsonUtil.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
+        return ok(JsonUtil.createObjectBuilder()
                 .add("version", version)
                 .add("build", build));
     }
@@ -147,12 +148,12 @@ public class Info extends AbstractApiBean {
     @Operation(summary = "Lists export formats",
             description = "Returns dataset export formats with display name, media type, harvestability, user-interface visibility, and XML metadata when available.")
     public Response getExportFormats() {
-        JsonObjectBuilder responseModel = Json.createObjectBuilder();
+        JsonObjectBuilder responseModel = JsonUtil.createObjectBuilder();
         ExportService instance = ExportService.getInstance();
         for (String[] labels : instance.getExportersLabels()) {
             try {
                 Exporter exporter = instance.getExporter(labels[1]);
-                JsonObjectBuilder exporterObject = Json.createObjectBuilder().add("displayName", labels[0])
+                JsonObjectBuilder exporterObject = JsonUtil.createObjectBuilder().add("displayName", labels[0])
                         .add("mediaType", exporter.getMediaType()).add("isHarvestable", exporter.isHarvestable())
                         .add("isVisibleInUserInterface", exporter.isAvailableToUsers());
                 if (exporter instanceof XMLExporter xmlExporter) {
@@ -197,7 +198,7 @@ public class Info extends AbstractApiBean {
     private Response getSettingResponseByKey(SettingsServiceBean.Key key) {
         String setting = settingsService.getValueForKey(key);
         if (setting != null) {
-            return ok(Json.createObjectBuilder().add("message", setting));
+            return ok(JsonUtil.createObjectBuilder().add("message", setting));
         } else {
             return notFound("Setting " + key + " not found");
         }

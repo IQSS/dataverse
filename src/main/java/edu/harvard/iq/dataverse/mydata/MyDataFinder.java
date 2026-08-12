@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -400,7 +402,7 @@ public class MyDataFinder {
      */
     public JsonObjectBuilder getSelectedFilterParamsAsJSON() {
 
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder();
         jsonData.add("publication_statuses", this.filterParams.getListofSelectedPublicationStatuses())
                 .add("role_names", this.getListofSelectedRoles());
 
@@ -421,7 +423,7 @@ public class MyDataFinder {
      */
     public JsonArrayBuilder getListofSelectedRoles(){
 
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
 
         for (Long roleId : this.filterParams.getRoleIds()){
             String roleName = this.rolePermissionHelper.getRoleName(roleId);
