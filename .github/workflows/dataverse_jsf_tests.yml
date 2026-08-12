@@ -68,6 +68,16 @@ jobs:
           mvn -version
 
       # ---------------------------
+      # BUILD THE BASE IMAGE FIRST
+      # ---------------------------
+      - name: Build local base image
+        run: |
+          set -euo pipefail
+          echo "Building the base image module so it is cached locally..."
+          # Use -f to point directly to the module's pom.xml
+          mvn -Pct clean package -f modules/container-base/pom.xml
+
+      # ---------------------------
       # BUILD IMAGES (Dataverse-native)
       # ---------------------------
       - name: Build Dataverse containers via Maven
