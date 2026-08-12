@@ -68,14 +68,27 @@ jobs:
           mvn -version
 
       # ---------------------------
-      # BUILD THE BASE IMAGE FIRST
+      # FETCH OR BUILD BASE IMAGE
       # ---------------------------
-      - name: Build local base image
+      - name: Fetch or Build local base image
         run: |
           set -euo pipefail
-          echo "Building the base image module so it is cached locally..."
-          # Use -f to point directly to the module's pom.xml
-          mvn -Pct clean package -f modules/container-base/pom.xml
+          
+          # 1. Ask Maven what base image tag the main app expects
+          # (Note: if the property in pom.xml is named something else, change 'base.image' below)
+          BASE_IMAGE=$(mvn help:evaluate -Dexpression=base.image -q -DforceStdout)
+          echo "Target base image: $BASE_IMAGE"
+          
+          # 2. Try to pull the image from the registry
+          echo "Pinging registry for $BASE_IMAGE..."
+          
+          # Because this is in an 'if' statement, 'set -e' won't crash the script if the pull fails
+          if docker pull "$BASE_IMAGE"; then
+            echo "✅ Image found and pulled successfully! Skipping local build."
+          else
+            echo "⚠️ Image not found remotely. Building it locally from modules/container-base..."
+            mvn -Pct clean package -f modules/container-base/pom.xml
+          fi
 
       # ---------------------------
       # BUILD IMAGES (Dataverse-native)
