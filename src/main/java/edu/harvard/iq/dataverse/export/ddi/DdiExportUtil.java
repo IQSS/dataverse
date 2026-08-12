@@ -837,7 +837,8 @@ public class DdiExportUtil {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String topicClassificationValue = "";
                             String topicClassificationVocab = "";
-                            String topicClassificationURI = "";
+                            String topicClassVocabURI = "";
+                            String topicClassificationTermURI = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.topicClassValue.equals(next.getTypeName())) {
@@ -851,14 +852,18 @@ public class DdiExportUtil {
                                 if (DatasetFieldConstant.topicClassVocab.equals(next.getTypeName())) {
                                     topicClassificationVocab = next.getSinglePrimitive();
                                 }
+                                if (DatasetFieldConstant.topicClassTermURI.equals(next.getTypeName())) {
+                                    topicClassificationTermURI = next.getSinglePrimitive();
+                                }
                                 if (DatasetFieldConstant.topicClassVocabURI.equals(next.getTypeName())) {
-                                    topicClassificationURI = next.getSinglePrimitive();
+                                    topicClassVocabURI = next.getSinglePrimitive();
                                 }
                             }
                             if (!topicClassificationValue.isEmpty()) {
                                 xmlw.writeStartElement("topcClas");
-                                XmlWriterUtil.writeAttribute(xmlw, "vocab", topicClassificationVocab);
-                                XmlWriterUtil.writeAttribute(xmlw, "vocabURI", topicClassificationURI);
+                                XmlWriterUtil.writeAttribute(xmlw, "subjectScheme", topicClassificationVocab);
+                                XmlWriterUtil.writeAttribute(xmlw, "schemeURI", topicClassVocabURI);
+                                XmlWriterUtil.writeAttribute(xmlw, "valueURI", topicClassificationTermURI);
                                 if (lang != null && isCVV) {
                                     XmlWriterUtil.writeAttribute(xmlw, "xml:lang", defaultLocale.getLanguage());
                                     xmlw.writeCharacters(ControlledVocabularyValue.getLocaleStrValue(
@@ -874,8 +879,9 @@ public class DdiExportUtil {
                                             CITATION_BLOCK_NAME, new Locale(lang), false);
                                     if (translatedValue != null) {
                                         xmlw.writeStartElement("topcClas");
-                                        XmlWriterUtil.writeAttribute(xmlw, "vocab", topicClassificationVocab);
-                                        XmlWriterUtil.writeAttribute(xmlw, "vocabURI", topicClassificationURI);
+                                        XmlWriterUtil.writeAttribute(xmlw, "subjectScheme", topicClassificationVocab);
+                                        XmlWriterUtil.writeAttribute(xmlw, "schemeURI", topicClassVocabURI);
+                                        XmlWriterUtil.writeAttribute(xmlw, "valueURI", topicClassificationTermURI);
                                         XmlWriterUtil.writeAttribute(xmlw, "xml:lang", lang);
                                         xmlw.writeCharacters(translatedValue);
                                         xmlw.writeEndElement(); // topcClas
