@@ -77,15 +77,17 @@ jobs:
         run: |
           set -euo pipefail
           
-          # 1. cd into the module so Maven resolves the parent POM variables perfectly
+          # 1. cd into the module so Maven resolves the parent POM perfectly
           cd modules/container-base
-          BASE_IMAGE=$(mvn help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
+          
+          # We add the 'validate' phase so Maven calculates the ${parsedVersion...} variables first
+          BASE_IMAGE=$(mvn validate help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
           cd ../..
           
           echo "Target base image: $BASE_IMAGE"
           
-          # 2. Safety catch: If Maven still fails to evaluate it, build locally and move on
-          if [[ "$BASE_IMAGE" == *"null object"* || -z "$BASE_IMAGE" ]]; then
+          # 2. Safety catch: If it still has unresolved variables or is null, fallback to build
+          if [[ "$BASE_IMAGE" == *"null object"* || "$BASE_IMAGE" == *"\${"* || -z "$BASE_IMAGE" ]]; then
             echo "⚠️ Could not evaluate the image tag cleanly. Building locally to be safe..."
             mvn -Pct clean package -f modules/container-base/pom.xml
             exit 0
