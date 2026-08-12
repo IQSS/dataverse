@@ -2098,8 +2098,8 @@ public class DatasetVersion implements Serializable {
 
         if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
             Integer maxFilesForDownloadEntries = JvmSettings.EXPORTS_SCHEMA_DOT_ORG_MAX_FILES_FOR_DOWNLOAD_ENTRIES.lookupOptional(Integer.class).orElse(Integer.MAX_VALUE);
+            boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
             if (fileMetadatasSorted.size() <= maxFilesForDownloadEntries) {
-
                 JsonArrayBuilder fileArray = JsonUtil.createArrayBuilder();
                 String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
                 for (FileMetadata fileMetadata : fileMetadatasSorted) {
@@ -2114,48 +2114,51 @@ public class DatasetVersion implements Serializable {
                     fileObject.add("description", MarkupChecker.stripAllTags(fileMetadata.getDescription()));
                     fileObject.add("@id", filePidUrlAsString);
                     fileObject.add("identifier", filePidUrlAsString);
-                    boolean hideFilesBoolean = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS.lookupOptional(Boolean.class).orElse(false);
                     if (!hideFilesBoolean) {
                         String nullDownloadType = null;
-                    fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId(), null));
+                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId(), null));
                     }
                     fileArray.add(fileObject);
                 }
                 job.add("distribution", fileArray);
             } else {
-                // If we have too many files, we don't include individual distribution entries
-                // but we can still provide a search action for file downloads
-                StringBuilder valuePattern = new StringBuilder();
-                boolean first = true;
+                if (!hideFilesBoolean) {
+                    // If we have too many files, we don't include individual distribution entries
+                    // but we can still provide a search action for file downloads
+                    StringBuilder valuePattern = new StringBuilder();
+                    boolean first = true;
 
-                // Build the pattern of all file IDs joined with OR operator
-                for (FileMetadata fileMetadata : fileMetadatas) {
-                    if (!first) {
-                        valuePattern.append("|");
-                    } else {
-                        first = false;
+                    // Build the pattern of all file IDs joined with OR operator
+
+                    for (FileMetadata fileMetadata : fileMetadatasSorted) {
+                        if (!first) {
+                            valuePattern.append("|");
+                        } else {
+                            first = false;
+                        }
+                        valuePattern.append(fileMetadata.getDataFile().getId());
                     }
-                    valuePattern.append(fileMetadata.getDataFile().getId());
+
+
+                    // Create the potentialAction object
+                    JsonObjectBuilder potentialAction = JsonUtil.createObjectBuilder()
+                            .add("@type", "SearchAction")
+                            .add("target", JsonUtil.createObjectBuilder()
+                                    .add("@type", "EntryPoint")
+                                    .add("contentType", JsonUtil.createArrayBuilder().add("*/*"))
+                                    .add("urlTemplate", SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/{fileId}")
+                                    .add("description", "Download each file from the dataset based on file id")
+                                    .add("httpMethod", JsonUtil.createArrayBuilder().add("GET")))
+                            .add("query-input", JsonUtil.createArrayBuilder()
+                                    .add(JsonUtil.createObjectBuilder()
+                                            .add("@type", "PropertyValueSpecification")
+                                            .add("valueName", "fileId")
+                                            .add("description", "Id of the desired file")
+                                            .add("valueRequired", true)
+                                            .add("valuePattern", "(" + valuePattern.toString() + ")")));
+
+                    job.add("potentialAction", potentialAction);
                 }
-
-                // Create the potentialAction object
-                JsonObjectBuilder potentialAction = Json.createObjectBuilder()
-                        .add("@type", "SearchAction")
-                        .add("target", Json.createObjectBuilder()
-                                .add("@type", "EntryPoint")
-                                .add("contentType", Json.createArrayBuilder().add("*/*"))
-                                .add("urlTemplate", SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/{fileId}")
-                                .add("description", "Download each file from the dataset based on file id")
-                                .add("httpMethod", Json.createArrayBuilder().add("GET")))
-                        .add("query-input", Json.createArrayBuilder()
-                                .add(Json.createObjectBuilder()
-                                        .add("@type", "PropertyValueSpecification")
-                                        .add("valueName", "fileId")
-                                        .add("description", "Id of the desired file")
-                                        .add("valueRequired", true)
-                                        .add("valuePattern", "(" + valuePattern.toString() + ")")));
-
-                job.add("potentialAction", potentialAction);
             }
         }
 
