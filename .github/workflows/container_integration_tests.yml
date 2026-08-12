@@ -71,7 +71,7 @@ jobs:
           mvn -version
 
       # ---------------------------
-      # 1. BUILD THE BASE IMAGE FIRST
+      # BUILD THE BASE IMAGE FIRST
       # ---------------------------
       - name: Build local base image
         run: |
