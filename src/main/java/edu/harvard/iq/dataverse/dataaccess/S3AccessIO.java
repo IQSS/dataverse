@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
@@ -1092,14 +1093,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     public JsonObjectBuilder generateTemporaryS3UploadUrls(String globalId, String storageIdentifier, long fileSize)
             throws IOException {
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         key = getMainFileKey();
         Instant expiration = Instant.now().plus(Duration.ofMinutes(getUrlExpirationMinutes()));
 
         if (fileSize <= minPartSize) {
             response.add("url", generateTemporaryS3UploadUrl(key, Date.from(expiration)));
         } else {
-            JsonObjectBuilder urls = Json.createObjectBuilder();
+            JsonObjectBuilder urls = JsonUtil.createObjectBuilder();
 
             CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = CreateMultipartUploadRequest
                     .builder().bucket(bucketName).key(key);
@@ -1199,6 +1200,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             // Create a builder for the S3AsyncClient
             S3AsyncClientBuilder s3CB = S3AsyncClient.builder().requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED);
+
+            // Always enable multipart upload. It is only used when necessary
+            s3CB.multipartEnabled(true);
 
             // Create a custom HTTP client with the desired pool size
             Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
@@ -1320,8 +1324,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if (e.getCause() instanceof S3Exception) {
                 S3Exception s3e = (S3Exception) e.getCause();
                 if (s3e.statusCode() == 501) {
-                    // In this case, it's likely that tags are not implemented at all (e.g. by
-                    // Minio) so no tag was set either and it's just something to be aware of
+                    // In this case, it's likely that tags are not implemented at all
+                    // so no tag was set either and it's just something to be aware of
                     logger.warning("Temp tag not deleted: Object tags not supported by storage: " + driverId);
                 } else {
                     // In this case, the assumption is that adding tags has worked, so not removing

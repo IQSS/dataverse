@@ -7,12 +7,15 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.faces.view.ViewScoped;
@@ -30,6 +33,9 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     @EJB
     PermissionServiceBean permissionService;
+
+    @EJB
+    DatasetVersionServiceBean  datasetVersionService;
 
     @Inject
     DataverseSession session;
@@ -55,6 +61,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     
+    Boolean hasLocallyFAIRAccess;
     /**
      * Check if the current Dataset can Issue Commands
      *
@@ -253,9 +260,45 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     // PUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo){
-        return canIssueCommand(dvo, PublishDatasetCommand.class);
+        User u = session.getUser();
+        if (dvo == null || u == null || u instanceof GuestUser || !(dvo instanceof Dataset)) {
+            return false; // guests can not publish
+        }
+        if (u.isSuperuser()) {
+            return true;
+        }
+        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
+        Dataset ds = (Dataset)dvo;
+        Dataverse dv = ds.getOwner();
+        if (dv != null && !datasetVersionHasFiles(ds.getLatestVersion()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
+            return false;
+        }
+        return canIssueCommand(ds, PublishDatasetCommand.class);
     }
-    
+
+    // SUBMIT DATASET FOR REVIEW
+    public boolean canIssueSubmitDatasetForReviewCommand(DvObject dvo) {
+        User u = session.getUser();
+        if (dvo == null || u == null || u instanceof GuestUser || !(dvo instanceof Dataset)) {
+            return false; // guests can not submit for review
+        }
+        // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
+        Dataset ds = (Dataset)dvo;
+        Dataverse dv = ds.getOwner();
+        if (dv != null && !datasetVersionHasFiles(ds.getLatestVersion()) && dv.getEffectiveRequiresFilesToPublishDataset()) {
+            return false;
+        }
+        return canIssueCommand(ds, SubmitDatasetForReviewCommand.class);
+    }
+
+    // cache the hasFiles in the ds version for performance reasons
+    private boolean datasetVersionHasFiles(DatasetVersion dsv) {
+        if (dsv.hasFiles() == null) {
+            dsv.setHasFiles(datasetVersionService.hasFiles(dsv.getId()));
+        }
+        return dsv.hasFiles();
+    }
+
     // For the dataverse_header fragment (and therefore, most of the pages),
     // we need to know if authenticated users can add dataverses and datasets to the
     // root collection. For the "Add Data" menu further in the search include fragment
@@ -296,5 +339,13 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     public String notFound() {
         return navigationWrapper.notFound();
+    }
+
+    // The locallyFAIRraIds should not change within a given view (they are set in the parent Dataverse of whatever object the view is for)
+    public boolean hasLocallyFAIRAccess(DataverseRequest req, DvObject dvo) {
+        if(hasLocallyFAIRAccess == null ) {
+            hasLocallyFAIRAccess = permissionService.hasLocallyFAIRAccess(req, dvo);
+        }
+        return hasLocallyFAIRAccess;
     }
 }

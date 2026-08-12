@@ -22,14 +22,14 @@ Moves a Dataverse collection whose id is passed to an existing Dataverse collect
 Link a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Creates a link between a Dataverse collection and another Dataverse collection (see the :ref:`dataverse-linking` section of the User Guide for more information). Only accessible to superusers. ::
+Creates a link between a Dataverse collection and another Dataverse collection (see the :ref:`dataverse-linking` section of the User Guide for more information). ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/dataverses/$linked-dataverse-alias/link/$linking-dataverse-alias
 
 Unlink a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Removes a link between a Dataverse collection and another Dataverse collection. Only accessible to superusers. ::
+Removes a link between a Dataverse collection and another Dataverse collection. Accessible to users with Link Dataverse permission on the linking Dataverse collection.  ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$linked-dataverse-alias/deleteLink/$linking-dataverse-alias
 
@@ -50,19 +50,19 @@ Recursively assigns the users and groups having a role(s),that are in the set co
 Configure a Dataverse Collection to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To direct new files (uploaded when datasets are created or edited) for all datasets in a given Dataverse collection, the store can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers. ::
+To direct new files (uploaded when datasets are created or edited) for all datasets in a given Dataverse collection, the store can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Requires permission to edit the Dataverse collection (for example, the ``EditDataverse`` permission). ::
  
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/dataverses/$dataverse-alias/storageDriver
 
 (Note that for ``dataverse.files.store1.label=MyLabel``, you should pass ``MyLabel``.)
     
 A store assigned directly to a collection can be seen using::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/storageDriver
 
 This may be null. To get the effective storageDriver for a collection, which may be inherited from a parent collection or be the installation default, you can use:: 
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver?getEffective=true
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/storageDriver?getEffective=true
     
 This will never be null.
 
@@ -70,11 +70,11 @@ This will never be null.
 
 To delete a store assigned directly to a collection (so that the colllection's effective store is inherted from it's parent or is the global default), use::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$dataverse-alias/storageDriver
     
-The available drivers can be listed with::
+The available drivers within a collection can be listed with::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/allowedStorageDrivers
     
 (Individual datasets can be configured to use specific file stores as well. See the "Datasets" section below.)
 
@@ -135,9 +135,14 @@ The Review metadata block gives you a few basic fields common to all reviews suc
 
 You probably will want to create your own metadata blocks specific to the resources you are reviewing, your own "rubric". See :doc:`metadatacustomization` for details on creating and enabling custom metadata blocks.
 
-Instead of creating a new custom metadata block from scratch (if you simply want to evaluate the feature, for example), you can use the metadata blocks at https://github.com/IQSS/dataverse.harvard.edu
+Instead of creating a new custom metadata block from scratch (if you simply want to evaluate the feature, for example), in a test environment, you can use the "Trusted Data Dimensions and Intensities" for testing. (A test environment is advised because metadata blocks cannot be deleted once they are loaded (https://github.com/IQSS/dataverse/issues/9628).) These are the files to download:
+
+- :download:`rubric_trusteddatadimensionsintensities.tsv <../../../../scripts/api/data/metadatablocks/rubric_trusteddatadimensionsintensities.tsv>`
+- :download:`rubric_trusteddatadimensionsintensities.properties <../../../../src/main/java/propertyFiles/rubric_trusteddatadimensionsintensities.properties>` (optional)
 
 After loading the block, don't forget to update the Solr schema!
+
+As in the example above, the metadata block must start with ``rubric_`` (the "metadataBlock name" in the tsv itself) to be included in the output of the :ref:`api-list-reviews` API endpoint.
 
 Create a Review Dataset Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -37,7 +37,6 @@ Developer Guide
    remote-users
    geospatial
    selinux
-   big-data-support
    aux-file-support
    s3-direct-upload-api
    globus-api
@@ -47,4 +46,6 @@ Developer Guide
    fontcustom
    classic-dev-env
    search-services
+   testing/fixtures.md
+   testing/performance.md
    

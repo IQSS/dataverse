@@ -26,6 +26,9 @@
         <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
         <failsafe.jacoco.args>-Ddummy.jacoco.property=true</failsafe.jacoco.args>
         
+        <jacoco.merged.outputdir>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</jacoco.merged.outputdir>
+        <sonar.coverage.jacoco.xmlReportPaths>${jacoco.merged.outputdir}/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
@@ -140,10 +143,10 @@
         </dependency>
         
         <!-- TECHNICAL DEBT
-             For a very long time, in a lots of places people used org.apache.commons.httpclient to access
-             HTTP resources, wrap responses in exceptions etc.
+             For a very long time, in a lot of places people used org.apache.commons.httpclient to access
+             HTTP resources, wrap responses in exceptions, etc.
              
-             This library had been used via an transitive dependency of sword2-server. During its recent updates,
+             This library had been used via a transitive dependency of sword2-server. During its recent updates,
              the dependency was dropped, went missing, eventually breaking our code. Re-adding this 2007 goodie here
              as a direct dependency.
              
@@ -357,7 +360,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>4.0-M13</version>
+            <version>4.7.12</version>
         </dependency>
         
         <!-- Jakarta Validation API & runtime -->
@@ -655,7 +658,7 @@
         <dependency>
             <groupId>org.apache.opennlp</groupId>
             <artifactId>opennlp-tools</artifactId>
-            <version>1.9.1</version>
+            <version>2.5.9</version>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
@@ -765,6 +768,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>net.ttddyy</groupId>
+            <artifactId>datasource-proxy</artifactId>
+            <version>1.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
+            <version>2.14.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
@@ -871,6 +886,59 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <version>3.10</version>
+                <configuration>
+                    <!-- If the used Java version is too new, don't fail, just do nothing: -->
+                    <failOnUnsupportedJava>false</failOnUnsupportedJava>
+                    <!--
+                      If a class is missing while parsing signatures files, all methods
+                      and fields from this class are silently ignored. This is useful
+                      in multi-module Maven projects where only some modules have the
+                      dependency to which the signature file(s) apply.
+                      
+                      This settings prints no warning at all, so verify the signatures
+                      at least once with full dependencies.
+                    -->
+                    <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+                    <bundledSignatures>
+                        <!-- See https://github.com/policeman-tools/forbidden-apis/wiki/BundledSignatures -->
+                        <bundledSignature>jdk-non-portable</bundledSignature>
+                        <bundledSignature>jdk-internal</bundledSignature>
+                        
+                        <!-- Enabling the following checks will require refactoring within the codebase -->
+                        <!--
+                            <bundledSignature>jdk-reflection</bundledSignature>
+                            <bundledSignature>jdk-unsafe</bundledSignature>
+                            <bundledSignature>jdk-deprecated</bundledSignature>
+                            <bundledSignature>jdk-system-out</bundledSignature>
+                            <bundledSignature>commons-io-unsafe-${commons.io.version}</bundledSignature>
+                        -->
+                    </bundledSignatures>
+                    <signaturesFiles>
+                        <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
+                    </signaturesFiles>
+                    <targetVersion>${target.java.version}</targetVersion>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>for-classes</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>for-test-classes</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>testCheck</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -1019,7 +1087,7 @@
                         </goals>
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <outputDirectory>${jacoco.merged.outputdir}</outputDirectory>
                             <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
@@ -1091,7 +1159,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
+                    <configLocation>${project.basedir}/src/maven/checkstyle.xml</configLocation>
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                 </configuration>
@@ -1116,6 +1184,7 @@
                             <operationIdStrategy>CLASS_METHOD</operationIdStrategy>
                             <scanPackages>edu.harvard.iq.dataverse</scanPackages>
                             <scanDependenciesDisable>true</scanDependenciesDisable>
+                            <filter>edu.harvard.iq.dataverse.openapi.DataverseOpenApiFilter</filter>
                         </configuration>
                     </execution>
                 </executions>

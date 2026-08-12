@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -35,7 +37,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -892,7 +893,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
                 if (thumbnailFileId != null) {
                     logger.fine("obtained file id: " + thumbnailFileId);
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -925,7 +926,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 }
 
                 if (thumbnailFileId != null) {
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -937,7 +938,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    public DataFile getDataFileById(Long id) {
+        return datafileService.find(id);
+    }
+
     private void assignDatasetThumbnailByNativeQuery(Long versionId, Long dataFileId) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id in (SELECT dataset_id FROM datasetversion WHERE id=" + versionId + ")").executeUpdate();
@@ -1156,7 +1161,7 @@ w
     }
 
     public JsonObjectBuilder fixMissingUnf(String datasetVersionId, boolean forceRecalculate) {
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
         if (datasetVersionId == null || datasetVersionId.isEmpty()) {
             info.add("message", "datasetVersionId was null or empty!");
             return info;
@@ -1337,6 +1342,15 @@ w
         return em.createQuery(cq).getSingleResult();
     }
 
+    public boolean hasFiles(Long datasetVersionId) {
+        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersionId+" LIMIT 1");
+        try {
+            query.getSingleResult();
+            return true;
+        } catch (NoResultException e) {
+            return false;
+        }
+    }
 
     /**
      * Update the archival copy location for a specific version of a dataset.

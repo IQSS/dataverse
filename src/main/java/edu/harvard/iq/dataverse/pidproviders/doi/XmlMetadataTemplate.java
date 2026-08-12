@@ -48,7 +48,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
@@ -1287,8 +1286,131 @@ public class XmlMetadataTemplate {
             ;
         }
         xmlw.writeEndElement(); // </rights>
+        for (DatasetField dsf : dv.getDatasetFields()) {
+            if ("LCProjectUrl".equals(dsf.getDatasetFieldType().getName())) {
+                if (!dsf.isEmpty()) {
+                    String projectUrl = dsf.getValue();
+                    if (projectUrl != null) {
+                        JsonObject evv = getExternalVocabularyValue(projectUrl);
+                        if (evv != null) {
+                            if (evv.containsKey("notices")) {
+                                JsonValue notices = evv.get("notices");
+                                if (notices.getValueType() == ValueType.ARRAY) {
+                                    for (JsonValue notice : notices.asJsonArray()) {
+                                        if (notice.getValueType() == ValueType.OBJECT) {
+                                            JsonObject noticeObject = notice.asJsonObject();
+                                            writeLocalContextNoticeRightsElement(xmlw, projectUrl, noticeObject);
+
+                                        }
+                                    }
+                                }
+                            } else if (evv.containsKey("tk_labels")) {
+                                JsonValue tkLabels = evv.get("tk_labels");
+                                if (tkLabels.getValueType() == ValueType.ARRAY) {
+                                    for (JsonValue tkLabel : tkLabels.asJsonArray()) {
+                                        if (tkLabel.getValueType() == ValueType.OBJECT) {
+                                            JsonObject tkLabelObject = tkLabel.asJsonObject();
+                                            writeLocalContextLabelRightsElement(xmlw, projectUrl, tkLabelObject);
+
+                                        }
+                                    }
+                                }
+                            } else if (evv.containsKey("bc_labels")) {
+                                JsonValue bcLabels = evv.get("bc_labels");
+                                if (bcLabels.getValueType() == ValueType.ARRAY) {
+                                    for (JsonValue bcLabel : bcLabels.asJsonArray()) {
+                                        if (bcLabel.getValueType() == ValueType.OBJECT) {
+                                            JsonObject bcLabelObject = bcLabel.asJsonObject();
+                                            writeLocalContextLabelRightsElement(xmlw, projectUrl, bcLabelObject);
+
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            
+                            // No label or notice info - we'll still add a pointer to the project
+                            xmlw.writeStartElement("rights"); // <rights>
+                            xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
+                            xmlw.writeAttribute("rightsIdentifierScheme", "Local Contexts");
+                            xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
+                            xmlw.writeEndElement(); // </rights>
+                        }
+
+                    }
+
+                }
+            }
+
+        }
         xmlw.writeEndElement(); // </rightsList>
     }
+
+    private void writeLocalContextNoticeRightsElement(XMLStreamWriter xmlw, String projectUrl, JsonObject noticeObject) throws XMLStreamException {
+        xmlw.writeStartElement("rights"); // <rights>
+        xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
+        xmlw.writeAttribute("rightsIdentifierScheme", "Local Contexts");
+        xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
+        if (noticeObject.containsKey("notice_type")) {
+            String noticeType = noticeObject.getString("notice_type");
+            xmlw.writeAttribute("rightsIdentifier", noticeType);
+        }
+        String rightsValue = null;
+        String lang = null;
+        if (noticeObject.containsKey("name")) {
+            String name = noticeObject.getString("name");
+            xmlw.writeAttribute("rightsIdentifier", name);
+            rightsValue = name;
+        }
+        if (noticeObject.containsKey("notice_page")) {
+            rightsValue = rightsValue + " " + noticeObject.getString("notice_page");
+        }
+        if (noticeObject.containsKey("default_text")) {
+            rightsValue = rightsValue + ": " + noticeObject.getString("default_text");
+        }
+        if (noticeObject.containsKey("language_tag")) {
+            lang = noticeObject.getString("language_tag");
+        }
+        if (rightsValue != null) {
+            if (lang != null) {
+                xmlw.writeAttribute("xml:lang", lang);
+            }
+            xmlw.writeCharacters(rightsValue);
+        }
+        xmlw.writeEndElement(); // </rights>
+    }
+    
+    private void writeLocalContextLabelRightsElement(XMLStreamWriter xmlw, String projectUrl, JsonObject labelObject) throws XMLStreamException {
+        xmlw.writeStartElement("rights"); // <rights>
+        xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
+        xmlw.writeAttribute("rightsIdentifierScheme", "Local Contexts");
+        xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
+        String rightsValue = null;
+        String lang = null;
+        if (labelObject.containsKey("label_type")) {
+            String labelType = labelObject.getString("label_type");
+            xmlw.writeAttribute("rightsIdentifier", labelType);
+        }
+        if (labelObject.containsKey("name")) {
+            String name = labelObject.getString("name");
+            xmlw.writeAttribute("rightsIdentifier", name);
+            rightsValue = name;
+        }
+        if (labelObject.containsKey("default_text")) {
+            rightsValue = rightsValue + ": " + labelObject.getString("default_text");
+        }
+        if (labelObject.containsKey("language_tag")) {
+            lang = labelObject.getString("language_tag");
+        }
+        if (rightsValue != null) {
+            if (lang != null) {
+                xmlw.writeAttribute("xml:lang", lang);
+            }
+            xmlw.writeCharacters(rightsValue);
+        }
+        xmlw.writeEndElement(); // </rights>
+    }
+
 
     private void writeDescriptions(XMLStreamWriter xmlw, DvObject dvObject, boolean deaccessioned) throws XMLStreamException {
         // descriptions -> description with descriptionType attribute

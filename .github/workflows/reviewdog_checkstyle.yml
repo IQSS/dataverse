@@ -10,12 +10,12 @@ jobs:
         name: Checkstyle job
         steps:
             - name: Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
             - name: Run check style
               uses: nikitasavinov/checkstyle-action@master
               with:
                   fail_on_error: true
                   reporter: github-pr-review
-                  checkstyle_config: checkstyle.xml
+                  checkstyle_config: src/maven/checkstyle.xml
                   github_token: ${{ secrets.GITHUB_TOKEN }}
 

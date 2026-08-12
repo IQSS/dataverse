@@ -324,7 +324,7 @@ public class JsonParser {
         if ( obj.containsKey("domains") ) {
             List<String> domains =
                 Optional.ofNullable(obj.getJsonArray("domains"))
-                    .orElse(Json.createArrayBuilder().build())
+                    .orElse(JsonUtil.createArrayBuilder().build())
                     .getValuesAs(JsonString.class)
                     .stream()
                     .map(JsonString::getString)
@@ -460,7 +460,13 @@ public class JsonParser {
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
-            dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+            // Checking "releaseTime" to be consistent with JsonPrinter which outputs this field as 'releaseTime' with full timestamp
+            if (obj.containsKey("releaseTime")) {
+                dsv.setReleaseTime(parseTime(obj.getString("releaseTime", null)));
+            } else {
+                // Accept 'releaseDate' to remain backward compatible. This truncates to date only!
+                dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+            }
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
@@ -470,27 +476,57 @@ public class JsonParser {
 
             License license = null;
 
-            try {
-                // This method will attempt to parse the license in the format 
-                // in which it appears in our json exports, as a compound
-                // field, for ex.:
-                // "license": {
-                //    "name": "CC0 1.0",
-                //    "uri": "http://creativecommons.org/publicdomain/zero/1.0"
-                // }
-                license = parseLicense(obj.getJsonObject("license"));
-            } catch (ClassCastException cce) {
-                logger.fine("class cast exception parsing the license section (will try parsing as a string)");
-                // attempt to parse as string: 
-                // i.e. this is for backward compatibility, after the bug in #9155
-                // was fixed, with the old style of encoding the license info 
-                // in input json, for ex.: 
-                // "license" : "CC0 1.0"
-                license = parseLicense(obj.getString("license", null));
+            if (obj.containsKey("license")) {
+                try {
+                    // This method will attempt to parse the license in the format 
+                    // in which it appears in our json exports, as a compound
+                    // field, for ex.:
+                    // "license": {
+                    //    "name": "CC0 1.0",
+                    //    "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+                    // }
+                    license = parseLicense(obj.getJsonObject("license"));
+                } catch (ClassCastException cce) {
+                    logger.fine("class cast exception parsing the license section (will try parsing as a string)");
+                    // attempt to parse as string: 
+                    // i.e. this is for backward compatibility, after the bug in #9155
+                    // was fixed, with the old style of encoding the license info 
+                    // in input json, for ex.: 
+                    // "license" : "CC0 1.0"
+                    license = parseLicense(obj.getString("license", null));
+                }
             }
-            
-            //test to see if license exists in dataset type 
-            //if not set it to null - 
+
+            terms.setTermsOfUse(obj.getString("termsOfUse", null));
+            terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+            terms.setSpecialPermissions(obj.getString("specialPermissions", null));
+            terms.setRestrictions(obj.getString("restrictions", null));
+            terms.setCitationRequirements(obj.getString("citationRequirements", null));
+            terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
+            terms.setConditions(obj.getString("conditions", null));
+            terms.setDisclaimer(obj.getString("disclaimer", null));
+
+            if (license == null) {
+                // If no license was provided or the provided license was invalid,
+                // we check if terms were provided.
+                boolean termsProvided = terms.getTermsOfUse() != null
+                        || terms.getConfidentialityDeclaration() != null
+                        || terms.getSpecialPermissions() != null
+                        || terms.getRestrictions() != null
+                        || terms.getCitationRequirements() != null
+                        || terms.getDepositorRequirements() != null
+                        || terms.getConditions() != null
+                        || terms.getDisclaimer() != null;
+
+                if (!FeatureFlags.DO_NOT_ASSUME_DEFAULT_LICENSE.enabled()) {
+                    if (!termsProvided) {
+                        license = licenseService.getDefault();
+                    }
+                }
+            }
+
+            //test to see if license exists in dataset type
+            //if not set it to null -
             //only test if Dataset has a type and if it has custom available licenses
             if (dsv.getDataset() != null) {
                 DatasetType dst = dsv.getDataset().getDatasetType();
@@ -505,21 +541,9 @@ public class JsonParser {
                         license = null;
                     }
                 }
-            }           
-
-            if (license == null) {
-                terms.setLicense(license);
-                terms.setTermsOfUse(obj.getString("termsOfUse", null));
-                terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
-                terms.setSpecialPermissions(obj.getString("specialPermissions", null));
-                terms.setRestrictions(obj.getString("restrictions", null));
-                terms.setCitationRequirements(obj.getString("citationRequirements", null));
-                terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
-                terms.setConditions(obj.getString("conditions", null));
-                terms.setDisclaimer(obj.getString("disclaimer", null));
-            } else {
-                terms.setLicense(license);
             }
+
+            terms.setLicense(license);
             terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
             terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
             terms.setOriginalArchive(obj.getString("originalArchive", null));
@@ -530,6 +554,7 @@ public class JsonParser {
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
             terms.setDatasetVersion(dsv);
+
             JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
             if (metadataBlocks == null){
                 throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.metadatablocks.not.found"));
@@ -553,6 +578,9 @@ public class JsonParser {
 
     public Guestbook parseGuestbook(JsonObject obj, Guestbook gb) throws JsonParseException {
         try {
+            if (obj.containsKey("id")) {
+                gb.setId(Long.valueOf(obj.getInt("id")));
+            }
             gb.setName(obj.getString("name", null));
             gb.setEnabled(obj.getBoolean("enabled"));
             gb.setEmailRequired(obj.getBoolean("emailRequired"));
@@ -573,6 +601,9 @@ public class JsonParser {
             customQuestions.forEach(q -> {
                 JsonObject obj = q.asJsonObject();
                 CustomQuestion cq = new CustomQuestion();
+                if (obj.containsKey("id")) {
+                    cq.setId(Long.valueOf(obj.getInt("id")));
+                }
                 cq.setQuestionString(obj.getString("question"));
                 cq.setRequired(obj.getBoolean("required"));
                 cq.setDisplayOrder(obj.getInt("displayOrder"));
@@ -586,6 +617,9 @@ public class JsonParser {
                     optionValues.forEach(v -> {
                         JsonObject ov = v.asJsonObject();
                         CustomQuestionValue cqv = new CustomQuestionValue();
+                        if (ov.containsKey("id")) {
+                            cqv.setId(Long.valueOf(ov.getInt("id")));
+                        }
                         cqv.setValueString(ov.getString("value"));
                         cqv.setDisplayOrder(ov.getInt("displayOrder"));
                         cqv.setCustomQuestion(cq);
@@ -650,8 +684,15 @@ public class JsonParser {
                     throw new JsonParseException(BundleUtil.getStringFromBundle("access.api.requestAccess.failure.guestbookresponseQuestionIdNotFound", List.of(cqId.toString())));
                 } else if (cq.getQuestionType().equalsIgnoreCase("textarea")) {
                     String lineFeed = String.valueOf((char) 10);
-                    JsonArray jsonArray = answer.getJsonArray("value");
-                    List<JsonString> lines = jsonArray.getValuesAs(JsonString.class);
+                    List<JsonString> lines = new ArrayList<>();
+                    try {
+                        // Assume it's an array but fall back to string if it isn't
+                        JsonArray jsonArray = answer.getJsonArray("value");
+                        lines = jsonArray.getValuesAs(JsonString.class);
+                    } catch (Exception ex) {
+                        // if not an array try to get a string and add it to the list
+                        lines.add(answer.getJsonString("value"));
+                    }
                     response = lines.stream().map(JsonString::getString).collect(Collectors.joining(lineFeed));
                 } else if (cq.getQuestionType().equalsIgnoreCase("options")) {
                     String option = answer.getString("value");
@@ -684,12 +725,7 @@ public class JsonParser {
 
     private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {
         if (licenseNameOrUri == null){
-            boolean safeDefaultIfKeyNotFound = true;
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
-                return null;
-            } else {
-                return licenseService.getDefault();
-            }
+            return null;
         }
         License license = licenseService.getByNameOrUri(licenseNameOrUri);
         if (license == null) throw new JsonParseException("Invalid license: " + licenseNameOrUri);
@@ -698,12 +734,7 @@ public class JsonParser {
 
     private edu.harvard.iq.dataverse.license.License parseLicense(JsonObject licenseObj) throws JsonParseException {
         if (licenseObj == null){
-            boolean safeDefaultIfKeyNotFound = true;
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
-                return null;
-            } else {
-                return licenseService.getDefault();
-            }
+            return null;
         }
 
         String licenseName = licenseObj.getString("name", null);
@@ -749,6 +780,21 @@ public class JsonParser {
         }
         return fields;
     }
+    
+    public Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {
+        Map<String, String> instructionsMap = new HashMap<>();
+        JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");
+        if (instructionsJsonArray == null) {
+            return null;
+        }
+        for (JsonObject instructionJsonObject : instructionsJsonArray.getValuesAs(JsonObject.class)) {
+            instructionsMap.put(
+                    instructionJsonObject.getString("instructionField"),
+                    instructionJsonObject.getString("instructionText")
+            );
+        }
+        return instructionsMap;
+    }
 
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
         return parseMultipleFields(json, false);
@@ -756,7 +802,10 @@ public class JsonParser {
 
     public List<DatasetField> parseMultipleFields(JsonObject json, boolean replaceData) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray("fields");
-        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        List<DatasetField> fields = new ArrayList();
+        if (fieldsJson != null) {
+            fields = parseFieldsFromArray(fieldsJson, false, replaceData);
+        }
         return fields;
     }
 

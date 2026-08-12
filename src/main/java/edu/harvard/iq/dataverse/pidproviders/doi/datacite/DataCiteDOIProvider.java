@@ -59,7 +59,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         this.apiUrl = apiUrl;
         this.username = username;
         this.password = password;
-        doiDataCiteRegisterService = new DOIDataCiteRegisterService(mdsUrl, username, password);
+        doiDataCiteRegisterService = new DOIDataCiteRegisterService(mdsUrl, apiUrl, username, password);
     }
 
     @Override
@@ -349,7 +349,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
                 logger.info(identifier + "updated: " + updated );
                 return true;
             } else {
-                logger.info("No updated needed for " + identifier);
+                logger.info("No update needed for " + identifier);
                 return false; //No update needed
             }
         } catch (Exception e) {

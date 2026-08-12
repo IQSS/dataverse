@@ -16,6 +16,7 @@
             "@type": "@vocab"
         },
         "dct": "http://purl.org/dc/terms/",
+        "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
         "examples": {
             "@id": "cr:examples",
             "@type": "@json"
@@ -43,11 +44,10 @@
         "separator": "cr:separator",
         "source": "cr:source",
         "subField": "cr:subField",
-        "transform": "cr:transform",
-        "wd": "https://www.wikidata.org/wiki/"
+        "transform": "cr:transform"
     },
     "@type": "sc:Dataset",
-    "conformsTo": "http://mlcommons.org/croissant/1.0",
+    "conformsTo": "http://mlcommons.org/croissant/1.1",
     "name": "Draft Dataset",
     "url": "https://doi.org/10.5072/FK2/OO7TEP",
     "creator": [

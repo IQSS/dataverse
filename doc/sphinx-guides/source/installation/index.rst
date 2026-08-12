@@ -16,6 +16,7 @@ Installation Guide
    prerequisites
    installation-main
    config
+   big-data-support
    upgrading
    shibboleth
    oauth2

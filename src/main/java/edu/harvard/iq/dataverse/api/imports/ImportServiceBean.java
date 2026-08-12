@@ -7,20 +7,7 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
@@ -177,7 +164,7 @@ public class ImportServiceBean {
             if (validationLog!=null) {
                 validationLog.println(msg);
             }
-            return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+            return JsonUtil.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (IOException e) {
             Throwable causedBy =e.getCause();
             while (causedBy != null && causedBy.getCause()!=null) {
@@ -202,7 +189,7 @@ public class ImportServiceBean {
             validationLog.println(msg);
             e.printStackTrace();
 
-            return Json.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
+            return JsonUtil.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
 
         }
     }
@@ -573,7 +560,7 @@ public class ImportServiceBean {
             logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
-        return Json.createObjectBuilder().add("message", status);
+        return JsonUtil.createObjectBuilder().add("message", status);
     }
     
     private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
@@ -768,13 +755,22 @@ public class ImportServiceBean {
                 Object invalid = v.getRootBean();
                 String msg = "";
                 if (invalid instanceof DatasetField) {
-                    DatasetField f = (DatasetField) invalid; 
-                    
-                    msg += "Missing required field: " + f.getDatasetFieldType().getDisplayName() + ";";                  
+                    DatasetField f = (DatasetField) invalid;
+
+                    msg += "Missing required field: " + f.getDatasetFieldType().getDisplayName() + ";";
                     if (sanitize) {
-                        msg += " populated with '" + DatasetField.NA_VALUE + "'";
-                        f.setSingleValue(DatasetField.NA_VALUE);
-                        fixed = true;
+                        if (f.getDatasetFieldType().isControlledVocabulary()) {
+                            ControlledVocabularyValue naValue = datasetfieldService.findNAControlledVocabularyValue();
+                            if (naValue != null) {
+                                f.setControlledVocabularyValues(List.of(naValue));
+                                msg += " populated with '" + DatasetField.NA_VALUE + "'";
+                                fixed = true;
+                            }
+                        } else {
+                            f.setSingleValue(DatasetField.NA_VALUE);
+                            msg += " populated with '" + DatasetField.NA_VALUE + "'";
+                            fixed = true;
+                        }
                     }
                 } else if (invalid instanceof DatasetFieldValue) {
                     DatasetFieldValue fv = (DatasetFieldValue) invalid;

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.export.croissant;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import jakarta.json.Json;
@@ -16,8 +17,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
+// Validate with src/test/resources/croissant/validate.sh
 public class CroissantExportUtil {
 
     public static void exportDataset(
@@ -25,7 +29,7 @@ public class CroissantExportUtil {
             throws ExportException {
         try {
             // Start building the output format.
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             String contextString =
                     """
             {
@@ -46,6 +50,7 @@ public class CroissantExportUtil {
                       "@type": "@vocab"
                     },
                     "dct": "http://purl.org/dc/terms/",
+                    "ddi-stats": "http://rdf-vocabulary.ddialliance.org/cv/SummaryStatisticType/2.1.2/",
                     "examples": {
                     "@id": "cr:examples",
                       "@type": "@json"
@@ -73,8 +78,7 @@ public class CroissantExportUtil {
                     "separator": "cr:separator",
                     "source": "cr:source",
                     "subField": "cr:subField",
-                    "transform": "cr:transform",
-                    "wd": "https://www.wikidata.org/wiki/"
+                    "transform": "cr:transform"
                 }
             }
             """;
@@ -84,7 +88,7 @@ public class CroissantExportUtil {
             }
 
             job.add("@type", "sc:Dataset");
-            job.add("conformsTo", "http://mlcommons.org/croissant/1.0");
+            job.add("conformsTo", "http://mlcommons.org/croissant/1.1");
 
             JsonObject datasetJson = dataProvider.getDatasetJson();
 
@@ -151,12 +155,12 @@ public class CroissantExportUtil {
                 }
             }
 
-            JsonArrayBuilder distribution = Json.createArrayBuilder();
-            JsonArrayBuilder recordSet = Json.createArrayBuilder();
+            JsonArrayBuilder distribution = JsonUtil.createArrayBuilder();
+            JsonArrayBuilder recordSet = JsonUtil.createArrayBuilder();
             JsonArray datasetFileDetails = dataProvider.getDatasetFileDetails();
             for (JsonValue jsonValue : datasetFileDetails) {
 
-                JsonObjectBuilder recordSetContent = Json.createObjectBuilder();
+                JsonObjectBuilder recordSetContent = JsonUtil.createObjectBuilder();
                 recordSetContent.add("@type", "cr:RecordSet");
                 JsonObject fileDetails = jsonValue.asJsonObject();
                 /**
@@ -235,7 +239,7 @@ public class CroissantExportUtil {
                 }
 
                 distribution.add(
-                        Json.createObjectBuilder()
+                        JsonUtil.createObjectBuilder()
                                 .add("@type", "cr:FileObject")
                                 .add("@id", fileId)
                                 .add("name", filename)
@@ -261,10 +265,17 @@ public class CroissantExportUtil {
                     int varQuantity = dataTableObject.getInt("varQuantity");
                     // Unused
                     int caseQuantity = dataTableObject.getInt("caseQuantity");
+                    recordSetContent.add(
+                            "cr:annotation",
+                            JsonUtil.createObjectBuilder()
+                                    .add("@type", "cr:Field")
+                                    .add("name", fileId.toString() + "/count")
+                                    .add("value", caseQuantity)
+                                    .add("dataType", "http://www.wikidata.org/entity/Q4049983"));
                     JsonArray dataVariables = dataTableObject.getJsonArray("dataVariables");
-                    JsonArrayBuilder fieldSetArray = Json.createArrayBuilder();
+                    JsonArrayBuilder fieldSetArray = JsonUtil.createArrayBuilder();
                     for (JsonValue dataVariableValue : dataVariables) {
-                        JsonObjectBuilder fieldSetObject = Json.createObjectBuilder();
+                        JsonObjectBuilder fieldSetObject = JsonUtil.createObjectBuilder();
                         fieldSetObject.add("@type", "cr:RecordSet");
                         JsonObject dataVariableObject = dataVariableValue.asJsonObject();
                         // TODO: should this be an integer?
@@ -278,6 +289,8 @@ public class CroissantExportUtil {
                                 dataVariableObject.getString("variableFormatType");
                         String variableIntervalType =
                                 dataVariableObject.getString("variableIntervalType");
+                        JsonObject variableSummaryStatistics =
+                                dataVariableObject.getJsonObject("summaryStatistics");
                         String dataType = null;
                         /**
                          * There are only two variableFormatType types on the Dataverse side:
@@ -293,26 +306,153 @@ public class CroissantExportUtil {
                             default:
                                 break;
                         }
-                        fieldSetArray.add(
-                                Json.createObjectBuilder()
+                        JsonArrayBuilder annotationsBuilder = JsonUtil.createArrayBuilder();
+                        if (variableSummaryStatistics != null) {
+                            // Same order as upstream: MEAN, MEDN, MODE, MIN, MAX, STDEV, VALD, INVD
+                            annotationsBuilder
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    // We're aware that an @id of
+                                                    // "data/stata13-auto.dta/price/mean"
+                                                    // looks nice but won't validate if there's
+                                                    // whitespace in the filename.
+                                                    // We've asked for guidance here:
+                                                    // https://github.com/mlcommons/croissant/issues/639#issuecomment-3792179493
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    // The spec gives "mean" as an
+                                                                    // example but we'll use
+                                                                    // ArithmeticMean from
+                                                                    // https://rdf-vocabulary.ddialliance.org/ddi-cv/SummaryStatisticType/2.1.2/SummaryStatisticType.html
+                                                                    + "/ArithmeticMean")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "mean"))
+                                                    .add("dataType", "ddi-stats:7975ed0"))
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    + "/Median")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "medn"))
+                                                    .add("dataType", "ddi-stats:66851a3")
+                                                    .add("equivalentProperty", "sc:median"))
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    + "/Mode")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "mode"))
+                                                    .add("dataType", "ddi-stats:650be61"))
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    + "/Minimum")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "min"))
+                                                    .add("dataType", "ddi-stats:a1d0ec6")
+                                                    .add("equivalentProperty", "sc:minValue"))
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    + "/Maximum")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "max"))
+                                                    .add("dataType", "ddi-stats:8321e79")
+                                                    .add("equivalentProperty", "sc:maxValue"))
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    + "/StandardDeviation")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "stdev"))
+                                                    .add("dataType", "ddi-stats:690ab50"))
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    + "/ValidCases")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "vald"))
+                                                    .add("dataType", "ddi-stats:c646dd8"))
+                                    .add(
+                                            JsonUtil.createObjectBuilder()
+                                                    .add(
+                                                            "@id",
+                                                            fileId.toString()
+                                                                    + "/"
+                                                                    + variableName
+                                                                    + "/InvalidCases")
+                                                    .add(
+                                                            "value",
+                                                            variableSummaryStatistics.getString(
+                                                                    "invd"))
+                                                    .add("dataType", "ddi-stats:6459c62"));
+                        }
+                        JsonObjectBuilder fieldBuilder =
+                                JsonUtil.createObjectBuilder()
                                         .add("@type", "cr:Field")
                                         .add("name", variableName)
                                         .add("description", variableDescription)
                                         .add("dataType", dataType)
                                         .add(
                                                 "source",
-                                                Json.createObjectBuilder()
+                                                JsonUtil.createObjectBuilder()
                                                         .add("@id", variableId.toString())
                                                         .add(
                                                                 "fileObject",
-                                                                Json.createObjectBuilder()
+                                                                JsonUtil.createObjectBuilder()
                                                                         .add("@id", fileId))
                                                         .add(
                                                                 "extract",
-                                                                Json.createObjectBuilder()
+                                                                JsonUtil.createObjectBuilder()
                                                                         .add(
                                                                                 "column",
-                                                                                variableName))));
+                                                                                variableName)));
+                        JsonArray annotations = annotationsBuilder.build();
+                        if (!annotations.isEmpty()) {
+                            fieldBuilder.add("annotation", annotations);
+                        }
+                        fieldSetArray.add(fieldBuilder);
                     }
                     recordSetContent.add("field", fieldSetArray);
                     recordSet.add(recordSetContent);
@@ -425,5 +565,98 @@ public class CroissantExportUtil {
             case "contin" -> "sc:Float";
             default -> "sc:Text";
         };
+    }
+
+    // This "reviews" object is modeled off slide 10 of
+    // https://docs.google.com/presentation/d/1dQinlXazxq3XLtzUNpG2-l0MAXQQArQU9PQ20uhRYVU/edit?slide=id.g3dfc9e1fbe0_0_127#slide=id.g3dfc9e1fbe0_0_127
+    // which looks like this:
+    // "reviews": [{
+    //         "@context": "https://schema.org/",
+    //         "@type": "CriticReview",
+    //         "itemReviewed": {
+    //             "@type": "Dataset",
+    //             "name": "Dataset"
+    //         },
+    //         "author": {
+    //             "@type": "Organization",
+    //             "name": "Association of Data Reusers"
+    //         },
+    //         "positiveNotes":
+    //         {
+    //             "@type": "ItemList",
+    //             "itemListElement": [
+    //                 {
+    //                     "@type": "StructuredValue",
+    //                     "position": 1,
+    //                     "name": "The dataset is well-documented and easy to understand.",
+    //                     "value":{
+    //                         "@type": "QuantitativeValue",
+    //                         "value": 10,
+    //                         "minValue": 0,
+    //                         "maxValue": 10
+    //                     }
+    //                 },
+    //              ]
+    //     }]
+    public static JsonObjectBuilder getReviews(JsonObjectBuilder reviewsIn) {
+        JsonObjectBuilder reviewsOut = JsonUtil.createObjectBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
+        JsonArray reviews = reviewsIn.build().getJsonArray("reviews");
+
+        for (JsonValue jsonValue : reviews) {
+            JsonObject jsonObject = (JsonObject) jsonValue;
+            String title = jsonObject.getString("title");
+            JsonArray authors = jsonObject.getJsonArray("authors");
+            JsonArrayBuilder creators = JsonUtil.createArrayBuilder();
+            for (JsonValue author : authors) {
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                // TODO add @type for "Person" or "Organization"
+                job.add("name", author);
+                creators.add(job);
+            }
+            String datePublished = jsonObject.getString("datePublished");
+            JsonObjectBuilder positiveNotesObj = JsonUtil.createObjectBuilder();
+            positiveNotesObj.add("@type", "ItemList");
+            JsonArrayBuilder positiveNotesArray = JsonUtil.createArrayBuilder();
+            JsonArray rubricMetadataBlocks = jsonObject.getJsonArray("rubricMetadataBlocks");
+            for (JsonValue rmb : rubricMetadataBlocks) {
+                JsonObject rubricMetadataBlock = rmb.asJsonObject();
+                JsonArray fields = rubricMetadataBlock.getJsonArray("fields");
+                for (JsonValue fieldJsonValue : fields) {
+                    JsonObject field = fieldJsonValue.asJsonObject();
+                    String typeName = field.getString("typeName");
+                    String value = field.getString("value");
+                    // Flatten all positive notes into a single array, regardless of which block
+                    // they came from.
+                    positiveNotesArray.add(JsonUtil.createObjectBuilder()
+                            .add("@type", "StructuredValue")
+                            .add("name", typeName)
+                            .add("value", JsonUtil.createObjectBuilder()
+                                    .add("@type", StringUtils.isNumeric(value) ? "QuantitativeValue" : "QualitativeValue")
+                                    // We are aware that the value might be "Low", which is a bit strange for a positive note! We are constrained by what's allowed by https://schema.org/CriticReview
+                                    .add("value", value)));
+                }
+            }
+            positiveNotesObj.add("itemListElement", positiveNotesArray);
+            jab.add(
+                    JsonUtil.createObjectBuilder()
+                            .add("@context", "https://schema.org/")
+                            .add("@type", "CriticReview")
+                            .add(
+                                    "itemReviewed",
+                                    JsonUtil.createObjectBuilder()
+                                            // TODO don't hard code this to "Dataset"
+                                            .add("@type", "Dataset")
+                                            .add("name", title))
+                            // We use "creator" instead of "author" here for consistency with Croissant.
+                            .add("creator", creators)
+                            .add("positiveNotes", positiveNotesObj)
+                            // TODO Instead of "" consider not emitting datePublished when we don't have a date to show.
+                            .add("datePublished", datePublished != null && datePublished != "" ? datePublished : "")
+                            .add("reviewBody", jsonObject.getString("description"))
+                            .add("id", jsonObject.getJsonNumber("id")));
+        }
+        reviewsOut.add("reviews", jab);
+        return reviewsOut;
     }
 }

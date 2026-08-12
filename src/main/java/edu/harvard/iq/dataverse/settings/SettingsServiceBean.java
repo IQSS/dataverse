@@ -325,10 +325,18 @@ public class SettingsServiceBean {
         Whether to display the publish text for every published version
         */
         DatasetPublishPopupCustomTextOnAllVersions,
+        /**
+         The message added to a popup upon dataset submit for review
+         */
+        DatasetSubmitForReviewPopupCustomText,
         /*
         Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
          */
         PublishDatasetDisclaimerText,
+        /*
+        Submit for review Disclaimer text. If this setting exists user must acknowledge before a Dataset can be submitted for review
+         */
+        SubmitForReviewDatasetDisclaimerText,
         /*
         Whether Harvesting (OAI) service is enabled
         */
@@ -1209,7 +1217,7 @@ public class SettingsServiceBean {
      */
     public JsonObject listAllAsJson() {
         Set<Setting> settings = new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         
         // Iterate over all the settings and add them to the response.
         settings.forEach(setting -> {
@@ -1318,11 +1326,11 @@ public class SettingsServiceBean {
         
         static JsonObjectBuilder convertToJson(Map<Setting, Op> operationalDetails) {
             // Create a nice represenation of what happened as Json
-            JsonObjectBuilder jbo = Json.createObjectBuilder();
-            JsonArrayBuilder created = Json.createArrayBuilder();
-            JsonArrayBuilder updated = Json.createArrayBuilder();
-            JsonArrayBuilder deleted = Json.createArrayBuilder();
-            JsonArrayBuilder unchanged = Json.createArrayBuilder();
+            JsonObjectBuilder jbo = JsonUtil.createObjectBuilder();
+            JsonArrayBuilder created = JsonUtil.createArrayBuilder();
+            JsonArrayBuilder updated = JsonUtil.createArrayBuilder();
+            JsonArrayBuilder deleted = JsonUtil.createArrayBuilder();
+            JsonArrayBuilder unchanged = JsonUtil.createArrayBuilder();
             
             operationalDetails.forEach((setting, op) -> {
                 String name = convertToJsonKey(setting);
