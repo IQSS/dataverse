@@ -77,15 +77,23 @@ jobs:
         run: |
           set -euo pipefail
           
-          # 1. Ask Maven what base image tag the main app expects
-          # (Note: if the property in pom.xml is named something else, change 'base.image' below)
-          BASE_IMAGE=$(mvn help:evaluate -Dexpression=base.image -q -DforceStdout)
+          # 1. cd into the module so Maven resolves the parent POM variables perfectly
+          cd modules/container-base
+          BASE_IMAGE=$(mvn help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
+          cd ../..
+          
           echo "Target base image: $BASE_IMAGE"
           
-          # 2. Try to pull the image from the registry
+          # 2. Safety catch: If Maven still fails to evaluate it, build locally and move on
+          if [[ "$BASE_IMAGE" == *"null object"* || -z "$BASE_IMAGE" ]]; then
+            echo "⚠️ Could not evaluate the image tag cleanly. Building locally to be safe..."
+            mvn -Pct clean package -f modules/container-base/pom.xml
+            exit 0
+          fi
+          
+          # 3. Try to pull the image from the registry
           echo "Pinging registry for $BASE_IMAGE..."
           
-          # Because this is in an 'if' statement, 'set -e' won't crash the script if the pull fails
           if docker pull "$BASE_IMAGE"; then
             echo "✅ Image found and pulled successfully! Skipping local build."
           else
