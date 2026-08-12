@@ -69,7 +69,16 @@ jobs:
         run: |
           set -euo pipefail
           mvn -version
-          
+
+      # ---------------------------
+      # 1. BUILD THE BASE IMAGE FIRST
+      # ---------------------------
+      - name: Build local base image
+        run: |
+          set -euo pipefail
+          echo "Building the base image module so it is cached locally..."
+          mvn -Pct clean package -pl modules/container-base
+
       # ---------------------------
       # BUILD IMAGES (Dataverse-native)
       # ---------------------------
