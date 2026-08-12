@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
@@ -1098,14 +1099,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     public JsonObjectBuilder generateTemporaryS3UploadUrls(String globalId, String storageIdentifier, long fileSize)
             throws IOException {
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         key = getMainFileKey();
         Instant expiration = Instant.now().plus(Duration.ofMinutes(getUrlExpirationMinutes()));
 
         if (fileSize <= minPartSize) {
             response.add("url", generateTemporaryS3UploadUrl(key, Date.from(expiration)));
         } else {
-            JsonObjectBuilder urls = Json.createObjectBuilder();
+            JsonObjectBuilder urls = JsonUtil.createObjectBuilder();
 
             CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = CreateMultipartUploadRequest
                     .builder().bucket(bucketName).key(key);

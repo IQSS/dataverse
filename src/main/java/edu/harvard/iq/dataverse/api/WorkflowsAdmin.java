@@ -8,6 +8,8 @@ import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.Workflow
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
@@ -100,7 +102,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     @Operation(summary = "Lists default workflows",
             description = "Returns each workflow trigger type with its configured default workflow or null when no default is set.")
     public Response listDefaults() {
-        JsonObjectBuilder bld = Json.createObjectBuilder();
+        JsonObjectBuilder bld = JsonUtil.createObjectBuilder();
         for ( TriggerType tp : TriggerType.values() ) {
             bld.add(tp.name(), 
                     workflows.getDefaultWorkflow(tp)

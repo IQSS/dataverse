@@ -164,7 +164,7 @@ public class ImportServiceBean {
             if (validationLog!=null) {
                 validationLog.println(msg);
             }
-            return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+            return JsonUtil.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (IOException e) {
             Throwable causedBy =e.getCause();
             while (causedBy != null && causedBy.getCause()!=null) {
@@ -189,7 +189,7 @@ public class ImportServiceBean {
             validationLog.println(msg);
             e.printStackTrace();
 
-            return Json.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
+            return JsonUtil.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
 
         }
     }
@@ -560,7 +560,7 @@ public class ImportServiceBean {
             logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
-        return Json.createObjectBuilder().add("message", status);
+        return JsonUtil.createObjectBuilder().add("message", status);
     }
     
     private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
