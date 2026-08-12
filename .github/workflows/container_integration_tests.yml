@@ -77,11 +77,10 @@ jobs:
         run: |
           set -euo pipefail
           
-          # 1. cd into the module so Maven resolves the parent POM perfectly
           cd modules/container-base
           
-          # We add the 'validate' phase so Maven calculates the ${parsedVersion...} variables first
-          BASE_IMAGE=$(mvn validate help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
+          # Explicitly run the parse-version goal so the ${parsedVersion...} variables exist in memory
+          BASE_IMAGE=$(mvn build-helper:parse-version help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
           cd ../..
           
           echo "Target base image: $BASE_IMAGE"
