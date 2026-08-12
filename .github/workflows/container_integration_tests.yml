@@ -77,28 +77,15 @@ jobs:
         run: |
           set -euo pipefail
           
-          cd modules/container-base
-          
-          # Explicitly run the parse-version goal so the ${parsedVersion...} variables exist in memory
-          BASE_IMAGE=$(mvn build-helper:parse-version help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
-          cd ../..
-          
+          # 1. Ask Maven for the expected tag
+          BASE_IMAGE=$(cd modules/container-base && mvn build-helper:parse-version help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
           echo "Target base image: $BASE_IMAGE"
           
-          # 2. Safety catch: If it still has unresolved variables or is null, fallback to build
-          if [[ "$BASE_IMAGE" == *"null object"* || "$BASE_IMAGE" == *"\${"* || -z "$BASE_IMAGE" ]]; then
-            echo "⚠️ Could not evaluate the image tag cleanly. Building locally to be safe..."
-            mvn -Pct clean package -f modules/container-base/pom.xml
-            exit 0
-          fi
-          
-          # 3. Try to pull the image from the registry
-          echo "Pinging registry for $BASE_IMAGE..."
-          
+          # 2. Try to pull it. If that fails, build it.
           if docker pull "$BASE_IMAGE"; then
             echo "✅ Image found and pulled successfully! Skipping local build."
           else
-            echo "⚠️ Image not found remotely. Building it locally from modules/container-base..."
+            echo "⚠️ Pull failed (image likely doesn't exist yet). Building locally..."
             mvn -Pct clean package -f modules/container-base/pom.xml
           fi
 
