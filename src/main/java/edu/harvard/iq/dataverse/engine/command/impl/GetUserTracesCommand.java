@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.List;
@@ -52,14 +53,14 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
             throw new CommandException("Cannot get traces. User not found.", this);
         }
         Long userId = user.getId();
-        JsonObjectBuilder traces = Json.createObjectBuilder();
+        JsonObjectBuilder traces = JsonUtil.createObjectBuilder();
         if (element == null || element.equals("roleAssignments")) {
             // List<Long> roleAssignments =
             // ctxt.permissions().getDvObjectsUserHasRoleOn(user);
             List<RoleAssignment> roleAssignments = ctxt.roleAssignees().getAssignmentsFor(user.getIdentifier());
             if (roleAssignments != null && !roleAssignments.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (RoleAssignment roleAssignment : roleAssignments) {
                     jab.add(NullSafeJsonBuilder.jsonObjectBuilder()
                             .add("id", roleAssignment.getId())
@@ -77,10 +78,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("dataverseCreator")) {
             List<Dataverse> dataversesCreated = ctxt.dataverses().findByCreatorId(userId);
             if (dataversesCreated != null && !dataversesCreated.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (Dataverse dataverse : dataversesCreated) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", dataverse.getId())
                             .add("alias", dataverse.getAlias()));
                 }
@@ -92,10 +93,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("dataversePublisher")) {
             List<Dataverse> dataversesPublished = ctxt.dataverses().findByReleaseUserId(userId);
             if (dataversesPublished != null && !dataversesPublished.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (Dataverse dataverse : dataversesPublished) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", dataverse.getId())
                             .add("alias", dataverse.getAlias()));
                 }
@@ -107,10 +108,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("datasetCreator")) {
             List<Dataset> datasetsCreated = ctxt.datasets().findByCreatorId(userId);
             if (datasetsCreated != null && !datasetsCreated.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (Dataset dataset : datasetsCreated) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", dataset.getId())
                             .add("pid", dataset.getGlobalId().asString()));
                 }
@@ -122,10 +123,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("datasetPublisher")) {
             List<Dataset> datasetsPublished = ctxt.datasets().findByReleaseUserId(userId);
             if (datasetsPublished != null && !datasetsPublished.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (Dataset dataset : datasetsPublished) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", dataset.getId())
                             .add("pid", dataset.getGlobalId().asString()));
                 }
@@ -137,10 +138,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("dataFileCreator")) {
             List<DataFile> dataFilesCreated = ctxt.files().findByCreatorId(userId);
             if (dataFilesCreated != null && !dataFilesCreated.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (DataFile dataFile : dataFilesCreated) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", dataFile.getId())
                             .add("filename", dataFile.getCurrentName())
                             .add("datasetPid", dataFile.getOwner().getGlobalId().asString()));
@@ -155,10 +156,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
             // for files.
             List<DataFile> dataFilesPublished = ctxt.files().findByReleaseUserId(userId);
             if (dataFilesPublished != null && !dataFilesPublished.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (DataFile dataFile : dataFilesPublished) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", dataFile.getId())
                             .add("filename", dataFile.getCurrentName())
                             .add("datasetPid", dataFile.getOwner().getGlobalId().asString()));
@@ -172,10 +173,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
             // These are the users who have published a version (or created a draft).
             List<DatasetVersionUser> datasetVersionUsers = ctxt.datasetVersion().getDatasetVersionUsersByAuthenticatedUser(user);
             if (datasetVersionUsers != null && !datasetVersionUsers.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (DatasetVersionUser datasetVersionUser : datasetVersionUsers) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", datasetVersionUser.getId())
                             .add("dataset", datasetVersionUser.getDatasetVersion().getDataset().getGlobalId().asString())
                             .add("version", datasetVersionUser.getDatasetVersion().getSemanticVersion()));
@@ -188,10 +189,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("explicitGroups")) {
             Set<ExplicitGroup> explicitGroups = ctxt.explicitGroups().findDirectlyContainingGroups(user);
             if (explicitGroups != null && !explicitGroups.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (ExplicitGroup explicitGroup : explicitGroups) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", explicitGroup.getId())
                             .add("name", explicitGroup.getDisplayName()));
                 }
@@ -203,14 +204,14 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("guestbookEntries")) {
             List<GuestbookResponse> guestbookResponses = ctxt.responses().findByAuthenticatedUserId(user);
             if (guestbookResponses != null && !guestbookResponses.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 // The feeling is that this is too much detail for the call for all elements so
                 // we only show a count in that case.
                 if (element != null) {
-                    JsonArrayBuilder jab = Json.createArrayBuilder();
+                    JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                     for (GuestbookResponse guestbookResponse : guestbookResponses) {
                         try {
-                            JsonObjectBuilder gbe = Json.createObjectBuilder()
+                            JsonObjectBuilder gbe = JsonUtil.createObjectBuilder()
                                     .add("id", guestbookResponse.getId())
                                     .add("eventType", guestbookResponse.getEventType())
                                     .add("filename", guestbookResponse.getDataFile().getCurrentName())
@@ -238,10 +239,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         if (element == null || element.equals("savedSearches")) {
             List<SavedSearch> savedSearchs = ctxt.savedSearches().findByAuthenticatedUser(user);
             if (savedSearchs != null && !savedSearchs.isEmpty()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
-                JsonArrayBuilder jab = Json.createArrayBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+                JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                 for (SavedSearch savedSearch : savedSearchs) {
-                    jab.add(Json.createObjectBuilder()
+                    jab.add(JsonUtil.createObjectBuilder()
                             .add("id", savedSearch.getId()));
                 }
                 job.add("count", savedSearchs.size());
@@ -249,8 +250,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                 traces.add("savedSearches", job);
             }
         }
-        JsonObjectBuilder result = Json.createObjectBuilder();
-        result.add("user", Json.createObjectBuilder()
+        JsonObjectBuilder result = JsonUtil.createObjectBuilder();
+        result.add("user", JsonUtil.createObjectBuilder()
                 .add("identifier", user.getIdentifier())
                 .add("name", user.getName()));
         result.add("traces", traces);
