@@ -10,6 +10,10 @@ package edu.harvard.iq.dataverse.util.shapefile;
 //import edu.harvard.iq.dataverse.util.ZipMaker;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import static edu.harvard.iq.dataverse.util.ShapefileHandler.SHP_XML_EXTENSION;
+import static edu.harvard.iq.dataverse.util.ShapefileHandler.SKIP_PREFIX_1;
+import static edu.harvard.iq.dataverse.util.ShapefileHandler.SKIP_PREFIX_2;
+import static edu.harvard.iq.dataverse.util.ShapefileHandler.SKIP_PREFIX_3;
+import static edu.harvard.iq.dataverse.util.ShapefileHandler.SKIP_SUFFIX_1;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,15 +59,6 @@ public class ShapefileHandlerTest {
         msg("------------------------------------------------------------");
     }
 
-    
-    
-     private File createBlankFile(String filename) throws IOException {
-        if (filename == null){
-            return null;
-        }
-        return Files.createFile(tempFolder.resolve(filename)).toFile();
-    }
-
     private FileInputStream createZipReturnFilestream(List<String> file_names, String zipfile_name) throws IOException{
 
         File zip_file_obj = this.createAndZipFiles(file_names, zipfile_name);
@@ -88,30 +83,20 @@ public class ShapefileHandlerTest {
             return null;
         }
         
-        // Create blank files based on a list of file names
-        //
-        Collection<File> fileCollection = new ArrayList<>();
-        for (String fname : file_names) {
-           File file_obj = this.createBlankFile(fname);
-           fileCollection.add(file_obj);
-           //msg("File created: " + file_obj.getName());           
-        }
-        
+        // Create blank zip entries based on a list of file names
+
         Path zip_file_obj = this.tempFolder.resolve(zipfile_name);
         try (ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj.toFile()))) {
 
-            // Iterate through File objects and add them to the ZipOutputStream
-            for (File file_obj : fileCollection) {
-                this.addToZipFile(file_obj.getName(), file_obj, zip_stream);
+            // Iterate through file names and add them to the ZipOutputStream
+            for (String fname : file_names) {
+                ZipEntry zipEntry = new ZipEntry(fname);
+                zip_stream.putNextEntry(zipEntry);
+                zip_stream.write(new byte[]{0});
+                zip_stream.closeEntry();
             }
         }
-        /* -----------------------------------
-        Cleanup: Delete single files that were added to .zip
-        ----------------------------------- */
-        for (File file_obj : fileCollection) {
-             file_obj.delete();
-        }
-        
+
         return zip_file_obj.toFile();
         
     } // end createAndZipFiles
@@ -236,12 +221,17 @@ public class ShapefileHandlerTest {
     
     
     @Test
+    // Testing the handling of a shape set with "extra files" - files that that 
+    // do not belong to any of the shape sets inside. Generally Dataverse will 
+    // unzip and add them as standalone files. Some files however should be 
+    // skipped, such as files with certain system prefixes. 
     public void testZippedShapefileWithExtraFiles() throws IOException{
         msgt("(3) testZippedShapefileWithExtraFiles");
                 
         // Create files and put them in a .zip
-        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt");
-        File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
+        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt",
+                SKIP_PREFIX_1 + "extra", SKIP_PREFIX_2 + "extra", SKIP_PREFIX_3 + "/extra.txt", "extra" + SKIP_SUFFIX_1);
+        File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip"); 
 
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
@@ -273,6 +263,8 @@ public class ShapefileHandlerTest {
         rezipped_filenames.addAll(Arrays.asList(unzip2Folder.list()));
         
         msg("rezipped_filenames: " + rezipped_filenames);
+        // It is just as important to check that the expected files have been processed,
+        // as it is to confirm that the unwanted files have been skipped:
         List<String> expected_filenames = Arrays.asList("shape1.zip", "scratch-for-unzip-12345", "shape1.pdf", "README.md", "shape_notes.txt");
         
         assertTrue(expected_filenames.containsAll(rezipped_filenames), "verify that all files exist");

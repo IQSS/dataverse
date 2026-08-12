@@ -111,10 +111,19 @@ public class GuestbookResponseServiceBean {
     }
 
     public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
+        return findAllByGuestbookId(guestbookId, null, null);
+    }
+    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId, Integer offset, Integer limit) {
+        if (guestbookId != null) {
+            TypedQuery<GuestbookResponse> query = em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class);
+            if (offset != null) {
+                query.setFirstResult(offset);
+            }
+            if (limit != null) {
+                query.setMaxResults(limit);
+            }
 
-        if (guestbookId == null) {
-        } else {
-            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
+            return query.getResultList();
         }
         return null;
     }

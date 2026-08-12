@@ -1,0 +1,285 @@
+name: Container Integration Tests Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+
+concurrency:
+  group: "container-integration-tests-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  main-integration-tests-workflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+        contents: read
+        checks: write
+        pull-requests: write
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # ---------------------------
+      # VERIFY DOCKER
+      # ---------------------------
+      - name: Verify Docker
+        run: |
+          set -euo pipefail
+          docker version
+          
+      # ---------------------------
+      # SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Verify Maven
+        run: |
+          set -euo pipefail
+          mvn -version
+          
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      - name: Build Dataverse containers via Maven
+        run: |
+          set -euo pipefail
+          mvn -Pct -T 1C package
+          
+      # ---------------------------
+      # START CONTAINERS (BACKGROUND)
+      # ---------------------------
+      - name: Start Dataverse stack
+        run: |
+          set -euo pipefail
+          mvn -Pct docker:start \
+            -Ddataverse.feature.index-harvested-metadata-source=true \
+            -Ddataverse.oai.server.maxidentifiers=2 \
+            -Ddataverse.oai.server.maxrecords=2
+          
+      # ---------------------------
+      # WAIT FOR API READINESS
+      # ---------------------------
+      - name: Wait for Dataverse API readiness
+        run: |
+          set -euo pipefail
+          URL="http://localhost:8080/api/info/version"
+          MAX_ATTEMPTS=10
+          SLEEP_TIME=15
+          echo "Waiting for Dataverse readiness..."
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $attempt..."
+            RESPONSE=$(curl -s --max-time 15 "$URL" || true)
+            STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "NOT_READY")
+            if [ "$STATUS" = "OK" ]; then
+              echo "Dataverse endpoint is READY."
+              echo "Dataverse waiting for full readiness. Waiting 30 more seconds."
+              sleep 30
+              echo "Response: $RESPONSE"
+              exit 0
+            fi
+            echo "Not ready. Sleeping ${SLEEP_TIME}s..."
+            sleep $SLEEP_TIME
+            if [ $SLEEP_TIME -lt 60 ]; then
+              SLEEP_TIME=$((SLEEP_TIME * 2))
+              if [ $SLEEP_TIME -gt 60 ]; then
+                SLEEP_TIME=60
+              fi
+            fi
+          done
+          echo "Dataverse failed to become ready."
+          docker ps
+          CONTAINERS="$(docker ps -aq)"
+          if [ -n "$CONTAINERS" ]; then
+            for cid in $CONTAINERS; do
+              echo "===== Logs for container $cid ====="
+              docker logs "$cid" || true
+            done
+          else
+            echo "No running containers to show logs for."
+          fi
+          exit 1
+          
+      # ---------------------------
+      # MAP LOCALSTACK TO LOCALHOST
+      # ---------------------------
+      - name: Map localstack to localhost for Maven tests
+        run: echo "127.0.0.1 localstack" | sudo tee -a /etc/hosts
+
+      # ---------------------------
+      # CONFIGURE DATAVERSE FOR TESTS
+      # ---------------------------
+      - name: Configure Dataverse API Settings
+        run: |
+          set -euo pipefail
+          
+          echo "Setting API Database Settings via internal container curl..."
+          
+          # We define the settings in an array
+          declare -A settings=(
+            [":BuiltinUsersKey"]="burrito"
+            [":ProvCollectionEnabled"]="true"
+            [":AllowApiTokenLookupViaApi"]="true"
+            [":AllowSignUp"]="true"
+          )
+          # We run curl INSIDE the container so the source IP is 127.0.0.1
+          for key in "${!settings[@]}"; do
+            echo "Setting $key..."
+            docker exec dev_dataverse curl --fail-with-body -sS -X PUT -d "${settings[$key]}" "http://localhost:8080/api/admin/settings/$key"
+            echo ""
+          done
+        
+      # ---------------------------
+      # PRE-TEST INJECTIONS
+      # ---------------------------
+      - name: Put SUSHI config file in place
+        run: |
+          set -euo pipefail
+          
+          SOURCE_FILE="${{ github.workspace }}/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json"
+          
+          echo "Injecting local file into container..."
+          # This reads the local file and writes it inside the container using standard input
+          docker exec -i dev_dataverse sh -c "cat > /tmp/sushi_sample_logs.json" < "$SOURCE_FILE"
+          
+          # Verify the content is actually there and has size
+          docker exec dev_dataverse ls -l /tmp/sushi_sample_logs.json
+          docker exec dev_dataverse head -n 5 /tmp/sushi_sample_logs.json
+      
+      # ---------------------------
+      # RUN MAVEN INTEGRATION TESTS
+      # ---------------------------
+      - name: Run Maven Integration Tests
+        env:
+          DVAPIKEY: "burrito"
+          DV_APIKEY: "burrito"
+          DV_API_KEY: "burrito"
+        run: |
+          set -euo pipefail
+          TEST_SUITE=$(cat tests/integration-tests.txt)
+          
+          echo "Running suite: $TEST_SUITE"
+          
+          mvn test \
+            -Dtest="$TEST_SUITE" \
+            -Dmaven.test.failure.ignore=true \
+            -Ddataverse.test.baseurl=http://localhost:8080 \
+            -DcompilerArgument=-Xlint:unchecked
+        
+      # ---------------------------
+      # UPLOAD SUREFIRE/FAILSAFE REPORTS
+      # ---------------------------
+      - name: Upload Test Failure Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maven-test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 14
+
+      # ---------------------------
+      # PUBLISH TEST DASHBOARD IN GITHUB PR
+      # ---------------------------
+      - name: Publish Test Results Dashboard
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            target/failsafe-reports/TEST-*.xml
+            target/surefire-reports/TEST-*.xml
+      
+      # ---------------------------
+      # FAIL WORKFLOW IF TESTS FAILED
+      # ---------------------------
+      - name: Check for Test Failures
+        if: always()
+        run: |
+          echo "Checking Surefire/Failsafe reports for failures..."
+          if grep -q "<failure" target/surefire-reports/*.xml target/failsafe-reports/*.xml 2>/dev/null; then
+            echo "Tests failed! Failing the workflow."
+            exit 1
+          fi
+          echo "All tests passed."
+
+      # ---------------------------
+      # COLLECT DOCKER LOGS (ALWAYS, WITH MAPPING)
+      # ---------------------------
+      - name: Collect Docker logs (mapped)
+        if: always()
+        run: |
+          mkdir -p docker-logs
+          echo "Gathering container metadata..."
+          docker ps -a --format '{{.Names}}|{{.Image}}|{{.Status}}' > docker-logs/container-summary.txt
+          while IFS='|' read -r name image status; do
+            # Create a readable label
+            label="$name"
+            case "$name" in
+              *dataverse*)
+                label="dataverse-app"
+                ;;
+              *postgres*)
+                label="postgres-db"
+                ;;
+              *solr*)
+                label="solr-index"
+                ;;
+              *localstack*)
+                label="localstack-s3"
+                ;;
+            esac
+            echo "Collecting logs for $name ($label)"
+            {
+              echo "===== CONTAINER: $name ====="
+              echo "Label: $label"
+              echo "Image: $image"
+              echo "Status: $status"
+              echo ""
+              echo "===== LOGS ====="
+              docker logs --timestamps "$name" 2>&1 || true
+            } > "docker-logs/${label}__${name}.log"
+          done < docker-logs/container-summary.txt
+          
+      # ---------------------------
+      # UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Upload Docker logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-logs
+          path: docker-logs/
+          retention-days: 14

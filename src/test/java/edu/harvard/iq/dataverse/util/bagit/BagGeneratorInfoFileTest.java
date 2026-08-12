@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.bagit;
 
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -34,7 +35,7 @@ public class BagGeneratorInfoFileTest {
         MockitoAnnotations.openMocks(this);
         
         // Create base test aggregation builder with required fields
-        testAggregationBuilder = Json.createObjectBuilder();
+        testAggregationBuilder = JsonUtil.createObjectBuilder();
         testAggregationBuilder.add("@id", "doi:10.5072/FK2/TEST123");
         testAggregationBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), "Test Dataset");
         testAggregationBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(), "Test Catalog");
@@ -46,7 +47,7 @@ public class BagGeneratorInfoFileTest {
     private void initializeBagGenerator() throws Exception {
         JsonObject testAggregation = testAggregationBuilder.build();
         
-        JsonObjectBuilder oremapJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder oremapJsonBuilder = JsonUtil.createObjectBuilder();
         oremapJsonBuilder.add(JsonLDTerm.ore("describes").getLabel(), testAggregation);
         JsonObject oremapObject = oremapJsonBuilder.build();
         // Mock the OREMap.getOREMap() method to return the built JSON
@@ -71,7 +72,7 @@ public class BagGeneratorInfoFileTest {
         when(mockOreMap.getContactNameTerm()).thenReturn(contactNameTerm);
         when(mockOreMap.getContactEmailTerm()).thenReturn(contactEmailTerm);
 
-        JsonObjectBuilder contactBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder contactBuilder = JsonUtil.createObjectBuilder();
         contactBuilder.add(contactNameTerm.getLabel(), "John Doe");
         contactBuilder.add(contactEmailTerm.getLabel(), "john.doe@example.com");
         testAggregationBuilder.add(contactTerm.getLabel(), contactBuilder);
@@ -98,17 +99,17 @@ public class BagGeneratorInfoFileTest {
         when(mockOreMap.getContactNameTerm()).thenReturn(contactNameTerm);
         when(mockOreMap.getContactEmailTerm()).thenReturn(contactEmailTerm);
 
-        JsonArrayBuilder contactsBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder contactsBuilder = JsonUtil.createArrayBuilder();
         
-        JsonObjectBuilder contact1 = Json.createObjectBuilder();
+        JsonObjectBuilder contact1 = JsonUtil.createObjectBuilder();
         contact1.add(contactNameTerm.getLabel(), "John Doe");
         contact1.add(contactEmailTerm.getLabel(), "john.doe@example.com");
         
-        JsonObjectBuilder contact2 = Json.createObjectBuilder();
+        JsonObjectBuilder contact2 = JsonUtil.createObjectBuilder();
         contact2.add(contactNameTerm.getLabel(), "Jane Smith");
         contact2.add(contactEmailTerm.getLabel(), "jane.smith@example.com");
         
-        JsonObjectBuilder contact3 = Json.createObjectBuilder();
+        JsonObjectBuilder contact3 = JsonUtil.createObjectBuilder();
         contact3.add(contactNameTerm.getLabel(), "Bob Johnson");
         contact3.add(contactEmailTerm.getLabel(), "bob.johnson@example.com");
         
@@ -142,7 +143,7 @@ public class BagGeneratorInfoFileTest {
         when(mockOreMap.getDescriptionTerm()).thenReturn(descriptionTerm);
         when(mockOreMap.getDescriptionTextTerm()).thenReturn(descriptionTextTerm);
 
-        JsonObjectBuilder descriptionBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder descriptionBuilder = JsonUtil.createObjectBuilder();
         descriptionBuilder.add(descriptionTextTerm.getLabel(), "This is a test dataset description.");
         testAggregationBuilder.add(descriptionTerm.getLabel(), descriptionBuilder);
 
@@ -165,15 +166,15 @@ public class BagGeneratorInfoFileTest {
         when(mockOreMap.getDescriptionTerm()).thenReturn(descriptionTerm);
         when(mockOreMap.getDescriptionTextTerm()).thenReturn(descriptionTextTerm);
 
-        JsonArrayBuilder descriptionsBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder descriptionsBuilder = JsonUtil.createArrayBuilder();
         
-        JsonObjectBuilder desc1 = Json.createObjectBuilder();
+        JsonObjectBuilder desc1 = JsonUtil.createObjectBuilder();
         desc1.add(descriptionTextTerm.getLabel(), "First description of the dataset.");
         
-        JsonObjectBuilder desc2 = Json.createObjectBuilder();
+        JsonObjectBuilder desc2 = JsonUtil.createObjectBuilder();
         desc2.add(descriptionTextTerm.getLabel(), "Second description with additional details.");
         
-        JsonObjectBuilder desc3 = Json.createObjectBuilder();
+        JsonObjectBuilder desc3 = JsonUtil.createObjectBuilder();
         desc3.add(descriptionTextTerm.getLabel(), "Third description for completeness.");
         
         descriptionsBuilder.add(desc1);
@@ -206,11 +207,11 @@ public class BagGeneratorInfoFileTest {
         when(mockOreMap.getDescriptionTerm()).thenReturn(descriptionTerm);
         when(mockOreMap.getDescriptionTextTerm()).thenReturn(descriptionTextTerm);
 
-        JsonObjectBuilder contactBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder contactBuilder = JsonUtil.createObjectBuilder();
         contactBuilder.add(contactNameTerm.getLabel(), "Test Contact");
         testAggregationBuilder.add(contactTerm.getLabel(), contactBuilder);
 
-        JsonObjectBuilder descriptionBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder descriptionBuilder = JsonUtil.createObjectBuilder();
         descriptionBuilder.add(descriptionTextTerm.getLabel(), "Test description");
         testAggregationBuilder.add(descriptionTerm.getLabel(), descriptionBuilder);
 

@@ -63,6 +63,11 @@ public class FilesIT {
         removePublicInstall.then().assertThat().statusCode(200);
     }
 
+    @AfterEach
+    public void resetClass() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+    }
+
     @AfterAll
     public static void tearDownClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
@@ -125,10 +130,10 @@ public class FilesIT {
         
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "my description")
                 .add("directoryLabel", "data/subdir1")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
 
@@ -381,10 +386,10 @@ public class FilesIT {
         // -------------------------
         msg("Replace file - 1st time");
         String pathToFile2 = "scripts/search/data/replace_test/004.txt";
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "My Text File")
                 .add("directoryLabel", "data/subdir1")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
         
@@ -442,7 +447,7 @@ public class FilesIT {
         // -------------------------
         msg("Replace file (again)");
         String pathToFile3 = "scripts/search/data/replace_test/005.txt";
-        JsonObjectBuilder json2 = Json.createObjectBuilder();
+        JsonObjectBuilder json2 = JsonUtil.createObjectBuilder();
         Response replaceResp2 = UtilIT.replaceFile(newDataFileId.toString(), pathToFile3, json2.build(), apiToken);
         
         msgt("2nd replace: " + replaceResp2.prettyPrint());
@@ -554,13 +559,13 @@ public class FilesIT {
         // -------------------------
         msg("Replace file - 1st time");
         String pathToFile2 = "scripts/search/data/tabular/120745.dta";
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("forceReplace", true)
                 .add("description", "tiny Stata file")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 )
-                .add("dataFileTags", Json.createArrayBuilder()
+                .add("dataFileTags", JsonUtil.createArrayBuilder()
                         .add("Survey")
                 );
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
@@ -643,10 +648,10 @@ public class FilesIT {
         // -------------------------
         msg("Replace file - 1st time");
         String pathToFile2 = "scripts/search/data/replace_test/growing_file/2016-01/data.tsv";
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("forceReplace", true)
                 .add("description", "not an image")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
         
@@ -1094,9 +1099,9 @@ public class FilesIT {
         msg("Add initial file");
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "my description")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                     .add("Data")
                     )
                 .add("restrict", "true");
@@ -1845,7 +1850,7 @@ public class FilesIT {
 
         // Test FileMetadata update
 
-        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
                 .add("label", "new_name.png");
         UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken).then().statusCode(OK.getStatusCode());
 
@@ -1949,7 +1954,7 @@ public class FilesIT {
 
         // Update the file metadata
         String newFileNameFirstUpdate = "trees_2.png";
-        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
                 .add("label", newFileNameFirstUpdate);
         Response updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
         updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
@@ -1971,7 +1976,7 @@ public class FilesIT {
 
         // Update the file metadata once again
         String newFileNameSecondUpdate = "trees_3.png";
-        updateFileMetadata = Json.createObjectBuilder()
+        updateFileMetadata = JsonUtil.createObjectBuilder()
                 .add("label", newFileNameSecondUpdate);
         updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
         updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
@@ -2080,7 +2085,7 @@ public class FilesIT {
 
         // Update the file metadata
         String newFileNameThirdUpdate = "trees_4.png";
-        updateFileMetadata = Json.createObjectBuilder()
+        updateFileMetadata = JsonUtil.createObjectBuilder()
                 .add("label", newFileNameThirdUpdate);
         updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
         updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
@@ -2291,7 +2296,7 @@ public class FilesIT {
         String extractedShapeName = "boston_public_schools_2012_z1l.zip"; 
         String extractedShapeType = "application/zipped-shapefile";
 
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", suppliedDescription);
 
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
@@ -2342,7 +2347,7 @@ public class FilesIT {
         String description = "test file 1";
         String folderName = "subfolder";
 
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", description)
                 .add("directoryLabel", folderName);
 
@@ -2695,10 +2700,10 @@ public class FilesIT {
 
         // Upload file 1
         String pathToFile1 = "src/main/webapp/resources/images/dataverseproject.png";
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder()
                 .add("description", "my description1")
                 .add("directoryLabel", "data/subdir1")
-                .add("categories", Json.createArrayBuilder().add("Data"));
+                .add("categories", JsonUtil.createArrayBuilder().add("Data"));
         Response uploadResponse1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json1.build(), apiToken);
         uploadResponse1.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2722,10 +2727,10 @@ public class FilesIT {
 
         // Upload file 2
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
-        JsonObjectBuilder json2 = Json.createObjectBuilder()
+        JsonObjectBuilder json2 = JsonUtil.createObjectBuilder()
                 .add("description", "my description2")
                 .add("directoryLabel", "data/subdir1")
-                .add("categories", Json.createArrayBuilder().add("Data"));
+                .add("categories", JsonUtil.createArrayBuilder().add("Data"));
         Response uploadResponse2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json2.build(), apiToken);
         uploadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2733,10 +2738,10 @@ public class FilesIT {
 
         // Upload file 3
         String pathToFile3 = "src/main/webapp/resources/images/orcid_16x16.png";
-        JsonObjectBuilder json3 = Json.createObjectBuilder()
+        JsonObjectBuilder json3 = JsonUtil.createObjectBuilder()
                 .add("description", "my description3")
                 .add("directoryLabel", "data/subdir1")
-                .add("categories", Json.createArrayBuilder().add("Data"));
+                .add("categories", JsonUtil.createArrayBuilder().add("Data"));
         Response uploadResponse3 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json3.build(), apiToken);
         uploadResponse3.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2890,7 +2895,7 @@ public class FilesIT {
 
         // Upload test file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Publish collection and dataset
@@ -2933,7 +2938,7 @@ public class FilesIT {
 
         // Upload non-tabular file
         String pathToNonTabularTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadNonTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToNonTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadNonTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToNonTabularTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadNonTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Assert that getting data tables for non-tabular file fails
@@ -2943,7 +2948,7 @@ public class FilesIT {
 
         // Upload tabular file
         String pathToTabularTestFile = "src/test/resources/tab/test.tab";
-        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Ensure tabular file is ingested
@@ -2987,7 +2992,7 @@ public class FilesIT {
 
         // Upload test file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -3055,7 +3060,7 @@ public class FilesIT {
 
         // Upload tabular file
         String pathToTabularTestFile = "src/test/resources/tab/test.tab";
-        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -3099,7 +3104,7 @@ public class FilesIT {
 
         // Should receive an error when calling the endpoint for a non-tabular file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String nonTabularFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -3139,7 +3144,7 @@ public class FilesIT {
 
         // Upload test file
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -3219,7 +3224,7 @@ public class FilesIT {
 
         // Upload a small file: 
         
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         
         // Check the recorded storage use: 
@@ -3234,7 +3239,7 @@ public class FilesIT {
         // Attempt to upload the second file - this should get us over the quota, 
         // so it should be rejected:
         
-        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         // We should get this error message made up from 2 Bundle strings:
         expectedApiMessage = BundleUtil.getStringFromBundle("file.addreplace.error.ingest_create_file_err");
@@ -3266,7 +3271,7 @@ public class FilesIT {
         
         // And try to upload the larger file again:
         
-        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, JsonUtil.createObjectBuilder().build(), apiToken);
         // ... should work this time around:
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
             
@@ -3343,7 +3348,7 @@ public class FilesIT {
 
         // Upload a small file: 
         
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         
         // Check the recorded storage use: 
@@ -3358,7 +3363,7 @@ public class FilesIT {
         // Attempt to upload the second file - this should get us over the quota, 
         // so it should be rejected:
         
-        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         // We should get this error message made up from 2 Bundle strings:
         expectedApiMessage = BundleUtil.getStringFromBundle("file.addreplace.error.ingest_create_file_err");
@@ -3390,7 +3395,7 @@ public class FilesIT {
         
         // And try to upload the larger file again:
         
-        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, JsonUtil.createObjectBuilder().build(), apiToken);
         // ... should work this time around:
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
             
@@ -3548,7 +3553,7 @@ public class FilesIT {
         String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadFile.then().assertThat().statusCode(OK.getStatusCode());
 
         Integer fileId = JsonPath.from(uploadFile.body().asString()).getInt("data.files[0].dataFile.id");
@@ -3769,11 +3774,11 @@ public class FilesIT {
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         // Upload a tab file
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my description")
                 .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "data/subdir1")
                 .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "prov Free Form")
-                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder().add("Data"));
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, JsonUtil.createArrayBuilder().add("Data"));
         String pathToTestFile = "src/test/resources/tab/test.tab";
         Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, json.build(), apiToken);
         uploadFile.prettyPrint();
@@ -3782,8 +3787,8 @@ public class FilesIT {
         assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToTestFile);
 
         // Can't add tags until after the file is ingested and determined to be a tabular file
-        JsonObjectBuilder updateFileJson = Json.createObjectBuilder()
-                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder().add("Survey"));
+        JsonObjectBuilder updateFileJson = JsonUtil.createObjectBuilder()
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, JsonUtil.createArrayBuilder().add("Survey"));
         Response updateFileResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), updateFileJson.build().toString(), apiToken);
         updateFileResponse.prettyPrint();
 
@@ -3810,13 +3815,13 @@ public class FilesIT {
         String lastUpdateTime = String.valueOf(JsonPath.from(getFile.body().asString()).getString("data.dataFile.lastUpdateTime"));
 
         // first user updates which creates a new DRAFT version
-        json = Json.createObjectBuilder()
+        json = JsonUtil.createObjectBuilder()
                 .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "")
                 .add(OptionalFileParams.LABEL_ATTR_NAME, "test.tab")
                 .add(OptionalFileParams.DIRECTORY_LABEL_ATTR_NAME, "")
                 .add(OptionalFileParams.PROVENANCE_FREEFORM_ATTR_NAME, "")
-                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, Json.createArrayBuilder())
-                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, Json.createArrayBuilder());
+                .add(OptionalFileParams.CATEGORIES_ATTR_NAME, JsonUtil.createArrayBuilder())
+                .add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, JsonUtil.createArrayBuilder());
         Response updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
         updateResponse.prettyPrint();
         updateResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -3837,7 +3842,7 @@ public class FilesIT {
         assertTrue(!latestUpdateTime.equalsIgnoreCase(lastUpdateTime));
 
         // Second user updates the base version which should fail since it's already been updated
-        json = Json.createObjectBuilder()
+        json = JsonUtil.createObjectBuilder()
                 .add(OptionalFileParams.DESCRIPTION_ATTR_NAME, "my new description");
         updateResponse = UtilIT.updateFileMetadata(String.valueOf(fileId), json.build().toString(), apiToken, lastUpdateTime);
         updateResponse.prettyPrint();
@@ -3867,6 +3872,73 @@ public class FilesIT {
     }
 
     @Test
+    public void testDownloadFileWithParentGuestbookResponse() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithParentGuestbookResponse");
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
+        publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+
+        // Create user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+
+        // Create Dataset with parent dataverse guestbook
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String directoryLabel = "data/store/" + persistentId.substring(4);
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+        // Create a Parent Guestbook and assign to this dataset
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, persistentId, ownerApiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish dataset
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        // Generate a guestbook response for the parent guestbook
+        String guestbookResponse = UtilIT.generateGuestbookResponse(parentGuestbook);
+        guestbookResponse = guestbookResponse.replace("\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+        Response downloadResponse = UtilIT.postDownloadFile(fileId1, guestbookResponse);
+        downloadResponse.prettyPrint();
+        String signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // Download the file using the signed url
+        Response signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(parentGuestbook.getId(), 0, 100, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        int responseListSize = guestbookListResponses.jsonPath().getList("data.responses").size();
+        int totalCountFromJson = guestbookListResponses.jsonPath().getInt("data.pagination.totalResponses");
+        assertEquals(responseListSize, totalCountFromJson);
+    }
+
+    @Test
     public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponse");
         // Create superuser
@@ -3876,8 +3948,16 @@ public class FilesIT {
         String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
 
+        // Create Parent Dataverse
+        String parentDataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create a Parent Guestbook
+        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        UtilIT.moveDataverse(dataverseAlias, parentDataverseAlias, null, ownerApiToken);
 
         // Create user with no permission
         createUserResponse = UtilIT.createRandomUser();
@@ -3898,6 +3978,7 @@ public class FilesIT {
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String directoryLabel = "data/store/" + persistentId.substring(4);
         Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
         getDatasetMetadata.then().assertThat().statusCode(200);
 
@@ -3912,24 +3993,35 @@ public class FilesIT {
         getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken);
         getGuestbooksResponse.then().assertThat().statusCode(200);
         assertEquals(1, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
+        // Get the list of Guestbooks including Parent Guestbook
+        getGuestbooksResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, false, Boolean.TRUE);
+        getGuestbooksResponse.then().assertThat().statusCode(200);
+        assertEquals(2, getGuestbooksResponse.getBody().jsonPath().getList("data").size());
 
         // Upload files
-        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "my description1").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
         Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        JsonObjectBuilder json2 = Json.createObjectBuilder().add("description", "my description2").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
-        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json1.build(), ownerApiToken);
+        JsonObjectBuilder json2 = JsonUtil.createObjectBuilder().add("description", "my description2").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json2.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        JsonObjectBuilder json3 = Json.createObjectBuilder().add("description", "my description3").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
-        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json1.build(), ownerApiToken);
+        JsonObjectBuilder json3 = JsonUtil.createObjectBuilder().add("description", "my description3").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/cc0.png", json3.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         Integer fileId3 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        JsonObjectBuilder json4 = Json.createObjectBuilder().add("description", "my description4").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
-        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json1.build(), ownerApiToken);
+
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+        JsonObjectBuilder json4 = JsonUtil.createObjectBuilder().add("description", "my description4").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/Robot-Icon_2.png", json4.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        uploadResponse.prettyPrint();
         Integer fileId4 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
 
         // Restrict files
         Response restrictResponse = UtilIT.restrictFile(fileId1.toString(), true, ownerApiToken);
@@ -3983,6 +4075,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
         String guestbookResponseForGuest = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
         // With GuestbookResponse. Guest user doesn't have the required Name, etc. So we will add those to the Guestbook Response
         downloadResponse = UtilIT.postDownloadFile(fileId4, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
@@ -4008,6 +4101,12 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
 
+        // Verify that the Guestbook Response is persisted
+        Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
+        guestbookResponseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        assertTrue(guestbookResponseResponse.prettyPrint().contains("What color car do you drive,Yellow"));
+
         // Download the file using the signed url
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
@@ -4024,6 +4123,14 @@ public class FilesIT {
         String jsonBody = "{\"fileIds\":[" + fileId1 + "," + fileId2+ "," + fileId3 +"], " + guestbookResponse.substring(1);
         downloadResponse = UtilIT.postDownloadDatafiles(jsonBody, apiToken);
         assertEquals(OK.getStatusCode(), downloadResponse.getStatusCode());
+
+        // Download all files in dataset with guestbook response using dataset persistentId
+        downloadResponse = UtilIT.downloadAllDatasetFilesWithGuestbookResponse(persistentId, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+        signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        signedUrlResponse = get(signedUrl);
+        assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(new Integer[]{fileId1, fileId2, fileId3}, apiToken, guestbookResponse);
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
@@ -4044,15 +4151,56 @@ public class FilesIT {
         Response guestbookResponses = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
         assertTrue(guestbookResponses.prettyPrint().contains("My Name," + user2Email + ",My Institution,My Position"));
 
-        // Get Signed Download Url with guestbook response using persistentId
-        // POST /api/access/dataset/:persistentId?persistentId=doi:10.xxxx/FK2/ABC
-        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(persistentId, apiToken, guestbookResponse);
+        // Get Signed Download Url for guest with guestbook response using file's persistentId
+        // POST /api/access/datafile/:persistentId?persistentId=
+        downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId, null, guestbookResponseForGuest);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        // verify that the fileId is correct
+        assertTrue(signedUrl.contains("/access/datafile/" + fileId4 + "?"));
+        // verify that the persistentId is no longer in the url
+        assertFalse(signedUrl.contains("persistentId"));
+        // verify that the signed url is good
         signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+
+        // Verify that the guestbook has proper stats
+        Response guestbookListResponse = UtilIT.getGuestbooks(dataverseAlias, ownerApiToken, true, null);
+        guestbookListResponse.prettyPrint();
+        guestbookListResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].usageCount", is(1))
+                .body("data[0].responseCount", is(17));
+
+        // Test Get All Responses
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), null, null, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        guestbookListResponses.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        int totalCount = jsonPath.getList("data.responses").size();
+        assertTrue(totalCount > 0);
+        assertNotNull(jsonPath.getString("data.responses[0].name"));
+
+        // Test Get Responses with pagination
+        int pages = 4; // total should be 17. set to 4 pages
+        int limit = (totalCount / pages) + 1; // should be 5 per page. we should see 5, 5, 5, 2
+        int pagedTotalCount = 0;
+        int totalCountFromJson = 0;
+        for (int i = 0; i < pages; i++) {
+            int offset = limit * i;
+            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), offset, limit, ownerApiToken);
+            guestbookListResponses.prettyPrint();
+            jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+            pagedTotalCount += jsonPath.getList("data.responses").size();
+            totalCountFromJson = jsonPath.getInt("data.pagination.totalResponses");
+            // 'No duplicate ids' was manually verified. Just make sure the count is good. If there were duplicates the count would be high
+        }
+        // verify all counts are good and equal
+        assertEquals(totalCount, pagedTotalCount);
+        assertEquals(pagedTotalCount, totalCountFromJson);
     }
 
     @Test
@@ -4070,7 +4218,7 @@ public class FilesIT {
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, JsonUtil.createObjectBuilder().build(), apiToken);
         uploadFile.then().assertThat().statusCode(OK.getStatusCode());
 
         String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
@@ -4141,6 +4289,7 @@ public class FilesIT {
     @Disabled
     public void testDownloadFileWithGuestbookResponseUsingBearerToken() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponseUsingBearerToken");
+        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
@@ -4163,10 +4312,10 @@ public class FilesIT {
         Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, ownerApiToken);
 
         // Upload files
-        JsonObjectBuilder json1 = Json.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", Json.createArrayBuilder().add("Data"));
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", JsonUtil.createArrayBuilder().add("Data"));
         Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        String filePersistentId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
 
         // Publish dataverse and dataset
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
@@ -4220,7 +4369,7 @@ public class FilesIT {
         // POST with guestbook response
         String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook).replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
-        Response downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(persistentId, null, guestbookResponse, userWithClaimsAccessToken);
+        Response downloadResponse = UtilIT.downloadFilesUrlWithGuestbookResponse(filePersistentId,null, guestbookResponse, userWithClaimsAccessToken);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());

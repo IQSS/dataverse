@@ -31,7 +31,7 @@ case $HTTP_STATUS in
         # Successfully queued
         # Extract status from the nested data object
         STATUS=$(echo "$RESPONSE_BODY" | jq -r '.data.status')
-        
+
         # Extract message from the nested data object
         if echo "$RESPONSE_BODY" | jq -e '.data.message' > /dev/null 2>&1 && [ "$(echo "$RESPONSE_BODY" | jq -r '.data.message')" != "null" ]; then
             MESSAGE=$(echo "$RESPONSE_BODY" | jq -r '.data.message')
@@ -90,3 +90,4 @@ done
 
 # Call the function on the root dataverse to start processing 
 processDV 1
+echo "Processing Dataverse Complete: $(date)"

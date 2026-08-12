@@ -10,6 +10,7 @@ A Dataverse repository can host one or more Dataverse collections, which organiz
   - Data files  
   - Documentation or code
 
+(core-capabilities)=
 ## Core Capabilities
 
 ### 📤 Upload, manage, publish and download data files.
@@ -37,4 +38,4 @@ A Dataverse repository can host one or more Dataverse collections, which organiz
 - Compare versions with the detailed version change overview on dataset-level.
 
 ### ✨More features  
-The Dataverse project is continuously evolving. For an overview of capabilities, visit the [features list](https://dataverse.org/software-features).
+The Dataverse project is continuously evolving. For an overview of capabilities, see {doc}`/admin/features` in the Admin Guide.

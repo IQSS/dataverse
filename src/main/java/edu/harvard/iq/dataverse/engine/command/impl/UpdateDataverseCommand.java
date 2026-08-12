@@ -87,7 +87,8 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
         // This check is not recursive as all the values just report the immediate parent
         if (!oldDvType.equals(dataverse.getDataverseType())
                 || !oldDvName.equals(dataverse.getName())
-                || !oldDvAlias.equals(dataverse.getAlias())) {
+                || !oldDvAlias.equals(dataverse.getAlias())
+                || !oldDv.getLocallyFAIRRoleAssigneeIdentifiers().equals(dataverse.getLocallyFAIRRoleAssigneeIdentifiers())) {
             datasetsReindexRequired = true;
         }
 

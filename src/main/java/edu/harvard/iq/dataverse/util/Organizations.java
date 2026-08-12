@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilderFactory;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.tokenize.TokenizerME;
@@ -30,6 +31,7 @@ class Organizations {
     };
 
     private static final Logger logger = Logger.getLogger(FirstNames.class.getCanonicalName());
+    private static final String JDK_DOCUMENT_BUILDER_FACTORY = "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl";
     private static List<NameFinderME> organizationNameFinders = new ArrayList<NameFinderME>();
     private static List<TokenizerME> tokenizers = new ArrayList<TokenizerME>();
 
@@ -189,6 +191,18 @@ class Organizations {
         InputStream fis = this.getClass().getClassLoader().getResourceAsStream(modelFileName);
         TokenNameFinderModel organizationModel = new TokenNameFinderModel(fis);
 
-        organizationNameFinders.add(new NameFinderME(organizationModel));
+        String documentBuilderFactoryProperty = DocumentBuilderFactory.class.getName();
+        String previousDocumentBuilderFactory = System.getProperty(documentBuilderFactoryProperty);
+        try {
+            // OpenNLP 2.x sets JAXP security attributes that the external Xerces dependency does not recognize.
+            System.setProperty(documentBuilderFactoryProperty, JDK_DOCUMENT_BUILDER_FACTORY);
+            organizationNameFinders.add(new NameFinderME(organizationModel));
+        } finally {
+            if (previousDocumentBuilderFactory == null) {
+                System.clearProperty(documentBuilderFactoryProperty);
+            } else {
+                System.setProperty(documentBuilderFactoryProperty, previousDocumentBuilderFactory);
+            }
+        }
     }
 }

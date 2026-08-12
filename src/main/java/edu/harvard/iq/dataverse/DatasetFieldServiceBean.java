@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
@@ -552,7 +553,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.warning("No retrieval-uri found for term " + term);
             return;
         }
-        
+
         logger.fine("Registering term: " + term);
         try {
             //Assure the term is in URI form - should be if the uriSpace entry was correct
@@ -676,7 +677,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      */
     private JsonObject filterResponse(JsonObject cvocEntry, JsonObject readObject, String termUri) {
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         JsonObject filtering = getRetrievalFilteringObject(cvocEntry, termUri);
         if(filtering != null) {
             logger.fine("RF: " + filtering.toString());
@@ -688,7 +689,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         logger.fine("F: " + filter.toString());
                         JsonArray params = filter.getJsonArray("params");
                         if (params == null) {
-                            params = Json.createArrayBuilder().build();
+                            params = JsonUtil.createArrayBuilder().build();
                         }
                         logger.fine("Params: " + params.toString());
                         List<Object> vals = new ArrayList<Object>();
@@ -818,7 +819,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         }
                     }
                 } else {
-                    JsonArrayBuilder parts = Json.createArrayBuilder();
+                    JsonArrayBuilder parts = JsonUtil.createArrayBuilder();
                     for (JsonValue subPath : arr) {
                         if (subPath instanceof JsonObject) {
                             JsonValue nextValue = ((JsonObject) subPath).get(keyVal[0]);
