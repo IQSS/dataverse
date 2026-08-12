@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.response.Response;
@@ -36,7 +37,7 @@ public class FitsIT {
 
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocks.prettyPrint();
         setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
 

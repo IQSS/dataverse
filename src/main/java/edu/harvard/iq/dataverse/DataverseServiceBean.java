@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.validation.JSONDataValidation;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -879,11 +880,11 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         // Set up to track the set of users/groups that get assigned a role and those
         // that don't
-        JsonArrayBuilder usedNames = Json.createArrayBuilder();
-        JsonArrayBuilder unusedNames = Json.createArrayBuilder();
+        JsonArrayBuilder usedNames = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder unusedNames = JsonUtil.createArrayBuilder();
         // Set up to track the list of dataverses, by id and alias, that are traversed.
-        JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
-        JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
+        JsonArrayBuilder dataverseIds = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder dataverseAliases = JsonUtil.createArrayBuilder();
         // Get the Dataverses for the returned ids
 
         List<Dataverse> children = new ArrayList<Dataverse>();
@@ -988,7 +989,7 @@ public class DataverseServiceBean implements java.io.Serializable {
          * entities that had an admin role on the specified dataverse which were not
          * handled. Add this to the log and the API return message.
          */
-        String result = Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
+        String result = JsonUtil.createObjectBuilder().add("Dataverses Updated", dataverseIds)
                 .add("Updated Dataverse Aliases", dataverseAliases).add("Assignments added for", usedNames)
                 .add("Assignments not added for", unusedNames).build().toString();
         logger.info(result);

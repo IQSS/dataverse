@@ -96,7 +96,6 @@ public enum JvmSettings {
     // API: MDC Citation updates
     SCOPE_API_MDC(SCOPE_API, "mdc"),
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
-    
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
@@ -109,6 +108,11 @@ public enum JvmSettings {
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
     
+    // LEGACY BEHAVIOUR SETTINGS
+    SCOPE_LEGACY(PREFIX, "legacy"),
+    LEGACY_API_RESPONSE_MESSAGE_STYLE(SCOPE_LEGACY, "api-response-message-style"),
+    SCHEMAORG_IN_HTML_HEAD(SCOPE_LEGACY, "schemaorg-in-html-head"),
+
     // METADATA SETTINGS
     SCOPE_METADATA(PREFIX, "metadata"),
     MDB_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
@@ -308,22 +312,17 @@ public enum JvmSettings {
     LOCALCONTEXTS_URL(SCOPE_LOCALCONTEXTS, "url"),
     LOCALCONTEXTS_API_KEY(SCOPE_LOCALCONTEXTS, "api-key"),
 
-    // LEGACY SETTINGS
-    SCOPE_LEGACY(PREFIX, "legacy"),
-    SCHEMAORG_IN_HTML_HEAD(SCOPE_LEGACY, "schemaorg-in-html-head"),
-    
     // LinkedDataNotification
     SCOPE_LINKEDDATANOTIFICATION(PREFIX, "ldn"),
     LINKEDDATANOTIFICATION_ALLOWED_HOSTS(SCOPE_LINKEDDATANOTIFICATION, "allowed-hosts"),
     SCOPE_COARNOTIFY(SCOPE_LINKEDDATANOTIFICATION, "coar-notify"),
     SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT(SCOPE_COARNOTIFY, "relationship-announcement"),
     COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT_NOTIFY_SUPERUSERS_ONLY(SCOPE_COARNOTIFY_RELATIONSHIP_ANNOUNCEMENT, "notify-superusers-only"),
-    
+
     //EXPORTS
     SCOPE_EXPORTS(PREFIX, "exports"),
     SCOPE_EXPORTS_SCHEMA_DOT_ORG(SCOPE_EXPORTS, "schema-dot-org"),
     EXPORTS_SCHEMA_DOT_ORG_MAX_FILES_FOR_DOWNLOAD_ENTRIES(SCOPE_EXPORTS_SCHEMA_DOT_ORG, "max-files-for-download-entries"),
-    
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
