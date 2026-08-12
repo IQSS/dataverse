@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 
 import static io.restassured.RestAssured.given;
@@ -187,9 +188,9 @@ public class UsersIT {
         
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "my description")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
 
@@ -768,7 +769,7 @@ public class UsersIT {
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
-        JsonObjectBuilder data = Json.createObjectBuilder();
+        JsonObjectBuilder data = JsonUtil.createObjectBuilder();
         data.add("builtinUserId", idOfBcryptUserToConvert);
         data.add("password", password);
         Response response = given()

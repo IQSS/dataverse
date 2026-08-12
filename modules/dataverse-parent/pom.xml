@@ -152,7 +152,7 @@
         <!-- Major system components and dependencies -->
         <payara.version>7.2026.7</payara.version>
         <postgresql.version>42.7.12</postgresql.version>
-        <solr.version>9.10.0</solr.version>
+        <solr.version>9.8.0</solr.version>
         <postgresql.server.version>16</postgresql.server.version>
         <aws.version>2.46.17</aws.version>
         <google.library.version>26.69.0</google.library.version>
@@ -200,16 +200,16 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         <sonar.version>5.7.0.6970</sonar.version>
         <maven-jacoco-plugin.version>0.8.14</maven-jacoco-plugin.version>
-        
+
         <!-- Container related -->
         <fabric8-dmp.version>0.48.0</fabric8-dmp.version>
-        
+
         <!-- SonarQube Code Quality related -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>iqss</sonar.organization>
         <sonar.projectKey>IQSS_dataverse</sonar.projectKey>
         <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
-        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>   
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     </properties>
     
     <pluginRepositories>
