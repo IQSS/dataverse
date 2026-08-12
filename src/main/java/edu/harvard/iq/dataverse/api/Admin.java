@@ -1733,7 +1733,7 @@ public class Admin extends AbstractApiBean {
         if (!u.isSuperuser()) {
             return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
 
         List<String> accessibleDriverIds = DataAccess.getIdsForStorageDriversWithReadableFiles();
         List<Long> affectedFileIds = fileService.selectFilesWithMissingSizes(accessibleDriverIds);
