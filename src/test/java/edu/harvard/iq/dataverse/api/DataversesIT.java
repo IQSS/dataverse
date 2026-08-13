@@ -1757,7 +1757,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1767,7 +1767,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 newFacetIds, null, apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1868,6 +1868,7 @@ public class DataversesIT {
 
         // Update the dataverse without setting metadata blocks, facets, or input levels
         // Do NOT ignore the missing data so the metadata blocks, facets, and input levels are deleted and inherited from the parent
+        // Also testing Guestbook Root
         updateDataverseResponse = UtilIT.updateDataverse(
                 newAlias,
                 newAlias,
@@ -1879,9 +1880,10 @@ public class DataversesIT {
                 null,
                 null,
                 apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, Boolean.TRUE
         );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        updateDataverseResponse.then().assertThat().body("data.guestbookRoot", equalTo(true));
 
         // Assert that the metadata blocks are inherited from the parent
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
@@ -2708,7 +2710,7 @@ public class DataversesIT {
                 dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
                 newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null);
+                Boolean.FALSE, Boolean.FALSE, null, null);
 
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -2966,7 +2968,7 @@ public class DataversesIT {
                 dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
                 newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null);
+                Boolean.FALSE, Boolean.FALSE, null, null);
 
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
