@@ -71,7 +71,11 @@ public class DataverseDTO {
         this.dataverseType = dataverseType;
     }
 
-    public Boolean getGuestbookRoot() { return guestbookRoot; }
+    public Boolean getGuestbookRoot() {
+        return guestbookRoot;
+    }
 
-    public void setGuestbookRoot(Boolean guestbookRoot) { this.guestbookRoot = guestbookRoot; }
+    public void setGuestbookRoot(Boolean guestbookRoot) {
+        this.guestbookRoot = guestbookRoot;
+    }
 }
