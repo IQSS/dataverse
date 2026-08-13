@@ -148,7 +148,6 @@ public class JsonParser {
         }
         if (jobj.containsKey("guestbookRoot")) {
             dv.setGuestbookRoot(jobj.getBoolean("guestbookRoot"));
-            logger.severe("guestbookRoot is " + dv.isGuestbookRoot());
         }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
