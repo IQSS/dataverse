@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.util;
 
+import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class MarkupCheckerTest {
 
@@ -28,7 +30,10 @@ public class MarkupCheckerTest {
         "NULL, NULL"
     }, nullValues = {"NULL"})
     public void testSanitizeBasicHTML(String unsafe, String safe) {
-        assertEquals(safe, MarkupChecker.sanitizeBasicHTML(unsafe));
+        String actual = MarkupChecker.sanitizeBasicHTML(unsafe);
+        assertHtmlEqual(safe, actual);
+        // Sanity check that the key tag we strip is truly gone
+        assertFalse(actual.toLowerCase().contains("script"));
     }
 
     /**
@@ -51,21 +56,10 @@ public class MarkupCheckerTest {
         "NULL, NULL"
     }, nullValues = {"NULL"})
     public void testSanitizeAdvancedHTML(String unsafe, String safe) {
-        String sanitizedOutput = MarkupChecker.sanitizeAdvancedHTML(unsafe);
-
-        // Normalize both the expected and actual content by removing whitespaces
-
-        String normalizedSafe = null;
-        if (safe != null) {
-            normalizedSafe = safe.replaceAll("\\s+", "").trim();
-        }
-
-        String normalizedOutput = null;
-        if (sanitizedOutput != null) {
-            normalizedOutput = sanitizedOutput.replaceAll("\\s+", "").trim();
-        }
-
-        assertEquals(normalizedSafe, normalizedOutput);
+        String actual = MarkupChecker.sanitizeAdvancedHTML(unsafe);
+        assertHtmlEqual(safe, actual);
+        // Sanity check that the key tag we strip is truly gone
+        assertFalse(actual.toLowerCase().contains("script"));
     }
 
     /**
@@ -91,4 +85,36 @@ public class MarkupCheckerTest {
         assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));
     }
 
+    /** Test HTML equivalence and ignore differences in the order of attributes
+     *   This does (in normalizeHtml()) use Jsoup to help test Jsoup though.
+     *
+     * @param expected
+     * @param actual
+     */
+    private void assertHtmlEqual(String expected, String actual) {
+        if (expected == null || actual == null) {
+            assertEquals(expected, actual);
+            return;
+        }
+
+        String normalizedExpected = normalizeHtml(expected);
+        String normalizedActual = normalizeHtml(actual);
+        assertEquals(normalizedExpected, normalizedActual);
+    }
+
+    private String normalizeHtml(String html) {
+        org.jsoup.nodes.Document doc = Jsoup.parseBodyFragment(html);
+        for (org.jsoup.nodes.Element el : doc.getAllElements()) {
+            org.jsoup.nodes.Attributes attrs = el.attributes();
+            java.util.List<org.jsoup.nodes.Attribute> list = new java.util.ArrayList<>(attrs.asList());
+            list.sort(java.util.Comparator.comparing(org.jsoup.nodes.Attribute::getKey));
+            for (org.jsoup.nodes.Attribute a : list) {
+                attrs.remove(a.getKey());
+            }
+            for (org.jsoup.nodes.Attribute a : list) {
+                attrs.put(a);
+            }
+        }
+        return doc.body().html().replaceAll("\\s+", "");
+    }
 }
