@@ -318,7 +318,7 @@
                                                                 </p:autoComplete>
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
                                                                                       filter="#{(vocabSize ge 10 and vocabSize le 500) ? 'true':'false'}" filterMatchMode="contains" label="#{bundle.select}"  multiple="true" showHeader="#{(vocabSize ge 10) ? 'true':'false'}"
-                                                                                      showSelectAll="#{vocabSize lt 501}"
+                                                                                      panelStyleClass="#{vocabSize gt 500 ? 'no-selectall' : ''}"
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples and (vocabSize lt 501 or editBean.isSlowMode(dsf.datasetFieldType.id))}">
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
@@ -427,7 +427,7 @@
                                                                                           rendered="#{subdsf.datasetFieldType.allowMultiples and (subVocabSize lt 501 or editBean.isSlowMode(subdsf.datasetFieldType.id))}" label="#{bundle.select}" multiple="true"
                                                                                           filter="#{(subVocabSize ge 10 and subVocabSize le 500) ? 'true':'false'}" filterMatchMode="contains" 
                                                                                           showHeader="#{(subVocabSize ge 10) ? 'true':'false'}"
-                                                                                          showSelectAll="#{subVocabSize lt 501}">
+                                                                                          panelStyleClass="#{subVocabSize gt 500 ? 'no-selectall' : ''}">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}" />
                                                                     </p:selectCheckboxMenu>
                                                                     <p:autoComplete id="cvv_multi_autocomplete" value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"

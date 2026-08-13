@@ -97,7 +97,7 @@
                                                                       filter="#{(vocabSize ge 10 and vocabSize le 500) ? 'true':'false'}" filterMatchMode="contains" 
                                                                       label="#{bundle.select}" multiple="true" 
                                                                       showHeader="#{(vocabSize ge 10) ? 'true':'false'}"
-                                                                      showSelectAll="#{vocabSize lt 501}"
+                                                                      panelStyleClass="#{vocabSize gt 500 ? 'no-selectall' : ''}"
                                                                       jsf:rendered="#{vocabSize lt 501 or AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}">
                                                     <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
                                                                    itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"/>
@@ -167,7 +167,7 @@
                                                                           filter="#{(vocabSize ge 10 and vocabSize le 500) ? 'true':'false'}" filterMatchMode="contains" 
                                                                           label="#{bundle.select}" multiple="true" 
                                                                           showHeader="#{(vocabSize ge 10) ? 'true':'false'}"
-                                                                          showSelectAll="#{vocabSize lt 501}"
+                                                                          panelStyleClass="#{vocabSize gt 500 ? 'no-selectall' : ''}"
                                                                           jsf:rendered="#{!empty item.controlledVocabularyValues and (vocabSize lt 501 or AdvancedSearchPage.isSlowMode(item.id))}">
                                                         <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
                                                                        itemLabel="#{cvs.localeStrValue}" itemValue="#{cvs.strValue}"/>

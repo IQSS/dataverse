@@ -122,6 +122,9 @@ table.selectManyCheckboxBlock input {margin-right:4px;}
     color: #333;
     text-decoration: underline;
 }
+body .no-selectall .ui-selectcheckboxmenu-header .ui-chkbox {
+    display: none;
+}
 table.selectManyCheckboxBlock label {font-weight:normal;}
 .normal-text {font-weight:normal;}
 .normal-text input {margin-right:4px;}
