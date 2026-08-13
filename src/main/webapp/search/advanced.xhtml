@@ -103,17 +103,20 @@
                                                                  completeMethod="#{AdvancedSearchPage.completeControlledVocabularyValue}"
                                                                  var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"
                                                                  forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
-                                                                 multiple="true"
+                                                                 multiple="true" maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                  placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
                                                     <f:attribute name="dsft" value="#{AdvancedSearchPage.subjectDatasetFieldType}"/>
                                                 </p:autoComplete>
-                                                <p:commandLink value="#{bundle['controlledvocabulary.showAll']}"
-                                                               title="#{bundle['controlledvocabulary.showAll.tooltip']}"
+                                                <p:commandLink title="#{bundle['controlledvocabulary.showAll.tooltip']}"
                                                                styleClass="vocab-slow-link"
                                                                rendered="#{AdvancedSearchPage.dvFieldSubjectValues.size() gt 500 and not AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
                                                                actionListener="#{AdvancedSearchPage.switchToSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
                                                                process="@this"
-                                                               update="vocab_widget_subject"/>
+                                                               update="vocab_widget_subject">
+                                                    <h:outputFormat value="#{bundle['controlledvocabulary.showAll']}">
+                                                        <f:param value="#{AdvancedSearchPage.dvFieldSubjectValues.size()}"/>
+                                                    </h:outputFormat>
+                                                </p:commandLink>
                                             </h:panelGroup>
                                     </div>
                                 </div>
@@ -165,17 +168,20 @@
                                                                      completeMethod="#{AdvancedSearchPage.completeControlledVocabularyValue}"
                                                                      var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"
                                                                      forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
-                                                                     multiple="true"
+                                                                     multiple="true" maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                      placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
                                                         <f:attribute name="dsft" value="#{item}"/>
                                                     </p:autoComplete>
-                                                    <p:commandLink value="#{bundle['controlledvocabulary.showAll']}"
-                                                                   title="#{bundle['controlledvocabulary.showAll.tooltip']}"
+                                                    <p:commandLink title="#{bundle['controlledvocabulary.showAll.tooltip']}"
                                                                    styleClass="vocab-slow-link"
                                                                    rendered="#{!empty item.controlledVocabularyValues and item.controlledVocabularyValues.size() gt 500 and not AdvancedSearchPage.isSlowMode(item.id)}"
                                                                    actionListener="#{AdvancedSearchPage.switchToSlowMode(item.id)}"
                                                                    process="@this"
-                                                                   update="vocab_widget_mdb"/>
+                                                                   update="vocab_widget_mdb">
+                                                        <h:outputFormat value="#{bundle['controlledvocabulary.showAll']}">
+                                                            <f:param value="#{item.controlledVocabularyValues.size()}"/>
+                                                        </h:outputFormat>
+                                                    </p:commandLink>
                                                 </h:panelGroup>
                                             </div>
                                         </div>

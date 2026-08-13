@@ -298,7 +298,7 @@ public class TemplatePage implements java.io.Serializable {
             if (cvv.getLocaleStrValue(mdLangCode).toLowerCase().contains(queryLower)) {
                 results.add(cvv);
             }
-            if (results.size() >= 100) {
+            if (results.size() >= 101) {
                 break;
             }
         }

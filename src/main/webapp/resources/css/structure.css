@@ -116,6 +116,7 @@ table.selectManyCheckboxBlock input {margin-right:4px;}
     color: #666;
     display: block;
     margin-top: 4px;
+    text-align: right;
 }
 .vocab-slow-link:hover {
     color: #333;

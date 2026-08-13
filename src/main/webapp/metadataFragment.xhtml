@@ -302,39 +302,43 @@
                                                         <div class="form-col-container col-sm-9 edit-field">
                                                                 <h:panelGroup id="vocab_widget_container" layout="block">
                                                                 <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                                                                                 id="unique1" rendered="#{!dsf.datasetFieldType.allowMultiples and (dsf.datasetFieldType.controlledVocabularyValues.size() lt 501 or editBean.isSlowMode(dsf.datasetFieldType.id))}" filter="#{(dsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains">
+                                                                                 id="unique1" rendered="#{!dsf.datasetFieldType.allowMultiples and (dsf.datasetFieldType.controlledVocabularyValues.size() lt 501 or editBean.isSlowMode(dsf.datasetFieldType.id))}" filter="#{(dsf.datasetFieldType.controlledVocabularyValues.size() ge 10 and dsf.datasetFieldType.controlledVocabularyValues.size() le 500) ? 'true':'false'}" filterMatchMode="contains">
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                                 </p:selectOneMenu>
                                                                 <p:autoComplete value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"
                                                                                  id="unique1_autocomplete" rendered="#{!dsf.datasetFieldType.allowMultiples and dsf.datasetFieldType.controlledVocabularyValues.size() gt 500 and not editBean.isSlowMode(dsf.datasetFieldType.id)}"
-                                                                                 completeMethod="#{DatasetPage.completeControlledVocabularyValue}"
+                                                                                 completeMethod="#{editBean.completeControlledVocabularyValue}"
                                                                                  var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"
                                                                                  forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
+                                                                                 maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                                  placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
                                                                     <f:attribute name="dsf" value="#{dsf}"/>
                                                                 </p:autoComplete>
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                      filter="#{(dsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" label="#{bundle.select}"  multiple="true" showHeader="#{(dsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}"
+                                                                                      filter="#{(dsf.datasetFieldType.controlledVocabularyValues.size() ge 10 and dsf.datasetFieldType.controlledVocabularyValues.size() le 500) ? 'true':'false'}" filterMatchMode="contains" label="#{bundle.select}"  multiple="true" showHeader="#{(dsf.datasetFieldType.controlledVocabularyValues.size() ge 10) ? 'true':'false'}"
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples and (dsf.datasetFieldType.controlledVocabularyValues.size() lt 501 or editBean.isSlowMode(dsf.datasetFieldType.id))}">
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
                                                                 <p:autoComplete value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                  id="unique2_autocomplete" rendered="#{dsf.datasetFieldType.allowMultiples and dsf.datasetFieldType.controlledVocabularyValues.size() gt 500 and not editBean.isSlowMode(dsf.datasetFieldType.id)}"
-                                                                                 completeMethod="#{DatasetPage.completeControlledVocabularyValue}"
+                                                                                 completeMethod="#{editBean.completeControlledVocabularyValue}"
                                                                                  var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"
                                                                                  forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
-                                                                                 multiple="true"
+                                                                                 multiple="true" maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                                  placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
                                                                     <f:attribute name="dsf" value="#{dsf}"/>
                                                                 </p:autoComplete>
-                                                                <p:commandLink value="#{bundle['controlledvocabulary.showAll']}"
-                                                                               title="#{bundle['controlledvocabulary.showAll.tooltip']}"
+                                                                <p:commandLink title="#{bundle['controlledvocabulary.showAll.tooltip']}"
                                                                                styleClass="vocab-slow-link"
                                                                                rendered="#{dsf.datasetFieldType.controlledVocabularyValues.size() gt 500 and not editBean.isSlowMode(dsf.datasetFieldType.id)}"
                                                                                actionListener="#{editBean.switchToSlowMode(dsf.datasetFieldType.id)}"
                                                                                process="@this"
-                                                                               update="vocab_widget_container"/>
+                                                                               update="vocab_widget_container">
+                                                                    <h:outputFormat value="#{bundle['controlledvocabulary.showAll']}">
+                                                                        <f:param value="#{dsf.datasetFieldType.controlledVocabularyValues.size()}"/>
+                                                                    </h:outputFormat>
+                                                                </p:commandLink>
                                                             </h:panelGroup>
                                                             <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
                                                                 <span class="ui-message-error-detail">#{dsf.validationMessage}</span>
@@ -402,41 +406,45 @@
                                                             <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}" data-cvoc-managed-field="#{settingsWrapper.isCvocField(subdsf.datasetFieldType.id)? subdsf.datasetFieldType.name : ''}">
                                                                 <h:panelGroup id="vocab_widget_sub_container" layout="block">
                                                                    <p:selectOneMenu id="cvv" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
-                                                                                     rendered="#{!subdsf.datasetFieldType.allowMultiples and (subdsf.datasetFieldType.controlledVocabularyValues.size() lt 501 or editBean.isSlowMode(subdsf.datasetFieldType.id))}" filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" >
+                                                                                     rendered="#{!subdsf.datasetFieldType.allowMultiples and (subdsf.datasetFieldType.controlledVocabularyValues.size() lt 501 or editBean.isSlowMode(subdsf.datasetFieldType.id))}" filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() ge 10 and subdsf.datasetFieldType.controlledVocabularyValues.size() le 500) ? 'true':'false'}" filterMatchMode="contains">
                                                                         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}" />
                                                                     </p:selectOneMenu>
                                                                     <p:autoComplete id="cvv_autocomplete" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"
                                                                                      rendered="#{!subdsf.datasetFieldType.allowMultiples and subdsf.datasetFieldType.controlledVocabularyValues.size() gt 500 and not editBean.isSlowMode(subdsf.datasetFieldType.id)}"
-                                                                                     completeMethod="#{DatasetPage.completeControlledVocabularyValue}"
+                                                                                     completeMethod="#{editBean.completeControlledVocabularyValue}"
                                                                                      var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"
                                                                                      forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
+                                                                                     maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                                      placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
                                                                         <f:attribute name="dsf" value="#{subdsf}"/>
                                                                     </p:autoComplete>
                                                                     
                                                                     <p:selectCheckboxMenu value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                           rendered="#{subdsf.datasetFieldType.allowMultiples and (subdsf.datasetFieldType.controlledVocabularyValues.size() lt 501 or editBean.isSlowMode(subdsf.datasetFieldType.id))}" label="#{bundle.select}" multiple="true"
-                                                                                          filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" 
-                                                                                          showHeader="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}">
+                                                                                          filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() ge 10 and subdsf.datasetFieldType.controlledVocabularyValues.size() le 500) ? 'true':'false'}" filterMatchMode="contains" 
+                                                                                          showHeader="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() ge 10) ? 'true':'false'}">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}" />
                                                                     </p:selectCheckboxMenu>
                                                                     <p:autoComplete id="cvv_multi_autocomplete" value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                      rendered="#{subdsf.datasetFieldType.allowMultiples and subdsf.datasetFieldType.controlledVocabularyValues.size() gt 500 and not editBean.isSlowMode(subdsf.datasetFieldType.id)}"
-                                                                                     completeMethod="#{DatasetPage.completeControlledVocabularyValue}"
+                                                                                     completeMethod="#{editBean.completeControlledVocabularyValue}"
                                                                                      var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"
                                                                                      forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
-                                                                                     multiple="true"
+                                                                                     multiple="true" maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                                      placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
                                                                         <f:attribute name="dsf" value="#{subdsf}"/>
                                                                     </p:autoComplete>
-                                                                    <p:commandLink value="#{bundle['controlledvocabulary.showAll']}"
-                                                                                   title="#{bundle['controlledvocabulary.showAll.tooltip']}"
+                                                                    <p:commandLink title="#{bundle['controlledvocabulary.showAll.tooltip']}"
                                                                                    styleClass="vocab-slow-link"
                                                                                    rendered="#{subdsf.datasetFieldType.controlledVocabularyValues.size() gt 500 and not editBean.isSlowMode(subdsf.datasetFieldType.id)}"
                                                                                    actionListener="#{editBean.switchToSlowMode(subdsf.datasetFieldType.id)}"
                                                                                    process="@this"
-                                                                                   update="vocab_widget_sub_container"/>
+                                                                                   update="vocab_widget_sub_container">
+                                                                        <h:outputFormat value="#{bundle['controlledvocabulary.showAll']}">
+                                                                            <f:param value="#{subdsf.datasetFieldType.controlledVocabularyValues.size()}"/>
+                                                                        </h:outputFormat>
+                                                                    </p:commandLink>
                                                                 </h:panelGroup>
 
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty subdsf.validationMessage}">
