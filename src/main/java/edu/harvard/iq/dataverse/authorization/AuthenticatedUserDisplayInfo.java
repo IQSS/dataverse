@@ -3,11 +3,13 @@ package edu.harvard.iq.dataverse.authorization;
 import java.util.Objects;
 
 import jakarta.validation.constraints.NotBlank;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
  * @author gdurand
  */
+@Schema(description = "Display profile for an authenticated user, including name, contact, affiliation, position, and ORCID information.")
 public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
 
     @NotBlank(message = "{user.lastName}")
@@ -128,4 +130,3 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     }
     
 }
-

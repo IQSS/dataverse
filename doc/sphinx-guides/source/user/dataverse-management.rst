@@ -221,18 +221,18 @@ In order to link a dataset, you will need your account to have the "Link Dataset
 
 To link a dataset to your Dataverse collection, you must navigate to that dataset and click the white "Link" button in the upper-right corner of the dataset page. This will open up a window where you can type in the name of the Dataverse collection that you would like to link the dataset to. Select your Dataverse collection and click the save button. This will establish the link, and the dataset will now appear under your Dataverse collection.
 
-A draft dataset can be linked to other Dataverse collections. It will only become publicly visible in the linked collection(s) after it has been published. To publish the dataset, your account must have the "Publish Dataset" permission for the Dataverse collection in which the dataset was originally created. Permissions in the linked Dataverse collections do not apply.
+To remove an established link, navigate to the linked dataset's page and click the white "Unlink" button in the upper-right corner of the page.
 
-There is currently no way to remove established links in the UI. If you need to remove a link between a Dataverse collection and a dataset, please contact the support team for the Dataverse installation you are using (see the :ref:`unlink-a-dataset` section of the Admin Guide for more information).
+A draft dataset can be linked to other Dataverse collections. It will only become publicly visible in the linked collection(s) after it has been published. To publish the dataset, your account must have the "Publish Dataset" permission for the Dataverse collection in which the dataset was originally created. Permissions in the linked Dataverse collections do not apply.
 
 .. _dataverse-linking:
 
 Dataverse Collection Linking
 ============================
 
-Similarly to dataset linking, Dataverse collection linking allows a Dataverse collection owner to "link" their Dataverse collection to another Dataverse collection, so the Dataverse collection being linked will appear in the linking Dataverse collection's list of contents without actually *being* in that Dataverse collection. Currently, the ability to link a Dataverse collection to another Dataverse collection is a superuser only feature. 
+Similarly to dataset linking, Dataverse collection linking allows a Dataverse collection owner to "link" their Dataverse collection to another Dataverse collection, so the Dataverse collection being linked will appear in the linking Dataverse collection's list of contents without actually *being* in that Dataverse collection.
 
-If you need to have a Dataverse collection linked to your Dataverse collection, please contact the support team for the Dataverse installation you are using.
+In order to link a collection, you will need your account to have the "Link Dataverse" permission on the linking Dataverse collection.
 
 Publish Your Dataverse Collection
 =================================

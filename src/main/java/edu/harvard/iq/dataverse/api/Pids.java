@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -30,6 +31,9 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  * PIDs are Persistent IDentifiers such as DOIs or Handles.
@@ -40,13 +44,18 @@ import jakarta.ws.rs.core.Response;
  */
 @Stateless
 @Path("pids")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class Pids extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Pids.class.getName());
     @GET
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPid(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId) {
+    @Operation(summary = "Returns PID provider metadata",
+            description = "Queries configured DataCite metadata for the supplied persistent identifier when the requester is a superuser.")
+    public Response getPid(@Context ContainerRequestContext crc,
+            @Parameter(description = "Persistent identifier to query.")
+            @QueryParam("persistentId") String persistentId) {
         User user = getRequestUser(crc);
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
@@ -73,19 +82,23 @@ public class Pids extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("unreserved")
-    public Response getUnreserved(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId) {
+    @Operation(summary = "Lists unreserved dataset PIDs",
+            description = "Returns draft datasets whose persistent identifiers have not been reserved when the requester is a superuser.")
+    public Response getUnreserved(@Context ContainerRequestContext crc,
+            @Parameter(description = "Optional persistent identifier value accepted by the endpoint.")
+            @QueryParam("persistentId") String persistentId) {
         User user = getRequestUser(crc);
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
 
-        JsonArrayBuilder unreserved = Json.createArrayBuilder();
+        JsonArrayBuilder unreserved = JsonUtil.createArrayBuilder();
         for (Dataset dataset : datasetSvc.findAll()) {
             if (dataset.isReleased()) {
                 continue;
             }
             if (dataset.getGlobalIdCreateTime() == null) {
-                unreserved.add(Json.createObjectBuilder()
+                unreserved.add(JsonUtil.createObjectBuilder()
                         .add("id", dataset.getId())
                         .add("pid", dataset.getGlobalId().asString())
                 );
@@ -93,7 +106,7 @@ public class Pids extends AbstractApiBean {
         }
         JsonArray finalUnreserved = unreserved.build();
         int size = finalUnreserved.size();
-        return ok(Json.createObjectBuilder()
+        return ok(JsonUtil.createObjectBuilder()
                 .add("numUnreserved", size)
                 .add("count", finalUnreserved)
         );
@@ -103,7 +116,11 @@ public class Pids extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{id}/reserve")
-    public Response reservePid(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Reserves a dataset PID",
+            description = "Reserves the persistent identifier for the specified dataset.")
+    public Response reservePid(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier whose PID is reserved.", required = true)
+            @PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             execCommand(new ReservePidCommand(createDataverseRequest(getRequestUser(crc)), dataset));
@@ -117,7 +134,11 @@ public class Pids extends AbstractApiBean {
     @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{id}/delete")
-    public Response deletePid(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+    @Operation(summary = "Deletes a draft dataset PID",
+            description = "Deletes the persistent identifier for an unpublished dataset.")
+    public Response deletePid(@Context ContainerRequestContext crc,
+            @Parameter(description = "Dataset id or persistent identifier whose PID is deleted.", required = true)
+            @PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             //Restrict to never-published datasets (that should have draft/nonpublic pids). The underlying code will invalidate
@@ -137,6 +158,8 @@ public class Pids extends AbstractApiBean {
     @AuthRequired
     @Path("providers")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Lists PID providers",
+            description = "Returns the configured persistent identifier providers.")
     public Response getPidProviders(@Context ContainerRequestContext crc) throws WrappedResponse {
         try {
             getRequestAuthenticatedUserOrDie(crc);
@@ -152,7 +175,11 @@ public class Pids extends AbstractApiBean {
     // The :.+ suffix allows PIDs with a / char to be entered w/o escaping
     @Path("providers/{persistentId:.+}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPidProviderId(@Context ContainerRequestContext crc, @PathParam("persistentId") String persistentId) throws WrappedResponse {
+    @Operation(summary = "Returns the provider for a PID",
+            description = "Parses a persistent identifier and returns the managed provider id or reports that the PID belongs to an unmanaged provider.")
+    public Response getPidProviderId(@Context ContainerRequestContext crc,
+            @Parameter(description = "Persistent identifier whose provider is requested.", required = true)
+            @PathParam("persistentId") String persistentId) throws WrappedResponse {
         try {
             getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {

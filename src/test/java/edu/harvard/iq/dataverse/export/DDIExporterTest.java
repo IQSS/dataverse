@@ -83,7 +83,7 @@ public class DDIExporterTest {
         
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(datasetDtoJson);
-        Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
+        Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(JsonUtil.createArrayBuilder().build());
         
         
         //when
@@ -106,7 +106,7 @@ public class DDIExporterTest {
         
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
-        Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
+        Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(JsonUtil.createArrayBuilder().build());
         
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();
@@ -126,7 +126,7 @@ public class DDIExporterTest {
         
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
-        Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
+        Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(JsonUtil.createArrayBuilder().build());
         
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();
