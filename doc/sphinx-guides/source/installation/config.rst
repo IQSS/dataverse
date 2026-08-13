@@ -252,16 +252,34 @@ For any resources to be integrated with Dataverse, find documentation how to set
 Ongoing Security of Your Installation
 +++++++++++++++++++++++++++++++++++++
 
-Like any application, you should keep up-to-date with patches to both the Dataverse software and the platform (usually Linux) it runs on. Dataverse releases are announced on the dataverse-community_ mailing list, the Dataverse blog_, and in chat.dataverse.org_.
+New Releases
+^^^^^^^^^^^^
+
+Like any application, you should keep up-to-date with new releases of Dataverse, which often contain security fixes.
+
+Dataverse releases are announced on the dataverse-community_ mailing list, Zulip_, and the Dataverse blog_.
 
 .. _dataverse-community: https://groups.google.com/g/dataverse-community
+.. _Zulip: https://dataverse.zulipchat.com/
 .. _blog: https://dataverse.org/blog
-.. _chat.dataverse.org: https://chat.dataverse.org
 
-In addition to these public channels, you can subscribe to receive security notices via email from the Dataverse team. These notices are sent to the ``contact_email`` in the installation spreadsheet_ and you can open an issue in the dataverse-installations_ repo to add or change the contact email. Security notices are also sent to people and organizations that prefer to remain anonymous. To be added to this private list, please email support@dataverse.org.
+These announcements link to release notes, which can be found on GitHub:
 
-.. _spreadsheet: https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/edit#gid=0
-.. _dataverse-installations: https://github.com/IQSS/dataverse-installations
+- Backend: https://github.com/IQSS/dataverse/releases
+- Frontend: https://github.com/IQSS/dataverse-frontend/releases
+
+If the release contains a security-related fix, the release notes will mention generically that a fix is included. Some details are provided via private security advisories, described below.
+
+.. _security-advisories:
+
+Security Advisories
+^^^^^^^^^^^^^^^^^^^
+
+We highly recommend signing up to receive security advisories from the Dataverse team. These advisories are not archived publicly because we don't want attackers to use exploits against you. For this reason we also control who is subscribed to the security advisory mailing list.
+
+To subscribe, email support@dataverse.org and ask to be added to the Dataverse security advisory mailing list.
+
+Below you'll see a step called :ref:`map-of-installations` where you can provide a email address we can use to contact you. We typically automatically add this address to the security list but please feel free to reach out early.
 
 For additional details about security practices by the Dataverse team, see the :doc:`/developers/security` section of the Developer Guide.
 
@@ -270,7 +288,7 @@ For additional details about security practices by the Dataverse team, see the :
 Reporting Security Issues
 +++++++++++++++++++++++++
 
-If you have a security issue to report, please email it to security@dataverse.org.
+If you have a security issue to report, please email it to security@dataverse.org. We usually give credit to security researchers in our release notes. We expect security researchers to look for this information in SECURITY.md (:download:`plain-text <../../../../.github/SECURITY.md>`, `HTML <https://github.com/IQSS/dataverse/security>`_) and include it there.
 
 .. _network-ports:
 
@@ -2572,6 +2590,8 @@ One way to submit your sitemap URL to Google is by using their "Search Console" 
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
 
+.. _map-of-installations:
+
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3951,8 +3971,10 @@ Linked Data Notifications (LDN) Allowed Hosts
 +++++++++++++++++++++++++++++++++++++++++++++
 
 Dataverse supports receiving LDN notifications via the /api/inbox endpoint. The dataverse.ldn.allowed-hosts allows you to specify the list of host IP addresses from which LDN notifications can be received, or ``*`` to receive messages from anywhere.
+Note that since the Inbox endpoint does not require authentication, allowing un-trusted hosts via ``*`` is not recommended for production.
 
 Example: ``dataverse.ldn.allowed-hosts=*``
+Example: ``dataverse.ldn.allowed-hosts=172.16.234.56,172.16.234.57``
 
 COAR Notify Relationship Announcement Notify Superusers Only
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -4054,6 +4076,15 @@ It is mandatory to test instance clients and integrations thoroughly and it is n
 In a future Dataverse version, the (currently) experimental response message style will be made the only supported one.
 
 See also :ref:`dataverse.legacy.api-response-message-style`.
+
+.. _dataverse.feature.do-not-assume-default-license:
+
+dataverse.feature.do-not-assume-default-license
++++++++++++++++++++++++++++++++++++++++++++++++
+
+When creating a dataset via API, if neither a license nor any terms of use are provided, the system normally assigns the default license. If this feature flag is enabled, no license is assigned (and no terms) in this case.
+
+Defaults to ``false``.
 
 .. _dataverse.feature.avoid-expensive-solr-join:
 

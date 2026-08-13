@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.settings.SettingsValidationException;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -414,9 +415,9 @@ public class Admin extends AbstractApiBean {
                 }
             }
 
-            JsonArrayBuilder container = Json.createArrayBuilder();
+            JsonArrayBuilder container = JsonUtil.createArrayBuilder();
             for (Template t : templates) {
-                JsonObjectBuilder bld = Json.createObjectBuilder();
+                JsonObjectBuilder bld = JsonUtil.createObjectBuilder();
                 bld.add("templateId", t.getId());
                 bld.add("templateName", t.getName());
                 Dataverse loopowner = t.getDataverse();
@@ -717,7 +718,7 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
-        JsonArrayBuilder userArray = Json.createArrayBuilder();
+        JsonArrayBuilder userArray = JsonUtil.createArrayBuilder();
         authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
             userArray.add(json(user));
         });
@@ -823,7 +824,7 @@ public class Admin extends AbstractApiBean {
                         + " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
             }
                         AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
-            JsonObjectBuilder output = Json.createObjectBuilder();
+            JsonObjectBuilder output = JsonUtil.createObjectBuilder();
             output.add("email", authUser.getEmail());
             output.add("username", builtinUser.getUserName());
             return ok(output);
@@ -867,7 +868,7 @@ public class Admin extends AbstractApiBean {
                         + " could not be converted from remote to BuiltIn. An Exception was not thrown.");
             }
                         AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
-            JsonObjectBuilder output = Json.createObjectBuilder();
+            JsonObjectBuilder output = JsonUtil.createObjectBuilder();
             output.add("email", authUser.getEmail());
             output.add("username", builtinUser.getUserName());
             return ok(output);
@@ -978,8 +979,8 @@ public class Admin extends AbstractApiBean {
         String overwritePosition = "staff;student";
         AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName,
                 overwriteLastName, overwriteEmail, overwriteAffiliation, overwritePosition);
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        JsonArrayBuilder problems = Json.createArrayBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
+        JsonArrayBuilder problems = JsonUtil.createArrayBuilder();
         if (password != null) {
             response.add("password supplied", password);
             boolean knowsExistingPassword = false;
@@ -1141,8 +1142,8 @@ public class Admin extends AbstractApiBean {
         String overwritePosition = "staff;student";
         AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName,
                 overwriteLastName, overwriteEmail, overwriteAffiliation, overwritePosition);
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        JsonArrayBuilder problems = Json.createArrayBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
+        JsonArrayBuilder problems = JsonUtil.createArrayBuilder();
         if (password != null) {
             response.add("password supplied", password);
             boolean knowsExistingPassword = false;
@@ -1356,7 +1357,7 @@ public class Admin extends AbstractApiBean {
                     boolean success = false;
                     boolean constraintViolationDetected = false;
                      
-                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    JsonObjectBuilder output = JsonUtil.createObjectBuilder();
                     output.add("datasetId", datasetId);
 
                     
@@ -1453,7 +1454,7 @@ public class Admin extends AbstractApiBean {
                         if (constraintViolation.getInvalidValue() != null) {
                             invalidValue = constraintViolation.getInvalidValue().toString();
                         }
-                        JsonObjectBuilder violation = Json.createObjectBuilder();
+                        JsonObjectBuilder violation = JsonUtil.createObjectBuilder();
                         violation.add("entityClassDatabaseTableRowId", databaseRow);
                         violation.add("field", field);
                         violation.add("invalidValue", invalidValue == null ? "NULL" : invalidValue);
@@ -1501,7 +1502,7 @@ public class Admin extends AbstractApiBean {
 
                     boolean success = false;
                      
-                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    JsonObjectBuilder output = JsonUtil.createObjectBuilder();
                     output.add("datafileId", dataFile.getId());
                     output.add("storageIdentifier", dataFile.getStorageIdentifier());
 
@@ -1545,7 +1546,7 @@ public class Admin extends AbstractApiBean {
     public Response getAssignmentsFor(@Parameter(description = "Role assignee identifier.", required = true)
             @PathParam("raIdtf") String raIdtf) {
 
-        JsonArrayBuilder arr = Json.createArrayBuilder();
+        JsonArrayBuilder arr = JsonUtil.createArrayBuilder();
         roleAssigneeSvc.getAssignmentsFor(raIdtf).forEach(a -> arr.add(json(a)));
 
         return ok(arr);
@@ -1568,7 +1569,7 @@ public class Admin extends AbstractApiBean {
         if (user != null) {
             ConfirmEmailData confirmEmailData = confirmEmailSvc.findSingleConfirmEmailDataByUser(user);
             if (confirmEmailData != null) {
-                return ok(Json.createObjectBuilder().add("token", confirmEmailData.getToken()));
+                return ok(JsonUtil.createObjectBuilder().add("token", confirmEmailData.getToken()));
             }
         }
         return error(Status.BAD_REQUEST, "Could not find confirm email token for user " + userId);
@@ -1591,7 +1592,7 @@ public class Admin extends AbstractApiBean {
             try {
                 ConfirmEmailInitResponse confirmEmailInitResponse = confirmEmailSvc.beginConfirm(user);
                 ConfirmEmailData confirmEmailData = confirmEmailInitResponse.getConfirmEmailData();
-                return ok(Json.createObjectBuilder().add("tokenCreated", confirmEmailData.getCreated().toString())
+                return ok(JsonUtil.createObjectBuilder().add("tokenCreated", confirmEmailData.getCreated().toString())
                         .add("identifier", user.getUserIdentifier()));
             } catch (ConfirmEmailException ex) {
                 return error(Status.BAD_REQUEST,
@@ -1633,7 +1634,7 @@ public class Admin extends AbstractApiBean {
         try {
             final DvObject dvObj = findDvo(dvo);
             final User aUser = getRequestUser(crc);
-            final JsonObjectBuilder bld = Json.createObjectBuilder();
+            final JsonObjectBuilder bld = JsonUtil.createObjectBuilder();
             bld.add("user", aUser.getIdentifier());
             bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
             return ok(bld);
@@ -1672,7 +1673,7 @@ public class Admin extends AbstractApiBean {
     @Operation(summary = "Repair missing original file types",
             description = "Starts a background repair for tabular files missing original file type metadata.")
     public Response fixMissingOriginalTypes() {
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
 
         List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalTypes();
 
@@ -1698,7 +1699,7 @@ public class Admin extends AbstractApiBean {
             description = "Starts a background repair for tabular files missing original file size metadata.")
     public Response fixMissingOriginalSizes(@Parameter(description = "Maximum number of affected files to repair.")
             @QueryParam("limit") Integer limit) {
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
 
         List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalSizes();
 
@@ -1736,7 +1737,7 @@ public class Admin extends AbstractApiBean {
         if (dataset == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }
-        JsonObjectBuilder data = Json.createObjectBuilder();
+        JsonObjectBuilder data = JsonUtil.createObjectBuilder();
         DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
         data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
@@ -1770,9 +1771,9 @@ public class Admin extends AbstractApiBean {
             String password) {
 
         final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
-        final JsonArrayBuilder errorArray = Json.createArrayBuilder();
+        final JsonArrayBuilder errorArray = JsonUtil.createArrayBuilder();
         errors.forEach(errorArray::add);
-        return ok(Json.createObjectBuilder().add("password", password).add("errors", errorArray));
+        return ok(JsonUtil.createObjectBuilder().add("password", password).add("errors", errorArray));
     }
 
     @GET
@@ -2369,7 +2370,7 @@ public class Admin extends AbstractApiBean {
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
                 if (listonly) {
-                    JsonArrayBuilder jab = Json.createArrayBuilder();
+                    JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
                     logger.fine("Unarchived versions found: ");
                     int current = 0;
                     for (DatasetVersion dv : dsl) {
@@ -2597,10 +2598,10 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        JsonObjectBuilder bld = Json.createObjectBuilder();
+        JsonObjectBuilder bld = JsonUtil.createObjectBuilder();
 
         systemConfig.getCurationLabels().entrySet().forEach(s -> {
-            JsonArrayBuilder labels = Json.createArrayBuilder();
+            JsonArrayBuilder labels = JsonUtil.createArrayBuilder();
             Arrays.asList(s.getValue()).forEach(l -> labels.add(l));
             bld.add(s.getKey(), labels);
         });
@@ -2639,7 +2640,7 @@ public class Admin extends AbstractApiBean {
             }
             bannerMessageService.save(toAdd);
 
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+            JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder()
                 .add("message", "Banner Message added successfully.")
                 .add("id", toAdd.getId());
 
@@ -2756,7 +2757,7 @@ public class Admin extends AbstractApiBean {
         
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
         
-        return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
+        return ok(JsonUtil.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
  
     @DELETE
@@ -2825,7 +2826,7 @@ public class Admin extends AbstractApiBean {
         for (FeatureFlags flag : FeatureFlags.values()) {
             map.put(flag.name(), flag.enabled() ? "enabled" : "disabled");
         }
-        return ok(Json.createObjectBuilder(map));
+        return ok(JsonUtil.createObjectBuilder(map));
     }
 
     @GET
@@ -2836,7 +2837,7 @@ public class Admin extends AbstractApiBean {
             @PathParam("flag") String flagIn) {
         try {
             FeatureFlags flag = FeatureFlags.valueOf(flagIn);
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             job.add("enabled", flag.enabled());
             return ok(job);
         } catch (IllegalArgumentException ex) {
@@ -2882,8 +2883,8 @@ public class Admin extends AbstractApiBean {
         }
 
         NullSafeJsonBuilder jsonObjectBuilder = NullSafeJsonBuilder.jsonObjectBuilder();
-        JsonArrayBuilder jsonDatasetsArrayBuilder = Json.createArrayBuilder();
-        JsonArrayBuilder jsonFailuresArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder jsonDatasetsArrayBuilder = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder jsonFailuresArrayBuilder = JsonUtil.createArrayBuilder();
 
         if (startId > 0) {
             jsonObjectBuilder.add("firstId", startId);
@@ -2898,7 +2899,7 @@ public class Admin extends AbstractApiBean {
             datasetIds = datasetService.findAllLocalDatasetIds();
         } else {
             datasetIds = new ArrayList<>(datasetIdentifiers.size());
-            JsonArrayBuilder jab = Json.createArrayBuilder();
+            JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
             datasetIdentifiers.forEach(id -> {
                 String dId = id.trim();
                 jab.add(dId);
@@ -2967,13 +2968,13 @@ public class Admin extends AbstractApiBean {
                 jsonFailuresArrayBuilder.add(job);
             }
 
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             if (!missingFiles.isEmpty() || !missingFileMetadata.isEmpty()) {
                 job.add("id", dataset.getId());
                 job.add("pid", dataset.getProtocol() + ":" + dataset.getAuthority() + "/" + dataset.getIdentifier());
                 job.add("persistentURL", dataset.getPersistentURL());
                 if (!missingFileMetadata.isEmpty()) {
-                    JsonArrayBuilder jabMissingFileMetadata = Json.createArrayBuilder();
+                    JsonArrayBuilder jabMissingFileMetadata = JsonUtil.createArrayBuilder();
                     missingFileMetadata.forEach(mm -> {
                         String[] missingMetadata = mm.split(",");
                         NullSafeJsonBuilder jobj = NullSafeJsonBuilder.jsonObjectBuilder()
@@ -2984,7 +2985,7 @@ public class Admin extends AbstractApiBean {
                     job.add("missingFileMetadata", jabMissingFileMetadata);
                 }
                 if (!missingFiles.isEmpty()) {
-                    JsonArrayBuilder jabMissingFiles = Json.createArrayBuilder();
+                    JsonArrayBuilder jabMissingFiles = JsonUtil.createArrayBuilder();
                     missingFiles.forEach(mf -> {
                         String[] missingFile = mf.split(",");
                         NullSafeJsonBuilder jobj = NullSafeJsonBuilder.jsonObjectBuilder()

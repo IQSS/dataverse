@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.*;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.servlet.ServletException;
@@ -66,7 +67,7 @@ public class OpenApi extends HttpServlet {
             List<String> args = Arrays.asList(format);
             String bundleResponse = BundleUtil.getStringFromBundle("openapi.exception.invalid.format", args);
 
-            JsonObject errorResponse = Json.createObjectBuilder()
+            JsonObject errorResponse = JsonUtil.createObjectBuilder()
                 .add("status", "ERROR")
                 .add("code", HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE)
                 .add("message", bundleResponse)
