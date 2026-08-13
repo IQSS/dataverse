@@ -33,7 +33,9 @@ public class MarkupCheckerTest {
         String actual = MarkupChecker.sanitizeBasicHTML(unsafe);
         assertHtmlEqual(safe, actual);
         // Sanity check that the key tag we strip is truly gone
-        assertFalse(actual.toLowerCase().contains("script"));
+        if(actual != null) {
+            assertFalse(actual.toLowerCase().contains("script"));
+        }
     }
 
     /**
@@ -59,7 +61,9 @@ public class MarkupCheckerTest {
         String actual = MarkupChecker.sanitizeAdvancedHTML(unsafe);
         assertHtmlEqual(safe, actual);
         // Sanity check that the key tag we strip is truly gone
-        assertFalse(actual.toLowerCase().contains("script"));
+        if(actual != null) {
+            assertFalse(actual.toLowerCase().contains("script"));
+        }
     }
 
     /**
@@ -88,8 +92,8 @@ public class MarkupCheckerTest {
     /** Test HTML equivalence and ignore differences in the order of attributes
      *   This does (in normalizeHtml()) use Jsoup to help test Jsoup though.
      *
-     * @param expected
-     * @param actual
+     * @param expected - the HTML we expect to be returned
+     * @param actual - the HTML we actually got
      */
     private void assertHtmlEqual(String expected, String actual) {
         if (expected == null || actual == null) {
@@ -107,7 +111,7 @@ public class MarkupCheckerTest {
         for (org.jsoup.nodes.Element el : doc.getAllElements()) {
             org.jsoup.nodes.Attributes attrs = el.attributes();
             java.util.List<org.jsoup.nodes.Attribute> list = new java.util.ArrayList<>(attrs.asList());
-            list.sort(java.util.Comparator.comparing(org.jsoup.nodes.Attribute::getKey));
+            list.sort(java.util.Map.Entry.comparingByKey());
             for (org.jsoup.nodes.Attribute a : list) {
                 attrs.remove(a.getKey());
             }
