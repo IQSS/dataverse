@@ -120,9 +120,9 @@ public class URLTokenUtil {
         if (tokenValue != null && !tokenValue.isBlank()) {
             try{
                 int x =Integer.parseInt(tokenValue);
-                return Json.createValue(x);
+                return JsonUtil.createValue(x);
             } catch (NumberFormatException nfe){
-                return Json.createValue(tokenValue);
+                return JsonUtil.createValue(tokenValue);
             }
         } else {
             return null;
@@ -208,10 +208,10 @@ public class URLTokenUtil {
     }
     
     public JsonObjectBuilder createPostBody(JsonObject params, JsonArray allowedApiCalls) {
-        JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder bodyBuilder = JsonUtil.createObjectBuilder();
         bodyBuilder.add("queryParameters", params);
         if (allowedApiCalls != null && !allowedApiCalls.isEmpty()) {
-            JsonArrayBuilder apisBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder apisBuilder = JsonUtil.createArrayBuilder();
             allowedApiCalls.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
                 logger.fine(JsonUtil.prettyPrint(apiObj));
                 String name = apiObj.getJsonString(NAME).getString();
@@ -230,7 +230,7 @@ public class URLTokenUtil {
                             httpmethod, apiToken.getTokenString(), "URL for external tool");
                 }
                 logger.fine("Signed URL: " + url);
-                apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
+                apisBuilder.add(JsonUtil.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
                         .add(SIGNED_URL, url).add(TIMEOUT, timeout));
             }));
             bodyBuilder.add("signedUrls", apisBuilder);
@@ -243,7 +243,7 @@ public class URLTokenUtil {
         JsonArray queryParams = toolParameters.getJsonArray("queryParameters");
     
         // ToDo return json and print later
-        JsonObjectBuilder paramsBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder paramsBuilder = JsonUtil.createObjectBuilder();
         if (!(queryParams == null) && !queryParams.isEmpty()) {
             queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
                 queryParam.keySet().forEach((key) -> {
