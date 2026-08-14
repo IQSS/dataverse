@@ -25,13 +25,26 @@ public class UrlSignerUtil {
     public static final String SIGNED_URL_METHOD="method";
     public static final String SIGNED_URL_USER="user";
     public static final String SIGNED_URL_UNTIL="until";
-    public static final String SIGNED_URL_KEY="key"; // do not propagate the key since it's a credential
-    public static final String SIGNED_URL_SIGNED="signed"; // we need to remove this when returning a signed url to prevent a loop of signing
+    public static final String SIGNED_URL_KEY="key"; // reserved at the Dataverse request level: the legacy query-param API token - a credential that must never be signed into a URL
+    public static final String SIGNED_URL_SIGNED="signed"; // reserved at the Dataverse request level: requests a (re)signed URL as the response - signing it into a URL would cause a loop of signing
+    /**
+     * The four query parameters the signing algorithm itself appends. {@link #signUrl} throws if the
+     * base URL already contains one of them, rather than signing a different URL than the caller
+     * intended.
+     */
+    public static final List<String> signingParameters = List.of(SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN);
+    /**
+     * The signing parameters plus the Dataverse request-level parameters {@code key} and
+     * {@code signed}, none of which may appear in a URL being signed. Callers that build the URL to
+     * sign out of an incoming request URI - which legitimately carries such parameters - must remove
+     * them first, e.g. with {@link #stripReservedParameters}; {@code signUrl} itself never rewrites
+     * the URL it is given.
+     */
     public static final List<String> reservedParameters = List.of(SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN, SIGNED_URL_KEY, SIGNED_URL_SIGNED);
     /**
      *
-     * @param baseUrl - the URL to sign - cannot contain query params
-     *                "until","user", "method", or "token"
+     * @param baseUrl - the URL to sign - must not contain the query params
+     *                "until","user", "method", or "token" (this method throws if it does)
      * @param timeout - how many minutes to make the URL valid for (note - time skew
      *                between the creator and receiver could affect the validation
      * @param user    - a string representing the user - should be understood by the
@@ -41,15 +54,22 @@ public class UrlSignerUtil {
      *                this could be an APIKey (when sending URL to a tool that will
      *                use it to retrieve info from Dataverse)
      * @return - the signed URL
+     * @throws IllegalArgumentException if the base URL already contains one of the four query
+     *                parameters this method appends ({@link #signingParameters})
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
 
-        // Strip reserved signing params that may already be in the base URL, using exact-string
-        // surgery rather than URIBuilder. The URL must be signed exactly as provided (the pre-6.10
-        // behavior): validation reconstructs the signing string from the URL-decoded request, so
-        // re-encoding here (e.g. percent-encoding ':' and '/' in DOIs) would change the signed bytes
-        // and the signature would no longer match.
-        baseUrl = stripReservedParameters(baseUrl);
+        // The URL is signed exactly as provided and never rewritten here (the pre-6.10 behavior):
+        // validation reconstructs the signing string from the URL-decoded request, so re-encoding or
+        // dropping params would change the signed bytes and the signature would no longer match. A
+        // base URL that already contains one of the four params this method appends is therefore a
+        // caller bug - the stray param would sit inside the signed bytes and be enforced at
+        // validation time as if it had been added here. Fail loudly instead of fixing it silently.
+        String clash = findReservedParameter(baseUrl, signingParameters);
+        if (clash != null) {
+            throw new IllegalArgumentException(
+                    "The URL to sign must not already contain the reserved parameter '" + clash + "': " + baseUrl);
+        }
         boolean firstParam = !baseUrl.contains("?");
         StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
 
@@ -138,20 +158,28 @@ public class UrlSignerUtil {
      */
     public static String trySignUrlWithApiKey(String baseUrl, Integer timeout, String user, String method, String apiKey, String context) {
         if (!isSigningSecretConfigured()) {
-            logger.warning("Cannot sign " + context + ": no signing secret configured (dataverse.api.signing-secret). Sending an unsigned URL.");
+            logger.log(Level.WARNING, "Cannot sign {0}: no signing secret configured (dataverse.api.signing-secret). Sending an unsigned URL.", context);
             return baseUrl;
         }
         return signUrlWithApiKey(baseUrl, timeout, user, method, apiKey);
     }
 
     /**
-     * Removes the reserved signing parameters from the query, preserving the exact bytes of the path,
-     * of every other parameter - including empty segments such as {@code ?&a=b} or {@code a=b&&} - and
-     * of any fragment (unlike URIBuilder, which would re-encode and break the MAC). Note that while
-     * fragments are preserved byte-for-byte, a fragment is never sent to the server, so a
-     * fragment-bearing URL cannot produce a signed URL that validates - as was the case before 6.10.
+     * Caller-side helper that removes the reserved parameters ({@link #reservedParameters}) from a
+     * URL. It is for callers that build the URL to sign out of an incoming request URI - the
+     * {@code signed=true} download flow in Access - where the request legitimately carries such
+     * parameters ({@code signed=true} itself, {@code key} when query-param API token auth was used,
+     * and even the four signing parameters when the request was authenticated with an existing
+     * signed URL). {@link #signUrl} never alters the URL it is given, so these must be removed
+     * before signing.
+     *
+     * <p>The removal preserves the exact bytes of the path, of every other parameter - including
+     * empty segments such as {@code ?&a=b} or {@code a=b&&} - and of any fragment (unlike
+     * URIBuilder, which would re-encode and break the MAC). Note that while fragments are preserved
+     * byte-for-byte, a fragment is never sent to the server, so a fragment-bearing URL cannot
+     * produce a signed URL that validates - as was the case before 6.10.
      */
-    static String stripReservedParameters(String baseUrl) {
+    public static String stripReservedParameters(String baseUrl) {
         // Split off the fragment first: everything from the first '#' on is the fragment (a '?'
         // inside it is not a query) and survives the query surgery byte-for-byte, even when the
         // fragment is attached to a reserved parameter that gets stripped.
@@ -184,6 +212,35 @@ public class UrlSignerUtil {
             anyKept = true;
         }
         return anyKept ? path + "?" + kept + fragment : path + fragment;
+    }
+
+    /**
+     * Returns the name of the first query parameter of {@code url} whose name is one of
+     * {@code parameterNames}, or null if none is present. Parameter names are matched the same way
+     * {@link #stripReservedParameters} matches them (query up to any {@code #} fragment, segments
+     * split on {@code &}, name being everything before the first {@code =}). Callers that accept a
+     * URL to sign from outside (e.g. the requestSignedUrl API) can use this with
+     * {@link #reservedParameters} to reject the URL with a helpful message instead of tripping the
+     * {@link IllegalArgumentException} in {@link #signUrl}.
+     */
+    public static String findReservedParameter(String url, List<String> parameterNames) {
+        String prefix = url;
+        int fragmentStart = url.indexOf('#');
+        if (fragmentStart >= 0) {
+            prefix = url.substring(0, fragmentStart);
+        }
+        int queryStart = prefix.indexOf('?');
+        if (queryStart < 0) {
+            return null;
+        }
+        for (String pair : prefix.substring(queryStart + 1).split("&", -1)) {
+            int equals = pair.indexOf('=');
+            String name = (equals < 0) ? pair : pair.substring(0, equals);
+            if (parameterNames.contains(name)) {
+                return name;
+            }
+        }
+        return null;
     }
 
     /**

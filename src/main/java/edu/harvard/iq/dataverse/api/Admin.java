@@ -2739,6 +2739,16 @@ public class Admin extends AbstractApiBean {
         if (baseUrl == null) {
             return error(Response.Status.BAD_REQUEST, "Required parameter 'url' is missing.");
         }
+        // Reject rather than silently rewrite (in 6.10 reserved params were quietly stripped, so the
+        // caller got back a signature for a different URL than requested). The four signing params
+        // are added by the signing itself; "key" and "signed" are reserved at the request level: a
+        // signed "key" would bake a credential param into the URL and "signed=true" would make the
+        // signed URL return yet another signed URL instead of the resource.
+        String reserved = UrlSignerUtil.findReservedParameter(baseUrl, UrlSignerUtil.reservedParameters);
+        if (reserved != null) {
+            return error(Response.Status.BAD_REQUEST,
+                    "The url to sign must not contain the reserved query parameter '" + reserved + "'.");
+        }
         String userId = urlInfo.getString("user", null);
 
         String key = null;

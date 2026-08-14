@@ -3,16 +3,14 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
-import jakarta.ws.rs.core.MultivaluedHashMap;
-import jakarta.ws.rs.core.MultivaluedMap;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,37 +58,72 @@ public class UrlSignerUtilTest {
     @Test
     public void testSignAndValidateWithParams() {
         final String url1 = "http://localhost:8080/api/test1?p1=true&p2=test";
-        final String url2 = "http://localhost:8080/api/test1?p1=true&p2=test&until=2999-01-01&user=Fred&method=POST&token=abracadabara&signed=true";
-        final String url3 = "localhost:8080/api/test1?p1=true&p2&until=2099-01-01";
+        final String url3 = "localhost:8080/api/test1?p1=true&p2&p3=1";
         final int longTimeout = 1000;
         final String user1 = "Alice";
         final String key = "abracadabara open sesame";
-        MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
-        queryParameters.put("p1", List.of("true"));
-        queryParameters.put("p2", List.of("test"));
-        queryParameters.put("until", List.of("2099-01-01"));
 
         String signedUrl1 = UrlSignerUtil.signUrl(url1, longTimeout, user1, "GET", key);
         assertTrue(signedUrl1.contains("test1?p1=true&p2=test"));
-        System.out.println(signedUrl1);
+        assertTrue(UrlSignerUtil.isValidUrl(signedUrl1, user1, "GET", key));
 
-        String signedUrl2 = UrlSignerUtil.signUrl(url2, longTimeout, user1, "GET", key);
-        assertTrue(signedUrl2.contains("&until=")); // contains the until param but not the bogus one passed in
-        assertFalse(signedUrl2.contains("&until=2099-01-01"));
-        assertTrue(signedUrl2.contains("&user=Alice")); // contains the user param but not the bogus one passed in
-        assertFalse(signedUrl2.contains("&user=Fred"));
-        assertTrue(signedUrl2.contains("&method=GET")); // contains the method param but not the bogus one passed in
-        assertFalse(signedUrl2.contains("&method=POST"));
-        assertTrue(signedUrl2.contains("&token=")); // contains the signed token param but not the bogus one passed in
-        assertFalse(signedUrl2.contains("&token=abracadabara"));
-        assertFalse(signedUrl2.contains("&signed")); // make sure we don't propagate the "signed" param
-        System.out.println(signedUrl2);
-
-        // This will log an error but will still return the signed url even if it's now a valid url
-        // All callers of this method don't handle errors being returned, and it's highly unlikely that the url would be bad
+        // Works with a non-absolute URL and with params that have no value.
         String signedUrl3 = UrlSignerUtil.signUrl(url3, longTimeout, user1, "GET", key);
-        System.out.println(signedUrl3);
-        assertTrue(signedUrl3.contains("&p2&")); // Show that this works with params that have no value
+        assertTrue(signedUrl3.contains("&p2&"));
+    }
+
+    @Test
+    public void testSignUrlThrowsOnReservedSigningParameters() {
+        final int longTimeout = 1000;
+        final String user1 = "Alice";
+        final String key = "abracadabara open sesame";
+
+        // A base URL that already contains a param the algorithm appends is a caller bug: signUrl
+        // must refuse it instead of signing a different URL than the caller intended.
+        String[] badUrls = new String[] {
+            "http://localhost:8080/api/test1?p1=true&until=2999-01-01",
+            "http://localhost:8080/api/test1?user=Fred",
+            "http://localhost:8080/api/test1?p1=true&method=POST&p2=test",
+            "http://localhost:8080/api/test1?p1=true&token=abracadabara",
+            "http://localhost:8080/api/test1?until", // reserved name without a value
+            "http://localhost:8080/api/test1?p1=true&token=abracadabara#frag",
+        };
+        for (String badUrl : badUrls) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> UrlSignerUtil.signUrl(badUrl, longTimeout, user1, "GET", key),
+                    "signUrl must reject a base URL already containing a signing param: " + badUrl);
+        }
+
+        // Names that merely contain a reserved name are fine, as is a reserved name inside the
+        // fragment, which is not part of the query.
+        UrlSignerUtil.signUrl("http://localhost:8080/api/test1?tokens=1&xtoken=2&user2=3", longTimeout, user1, "GET", key);
+        UrlSignerUtil.signUrl("http://localhost:8080/api/test1#frag?token=1", longTimeout, user1, "GET", key);
+
+        // The Dataverse request-level params "signed" and "key" are NOT the utility's concern:
+        // signUrl leaves them untouched, byte for byte. Callers that must not sign them strip them
+        // (Access) or reject the URL (requestSignedUrl) before calling signUrl.
+        String withSignedAndKey = "http://localhost:8080/api/test1?p1=true&signed=true&key=abc";
+        String signedUrl = UrlSignerUtil.signUrl(withSignedAndKey, longTimeout, user1, "GET", key);
+        assertTrue(signedUrl.startsWith(withSignedAndKey + "&"));
+        assertTrue(UrlSignerUtil.isValidUrl(signedUrl, user1, "GET", key));
+    }
+
+    @Test
+    public void testFindReservedParameter() {
+        assertEquals("token", UrlSignerUtil.findReservedParameter(
+                "http://x/api?a=1&token=y", UrlSignerUtil.signingParameters));
+        assertEquals("until", UrlSignerUtil.findReservedParameter(
+                "http://x/api?until", UrlSignerUtil.signingParameters));
+        assertNull(UrlSignerUtil.findReservedParameter(
+                "http://x/api?signed=true&key=abc", UrlSignerUtil.signingParameters));
+        assertEquals("signed", UrlSignerUtil.findReservedParameter(
+                "http://x/api?signed=true&key=abc", UrlSignerUtil.reservedParameters));
+        assertNull(UrlSignerUtil.findReservedParameter(
+                "http://x/api?tokens=1&xtoken=2&user2=3", UrlSignerUtil.reservedParameters));
+        assertNull(UrlSignerUtil.findReservedParameter(
+                "http://x/api", UrlSignerUtil.reservedParameters));
+        assertNull(UrlSignerUtil.findReservedParameter(
+                "http://x/api#frag?token=1", UrlSignerUtil.reservedParameters));
     }
 
     @Test
@@ -117,9 +150,9 @@ public class UrlSignerUtilTest {
         final String method = "GET";
         final String key = "abracadabara open sesame";
 
-        // DOIs (':' and '/'), pre-encoded values, spaces, unicode and embedded URLs must all sign
-        // byte-exact and be accepted by isValidUrl over those exact bytes (the signing primitive;
-        // end-to-end validation with the server's URLDecoder.decode is in SignedUrlAuthMechanismTest).
+        // DOIs with ':' and '/', pre-encoded values, spaces, unicode and embedded URLs must all sign
+        // byte-exact and validate over those exact bytes. End-to-end validation including the
+        // server-side URL decoding is covered in SignedUrlAuthMechanismTest.
         String[] baseUrls = new String[] {
             "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi:10.5072/FK2/ABC123&foo=bar",
             "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi%3A10.5072%2FFK2%2FABC123",

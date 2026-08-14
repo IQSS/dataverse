@@ -650,6 +650,12 @@ public class Access extends AbstractApiBean {
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
+        // The request URI this URL is built from carries params that must not end up in the signed
+        // URL: "signed" (which selected this flow - re-signing it would loop), "key" (the query-param
+        // API token - a credential), and, when the request was itself authenticated with a signed URL,
+        // the four signing params. signUrlWithApiKey refuses a URL containing signing params rather
+        // than fixing it, so this caller strips all of them first.
+        baseUrl = UrlSignerUtil.stripReservedParameters(baseUrl);
         String signedUrl = UrlSignerUtil.signUrlWithApiKey(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
         return ok(JsonUtil.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }

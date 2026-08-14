@@ -89,17 +89,11 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         }
         if (targetUser != null && userApiToken != null) {
             String signedUrl = URLDecoder.decode(uriInfo.getRequestUri().toString(), StandardCharsets.UTF_8);
-            
+
             logger.fine("Original URL: " + containerRequestContext.getUriInfo().getRequestUri().toString());
             String forwardedProto = containerRequestContext.getHeaderString("X-Forwarded-Proto");
             logger.fine("X-Forwarded-Proto is: " + forwardedProto);
-            
-
-            if (forwardedProto != null && !forwardedProto.isEmpty()) {
-                if ("https".equalsIgnoreCase(forwardedProto) && signedUrl.toLowerCase().startsWith("http:")) {
-                    signedUrl = "https" + signedUrl.substring(4);
-                }
-            }
+            signedUrl = applyForwardedProto(signedUrl, forwardedProto);
 
             String requestMethod = containerRequestContext.getMethod();
             String signedUrlSigningKey = UrlSignerUtil.getApiSigningKey(userApiToken.getTokenString());
@@ -109,5 +103,14 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             }
         }
         return user;
+    }
+
+    // Behind a TLS-terminating proxy the request URI is http:// while the URL was signed as
+    // https://; restore the original protocol before validating the signature.
+    private static String applyForwardedProto(String signedUrl, String forwardedProto) {
+        if ("https".equalsIgnoreCase(forwardedProto) && signedUrl.toLowerCase().startsWith("http:")) {
+            return "https" + signedUrl.substring(4);
+        }
+        return signedUrl;
     }
 }

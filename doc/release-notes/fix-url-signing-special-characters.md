@@ -9,9 +9,19 @@ percent-encoding `:` and `/`) before computing the signature, while the request 
 the URL the caller actually presents back. The re-encoded signature no longer matched, so validation
 failed with 401 "Bad signed URL" authentication errors.
 
-Signing no longer re-encodes the URL: it is signed exactly as provided, with only the reserved
-signing parameters (`until`, `user`, `method`, `token`, `key`, `signed`) stripped out; the rest of
-the URL is left untouched, character for character.
+Signing no longer alters the URL at all: it is signed exactly as provided, character for character.
+As part of this, a URL to be signed must not already contain any of the reserved query parameters
+`until`, `user`, `method`, `token` (added by the signing itself), `key` or `signed`:
+
+- `/api/admin/requestSignedUrl` now returns a 400 (Bad Request) naming the offending parameter when
+  the supplied `url` contains one of them. In 6.10 such parameters were silently stripped, so the
+  caller received a signature for a different URL than the one submitted; before 6.10 the parameter
+  was signed into the URL, with undefined results at validation time.
+- The `?signed=true` guestbook-response download flow is unaffected: the reserved parameters that
+  legitimately appear in such a request (`signed` itself, `key` when query-parameter API token
+  authentication is used, and the four signing parameters when the request was authenticated with an
+  existing signed URL) are removed from the request URL before the new signed URL is created, as in
+  6.10.
 
 **This restores the URL-signing behavior used before 6.10, so it is compatible with older versions
 and with existing integrations.** Clients and connectors that build or consume signed URLs the way
