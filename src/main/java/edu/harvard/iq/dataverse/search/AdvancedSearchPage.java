@@ -56,7 +56,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String dvFieldAlias;
     private String dvFieldDescription;
     private String dvFieldAffiliation;
-    private List<String> dvFieldSubject;
+    private List<ControlledVocabularyValue> dvFieldSubject = new ArrayList<>();
     private String dsPublicationDate;
     private String dsPersistentId;
     private String fileFieldName;
@@ -116,8 +116,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
                 queryStrings.add(constructQuery(dsfType.getSolrField().getNameSearchable(), dsfType.getSearchValue(), getCVocConf().containsKey(dsfType.getId())));
             } else if (dsfType.getListValues() != null && !dsfType.getListValues().isEmpty()) {
                 List<String> listQueryStrings = new ArrayList<>();
-                for (String value : dsfType.getListValues()) {
-                    listQueryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
+                for (ControlledVocabularyValue cvv : dsfType.getListValues()) {
+                    listQueryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + cvv.getStrValue() + "\"");
                 }
                 queryStrings.add(constructQuery(listQueryStrings, false));
             }
@@ -151,8 +151,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
         if (dvFieldSubject != null && !dvFieldSubject.isEmpty()) {
             List<String> listQueryStrings = new ArrayList<>();
-            for (String value : dvFieldSubject) {
-                listQueryStrings.add(SearchFields.DATAVERSE_SUBJECT + ":" + "\"" + value + "\"");
+            for (ControlledVocabularyValue cvv : dvFieldSubject) {
+                listQueryStrings.add(SearchFields.DATAVERSE_SUBJECT + ":" + "\"" + cvv.getStrValue() + "\"");
             }
             queryStrings.add(constructQuery(listQueryStrings, false));
         }
@@ -257,11 +257,11 @@ public class AdvancedSearchPage implements java.io.Serializable {
         this.dvFieldAffiliation = dvFieldAffiliation;
     }
 
-    public List<String> getDvFieldSubject() {
+    public List<ControlledVocabularyValue> getDvFieldSubject() {
         return dvFieldSubject;
     }
 
-    public void setDvFieldSubject(List<String> dvFieldSubject) {
+    public void setDvFieldSubject(List<ControlledVocabularyValue> dvFieldSubject) {
         this.dvFieldSubject = dvFieldSubject;
     }
 
@@ -272,40 +272,6 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public DatasetFieldType getSubjectDatasetFieldType() {
         return datasetFieldService.findByName(DatasetFieldConstant.subject);
-    }
-
-    private final Set<Long> slowModeFieldTypeIds = new HashSet<>();
-
-    public List<ControlledVocabularyValue> completeControlledVocabularyValue(String query) {
-        UIComponent component = UIComponent.getCurrentComponent(FacesContext.getCurrentInstance());
-        DatasetFieldType dsft = (DatasetFieldType) component.getAttributes().get("dsft");
-        if (dsft == null || dsft.getControlledVocabularyValues() == null || query == null) {
-            return Collections.emptyList();
-        }
-
-        List<ControlledVocabularyValue> results = new ArrayList<>();
-        String queryLower = query.toLowerCase();
-
-        for (ControlledVocabularyValue cvv : dsft.getControlledVocabularyValues()) {
-            String localeLabel = cvv.getLocaleStrValue();
-            if (localeLabel != null && localeLabel.toLowerCase().contains(queryLower)) {
-                results.add(cvv);
-            }
-            if (results.size() >= 101) {
-                break;
-            }
-        }
-        return results;
-    }
-
-    public boolean isSlowMode(Long fieldTypeId) {
-        return fieldTypeId != null && slowModeFieldTypeIds.contains(fieldTypeId);
-    }
-
-    public void switchToSlowMode(Long fieldTypeId) {
-        if (fieldTypeId != null) {
-            slowModeFieldTypeIds.add(fieldTypeId);
-        }
     }
 
     public String getDsPublicationDate() {

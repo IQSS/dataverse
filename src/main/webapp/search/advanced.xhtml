@@ -93,20 +93,22 @@
                                             <h:panelGroup id="vocab_widget_subject" layout="block">
                                                 <c:set var="vocabSize" value="#{AdvancedSearchPage.dvFieldSubjectValues.size()}"/>
                                                 <p:selectCheckboxMenu value="#{AdvancedSearchPage.dvFieldSubject}"
+                                                                      converter="controlledVocabularyValueConverter"
                                                                       styleClass="form-control"
                                                                       filter="#{(vocabSize ge 10 and vocabSize le 500) ? 'true':'false'}" filterMatchMode="contains" 
                                                                       label="#{bundle.select}" multiple="true" 
                                                                       showHeader="#{(vocabSize ge 10) ? 'true':'false'}"
                                                                       panelStyleClass="#{vocabSize gt 500 ? 'no-selectall' : ''}"
-                                                                      jsf:rendered="#{vocabSize lt 501 or AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}">
+                                                                      rendered="#{vocabSize lt 501 or ControlledVocabularyAutocompleteBean.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}">
                                                     <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
-                                                                   itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"/>
+                                                                   itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                 </p:selectCheckboxMenu>
                                                 <p:autoComplete value="#{AdvancedSearchPage.dvFieldSubject}"
                                                                  id="dvFieldSubject_autocomplete"
-                                                                 rendered="#{vocabSize gt 500 and not AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
-                                                                 completeMethod="#{AdvancedSearchPage.completeControlledVocabularyValue}"
-                                                                 var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"
+                                                                 converter="controlledVocabularyValueConverter"
+                                                                 rendered="#{vocabSize gt 500 and not ControlledVocabularyAutocompleteBean.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
+                                                                 completeMethod="#{ControlledVocabularyAutocompleteBean.complete}"
+                                                                 var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"
                                                                  forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
                                                                  multiple="true" maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                  placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
@@ -114,9 +116,9 @@
                                                 </p:autoComplete>
                                                 <p:commandLink title="#{bundle['controlledvocabulary.showAll.tooltip']}"
                                                                styleClass="vocab-slow-link"
-                                                               rendered="#{vocabSize gt 500 and not AdvancedSearchPage.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
-                                                               actionListener="#{AdvancedSearchPage.switchToSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
-                                                               process="@this"
+                                                               rendered="#{vocabSize gt 500 and not ControlledVocabularyAutocompleteBean.isSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
+                                                               actionListener="#{ControlledVocabularyAutocompleteBean.switchToSlowMode(AdvancedSearchPage.subjectDatasetFieldType.id)}"
+                                                               process="@this vocab_widget_subject"
                                                                update="vocab_widget_subject">
                                                     <h:outputFormat value="#{bundle['controlledvocabulary.showAll']}">
                                                         <f:param value="#{vocabSize}"/>
@@ -163,20 +165,22 @@
                                                 <h:panelGroup id="vocab_widget_mdb" layout="block">
                                                     <c:set var="vocabSize" value="#{item.controlledVocabularyValues.size()}"/>
                                                     <p:selectCheckboxMenu value="#{item.listValues}"
+                                                                          converter="controlledVocabularyValueConverter"
                                                                           styleClass="form-control"
                                                                           filter="#{(vocabSize ge 10 and vocabSize le 500) ? 'true':'false'}" filterMatchMode="contains" 
                                                                           label="#{bundle.select}" multiple="true" 
                                                                           showHeader="#{(vocabSize ge 10) ? 'true':'false'}"
                                                                           panelStyleClass="#{vocabSize gt 500 ? 'no-selectall' : ''}"
-                                                                          jsf:rendered="#{!empty item.controlledVocabularyValues and (vocabSize lt 501 or AdvancedSearchPage.isSlowMode(item.id))}">
+                                                                          rendered="#{!empty item.controlledVocabularyValues and (vocabSize lt 501 or ControlledVocabularyAutocompleteBean.isSlowMode(item.id))}">
                                                         <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
-                                                                       itemLabel="#{cvs.localeStrValue}" itemValue="#{cvs.strValue}"/>
+                                                                       itemLabel="#{cvs.localeStrValue}" itemValue="#{cvs}"/>
                                                     </p:selectCheckboxMenu>
                                                     <p:autoComplete value="#{item.listValues}"
                                                                      id="searchValue_autocomplete"
-                                                                     rendered="#{!empty item.controlledVocabularyValues and vocabSize gt 500 and not AdvancedSearchPage.isSlowMode(item.id)}"
-                                                                     completeMethod="#{AdvancedSearchPage.completeControlledVocabularyValue}"
-                                                                     var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"
+                                                                     converter="controlledVocabularyValueConverter"
+                                                                     rendered="#{!empty item.controlledVocabularyValues and vocabSize gt 500 and not ControlledVocabularyAutocompleteBean.isSlowMode(item.id)}"
+                                                                     completeMethod="#{ControlledVocabularyAutocompleteBean.complete}"
+                                                                     var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"
                                                                      forceSelection="true" dropdown="true" dropdownMode="current" minQueryLength="2" scrollHeight="250"
                                                                      multiple="true" maxResults="100" moreText="#{bundle['controlledvocabulary.autocomplete.moreText']}"
                                                                      placeholder="#{bundle['controlledvocabulary.autocomplete.watermark']}">
@@ -184,9 +188,9 @@
                                                     </p:autoComplete>
                                                     <p:commandLink title="#{bundle['controlledvocabulary.showAll.tooltip']}"
                                                                    styleClass="vocab-slow-link"
-                                                                   rendered="#{!empty item.controlledVocabularyValues and vocabSize gt 500 and not AdvancedSearchPage.isSlowMode(item.id)}"
-                                                                   actionListener="#{AdvancedSearchPage.switchToSlowMode(item.id)}"
-                                                                   process="@this"
+                                                                   rendered="#{!empty item.controlledVocabularyValues and vocabSize gt 500 and not ControlledVocabularyAutocompleteBean.isSlowMode(item.id)}"
+                                                                   actionListener="#{ControlledVocabularyAutocompleteBean.switchToSlowMode(item.id)}"
+                                                                   process="@this vocab_widget_mdb"
                                                                    update="vocab_widget_mdb">
                                                         <h:outputFormat value="#{bundle['controlledvocabulary.showAll']}">
                                                             <f:param value="#{vocabSize}"/>
