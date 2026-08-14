@@ -92,6 +92,12 @@ or
 
     mvn clean package -DskipTests=true -Ptrivial-search-examples
 
+The Meilisearch service can be built as a separate jar with:
+
+.. code-block:: bash
+
+    mvn clean package -DskipTests=true -Pmeilisearch-search
+
 1. GetExternalSearchServiceBean
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -130,6 +136,51 @@ They are intended only as code examples and simple tests of the design and are n
 The former simply replaces the user query with a query for entities with a db id < 1000. It demonstrates how a class can leverage the solr engine and achieve results solely by modifying/replacing the user query. 
 The latter only returns hits from the user's query that also have an odd database id. Since the filtering in the class changes the number of total hits available and pagination, this class demonstrates one way a developer can adjust those aspects of the Solr response.
 
+5. MeilisearchSearchServiceBean
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``MeilisearchSearchServiceBean`` is a datasets-only external search service. It
+uses Meilisearch to rank persistent identifiers and then queries Solr for those
+identifiers. Solr remains responsible for permissions, Dataverse filters,
+facets, and formatting the results expected by the UI and APIs.
+
+The service jar contains a ``ServiceLoader`` registration. Copy the jar built by
+the ``meilisearch-search`` profile into the directory configured by
+``dataverse.search.services.directory`` and restart Payara. The service name is
+``meilisearch``. It can be selected with ``search_service=meilisearch`` or set as
+``dataverse.search.default-service``. Because the Meilisearch index contains
+datasets only, setting it as the global default is not appropriate when
+collection and file results are required.
+
+Dataverse does not populate the Meilisearch index. An external process must keep
+it synchronized. Every document must expose a displayed string attribute named
+``pid`` containing the same dataset persistent identifier stored in Solr. Use a
+separate integer or Meilisearch-compatible string as the primary key because
+Dataverse persistent identifiers contain characters that Meilisearch primary
+keys do not accept. For example:
+
+.. code-block:: json
+
+    {
+      "id": 123,
+      "pid": "doi:10.5072/FK2/ABC123",
+      "title": "Dataset title",
+      "description": "Searchable metadata"
+    }
+
+Configure the connection with ``dataverse.search.meilisearch.url`` and the
+related settings described in the Installation Guide. Use a Meilisearch API key
+restricted to the ``search`` action and the configured index.
+
+The adapter sends plain text, quoted phrases, and placeholder searches to
+Meilisearch. Lucene field queries, ranges, boolean operators, wildcards,
+geospatial searches, My Data searches, and file- or collection-only searches
+fall back to Solr. Meilisearch results are collected from the start of the
+ranking up to the configured candidate limit, filtered through Solr, and then
+paginated. As a result, totals and facets cover accessible candidates within
+that limit rather than every possible Meilisearch hit. Solr cannot recreate
+Meilisearch snippets or spelling suggestions from the PID hydration query.
+
 Notes
 -----
 
@@ -138,4 +189,3 @@ Notes
 3. Search services could be designed to completely replace Solr or to just support certain use cases (e.g. the external search classes only handling datasets).
 4. While search services can be deployed as independent jar files, they currently import multiple Dataverse classes and, unlike exporters, cannot be built using just the Dataverse SPI.
 5. As with other experimental features, we expect the ``SearchService`` interface may change over time as we learn about how people use it. Please keep in touch if you are developing search services.
-

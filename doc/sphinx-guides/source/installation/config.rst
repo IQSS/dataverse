@@ -3811,6 +3811,52 @@ dataverse.search.default-service
 
 Experimental. See :doc:`/developers/search-services`.
 
+dataverse.search.meilisearch.url
+++++++++++++++++++++++++++++++++
+
+Base URL of the Meilisearch server used by the external ``meilisearch`` search
+service, for example ``http://meilisearch:7700``. This setting is required when
+that service handles a query.
+
+Can also be set via *MicroProfile Config API* sources, for example the
+environment variable ``DATAVERSE_SEARCH_MEILISEARCH_URL``.
+
+dataverse.search.meilisearch.api-key
+++++++++++++++++++++++++++++++++++++
+
+Optional Meilisearch API key. Use a key restricted to the ``search`` action and
+the configured index rather than a master or admin key. Protect this value with
+one of the mechanisms described in :ref:`secure-password-storage`.
+
+Can also be set via *MicroProfile Config API* sources, for example the
+environment variable ``DATAVERSE_SEARCH_MEILISEARCH_API_KEY``.
+
+dataverse.search.meilisearch.index
+++++++++++++++++++++++++++++++++++
+
+Meilisearch index containing dataset documents. Each document must expose a
+displayed ``pid`` attribute containing its Dataverse persistent identifier.
+
+Default: ``datasets``
+
+Can also be set via *MicroProfile Config API* sources, for example the
+environment variable ``DATAVERSE_SEARCH_MEILISEARCH_INDEX``.
+
+dataverse.search.meilisearch.candidate-limit
+++++++++++++++++++++++++++++++++++++++++++++
+
+Maximum number of ranked Meilisearch dataset candidates passed to Solr for
+permission filtering and response hydration. Totals and facets returned by this
+search service are limited to accessible documents within this candidate set.
+The value must also be allowed by the Meilisearch index's
+``pagination.maxTotalHits`` setting. The maximum supported value is ``1000`` so
+the generated Solr PID query remains below the standard boolean clause limit.
+
+Default: ``1000``
+
+Can also be set via *MicroProfile Config API* sources, for example the
+environment variable ``DATAVERSE_SEARCH_MEILISEARCH_CANDIDATE_LIMIT``.
+
 .. _dataverse.cors.origin:
 
 dataverse.cors.origin

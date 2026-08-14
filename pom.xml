@@ -929,6 +929,7 @@
                     <packagingExcludes>
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/GetExternalSearchServiceBean.class,
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/PostExternalSearchServiceBean.class,
+                        WEB-INF/classes/edu/harvard/iq/dataverse/search/MeilisearchSearchServiceBean.class,
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/GoldenOldiesSearchServiceBean.class,
                         WEB-INF/classes/edu/harvard/iq/dataverse/search/OddlyEnoughSearchServiceBean.class
                     </packagingExcludes>
@@ -1400,6 +1401,30 @@
                                 <configuration>
                                     <descriptors>
                                         <descriptor>src/assembly/external-search-post.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>meilisearch-search</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>meilisearch-search-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/meilisearch-search.xml</descriptor>
                                     </descriptors>
                                 </configuration>
                             </execution>
