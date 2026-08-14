@@ -916,7 +916,6 @@ public class GuestbookResponseServiceBean {
         if (date != null) {
             queryStr += " and responsetime < '" + date + "'";
         }
-        logger.severe("GuestbookResponse counting query: " + queryStr);
         Query query =  em.createNativeQuery(queryStr + ";");
         return (Long) query.getSingleResult();
     }
