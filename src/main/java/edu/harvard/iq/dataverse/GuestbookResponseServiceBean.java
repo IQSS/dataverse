@@ -893,24 +893,33 @@ public class GuestbookResponseServiceBean {
         
     public Long getDownloadCountByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId + " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
-        return (Long) query.getSingleResult();
+        return guestbookResponseCountQuery(null, dataFileId,  null);
     }
     
     public Long getDownloadCountByDatasetId(Long datasetId) {
-        return getDownloadCountByDatasetId(datasetId, null);
+        return guestbookResponseCountQuery(datasetId, null, null);
     }
     
     public Long getDownloadCountByDatasetId(Long datasetId, LocalDate date) {
         // dataset id is null, will return 0        
-        Query query;
-        if(date != null) {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "' and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
-        }else {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
+        return guestbookResponseCountQuery(datasetId,  null, date);
+    }
+
+    private Long guestbookResponseCountQuery(Long datasetId, Long datafileId, LocalDate date) {
+        String queryStr = "select count(*) from GuestbookResponse where eventtype != '" + GuestbookResponse.ACCESS_REQUEST + "'";
+        if (datasetId != null) {
+            queryStr += " and dataset_id = " + datasetId;
         }
+        if (datafileId != null) {
+            queryStr += " and datafile_id = " + datafileId;
+        }
+        if (date != null) {
+            queryStr += " and responsetime < '" + date + "'";
+        }
+        logger.severe("GuestbookResponse counting query: " + queryStr);
+        Query query =  em.createNativeQuery(queryStr + ";");
         return (Long) query.getSingleResult();
-    }    
+    }
 
     public Long getTotalDownloadCount() {
         // dataset id is null, will return 0  
