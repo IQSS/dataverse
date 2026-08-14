@@ -96,6 +96,7 @@ The task at or near release time is to collect these snippets into a single file
 - Create a branch, add a .md file for the release (ex. 6.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure to copy the number from the filename of the snippet into the final release note.
 - Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
 - Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure. These instructions are required for the next steps (deploying to various environments) so try to prioritize them over finding just the right words in release highlights (which you can do later).
+- We usually include a "Security Updates" section due to dependencies we've updated. Under that section, give credit to any security researchers who have reported vulnerabilities. In the `6.11 release notes <https://github.com/IQSS/dataverse/releases/tag/v6.11>`_, for example, we wrote "We would like to thank [person1], [person2], and [person3] for notifying us about vulnerabilities that were fixed in this release." See :ref:`security-researcher-credit` and :ref:`reporting-security-issues`.
 - Make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/11613
 - Note that we won't merge the release notes until after we have confirmed that the upgrade instructions are valid by performing a couple upgrades.
 
@@ -135,7 +136,7 @@ Conduct Performance Testing
 
 |dedicated|
 
-See :doc:`/qa/performance-tests` for details.
+See :ref:`locust` and <https://github.com/IQSS/dataverse/issues/12284>, for example.
 
 Conduct Regression Testing
 ---------------------------
@@ -143,8 +144,6 @@ Conduct Regression Testing
 |dedicated|
 
 Regression testing should be conducted on production data.
-See :doc:`/qa/testing-approach` for details.
-Refer to the provided regression checklist for the list of items to verify during the testing process: `Regression Checklist <https://docs.google.com/document/d/1OsGJV0sMLDSmfkU9-ee8h_ozbQcUDJ1EOwNPm4dC63Q/edit?usp=sharing>`_.
 
 Build the Guides for the Release Candidate
 ------------------------------------------
