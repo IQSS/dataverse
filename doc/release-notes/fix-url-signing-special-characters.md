@@ -27,7 +27,9 @@ As part of this, a URL to be signed must not already contain any of the reserved
 and with existing integrations.** Clients and connectors that build or consume signed URLs the way
 they did before 6.10 keep working unchanged, signatures are computed the same way as before the
 regression, and URLs containing special characters validate again. No client-side changes are
-required.
+required for URLs that follow the documented contract; the one exception is described below - a
+`url` that already contains a reserved query parameter is now rejected with a 400 instead of being
+silently altered.
 
 Validation has also been made encoding-agnostic. The signature is now checked against the URL
 exactly as presented on the wire first, so the simple contract just works: submit the `url` to

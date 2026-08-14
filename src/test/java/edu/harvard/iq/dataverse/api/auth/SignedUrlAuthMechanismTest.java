@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
@@ -154,6 +155,22 @@ public class SignedUrlAuthMechanismTest {
         ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, signedUrl);
 
         assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(request));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
+    public void testFindUserFromRequest_malformedPrivateUrlUser_standard401Not500() {
+        // The user query param is attacker-controlled and reachable unauthenticated: a private-url
+        // user id with a non-numeric suffix, or one whose dataset has no private URL, must produce
+        // the standard 401 - not an unhandled NumberFormatException/NullPointerException 500.
+        sut.authSvc = mock(AuthenticationServiceBean.class);
+        sut.privateUrlSvc = mock(PrivateUrlServiceBean.class); // returns null for any dataset id
+
+        ContainerRequestContext nonNumericSuffix = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, "!abc");
+        assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(nonNumericSuffix));
+
+        ContainerRequestContext noPrivateUrlForDataset = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, "!999999");
+        assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(noPrivateUrlForDataset));
     }
 
     // The primary signed-URL contract: whatever URL is submitted for signing - percent-escapes, '+'

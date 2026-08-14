@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Simple class to sign/validate URLs.
@@ -40,7 +41,8 @@ public class UrlSignerUtil {
      * them first, e.g. with {@link #stripReservedParameters}; {@code signUrl} itself never rewrites
      * the URL it is given.
      */
-    public static final List<String> reservedParameters = List.of(SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN, SIGNED_URL_KEY, SIGNED_URL_SIGNED);
+    public static final List<String> reservedParameters = Stream.concat(
+            signingParameters.stream(), Stream.of(SIGNED_URL_KEY, SIGNED_URL_SIGNED)).toList();
     /**
      *
      * @param baseUrl - the URL to sign - must not contain the query params

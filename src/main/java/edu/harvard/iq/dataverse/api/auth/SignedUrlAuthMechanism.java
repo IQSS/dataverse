@@ -51,14 +51,6 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
 
     private User getAuthenticatedUserFromSignedUrl(ContainerRequestContext containerRequestContext) {
         User user = null;
-        // Without a signing secret we never issue signed URLs (signUrlWithApiKey refuses on the sign
-        // side), so we must not accept them here either. Otherwise a bare API token - or, for a guest,
-        // the public request URL - would be enough to forge a URL whose signature validates against the
-        // "" + token key computed below. Reject so findUserFromRequest returns the standard 401.
-        if (!UrlSignerUtil.isSigningSecretConfigured()) {
-            logger.warning("Rejecting signed URL authentication: no signing secret configured (dataverse.api.signing-secret).");
-            return null;
-        }
         // The signedUrl contains a param telling which user this is supposed to be for.
         // We don't trust this. So we look up that user, and get their API key, and use
         // that as a secret in validating the signedURL. If the signature can't be
@@ -70,6 +62,16 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         if (userId == null) {
             // A token param was present (that is why this mechanism ran) but no user param: this can
             // never be a URL we signed, and dereferencing userId below would throw a NullPointerException.
+            // This check runs before the signing-secret warning below so that arbitrary requests that
+            // merely carry a token param cannot flood the log on installations without a secret.
+            return null;
+        }
+        // Without a signing secret we never issue signed URLs (signUrlWithApiKey refuses on the sign
+        // side), so we must not accept them here either. Otherwise a bare API token - or, for a guest,
+        // the public request URL - would be enough to forge a URL whose signature validates against the
+        // "" + token key computed below. Reject so findUserFromRequest returns the standard 401.
+        if (!UrlSignerUtil.isSigningSecretConfigured()) {
+            logger.warning("Rejecting signed URL authentication: no signing secret configured (dataverse.api.signing-secret).");
             return null;
         }
         User targetUser = null;
@@ -82,7 +84,17 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             targetUser = authSvc.getAuthenticatedUser(userId);
             userApiToken = authSvc.findApiTokenByUser((AuthenticatedUser) targetUser);
         } else {
-            PrivateUrl privateUrl = privateUrlSvc.getPrivateUrlFromDatasetId(Long.parseLong(userId.substring(PrivateUrlUser.PREFIX.length())));
+            // The user param is attacker-controlled: a non-numeric suffix or a dataset without a
+            // private URL must yield the standard 401, not an unhandled 500.
+            PrivateUrl privateUrl = null;
+            try {
+                privateUrl = privateUrlSvc.getPrivateUrlFromDatasetId(Long.parseLong(userId.substring(PrivateUrlUser.PREFIX.length())));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+            if (privateUrl == null) {
+                return null;
+            }
             userApiToken = new ApiToken();
             userApiToken.setTokenString(privateUrl.getToken());
             targetUser = privateUrlSvc.getPrivateUrlUserFromToken(privateUrl.getToken());
@@ -114,7 +126,10 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             return true;
         }
         try {
-            return UrlSignerUtil.isValidUrl(URLDecoder.decode(rawUrl, StandardCharsets.UTF_8), userId, requestMethod, signingKey);
+            String decoded = URLDecoder.decode(rawUrl, StandardCharsets.UTF_8);
+            // When decoding is the identity (no %-escapes or '+'), the fallback would hash the same
+            // bytes again; skip it.
+            return !decoded.equals(rawUrl) && UrlSignerUtil.isValidUrl(decoded, userId, requestMethod, signingKey);
         } catch (IllegalArgumentException e) {
             // Not URL-decodable (e.g. a bare '%'): there is no decoded variant to check against.
             logger.fine("Signed URL is not URL-decodable, skipping the decoded-form check: " + e.getMessage());
@@ -125,7 +140,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
     // Behind a TLS-terminating proxy the request URI is http:// while the URL was signed as
     // https://; restore the original protocol before validating the signature.
     private static String applyForwardedProto(String signedUrl, String forwardedProto) {
-        if ("https".equalsIgnoreCase(forwardedProto) && signedUrl.toLowerCase().startsWith("http:")) {
+        if ("https".equalsIgnoreCase(forwardedProto) && signedUrl.regionMatches(true, 0, "http:", 0, 5)) {
             return "https" + signedUrl.substring(4);
         }
         return signedUrl;

@@ -17,7 +17,8 @@ services:
       DATAVERSE_MAIL_SYSTEM_EMAIL: "Demo Dataverse <dataverse@example.org>"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
       # Required for signed URLs (external tools, Globus transfers, signed guestbook downloads,
-      # rdm-integration). Change this to a private value; see the Configuration Guide.
+      # rdm-integration). Change this to a private value before exposing the instance - with this
+      # well-known default, anyone can forge signed URLs. See the Configuration Guide.
       DATAVERSE_API_SIGNING_SECRET: "demo-only-signing-secret-change-me"
       JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
         -Ddataverse.files.file1.type=file
