@@ -920,8 +920,7 @@ public class GuestbookResponseServiceBean {
             queryStr.append(" and responsetime < '" + date + "'");
         }
         queryStr.append(";");
-        TypedQuery<Long> query = em.createQuery(queryStr.toString(), Long.class);
-        return query.getSingleResult();
+        return (Long) em.createNativeQuery(queryStr.toString()).getSingleResult();
     }
 
     public Long getTotalDownloadCount() {
