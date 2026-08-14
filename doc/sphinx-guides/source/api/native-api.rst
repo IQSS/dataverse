@@ -4057,6 +4057,8 @@ Delete Unpublished Dataset
 
 Delete the dataset whose id is passed:
 
+.. note:: This api will only delete the DRAFT version of the dataset (along with metadata changes and deletes any files added in the draft) which results in deletion of the dataset if there are no published versions.
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
