@@ -9139,7 +9139,7 @@ Signed URLs were developed to support External Tools but may be useful in other 
 This API call allows a Dataverse superUser to generate a signed URL for such scenarios.
 The JSON input parameter required is an object with the following keys:
 
-- ``url`` - the exact URL to sign, including api version number and all query parameters. Provide it in exactly the form you will use it - percent-encoded or not: the signature is computed over the URL exactly as provided, and the returned signed URL works when used verbatim. If the request may pass through HTTP client libraries or reverse proxies that re-encode URLs in flight, prefer providing the URL in its URL-decoded form (for example ``persistentId=doi:10.5072/FK2/ABC``): a URL signed in decoded form also validates when it arrives percent-encoded, so it is robust against such re-encoding. The URL must not already contain any of the reserved query parameters ``until``, ``user``, ``method``, ``token`` (these are appended by the signing), ``key`` or ``signed``; such a URL is rejected with a 400 (Bad Request) response.
+- ``url`` - the exact URL to sign, including api version number and all query parameters. Provide it in its URL-decoded form (for example ``persistentId=doi:10.5072/FK2/ABC``): the signature is computed over the URL exactly as provided, and a URL signed in decoded form validates both when used as received and when parts of it get percent-encoded in flight. The URL must not already contain any of the reserved query parameters ``until``, ``user``, ``method``, ``token`` (these are appended by the signing), ``key`` or ``signed``; such a URL is rejected with a 400 (Bad Request) response.
 - ``timeOut`` - how long in minutes the signature should be valid for, default is 10 minutes
 - ``httpMethod`` - which HTTP method is required, default is GET
 - ``user`` - the user identifier for the account associated with this signature, the default is the superuser making the call. The API call will succeed/fail based on whether the specified user has the required permissions. 
@@ -9153,6 +9153,11 @@ A curl example using allowing access to a dataset's metadata
   export JSON='{"url":"https://demo.dataverse.org/api/v1/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB","timeOut":5,"user":"alberteinstein"}'
 
   curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/requestSignedUrl"
+
+Use the returned ``signedUrl`` as received, treating it as an opaque string: do not parse and rebuild it or add query
+parameters, as reordering or inserting anything invalidates the signature. If you need a percent-encoded form (for
+example a search term containing spaces), append the returned signature parameters to the URL exactly as you
+originally constructed it.
 
 Note that a non-empty :ref:`dataverse.api.signing-secret` must be configured on the server for this endpoint to work:
 the key used to sign the URL is created from the user's API token plus the signing-secret, and without the secret the
