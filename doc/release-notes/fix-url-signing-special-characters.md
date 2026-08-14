@@ -35,6 +35,8 @@ exactly as presented on the wire first, so the simple contract just works: submi
 the returned signed URL verbatim. URLs signed in their URL-decoded form and later presented as a
 percent-encoded variant also continue to validate (the pre-6.10 behavior, kept for compatibility
 with existing clients and with proxies or HTTP libraries that re-encode characters in flight).
+Clients whose requests may be re-encoded in flight should therefore prefer submitting the URL in
+its URL-decoded form, which is robust in both cases.
 
 ### A signing secret is now required for signed URLs
 
