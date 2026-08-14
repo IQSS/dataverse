@@ -91,6 +91,8 @@ public class GuestbookResponseServiceBean {
     
     
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
+
+    private static final String DOWNLOAD_COUNT_QUERY = "select count(*) from GuestbookResponse where eventtype != '" + GuestbookResponse.ACCESS_REQUEST + "'";
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -906,18 +908,20 @@ public class GuestbookResponseServiceBean {
     }
 
     private Long guestbookResponseCountQuery(Long datasetId, Long datafileId, LocalDate date) {
-        String queryStr = "select count(*) from GuestbookResponse where eventtype != '" + GuestbookResponse.ACCESS_REQUEST + "'";
+        StringBuilder queryStr = new StringBuilder(DOWNLOAD_COUNT_QUERY);
         if (datasetId != null) {
-            queryStr += " and dataset_id = " + datasetId;
-        }
-        if (datafileId != null) {
-            queryStr += " and datafile_id = " + datafileId;
+            queryStr.append(" and dataset_id = " + datasetId);
+        } else if (datafileId != null) {
+            queryStr.append(" and datafile_id = " + datafileId);
+        } else {
+            return 0L;
         }
         if (date != null) {
-            queryStr += " and responsetime < '" + date + "'";
+            queryStr.append(" and responsetime < '" + date + "'");
         }
-        Query query =  em.createNativeQuery(queryStr + ";");
-        return (Long) query.getSingleResult();
+        queryStr.append(";");
+        TypedQuery<Long> query = em.createQuery(queryStr.toString(), Long.class);
+        return query.getSingleResult();
     }
 
     public Long getTotalDownloadCount() {
