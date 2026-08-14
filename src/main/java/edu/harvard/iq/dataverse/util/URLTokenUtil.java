@@ -222,6 +222,11 @@ public class URLTokenUtil {
                 urlTemplate = SystemConfig.getDataverseSiteUrlStatic() + urlTemplate;
                 String apiPath = replaceTokensWithValues(urlTemplate);
                 logger.fine("URL WithTokens: " + apiPath);
+                // The template comes from the tool manifest, so reserved params can be (mis)used
+                // there - most dangerously key={apiToken}, which would put the user's real API token
+                // into the URL handed to the tool: the very credential signed URLs exist to withhold.
+                // Remove all reserved params (as 6.10 did inside signUrl) before signing or sending.
+                apiPath = UrlSignerUtil.stripReservedParameters(apiPath);
                 String url = apiPath;
                 // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
                 ApiToken apiToken = getApiToken();

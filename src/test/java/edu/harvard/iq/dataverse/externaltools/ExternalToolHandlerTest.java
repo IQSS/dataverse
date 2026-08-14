@@ -244,6 +244,57 @@ public class ExternalToolHandlerTest {
 
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = "test-only-signing-secret")
+    public void testGetToolUrlWithAllowedApiCallsStripsReservedParameters() {
+        // A manifest can (mis)use reserved words in an allowedApiCalls urlTemplate - most dangerously
+        // key={apiToken}. The user's real API token must never end up in the URL handed to the tool,
+        // and stray reserved params must not spoof or break the signing.
+        Dataset ds = new Dataset();
+        ds.setId(1L);
+        ApiToken at = new ApiToken();
+        AuthenticatedUser au = new AuthenticatedUser();
+        au.setUserIdentifier("dataverseAdmin");
+        at.setAuthenticatedUser(au);
+        at.setTokenString("secret-api-token-1234");
+        ExternalTool et = getToolWithAllowedApiCallsUrlTemplate("/api/v1/datasets/{datasetId}?key={apiToken}&signed=true&user=Fred");
+        URLTokenUtil handler = new ExternalToolHandler(et, ds, at, null);
+        JsonObject jo = handler
+                .createPostBody(handler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
+        String signedUrl = jo.getJsonArray("signedUrls").getJsonObject(0).getString("signedUrl");
+        assertFalse(signedUrl.contains("secret-api-token-1234"), "the user's API token must not appear in the signed URL");
+        assertFalse(signedUrl.contains("key="));
+        assertFalse(signedUrl.contains("signed=true"));
+        assertFalse(signedUrl.contains("user=Fred"));
+        assertTrue(signedUrl.contains("https://librascholar.org/api/v1/datasets/1"));
+        assertTrue(signedUrl.contains("user=dataverseAdmin"));
+        assertTrue(signedUrl.contains("&token="));
+    }
+
+    private static ExternalTool getToolWithAllowedApiCallsUrlTemplate(String urlTemplate) {
+        String tool = JsonUtil.createObjectBuilder()
+                .add("displayName", "AwesomeTool")
+                .add("toolName", "explorer")
+                .add("description", "This tool is awesome.")
+                .add("types", JsonUtil.createArrayBuilder().add("explore"))
+                .add("scope", "dataset")
+                .add("toolUrl", "http://awesometool.com")
+                .add("hasPreviewMode", "true")
+                .add("toolParameters", JsonUtil.createObjectBuilder()
+                        .add("httpMethod", "GET")
+                        .add("queryParameters", JsonUtil.createArrayBuilder()
+                                .add(JsonUtil.createObjectBuilder().add("datasetId", "{datasetId}"))))
+                .add("allowedApiCalls", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("name", "getDataset")
+                                .add("httpMethod", "GET")
+                                .add("urlTemplate", urlTemplate)
+                                .add("timeOut", 10)))
+                .build().toString();
+        return ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
     public void testGetToolUrlWithAllowedApiCallsNoSigningSecret() {
         // Without dataverse.api.signing-secret configured, the URL must be sent unsigned (no signing
         // parameters at all) instead of weakly signed - and no IllegalStateException may escape.
