@@ -88,21 +88,38 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             targetUser = privateUrlSvc.getPrivateUrlUserFromToken(privateUrl.getToken());
         }
         if (targetUser != null && userApiToken != null) {
-            String signedUrl = URLDecoder.decode(uriInfo.getRequestUri().toString(), StandardCharsets.UTF_8);
-
-            logger.fine("Original URL: " + containerRequestContext.getUriInfo().getRequestUri().toString());
+            String rawUrl = uriInfo.getRequestUri().toString();
+            logger.fine("Original URL: " + rawUrl);
             String forwardedProto = containerRequestContext.getHeaderString("X-Forwarded-Proto");
             logger.fine("X-Forwarded-Proto is: " + forwardedProto);
-            signedUrl = applyForwardedProto(signedUrl, forwardedProto);
+            rawUrl = applyForwardedProto(rawUrl, forwardedProto);
 
             String requestMethod = containerRequestContext.getMethod();
             String signedUrlSigningKey = UrlSignerUtil.getApiSigningKey(userApiToken.getTokenString());
-            boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
-            if (isSignedUrlValid) {
+            if (isSignedUrlValid(rawUrl, userId, requestMethod, signedUrlSigningKey)) {
                 user = targetUser;
             }
         }
         return user;
+    }
+
+    // Primary contract: the signature is checked against the exact bytes on the wire, so a URL that
+    // was signed in the very form the client presents it - percent-escapes included - works verbatim,
+    // with no client-side decoding or reconstruction. The fallback (the only behavior before 6.11)
+    // covers URLs signed in their URL-decoded form and presented as an encoded variant; it also
+    // absorbs clients and proxies that re-encode characters in flight (every signed URL carries ':'
+    // in its "until" timestamp, a favorite of normalizing HTTP stacks).
+    private static boolean isSignedUrlValid(String rawUrl, String userId, String requestMethod, String signingKey) {
+        if (UrlSignerUtil.isValidUrl(rawUrl, userId, requestMethod, signingKey)) {
+            return true;
+        }
+        try {
+            return UrlSignerUtil.isValidUrl(URLDecoder.decode(rawUrl, StandardCharsets.UTF_8), userId, requestMethod, signingKey);
+        } catch (IllegalArgumentException e) {
+            // Not URL-decodable (e.g. a bare '%'): there is no decoded variant to check against.
+            logger.fine("Signed URL is not URL-decodable, skipping the decoded-form check: " + e.getMessage());
+            return false;
+        }
     }
 
     // Behind a TLS-terminating proxy the request URI is http:// while the URL was signed as

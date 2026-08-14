@@ -156,6 +156,71 @@ public class SignedUrlAuthMechanismTest {
         assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(request));
     }
 
+    // The primary signed-URL contract: whatever URL is submitted for signing - percent-escapes, '+'
+    // and all - the returned signed URL must authenticate when presented back VERBATIM. No client-side
+    // decoding, re-encoding or reconstruction may be required.
+    @Test
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
+    public void testEndToEnd_escapedUrlSignedAndUsedVerbatim_authenticates() {
+        givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
+        List<String> urls = List.of(
+            // url.QueryEscape'd persistentId, as rdm-integration's userPermissions/metadata calls send it
+            "http://localhost:8080/api/v1/datasets/:persistentId/userPermissions?persistentId=doi%3A10.5072%2FFK2%2FABC",
+            "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi%3A10.5072%2FFK2%2FABC&excludeFiles=true",
+            // escaped search term: '+' for space, %3A / %22 for ':' and '"'
+            "http://localhost:8080/api/v1/mydata/retrieve?selected_page=1&mydata_search_term=text%3A%22hello+world%22",
+            // a value with an escaped literal '%' - decoding this twice would corrupt it
+            "http://localhost:8080/api/v1/search?q=100%2525done"
+        );
+        for (String url : urls) {
+            String signedUrl = UrlSignerUtil.signUrlWithApiKey(url, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+            ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, signedUrl);
+            try {
+                assertEquals(testAuthenticatedUser, sut.findUserFromRequest(request),
+                        "signed URL must authenticate when used verbatim: " + signedUrl);
+            } catch (WrappedAuthErrorResponse e) {
+                fail("signed URL must authenticate when used verbatim: " + signedUrl);
+            }
+        }
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
+    public void testEndToEnd_tamperedEscapedUrlUsedVerbatim_rejected() {
+        givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
+        String url = "http://localhost:8080/api/v1/datasets/:persistentId/userPermissions?persistentId=doi%3A10.5072%2FFK2%2FABC";
+        String signedUrl = UrlSignerUtil.signUrlWithApiKey(url, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+        String tampered = signedUrl.replace("FK2%2FABC", "FK2%2FHACKED");
+
+        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, tampered);
+
+        assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(request));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
+    public void testEndToEnd_clientStackReEncodesSignatureParams_authenticates() {
+        // Why the decoded fallback must stay: every signed URL carries ':' in its own until timestamp
+        // (and clients/proxies like Apache HttpClient, OkHttp or mod_proxy may percent-encode it in
+        // flight). A URL signed in decoded form and presented in a re-encoded variant must validate.
+        givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
+        String base = "http://localhost:8080/api/v1/datasets/42";
+        String signedUrl = UrlSignerUtil.signUrlWithApiKey(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+        // Simulate a stack that re-encodes ':' in query values; the path is left alone.
+        int queryStart = signedUrl.indexOf('?');
+        String reEncoded = signedUrl.substring(0, queryStart)
+                + signedUrl.substring(queryStart).replace(":", "%3A");
+
+        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, reEncoded);
+
+        try {
+            assertEquals(testAuthenticatedUser, sut.findUserFromRequest(request),
+                    "re-encoded variant of a decoded-form-signed URL must still authenticate");
+        } catch (WrappedAuthErrorResponse e) {
+            fail("re-encoded variant of a decoded-form-signed URL must still authenticate");
+        }
+    }
+
     // Runs the real rdm flow: un-escape, sign, request the original (encoded) URL + signature, then the
     // server URL-decodes the request and checks it. Returns true iff the user authenticates.
     private boolean validatesEndToEndAsRdmClient(String urlAsClientBuilds) {

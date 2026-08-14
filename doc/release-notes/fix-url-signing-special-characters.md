@@ -29,11 +29,12 @@ they did before 6.10 keep working unchanged, signatures are computed the same wa
 regression, and URLs containing special characters validate again. No client-side changes are
 required.
 
-Note that, as before 6.10, the `url` submitted to `/api/admin/requestSignedUrl` (and any URL consumed
-as a signed URL) must be in its URL-decoded form: the signature is computed over the URL exactly as
-provided, but the server validates it against the URL-decoded request. Passing a percent-encoded URL
-(e.g. `persistentId=doi%3A10.5072%2FFK2%2FABC` instead of `persistentId=doi:10.5072/FK2/ABC`) and then
-using it verbatim will therefore fail validation.
+Validation has also been made encoding-agnostic. The signature is now checked against the URL
+exactly as presented on the wire first, so the simple contract just works: submit the `url` to
+`/api/admin/requestSignedUrl` in exactly the form you will use it - percent-encoded or not - and use
+the returned signed URL verbatim. URLs signed in their URL-decoded form and later presented as a
+percent-encoded variant also continue to validate (the pre-6.10 behavior, kept for compatibility
+with existing clients and with proxies or HTTP libraries that re-encode characters in flight).
 
 ### A signing secret is now required for signed URLs
 
