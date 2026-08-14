@@ -68,6 +68,25 @@ jobs:
           mvn -version
 
       # ---------------------------
+      # FETCH OR BUILD BASE IMAGE
+      # ---------------------------
+      - name: Fetch or Build local base image
+        run: |
+          set -euo pipefail
+          
+          # 1. Ask Maven for the expected tag
+          BASE_IMAGE=$(cd modules/container-base && mvn build-helper:parse-version help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
+          echo "Target base image: $BASE_IMAGE"
+          
+          # 2. Try to pull it. If that fails, build it.
+          if docker pull "$BASE_IMAGE"; then
+            echo "✅ Image found and pulled successfully! Skipping local build."
+          else
+            echo "⚠️ Pull failed (image likely doesn't exist yet). Building locally..."
+            mvn -Pct clean package -f modules/container-base/pom.xml
+          fi
+
+      # ---------------------------
       # BUILD IMAGES (Dataverse-native)
       # ---------------------------
       - name: Build Dataverse containers via Maven
