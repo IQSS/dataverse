@@ -2052,7 +2052,7 @@
     "clientSessionMaxLifespan" : "0",
     "frontendUrl" : ""
   },
-  "keycloakVersion" : "19.0.3",
+  "keycloakVersion" : "26.7.0",
   "userManagedAccessAllowed" : false,
   "clientProfiles" : {
     "profiles" : [ ]
