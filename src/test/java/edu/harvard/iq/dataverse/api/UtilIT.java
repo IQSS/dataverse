@@ -5598,7 +5598,7 @@ public class UtilIT {
     public static Guestbook createRandomGuestbook(String ownerAlias, String persistentId, String apiToken) throws IOException, JsonParseException {
         Guestbook gb = new Guestbook();
         File guestbookJson = new File("scripts/api/data/guestbook-test.json");
-        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
+        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath()))).replace("{@}", UUID.randomUUID().toString());
         JsonObject jsonObj = JsonUtil.getJsonObject(guestbookAsJson);
         JsonParser jsonParsor = new JsonParser();
         jsonParsor.parseGuestbook(jsonObj, gb);
