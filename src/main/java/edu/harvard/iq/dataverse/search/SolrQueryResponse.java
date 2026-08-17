@@ -14,9 +14,9 @@ public class SolrQueryResponse {
 
     private static final Logger logger = Logger.getLogger(SolrQueryResponse.class.getCanonicalName());
 
-    private List<SolrSearchResult> solrSearchResults;
-    private Long numResultsFound;
-    private Long resultsStart;
+    private List<SolrSearchResult> solrSearchResults = List.of();
+    private Long numResultsFound = 0L;
+    private Long resultsStart = 0L;
     private Map<String, List<String>> spellingSuggestionsByToken;
     private List<FacetCategory> facetCategoryList;
     private List<FacetCategory> typeFacetCategories;

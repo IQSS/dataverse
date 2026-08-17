@@ -325,10 +325,18 @@ public class SettingsServiceBean {
         Whether to display the publish text for every published version
         */
         DatasetPublishPopupCustomTextOnAllVersions,
+        /**
+         The message added to a popup upon dataset submit for review
+         */
+        DatasetSubmitForReviewPopupCustomText,
         /*
         Publish Disclaimer text. If this setting exists user must acknowledge before a Dataset can be published
          */
         PublishDatasetDisclaimerText,
+        /*
+        Submit for review Disclaimer text. If this setting exists user must acknowledge before a Dataset can be submitted for review
+         */
+        SubmitForReviewDatasetDisclaimerText,
         /*
         Whether Harvesting (OAI) service is enabled
         */

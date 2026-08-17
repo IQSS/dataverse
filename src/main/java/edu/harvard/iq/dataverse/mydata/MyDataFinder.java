@@ -424,7 +424,10 @@ public class MyDataFinder {
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
         for (Long roleId : this.filterParams.getRoleIds()){
-            jsonArray.add(this.rolePermissionHelper.getRoleName(roleId));
+            String roleName = this.rolePermissionHelper.getRoleName(roleId);
+            if (roleName != null) {
+                jsonArray.add(roleName);
+            }
         }
         return jsonArray;
     }

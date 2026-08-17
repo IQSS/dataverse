@@ -424,6 +424,11 @@ function submit_my_data_search(){
             $('#ajaxStatusPanel_start').hide();
             return;
         }
+        if (data.message != null){
+            setWarningAlert(data.message);
+            $('#ajaxStatusPanel_start').hide();
+            return;
+        }
 
         // --------------------------------
         // (2b) Looks good, let's make page

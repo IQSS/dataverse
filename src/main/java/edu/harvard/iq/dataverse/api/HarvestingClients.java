@@ -38,8 +38,13 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("harvest/clients")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class HarvestingClients extends AbstractApiBean {
 
     
@@ -60,7 +65,11 @@ public class HarvestingClients extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/")
-    public Response harvestingClients(@Context ContainerRequestContext crc, @QueryParam("key") String apiKey) throws IOException {
+    @Operation(summary = "Lists harvesting clients",
+            description = "Returns harvesting client configurations visible to the authenticated requester.")
+    public Response harvestingClients(@Context ContainerRequestContext crc,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) throws IOException {
         
         List<HarvestingClient> harvestingClients = null; 
         try {
@@ -103,7 +112,13 @@ public class HarvestingClients extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{nickName}")
-    public Response harvestingClient(@Context ContainerRequestContext crc, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException {
+    @Operation(summary = "Returns a harvesting client",
+            description = "Returns the harvesting client configuration with the specified nickname when the requester is authorized to view it.")
+    public Response harvestingClient(@Context ContainerRequestContext crc,
+            @Parameter(description = "Harvesting client nickname to return.", required = true)
+            @PathParam("nickName") String nickName,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) throws IOException {
         
         HarvestingClient harvestingClient = null; 
         try {
@@ -153,7 +168,15 @@ public class HarvestingClients extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{nickName}")
-    public Response createHarvestingClient(@Context ContainerRequestContext crc, String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    @Operation(summary = "Creates a harvesting client",
+            description = "Creates a harvesting client with the specified nickname when the authenticated user is a superuser.")
+    public Response createHarvestingClient(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Harvesting client JSON containing dataverse alias, harvest URL, archive URL, metadata format, and optional settings.")
+            String jsonBody,
+            @Parameter(description = "Nickname assigned to the harvesting client.", required = true)
+            @PathParam("nickName") String nickName,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         // Per the discussion during the QA of PR #9174, we decided to make 
         // the create/edit APIs superuser-only (the delete API was already so)
         try {
@@ -238,7 +261,15 @@ public class HarvestingClients extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{nickName}")
-    public Response modifyHarvestingClient(@Context ContainerRequestContext crc, String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    @Operation(summary = "Updates a harvesting client",
+            description = "Updates editable harvesting client fields when the authenticated user is a superuser.")
+    public Response modifyHarvestingClient(@Context ContainerRequestContext crc,
+            @RequestBody(description = "Harvesting client update JSON containing editable fields such as harvest URL, archive URL, metadata format, set, and custom headers.")
+            String jsonBody,
+            @Parameter(description = "Nickname of the harvesting client to update.", required = true)
+            @PathParam("nickName") String nickName,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         try {
             User u = getRequestUser(crc);
             if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
@@ -321,7 +352,11 @@ public class HarvestingClients extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{nickName}")
-    public Response deleteHarvestingClient(@Context ContainerRequestContext crc, @PathParam("nickName") String nickName) throws IOException {
+    @Operation(summary = "Deletes a harvesting client",
+            description = "Starts asynchronous deletion of a harvesting client when the authenticated user is a superuser and no harvest or delete is already in progress.")
+    public Response deleteHarvestingClient(@Context ContainerRequestContext crc,
+            @Parameter(description = "Nickname of the harvesting client to delete.", required = true)
+            @PathParam("nickName") String nickName) throws IOException {
         // Deleting a client can take a while (if there's a large amnount of 
         // harvested content associated with it). So instead of calling the command
         // directly, we will be calling an async. service bean method. 
@@ -379,7 +414,13 @@ public class HarvestingClients extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{nickName}/run")
-    public Response startHarvestingJob(@Context ContainerRequestContext crc, @PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
+    @Operation(summary = "Starts a harvesting job",
+            description = "Starts an asynchronous harvesting job for the specified client when the authenticated user is a superuser.")
+    public Response startHarvestingJob(@Context ContainerRequestContext crc,
+            @Parameter(description = "Nickname of the harvesting client to run.", required = true)
+            @PathParam("nickName") String clientNickname,
+            @Parameter(hidden = true)
+            @QueryParam("key") String apiKey) throws IOException {
         
         try {
             AuthenticatedUser authenticatedUser = null; 

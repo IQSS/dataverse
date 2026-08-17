@@ -11,6 +11,10 @@
         {
             "id": @QID3,
             "value": "Yellow"
+        },
+        {
+            "id": @QID4,
+            "value": "Text area with a string instead of an array"
         }
     ]
   }
