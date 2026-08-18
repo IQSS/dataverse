@@ -75,6 +75,7 @@ public final class StorageIOCache implements ExportCache {
     public void write(ExportCacheKey key, ExportStreamWriter writer) throws ExportException, IOException {
         Path tempFile = Files.createTempFile("dataverse-export-", ".tmp");
         try {
+            // No catch here (checked exception), but closing the stream after use, avoiding leaks.
             try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(tempFile))) {
                 writer.writeTo(out);
             }
@@ -108,6 +109,9 @@ public final class StorageIOCache implements ExportCache {
         }
     }
     
+    /**
+     * Try reading a cached metadata export via StorageIO. Cache miss results in empty {@code Optional}.
+     */
     private static Optional<InputStream> tryRead(StorageIO<Dataset> storage, String auxTag) {
         // Distinguish "not cached" (normal, frequent) from actual failures: only read if the aux object exists.
         try {
@@ -122,13 +126,16 @@ public final class StorageIOCache implements ExportCache {
         try {
             return Optional.of(storage.getAuxFileAsInputStream(auxTag));
         } catch (IOException e) {
-            // Exists-then-vanished race, or a genuine storage problem.
+            // Maybe an exists-then-vanished race, or a genuine storage problem.
             // Treated as a "cache miss" so the pipeline regenerates rather than failing over a cache IO issue.
             logger.log(Level.WARNING, e, () -> "Could not open cached export " + auxTag);
             return Optional.empty();
         }
     }
     
+    /**
+     * Try to delete, but do not fail on errors. Logging a warning instead.
+     */
     private static void deleteQuietly(StorageIO<Dataset> storage, String auxTag) {
         try {
             storage.deleteAuxObject(auxTag);
@@ -139,8 +146,12 @@ public final class StorageIOCache implements ExportCache {
         }
     }
     
-    // Extracted to static method to avoid repeating it in multiple places, allowing substituion
-    // and extension to a StorageProvider functional interface (which is mockable on its own).
+    /**
+     * Retrieve the storage interface for a given dataset.
+     * <p>
+     * Extracted to a static method to avoid repeating it in multiple places, allowing substitution
+     * and extension to a StorageProvider functional interface (which is mockable on its own).
+     */
     private static StorageIO<Dataset> storageFor(Dataset dataset) throws IOException {
         return DataAccess.getStorageIO(dataset);
     }
