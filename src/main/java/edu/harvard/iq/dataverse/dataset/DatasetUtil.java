@@ -663,17 +663,25 @@ public class DatasetUtil {
 
     public static String getLicenseURI(DatasetVersion dsv) {
         License license = DatasetUtil.getLicense(dsv);
-        // Return the URI
-        // For standard licenses, just return the stored URI
-        return (license != null) ? license.getUri().toString()
-                // For custom terms, construct a URI with draft version constant or the version number in the URI
-                : (dsv.getVersionState().name().equals("DRAFT")
-                        ? dsv.getDataverseSiteUrl()
-                                + "/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "/customlicense?persistentId="
-                                + dsv.getDataset().getGlobalId().asString()
-                        : dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber()
-                                + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId="
-                                + dsv.getDataset().getGlobalId().asString());
+        if (license != null) {
+            return license.getUri().toString();
+        }
+
+        // Safely retrieve the global ID string or fallback to ID
+        String globalIdStr = (dsv.getDataset() != null && dsv.getDataset().getGlobalId() != null)
+                ? dsv.getDataset().getGlobalId().asString()
+                : String.valueOf(dsv.getDataset() != null ? dsv.getDataset().getId() : "");
+
+        boolean isDraft = "DRAFT".equals(dsv.getVersionState().name());
+        String versionPath = isDraft 
+                ? DS_VERSION_DRAFT 
+                : dsv.getVersionNumber() + "." + dsv.getMinorVersionNumber();
+
+        return dsv.getDataverseSiteUrl() 
+                + "/api/datasets/:persistentId/versions/" 
+                + versionPath 
+                + "/customlicense?persistentId=" 
+                + globalIdStr;
     }
 
     public static String getLicenseIcon(DatasetVersion dsv) {
