@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * ExporterRegistry is responsible for managing the registration, retrieval, and lifecycle of {@code Exporter}s.
@@ -103,6 +105,43 @@ public class ExporterRegistryBean {
                 exporter.getDisplayName(BundleUtil.getCurrentLocale()),
                 exporter.getFormatName()))
             .toList();
+    }
+    
+    /**
+     * Validates that an exporter is registered for the given format name.
+     * Throws an exception if the format name is null or if no exporter has been registered under that name.
+     *
+     * @param formatName the name of the format to check; must not be null
+     * @throws IllegalArgumentException if formatName is null, or if no exporter is registered for the specified format name
+     */
+    public void requireExists(String formatName) {
+        if (formatName == null) {
+            throw new IllegalArgumentException("format name may not be null");
+        }
+        if (!exporters.containsKey(formatName)) {
+            throw new IllegalArgumentException("no exporter registered for format: " + formatName);
+        }
+    }
+    
+    /**
+     * Validates that every format in the provided list has a corresponding exporter registered in this registry.
+     * If one or more formats are not recognized, an exception is thrown listing all invalid formats.
+     *
+     * @param formats the list of format names that must each have a registered exporter; must not be null;
+     *                an empty list is allowed (no formats are checked)
+     * @throws IllegalArgumentException if any format in the list does not have a corresponding registered exporter,
+     *                                  with the message enumerating all invalid format names; or if the list is null
+     */
+    public void requireAllExist(List<String> formats) {
+        if (formats == null) {
+            throw new IllegalArgumentException("list must not be null (hint: use empty list to express 'all')");
+        }
+        Set<String> invalidFormats = formats.stream()
+                                            .filter(format -> !exporters.containsKey(format))
+                                            .collect(Collectors.toUnmodifiableSet());
+        if (!invalidFormats.isEmpty()) {
+            throw new IllegalArgumentException("no exporters available for " + String.join(", ", invalidFormats));
+        }
     }
     
     @PostConstruct
