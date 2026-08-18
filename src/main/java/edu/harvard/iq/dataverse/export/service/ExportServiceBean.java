@@ -7,6 +7,7 @@ import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
 
@@ -30,6 +31,12 @@ public class ExportServiceBean {
 
     @EJB
     ExporterRegistryBean registry;
+    
+    // We must use (frowned upon) field injection here, as EJB requires a no-args constructor.
+    // When the codebase transitions to use CDI only, this shall be changed to constructor injection.
+    @SuppressWarnings("java:S6813")
+    @Inject
+    ExportCache cache;
     
     /**
      * A collection of {@link ExportCacheInvalidator} instances.
