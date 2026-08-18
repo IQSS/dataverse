@@ -87,7 +87,7 @@ public class Prov extends AbstractApiBean {
             }
             
             execCommand(new PersistProvJsonCommand(createDataverseRequest(getRequestUser(crc)), dataFile , body, entityName, true));
-            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            JsonObjectBuilder jsonResponse = JsonUtil.createObjectBuilder();
             jsonResponse.add("message", BundleUtil.getStringFromBundle("api.prov.provJsonSaved") + " " + dataFile.getDisplayName());
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {
@@ -157,7 +157,7 @@ public class Prov extends AbstractApiBean {
             execCommand(new PersistProvFreeFormCommand(dr, dataFile, provFreeForm));
             execCommand(new UpdateDatasetVersionCommand(dataFile.getOwner(), dr));
             dataFile = findDataFileOrDie(idSupplied);
-            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            JsonObjectBuilder jsonResponse = JsonUtil.createObjectBuilder();
             jsonResponse.add("message", "Free-form provenance data saved for Data File : " + dataFile.getFileMetadata().getProvFreeForm());
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {
@@ -184,7 +184,7 @@ public class Prov extends AbstractApiBean {
             if(null == freeFormText) {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.freeformNoText"));
             }
-            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            JsonObjectBuilder jsonResponse = JsonUtil.createObjectBuilder();
             jsonResponse.add("text", freeFormText);
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {
@@ -210,7 +210,7 @@ public class Prov extends AbstractApiBean {
             if(null == jsonText) {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.jsonNoContent"));
             }
-            JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
+            JsonObjectBuilder jsonResponse = JsonUtil.createObjectBuilder();
             jsonResponse.add("json", jsonText.toString());
             return ok(jsonResponse);
         } catch (WrappedResponse ex) {

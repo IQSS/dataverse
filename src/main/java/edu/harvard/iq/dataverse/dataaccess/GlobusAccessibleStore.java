@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.util.ListSplitUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -39,7 +40,7 @@ public interface GlobusAccessibleStore {
     }
 
     public static JsonArray getReferenceEndpointsWithPaths(String driverId) {
-        JsonArrayBuilder builder = Json.createArrayBuilder();
+        JsonArrayBuilder builder = JsonUtil.createArrayBuilder();
         for (String endpoint : ListSplitUtil.split(StorageIO.getConfigParamForDriver(driverId,
                 AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS))) {
             builder.add(endpoint);
