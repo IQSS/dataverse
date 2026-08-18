@@ -667,11 +667,12 @@ public class DatasetUtil {
             return license.getUri().toString();
         }
 
-        // Safely retrieve the global ID string or fallback to ID
-        String globalIdStr = (dsv.getDataset() != null && dsv.getDataset().getGlobalId() != null)
-                ? dsv.getDataset().getGlobalId().asString()
-                : String.valueOf(dsv.getDataset() != null ? dsv.getDataset().getId() : "");
+        // Fail fast if data state is invalid
+        if (dsv == null || dsv.getDataset() == null || dsv.getDataset().getGlobalId() == null) {
+            throw new IllegalStateException("Cannot generate custom license URI: Dataset is missing a Global ID.");
+        }
 
+        String globalIdStr = dsv.getDataset().getGlobalId().asString();
         boolean isDraft = "DRAFT".equals(dsv.getVersionState().name());
         String versionPath = isDraft 
                 ? DS_VERSION_DRAFT 
