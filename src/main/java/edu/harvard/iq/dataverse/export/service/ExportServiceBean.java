@@ -17,10 +17,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceConfigurationError;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -215,31 +219,84 @@ public class ExportServiceBean {
                     "Unknown runtime exception exporting metadata. " + (e.getMessage() == null ? "" : e.getMessage()));
         }
     }
-
-    // A convenience wrapper method
+    
+    
+    
+    // ++++ ++++ ++++ METHODS FOR CACHE MANAGEMENT ++++ ++++ ++++
+    
+    /**
+     * Clears all cached export formats for the given dataset.
+     * Because all formats are removed, the dataset's * "last exported" timestamp is also set to null,
+     * reflecting no cached exports remain.
+     * <p>
+     * TODO: When this service is extended to support caching and retrieving arbitrary dataset versions,
+     *       it needs to be decided what "all" means: does "all" include all versions?
+     *       Maybe replace the method with one that takes a list of versions.
+     * TODO: The export timestamp should be moved to the individual versions.
+     *       Not sure where else we may rely on this timestamp being on the dataset.
+     *
+     * @param dataset the dataset whose cached exports should all be cleared
+     * @throws IOException if an I/O error occurs while clearing the cached format entries
+     */
     public void clearAllCachedFormats(Dataset dataset) throws IOException {
         clearCachedFormats(dataset, List.of());
+        // Only if we clear *all* formats, reset the "last exported" time stamp.
+        // (Otherwise some formats still may exist in the cache.)
         dataset.setLastExportTime(null);
     }
     
-    public void clearCachedFormats(Dataset dataset, List<String> formatNames) throws IOException {
+    /**
+     * Clears the cached formats for the given dataset.
+     * Delegates to the version-specific overload by resolving the default version of the dataset.
+     *
+     * @param dataset the dataset for which cached formats should be cleared; must not be null
+     * @param formatNames the list of format names to clear; may be null to clear all formats
+     * @throws ExportException if the dataset is null
+     */
+    public void clearCachedFormats(Dataset dataset, List<String> formatNames) throws ExportException {
         if (dataset == null) {
-            throw new ExportException("cleareCachedFormats called with null Dataset");
+            throw new ExportException("Dataset may not be null");
+        }
+        // Let clearCachedFormats(DatasetVersion, List<String>) handle verifying the formatNames
+        
+        clearCachedFormats(defaultVersion(dataset), formatNames);
+    }
+    
+    /**
+     * Clears the cached formats for the specified dataset version.
+     * Validates that the dataset version is not null and that all provided format names exist in
+     * the registry before clearing each cached format.
+     *
+     * @param datasetVersion the dataset version whose cached formats should be cleared; must not be null
+     * @param formatNames the list of format names to clear from the cache
+     * @throws ExportException if the dataset version is null or any format name is invalid
+     */
+    public void clearCachedFormats(DatasetVersion datasetVersion, List<String> formatNames) {
+        if (datasetVersion == null) {
+            throw new ExportException("Dataset version may not be null");
+        }
+        try {
+            registry.requireAllExist(formatNames);
+        } catch (IllegalArgumentException ex) {
+            throw new ExportException("Invalid format names: " + ex.getMessage());
         }
         
-        if (formatNames == null) {
-            throw new ExportException("clearCachedFormats called with null formatNames (use an empty List for \"all\"");
-        }
-
-        for (Exporter e : exporterMap.values()) {
-            String formatName = e.getFormatName();
-            if (formatNames.isEmpty() || formatNames.contains(formatName)) {
-                try {
-                    clearCachedExport(dataset, formatName);
-                } catch (IOException ex) {
-                    // not fatal
-                }
-            }
+        formatNames.forEach(formatName -> clearCachedFormat(datasetVersion, formatName));
+    }
+    
+    void clearCachedFormat(DatasetVersion datasetVersion, String formatName) throws ExportException {
+        // Note: If this is ever changed to a "public" method, it will require parameter validation!
+        //       (Which may duplicate checks when coming from other methods)
+        
+        // Build the cache key and evict it from the cache.
+        // NOTE: If the given version wasn't cacheable in the first place (as per isCacheable()),
+        //       eviction should just succeed instead of failing (nothing was ever there, but this
+        //       was the service's choice, not the cache's!).
+        ExportCacheKey key = new ExportCacheKey(datasetVersion, formatName);
+        try {
+            cache.evict(key);
+        } catch (IOException ex) {
+            throw new ExportException("Failed to clear cached format: " + ex.getMessage());
         }
     }
 
@@ -311,6 +368,18 @@ public class ExportServiceBean {
             return e.getMediaType();
         }
         return MediaType.TEXT_PLAIN;
+    }
+    
+    /**
+     * Export policy: determines the default dataset version to use for export operations.
+     * If the given dataset has been released, its released version is returned.
+     * Otherwise, the dataset's latest version is returned.
+     *
+     * @param dataset the dataset from which the default version should be resolved
+     * @return the released version if the dataset is released, otherwise the latest version (should be draft)
+     */
+    static DatasetVersion defaultVersion(Dataset dataset) {
+        return dataset.isReleased() ? dataset.getReleasedVersion() : dataset.getLatestVersion();
     }
 
 }
