@@ -29,7 +29,7 @@ public class ExportServiceBean {
     private static final Logger logger = Logger.getLogger(ExportServiceBean.class.getCanonicalName());
 
     @EJB
-    ExporterRegistryBean exporterRegistry;
+    ExporterRegistryBean registry;
     
     /**
      * A collection of {@link ExportCacheInvalidator} instances.
