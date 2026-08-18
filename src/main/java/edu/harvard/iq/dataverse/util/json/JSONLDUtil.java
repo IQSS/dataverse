@@ -540,21 +540,18 @@ public class JSONLDUtil {
 
     public static JsonObject decontextualizeJsonLD(String jsonLDString) {
         logger.fine(jsonLDString);
-        try (StringReader rdr = new StringReader(jsonLDString)) {
-
+        try {
+            JsonObject jsonld = JsonUtil.getJsonObject(jsonLDString);
+            JsonDocument doc = JsonDocument.of(jsonld);
             // Use JsonLd to expand/compact to localContext
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
-                JsonObject jsonld = jsonReader.readObject();
-                JsonDocument doc = JsonDocument.of(jsonld);
-                JsonArray array = JsonLd.expand(doc).get();
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JsonUtil.createObjectBuilder().build())).get();
-                // jsonld = array.getJsonObject(0);
-                logger.fine("Decontextualized object: " + jsonld);
-                return jsonld;
-            } catch (JsonLdError e) {
-                logger.warning(e.getMessage());
-                return null;
-            }
+            JsonArray array = JsonLd.expand(doc).get();
+            jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JsonUtil.createObjectBuilder().build())).get();
+            // jsonld = array.getJsonObject(0);
+            logger.fine("Decontextualized object: " + jsonld);
+            return jsonld;
+        } catch (JsonLdError e) {
+            logger.warning(e.getMessage());
+            return null;
         }
     }
 
@@ -582,7 +579,7 @@ public class JSONLDUtil {
         StringWriter sw = new StringWriter();
         Map<String, Object> properties = new HashMap<>(1);
         properties.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+        JsonWriterFactory writerFactory = JsonUtil.createWriterFactory(properties);
         JsonWriter jsonWriter = writerFactory.createWriter(sw);
         jsonWriter.write(val);
         jsonWriter.close();
