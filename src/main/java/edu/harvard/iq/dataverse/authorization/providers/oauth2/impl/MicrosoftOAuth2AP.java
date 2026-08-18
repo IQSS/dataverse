@@ -7,10 +7,8 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
-import java.io.StringReader;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 
 /**
@@ -37,10 +35,8 @@ public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider{
 
     @Override
     protected ParsedUserResponse parseUserResponse(final String responseBody) {
-        try ( StringReader rdr = new StringReader(responseBody);
-              JsonReader jrdr = Json.createReader(rdr) )  {
-            JsonObject response = jrdr.readObject();
-            AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
+        JsonObject response = JsonUtil.getJsonObject(responseBody);
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
                     response.getString("givenName", ""),
                     response.getString("surname", ""),
                     response.getString("userPrincipalName", ""),
@@ -50,7 +46,6 @@ public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider{
             return new ParsedUserResponse(displayInfo, persistentUserId, username,
                     (displayInfo.getEmailAddress().length() > 0 ? Collections.singletonList(displayInfo.getEmailAddress()) : Collections.emptyList() )
             );
-        }
     }
 
     public boolean isDisplayIdentifier()
