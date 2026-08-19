@@ -54,7 +54,6 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.Consumes;
@@ -71,7 +70,6 @@ import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import java.io.InputStream;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
@@ -81,7 +79,6 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.Produces;
@@ -1612,9 +1609,7 @@ public class Admin extends AbstractApiBean {
             description = "Rewrites a built-in user's password hash to the legacy SHA-1 test value.")
     public Response convertUserFromBcryptToSha1(@RequestBody(description = "JSON object containing builtinUserId.")
             String json) {
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject object = jsonReader.readObject();
-        jsonReader.close();
+        JsonObject object = JsonUtil.getJsonObject(json);
         BuiltinUser builtinUser = builtinUserService.find(new Long(object.getInt("builtinUserId")));
         builtinUser.updateEncryptedPassword("4G7xxL9z11/JKN4jHPn4g9iIQck=", 0); // password is "sha-1Pass", 0 means
                                                                                 // SHA-1

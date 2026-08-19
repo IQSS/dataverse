@@ -28,7 +28,7 @@
         
         <jacoco.merged.outputdir>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</jacoco.merged.outputdir>
         <sonar.coverage.jacoco.xmlReportPaths>${jacoco.merged.outputdir}/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-
+        
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
@@ -156,7 +156,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.6.1</version>
+            <version>5.6.3</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
@@ -901,7 +901,7 @@
                       and fields from this class are silently ignored. This is useful
                       in multi-module Maven projects where only some modules have the
                       dependency to which the signature file(s) apply.
-
+                      
                       This settings prints no warning at all, so verify the signatures
                       at least once with full dependencies.
                     -->
@@ -910,7 +910,7 @@
                         <!-- See https://github.com/policeman-tools/forbidden-apis/wiki/BundledSignatures -->
                         <bundledSignature>jdk-non-portable</bundledSignature>
                         <bundledSignature>jdk-internal</bundledSignature>
-
+                        
                         <!-- Enabling the following checks will require refactoring within the codebase -->
                         <!--
                             <bundledSignature>jdk-reflection</bundledSignature>
