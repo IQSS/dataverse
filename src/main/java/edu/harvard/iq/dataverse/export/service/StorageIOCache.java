@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export.service;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.util.SecureTempFiles;
 import io.gdcc.spi.export.ExportException;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -73,7 +74,7 @@ public final class StorageIOCache implements ExportCache {
      */
     @Override
     public void write(ExportCacheKey key, ExportStreamWriter writer) throws ExportException, IOException {
-        Path tempFile = Files.createTempFile("dataverse-export-", ".tmp");
+        Path tempFile = SecureTempFiles.createOwnerOnlyTempFile("dataverse-export-", ".tmp");
         try {
             // No catch here (checked exception), but closing the stream after use, avoiding leaks.
             try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(tempFile))) {
