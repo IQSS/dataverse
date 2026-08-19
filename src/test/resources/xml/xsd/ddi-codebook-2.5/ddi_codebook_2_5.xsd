@@ -7683,9 +7683,8 @@ These changes do not effect the namespace. 2013-11-14.
    <xs:complexType name="topcClasType" mixed="true">
       <xs:complexContent>
          <xs:extension base="simpleTextType">
-            <xs:attribute name="subjectScheme" type="xs:string"/>
-            <xs:attribute name="schemeURI" type="xs:string"/>
-            <xs:attribute name="valueURI" type="xs:string"/>
+            <xs:attribute name="vocab" type="xs:string"/>
+            <xs:attribute name="vocabURI" type="xs:string"/>
          </xs:extension>
       </xs:complexContent>
    </xs:complexType>
@@ -7703,10 +7702,10 @@ These changes do not effect the namespace. 2013-11-14.
                   <xhtml:h2 class="section_header">Example</xhtml:h2>
                   <xhtml:div class="example">
                      <xhtml:samp class="xml_sample"><![CDATA[
-                        <topcClas subjectScheme="LOC Subject Headings" schemeURI="http://www.loc.gov/catdir/cpso/lcco/lcco.html">Public opinion -- California -- Statistics</topcClas>
+                        <topcClas vocab="LOC Subject Headings" vocabURI="http://www.loc.gov/catdir/cpso/lcco/lcco.html">Public opinion -- California -- Statistics</topcClas>
                      ]]></xhtml:samp>
                      <xhtml:samp class="xml_sample"><![CDATA[
-                        <topcClas subjectScheme="LOC Subject Headings" schemeURI="http://www.loc.gov/catdir/cpso/lcco/lcco.html">Elections -- California</topcClas>
+                        <topcClas vocab="LOC Subject Headings" vocabURI="http://www.loc.gov/catdir/cpso/lcco/lcco.html">Elections -- California</topcClas>
                      ]]></xhtml:samp>
                   </xhtml:div>
                </xhtml:div>
