@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -19,8 +20,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -196,6 +199,10 @@ public class ExporterRegistryBean {
                     exp.getClass().getClassLoader().getClass().getCanonicalName()
                 });
         });
+        
+        // Step 4 - Create prerequisite dependency graph and verify integrity
+        var requiredBy = buildAndVerifyRequirements(loadedExporters);
+        // All good, (more or less) atomic updates now.
         this.exporters = loadedExporters;
         
     }
@@ -211,5 +218,86 @@ public class ExporterRegistryBean {
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not close exporter classloader", e);
         }
+    }
+    
+    /**
+     * Builds a map of prerequisite format names to the list of export formats that depend on them.
+     * For each registered exporter that declares a prerequisite format, the exporter's format name is collected
+     * under the prerequisite key. (Thus exporters without a prerequisite are not included.)
+     *
+     * @return a map where each key is a prerequisite format name and each value is the list of format names of
+     *         exporters that require that prerequisite; an empty map if no exporter declares a prerequisite
+     */
+    static Map<String, List<String>> buildFormatRequiredByMap(Map<String, Exporter> exporters) {
+        Objects.requireNonNull(exporters);
+        Map<String, List<String>> requiredByMap = new HashMap<>();
+        
+        for (Exporter exporter : exporters.values()) {
+            exporter.getPrerequisiteFormatName().ifPresent(prereq ->
+                requiredByMap
+                    // Create new list if necessary
+                    .computeIfAbsent(prereq, k -> new ArrayList<>())
+                    // Put down exporter as depending on this format
+                    .add(exporter.getFormatName()));
+        }
+        
+        // Make a deep, read-only copy before returning
+        return requiredByMap.entrySet().stream()
+            .collect(Collectors.toUnmodifiableMap(
+                Map.Entry::getKey,
+                entry -> List.copyOf(entry.getValue())
+            ));
+    }
+    
+    /**
+     * Builds the prerequisite dependency map from the given exporters and verifies that every prerequisite format
+     * referenced by an exporter is itself backed by a registered exporter in the provided map.
+     * In addition, it verifies no prerequisite formats form a cyclic dependency.
+     *
+     * @return the built prerequisite dependency map, see {@link #buildFormatRequiredByMap(Map)}.
+     * @throws ExportException if one or more prerequisite format names in the dependency map
+     *                         do not have a corresponding entry in the provided exporters map
+     */
+    static Map<String, List<String>> buildAndVerifyRequirements(Map<String, Exporter> exporters) {
+        Map<String, List<String>> formatRequiredBy = buildFormatRequiredByMap(exporters);
+
+        // Check that all prerequisite formats have a registered exporter
+        if (!exporters.keySet().containsAll(formatRequiredBy.keySet())) {
+            Map<String, List<String>> unsatisfied = formatRequiredBy.entrySet().stream()
+                .filter(e -> !exporters.containsKey(e.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            
+            logger.log(Level.SEVERE, "Exporter registry integrity check failed: the following exporters are missing prerequisites: {}", unsatisfied);
+            throw new ExportException("Exporter registry integrity check failed");
+        }
+        
+        // Now that we know all exporters are present as required, check for cyclic dependencies!
+        // How: a cycle exists if we revisit a format already seen within the current chain.
+        // Checking against the whole chain, not just the starting format, is essential:a chain may merely lead
+        // *into* a cycle it is not part of, e.g., D -> A -> B -> A.
+        boolean cycleDetected = false;
+        for (String startFormat : exporters.keySet()) {
+            List<String> chain = new ArrayList<>();
+            // Using a set here to enable O(1) lookup for seen formats.
+            Set<String> seen = new HashSet<>();
+            
+            String current = startFormat;
+            while (current != null) {
+                chain.add(current);
+                if (!seen.add(current)) {
+                    logger.log(Level.SEVERE, "Exporter registry integrity check failed due to cyclic format dependency chain: {0}", String.join(" -> ", chain));
+                    cycleDetected = true;
+                    break;
+                }
+                // Existence was verified above, so the lookup cannot return null here.
+                // If no format is detected, break the loop by returning null.
+                current = exporters.get(current).getPrerequisiteFormatName().orElse(null);
+            }
+        }
+        if (cycleDetected) {
+            throw new ExportException("Exporter registry integrity check failed: cyclic dependencies detected.");
+        }
+        
+        return formatRequiredBy;
     }
 }
