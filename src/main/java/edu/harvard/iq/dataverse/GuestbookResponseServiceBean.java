@@ -396,7 +396,7 @@ public class GuestbookResponseServiceBean {
 
         if (customResponses != null) {
             for (Object[] response : customResponses) {
-                Integer responseId = (Integer) response[2];
+                Integer responseId = ((Number) response[2]).intValue();
 
                 if (asString) {
                     // as combined strings of comma-separated question and answer values

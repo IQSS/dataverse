@@ -505,7 +505,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return null;
         }
 
-        Integer file_id = (Integer) result[0];
+        Integer file_id = ((Number) result[0]).intValue();
 
         dataFile = new DataFile();
         dataFile.setMergeable(false);
