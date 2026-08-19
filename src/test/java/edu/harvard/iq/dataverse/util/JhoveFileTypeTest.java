@@ -86,8 +86,4 @@ public class JhoveFileTypeTest {
         assertEquals(baseDirForConfigFiles + "/config/jhove.conf", JhoveFileType.getJhoveConfigFile());
     }
 
-    private static void copyConfigIntoPlace() {
-        // Not needed anymore due to new setup
-    }
-
 }
