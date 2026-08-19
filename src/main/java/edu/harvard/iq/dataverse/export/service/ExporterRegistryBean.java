@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +76,11 @@ public class ExporterRegistryBean {
     // No half-initialized state is exposable this way. Future optimizations may use @Lock on it, too, for example,
     // when implementing a reload mechanism.
     private Map<String, Exporter> exporters = Map.of();
+    
+    // Caching the requirements as a map (key = format, value = list of formats that require this format).
+    // Managed the same way as the exporter map.
+    private Map<String, List<String>> formatRequiredBy = Map.of();
+    
     // Caching the classloader used to load plugin JAR files, keeping it open, will allow reuse for reloads
     // or loading more resources from plugin JARs. May be dropped later if not necessary.
     private URLClassLoader exporterClassLoader;
@@ -147,6 +153,17 @@ public class ExporterRegistryBean {
         }
     }
     
+    /**
+     * Retrieves the list of export format names that depend on the given format as a prerequisite.
+     *
+     * @param format the name of the format for which dependent formats are to be resolved.
+     * @return a list of format names of exporters that require the specified format as a prerequisite,
+     *         or an empty list if no such dependencies exist
+     */
+    public List<String> getFormatsDependingOn(String format) {
+        return this.formatRequiredBy.getOrDefault(format, Collections.emptyList());
+    }
+    
     @PostConstruct
     private void initialize() {
         /*
@@ -204,7 +221,7 @@ public class ExporterRegistryBean {
         var requiredBy = buildAndVerifyRequirements(loadedExporters);
         // All good, (more or less) atomic updates now.
         this.exporters = loadedExporters;
-        
+        this.formatRequiredBy = requiredBy;
     }
     
     @PreDestroy
