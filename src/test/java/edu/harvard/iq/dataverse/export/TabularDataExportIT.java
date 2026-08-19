@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.fixtures.DatasetFixtureBuilder;
 import edu.harvard.iq.dataverse.util.testing.performance.JpaEntityManagerService;
 import edu.harvard.iq.dataverse.util.testing.performance.JpaPerformanceTest;
@@ -167,7 +168,7 @@ class TabularDataExportIT {
             versionFilesService.injectEntityManager(em);
             InternalExportDataProvider provider = new InternalExportDataProvider(datasetVersion, versionFilesService);
 
-            JsonArrayBuilder jab = Json.createArrayBuilder();
+            JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
             int filesPerBatch = numberOfFiles / numberOfBatches;
 
             for (int i = 0; i < numberOfBatches; i++) {

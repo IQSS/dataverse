@@ -145,7 +145,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     @Override
     public JsonArray getDatasetFileDetails() {
         if (fileAndDataDetails == null) {
-            JsonArrayBuilder jab = Json.createArrayBuilder();
+            JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
             for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
                 DataFile dataFile = fileMetadata.getDataFile();
                 jab.add(JsonPrinter.json(dataFile, fileMetadata, true, false, true));
@@ -176,7 +176,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
      *
      */
     public Stream<JsonObject> getDatasetFileDetails(FileExportQuery query, PageRequest pageRequest) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
 
         Integer limit = null; 
         Integer offset = null; 
