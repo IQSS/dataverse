@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -80,6 +81,10 @@ public class ExporterRegistryBean {
     // Caching the requirements as a map (key = format, value = list of formats that require this format).
     // Managed the same way as the exporter map.
     private Map<String, List<String>> formatRequiredBy = Map.of();
+    
+    // Comparator imposing a topologically consistent order on exporters, derived from prereqDepthByFormat.
+    // Managed the same way as the exporter map. Initialized with empty Map for consistency.
+    private Comparator<Exporter> topologicalComparator = buildTopologicalComparator(Map.of());
     
     // Caching the classloader used to load plugin JAR files, keeping it open, will allow reuse for reloads
     // or loading more resources from plugin JARs. May be dropped later if not necessary.
@@ -164,6 +169,37 @@ public class ExporterRegistryBean {
         return this.formatRequiredBy.getOrDefault(format, Collections.emptyList());
     }
     
+    /**
+     * Returns a {@link Comparator} that orders {@link Exporter}s such that every prerequisite format sorts before
+     * all exporters depending on it (directly or transitively).
+     * <p>
+     * The comparator sorts on the cached prerequisite chain depth (see {@link #buildPrerequisitesChainDepth(Map)})
+     * rather than comparing prerequisite relations directly: the {@code Comparator} contract requires a total,
+     * transitive ordering, while "is a prerequisite of" is only a partial order - unrelated exporters would
+     * compare as equal, allowing a sort to place a transitive dependent before its prerequisite.
+     * Depth turns the partial order into a total order that still respects all prerequisite constraints.
+     * Ties are broken by format name for deterministic results.
+     * <p>
+     * The returned comparator is immutable, thread-safe, and reflects the registry state (at startup or when refreshed).
+     * <p>
+     * Please be aware that the comparator is not capable of preventing dependency cycles! It is the responsibility
+     * of the caller to ensure that the registry does not contain cyclic dependencies.
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * List<Exporter> ordered = registry.getAll()
+     *                              .stream()
+     *                              .sorted(registry.getTopologicalComparator())
+     *                              .toList();
+     * }</pre>
+     *
+     * @return a comparator imposing a topologically consistent total order on registered exporters
+     */
+    public Comparator<Exporter> getTopologicalComparator() {
+        return topologicalComparator;
+    }
+    
+    
     @PostConstruct
     private void initialize() {
         /*
@@ -219,9 +255,15 @@ public class ExporterRegistryBean {
         
         // Step 4 - Create prerequisite dependency graph and verify integrity
         var requiredBy = buildAndVerifyRequirements(loadedExporters);
+        
+        // Step 5 - Build map of prerequisite dependency graph depth per format and the comparator
+        var prerequisitesDepth = buildPrerequisitesChainDepth(loadedExporters);
+        var comparator = buildTopologicalComparator(prerequisitesDepth);
+        
         // All good, (more or less) atomic updates now.
         this.exporters = loadedExporters;
         this.formatRequiredBy = requiredBy;
+        this.topologicalComparator = comparator;
     }
     
     @PreDestroy
@@ -316,5 +358,54 @@ public class ExporterRegistryBean {
         }
         
         return formatRequiredBy;
+    }
+    
+    /**
+     * Builds an unmodifiable map from each format name to the depth of its prerequisite chain.
+     * For every exporter in the provided map, the depth is computed recursively:
+     * <ul>
+     *     <li>a depth of 0 means the exporter has no prerequisite format,</li>
+     *     <li>a depth of 1 means it depends on a format that itself has no prerequisite,</li>
+     *     <li>and so on for longer chains.</li>
+     * </ul>
+     *
+     * @param exportersByFormat a map from format name to its associated {@link Exporter} instance; must not be null
+     * @return an unmodifiable map where each key is a format name and each value is the integer depth of the
+     *         prerequisite chain for that format; the map contains one entry per export format in the input
+     */
+    static Map<String, Integer> buildPrerequisitesChainDepth(Map<String, Exporter> exportersByFormat) {
+        Objects.requireNonNull(exportersByFormat);
+        Map<String, Integer> depthsByFormat = new HashMap<>();
+        for (Exporter e : exportersByFormat.values()) {
+            depthOf(e, exportersByFormat, depthsByFormat);
+        }
+        return Map.copyOf(depthsByFormat);
+    }
+    
+    // Note: Make sure no cyclomatic format dependencies exist in exporters, otherwise infinite recursion may occur!
+    private static int depthOf(Exporter e, Map<String, Exporter> exportersByFormat, Map<String, Integer> depthsByFormat) {
+        // If the depth map does not already contain the depth value, compute it recursively, then return it.
+        return depthsByFormat.computeIfAbsent(
+            e.getFormatName(),
+            // Note: the following operates on Optional.map(), not Stream.map()!
+            name -> e.getPrerequisiteFormatName()
+                            .map(exportersByFormat::get)
+                            .map(prereq -> depthOf(prereq, exportersByFormat, depthsByFormat) + 1)
+                            // As no value could be found, return 0 = no prerequisite format
+                            .orElse(0));
+    }
+    
+    /**
+     * Creates a comparator ordering exporters by their prerequisite format chain depth, with format name as tiebreak.
+     * Exporters not present in the given depth map (which should not occur for registered exporters) are treated
+     * as having no prerequisite (depth 0). See {@link #getTopologicalComparator()} for the rationale.
+     *
+     * @param depthsByFormat map from format name to prerequisite chain depth; must not be null
+     * @return an immutable, thread-safe comparator
+     */
+    static Comparator<Exporter> buildTopologicalComparator(Map<String, Integer> depthsByFormat) {
+        Objects.requireNonNull(depthsByFormat);
+        return Comparator.comparingInt((Exporter e) -> depthsByFormat.getOrDefault(e.getFormatName(), 0))
+            .thenComparing(Exporter::getFormatName);
     }
 }
