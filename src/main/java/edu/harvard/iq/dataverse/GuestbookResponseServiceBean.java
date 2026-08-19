@@ -967,7 +967,7 @@ public class GuestbookResponseServiceBean {
 
         if (titleResults != null) {
             for (Object[] titleObj : titleResults) {
-                Integer datasetId = (Integer) titleObj[1];
+                Integer datasetId = ((Number) titleObj[1]).intValue();
                 String datasetTitle = (String) titleObj[0];
                 
                 ret.put(datasetId, datasetTitle);
