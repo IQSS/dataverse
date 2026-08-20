@@ -176,7 +176,7 @@ public class GuestbookResponseServiceBean {
     
     public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Map<Integer, String> datasetTitles, Object[] result) throws IOException {
 
-            Integer guestbookResponseId = (Integer)result[0];
+            Integer guestbookResponseId = ((Number)result[0]).intValue();
             
             StringBuilder sb = new StringBuilder();
             
