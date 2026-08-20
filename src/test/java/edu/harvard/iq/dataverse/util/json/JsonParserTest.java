@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupTest;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -46,6 +47,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.mockito.MockedStatic;
 
 /**
  *
@@ -128,6 +130,12 @@ public class JsonParserTest {
     
     @BeforeAll
     public static void setUpClass() {
+        SettingsServiceBean settingsServiceMock = Mockito.mock(SettingsServiceBean.class);
+        // Return default false/empty or expected values for settings keys
+        Mockito.lenient().when(settingsServiceMock.getValueForKey(Mockito.any())).thenReturn(null);
+
+        // Inject the mock into BrandingUtil's static reference if it uses a setter or field
+        BrandingUtil.injectServices(null, settingsServiceMock);
     }
     
     @AfterAll
@@ -982,12 +990,17 @@ public class JsonParserTest {
         dsv1.setReleaseTime(Date.from(Instant.now()));
         dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
         dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
+        Dataverse actual = new Dataverse();
+        ds.setOwner(actual);
 
-        // Test output of JsonPrinter can be used as input to JsonParser
-        JsonObject json = JsonPrinter.json(dsv1, false).build();
-        jsonParser.parseDatasetVersion(json, dsv2);
+        try (MockedStatic<BrandingUtil> mockedBranding = Mockito.mockStatic(BrandingUtil.class)) {
+            mockedBranding.when(BrandingUtil::getInstallationBrandName).thenReturn("Root");
+            // Test output of JsonPrinter can be used as input to JsonParser
+            JsonObject json = JsonPrinter.json(dsv1, false).build();
+            jsonParser.parseDatasetVersion(json, dsv2);
+            assertEquals(dsv1.getReleaseTime().toString(), dsv2.getReleaseTime().toString());
+        }
 
-        assertEquals(dsv1.getReleaseTime().toString(), dsv2.getReleaseTime().toString());
     }
 }
 

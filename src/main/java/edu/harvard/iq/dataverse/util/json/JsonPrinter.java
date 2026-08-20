@@ -641,9 +641,7 @@ public class JsonPrinter {
     
     private static void addAlternativePersistentIdentifiers(DvObject dataset, JsonObjectBuilder bld) {
         Set<AlternativePersistentIdentifier> altPids = dataset.getAlternativePersistentIndentifiers();
-        System.out.print("in addAlternativePersistentIdentifiers ");
         if (altPids != null && !altPids.isEmpty()) {
-            System.out.print("altPids != null && !altPids.isEmpty() ");
             JsonArrayBuilder altPidsArray = JsonUtil.createArrayBuilder();
 
             for (AlternativePersistentIdentifier altPid : altPids) {
@@ -654,7 +652,6 @@ public class JsonPrinter {
                 );
             }
             // Add to dataset DTO JSON object
-            System.out.print("alternativePersistentIdentifiers: " + altPidsArray);
             bld.add("alternativePersistentIdentifiers", altPidsArray);
         }
     }
