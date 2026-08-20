@@ -30,6 +30,7 @@ import java.util.logging.Logger;
  * <p>
  * <b>Write Atomicity:</b> Exports are always rendered to a local temp file first.
  * Then it gets persisted via {@link StorageIO#savePathAsAux(Path, String)} as an auxiliary dataset file.
+ * To make it thread-safe end-to-end, the underlying storage drivers <em>must</em> support atomic writes.
  * <p>
  * Note: This class replaces the former {@code ExportService.cacheExport()} method, mostly written by qqmyers.
  * Instead of its "try openAuxChannel, fall back to temp file for S3/Swift" branching, there now is one code path for all drivers.
@@ -47,25 +48,25 @@ public final class StorageIOCache implements ExportCache {
     
     private static final Logger logger = Logger.getLogger(StorageIOCache.class.getCanonicalName());
     
-    private static final String TAG_PREFIX = "export_";
-    private static final String TAG_SUFFIX = ".cached";
-    
     /**
      * Reads an input stream associated with the given export cache key.
      *
-     * @param key the export cache key containing dataset, format, and versioning information.
+     * @param dataset The dataset associated with the export cache key, used to determine storage access.
+     * @param key The export cache key containing dataset, format, and versioning information.
      * @return an {@code Optional} containing the input stream if available, otherwise an empty {@code Optional}.
      * @throws IOException if an I/O error occurs while attempting to read the data.
      */
     @Override
-    public Optional<InputStream> read(ExportCacheKey key) throws IOException {
-        StorageIO<Dataset> storage = storageFor(key.dataset());
+    public Optional<InputStream> read(Dataset dataset, ExportCacheKey key) throws IOException {
+        StorageIO<Dataset> storage = storageFor(dataset);
         return tryRead(storage, key.auxTag());
     }
     
     /**
      * Writes the export cache data to a temporary file and ensures it is properly persisted to the dataset's storage.
      * Handles file cleanup to maintain system integrity.
+     *
+     * @param dataset The dataset associated with the export cache key, used to determine storage access.
      * @param key The {@code ExportCacheKey} representing the metadata export about to be cached.
      * @param writer The {@code ExportStreamWriter} functional interface implementation responsible for writing data
      *              to the output stream. This wraps the underlying exporter, writing the actual data format.
@@ -73,7 +74,7 @@ public final class StorageIOCache implements ExportCache {
      * @throws IOException If an I/O error occurs while creating, writing, or managing the temporary file.
      */
     @Override
-    public void write(ExportCacheKey key, ExportStreamWriter writer) throws ExportException, IOException {
+    public void write(Dataset dataset, ExportCacheKey key, ExportStreamWriter writer) throws ExportException, IOException {
         Path tempFile = SecureTempFiles.createOwnerOnlyTempFile("dataverse-export-", ".tmp");
         try {
             // No catch here (checked exception), but closing the stream after use, avoiding leaks.
@@ -82,21 +83,22 @@ public final class StorageIOCache implements ExportCache {
             }
             // Persist to storage only after the metadata export has been fully and successfully rendered.
             // A failure above leaves the cache untouched.
-            storageFor(key.dataset()).savePathAsAux(tempFile, key.auxTag());
-            logger.log(Level.FINE, key.version() + ": Cached export written: {0}", key.auxTag());
+            // TODO: verify for all storage drivers that they support atomic writes.
+            storageFor(dataset).savePathAsAux(tempFile, key.auxTag());
+            logger.log(Level.FINE, dataset.getId() + ": Cached export written: {0}", key.auxTag());
         } finally {
             try {
                 Files.deleteIfExists(tempFile);
             } catch (IOException e) {
                 // Warn, but do not fail if the temp file could not be deleted. (The main operation was a success)
-                logger.log(Level.WARNING, e, () -> key.version() + ": could not delete export temp file " + tempFile);
+                logger.log(Level.WARNING, e, () -> dataset.getId() + ": could not delete export temp file " + tempFile);
             }
         }
     }
     
     @Override
-    public void evict(ExportCacheKey key) throws IOException {
-        deleteQuietly(storageFor(key.dataset()), key.auxTag());
+    public void evict(Dataset dataset, ExportCacheKey key) throws IOException {
+        deleteQuietly(storageFor(dataset), key.auxTag());
     }
     
     @Override
@@ -104,7 +106,7 @@ public final class StorageIOCache implements ExportCache {
         StorageIO<Dataset> storage = storageFor(dataset);
         List<String> auxTags = storage.listAuxObjects();
         for (String tag : auxTags) {
-            if (tag.startsWith(TAG_PREFIX) && tag.endsWith(TAG_SUFFIX)) {
+            if (tag.startsWith(ExportCacheKey.TAG_PREFIX) && tag.endsWith(ExportCacheKey.TAG_SUFFIX)) {
                 deleteQuietly(storage, tag);
             }
         }

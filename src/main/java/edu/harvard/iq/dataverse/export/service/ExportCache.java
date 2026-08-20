@@ -9,9 +9,9 @@ import java.io.OutputStream;
 import java.util.Optional;
 
 /**
- * Storage abstraction for cached metadata exports. Implementations own all
- * knowledge about where and under which names cached exports live; the export
- * pipeline only ever deals in {@link ExportCacheKey}s and streams.
+ * Storage abstraction for cached metadata exports.
+ * Implementations own all knowledge about where and under which names cached exports live.
+ * The export pipeline only ever deals in {@link ExportCacheKey}s, datasets, and streams.
  */
 public sealed interface ExportCache permits StorageIOCache {
     
@@ -20,17 +20,17 @@ public sealed interface ExportCache permits StorageIOCache {
      * @return the cached export stream, or empty if none is cached. Note: the caller is responsible for closing the stream.
      * @throws IOException on actual storage failures (not on a cache miss)
      */
-    Optional<InputStream> read(ExportCacheKey key) throws IOException;
+    Optional<InputStream> read(Dataset dataset, ExportCacheKey key) throws IOException;
     
     /**
      * Produces and stores an export. The {@code writer} callback receives the output stream to write to.
      * Any implementations guarantee that a partially written export is never made visible under the cache key
      * (i.e., a failed write leaves either the previous entry or no entry).
      */
-    void write(ExportCacheKey key, ExportStreamWriter writer) throws ExportException, IOException;
+    void write(Dataset dataset, ExportCacheKey key, ExportStreamWriter writer) throws ExportException, IOException;
     
     /** Removes a cached export. Absence of the entry is not an error. */
-    void evict(ExportCacheKey key) throws IOException;
+    void evict(Dataset dataset, ExportCacheKey key) throws IOException;
     
     /**
      * Removes all cached exports for a dataset, across all versions and formats, including legacy (pre-versioning) entries.
