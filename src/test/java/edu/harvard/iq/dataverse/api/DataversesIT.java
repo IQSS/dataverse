@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
@@ -157,13 +155,11 @@ public class DataversesIT {
     }
 
     @Test
-    public void testMinimalDataverse() throws FileNotFoundException {
+    public void testMinimalDataverse() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        JsonObject dvJson;
-        FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
-        dvJson = Json.createReader(reader).readObject();
+        JsonObject dvJson = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
         Response create = UtilIT.createDataverse(dvJson, apiToken);
         create.prettyPrint();
         create.then().assertThat()

@@ -2,27 +2,19 @@ package edu.harvard.iq.dataverse.export;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportDataProvider;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
+
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -54,10 +46,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/minimal/in/datasetJson.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -66,10 +57,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/minimal/in/datasetORE.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -78,10 +68,9 @@ public class CroissantExporterTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/minimal/in/datasetFileDetails.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readArray();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -90,10 +79,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/minimal/in/datasetSchemaDotOrg.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -118,10 +106,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/max/in/datasetJson.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -130,10 +117,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/max/in/datasetORE.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -142,10 +128,9 @@ public class CroissantExporterTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/max/in/datasetFileDetails.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readArray();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -154,10 +139,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/max/in/datasetSchemaDotOrg.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -182,10 +166,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/cars/in/datasetJson.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -194,10 +177,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/cars/in/datasetORE.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -206,10 +188,9 @@ public class CroissantExporterTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/cars/in/datasetFileDetails.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readArray();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -218,10 +199,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/cars/in/datasetSchemaDotOrg.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -246,10 +226,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/restricted/in/datasetJson.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -258,10 +237,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/restricted/in/datasetORE.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -270,10 +248,9 @@ public class CroissantExporterTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/restricted/in/datasetFileDetails.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readArray();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -282,10 +259,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/restricted/in/datasetSchemaDotOrg.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -310,10 +286,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/junk/in/datasetJson.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -322,10 +297,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/junk/in/datasetORE.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -334,10 +308,9 @@ public class CroissantExporterTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/junk/in/datasetFileDetails.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readArray();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -346,10 +319,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/junk/in/datasetSchemaDotOrg.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -374,10 +346,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetJson() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/draft/in/datasetJson.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -386,10 +357,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetORE() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/draft/in/datasetORE.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -398,10 +368,9 @@ public class CroissantExporterTest {
                     public JsonArray getDatasetFileDetails() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/draft/in/datasetFileDetails.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readArray();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonArray(Files.readString(Paths.get(pathToJsonFile), StandardCharsets.UTF_8));
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -410,10 +379,9 @@ public class CroissantExporterTest {
                     public JsonObject getDatasetSchemaDotOrg() {
                         String pathToJsonFile =
                                 "src/test/resources/croissant/draft/in/datasetSchemaDotOrg.json";
-                        try (JsonReader jsonReader =
-                                Json.createReader(new FileReader(pathToJsonFile))) {
-                            return jsonReader.readObject();
-                        } catch (FileNotFoundException ex) {
+                        try {
+                            return JsonUtil.getJsonObjectFromFile(pathToJsonFile);
+                        } catch (IOException ex) {
                             return null;
                         }
                     }
@@ -527,7 +495,9 @@ public class CroissantExporterTest {
         assertEquals(prettyPrint(expected), prettyPrint(outputStreamCars.toString()));
     }
 
-    /** Same as the cars data but the stata13-auto.dta file is restricted. */
+    /**
+     * Same as the cars data but the stata13-auto.dta file is restricted.
+     */
     @Test
     public void testExportDatasetRestricted() throws Exception {
         exporter.exportDataset(dataProviderRestricted, outputStreamRestricted);
@@ -577,29 +547,17 @@ public class CroissantExporterTest {
     }
 
     public static String prettyPrint(String jsonObject) {
-        try {
-            return prettyPrint(getJsonObject(jsonObject));
-        } catch (Exception ex) {
-            return jsonObject;
-        }
+        return JsonUtil.prettyPrint(jsonObject);
     }
 
     public static String prettyPrint(JsonObject jsonObject) {
-        Map<String, Boolean> config = new HashMap<>();
-        config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
-        StringWriter stringWriter = new StringWriter();
-        try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
-            jsonWriter.writeObject(jsonObject);
-        }
-        return stringWriter.toString();
+        return JsonUtil.prettyPrint(jsonObject);
     }
 
     public static JsonObject getJsonObject(String serializedJson) {
-        try (StringReader rdr = new StringReader(serializedJson)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
-                return jsonReader.readObject();
-            }
-        }
+        return JsonUtil.getJsonObject(serializedJson);
     }
+
 }
+
+

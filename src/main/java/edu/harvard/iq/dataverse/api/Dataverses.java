@@ -893,7 +893,7 @@ public class Dataverses extends AbstractApiBean {
             String jsonBody) {
         try {
             Dataverse dataverse = findDataverseOrDie(identifier);
-            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(Json.createReader(new StringReader(jsonBody)).readArray(), dataverse);
+            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(JsonUtil.getJsonArray(jsonBody), dataverse);
             execCommand(new UpdateDataverseInputLevelsCommand(dataverse, createDataverseRequest(getRequestUser(crc)), newInputLevels));
             return ok(BundleUtil.getStringFromBundle("dataverse.update.success"), JsonPrinter.json(dataverse));
         } catch (WrappedResponse e) {

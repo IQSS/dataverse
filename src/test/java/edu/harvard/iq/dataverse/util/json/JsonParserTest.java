@@ -31,18 +31,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.Instant;
@@ -261,8 +256,7 @@ public class JsonParserTest {
 "          }"; 
    
         String text = compoundString;
-        JsonReader jsonReader = Json.createReader(new StringReader(text));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(text);
 
         assertThrows(JsonParseException.class, () -> sut.parseField(obj));
     }
@@ -302,10 +296,8 @@ public class JsonParserTest {
      */
     @Test
     public void testParseCompleteDataverse() throws JsonParseException {
-        
-        JsonObject dvJson;
-        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
-            dvJson = Json.createReader(reader).readObject();
+        try {
+            JsonObject dvJson = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataverse-complete.json");
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("Scientific Research", actual.getName());
             assertEquals("science", actual.getAlias());
@@ -335,9 +327,8 @@ public class JsonParserTest {
      */
     @Test
     public void parseDataverseDTO() throws JsonParseException {
-        JsonObject dvJson;
-        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
-            dvJson = Json.createReader(reader).readObject();
+        try {
+            JsonObject dvJson = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataverse-complete.json");
             DataverseDTO actual = sut.parseDataverseDTO(dvJson);
             List<DataverseContact> actualDataverseContacts = actual.getDataverseContacts();
             assertEquals("Scientific Research", actual.getName());
@@ -360,8 +351,7 @@ public class JsonParserTest {
         
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/dataverse-theme.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dvJson = Json.createReader(reader).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
             assertEquals("testAlias", actual.getAlias());
@@ -394,8 +384,7 @@ public class JsonParserTest {
         
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/minimal-dataverse.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dvJson = Json.createReader(reader).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
             assertEquals("testAlias", actual.getAlias());
@@ -418,7 +407,7 @@ public class JsonParserTest {
     void testParseNoAliasDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-alias-dataverse.json")) {
-            dvJson = Json.createReader(jsonFile).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
@@ -432,7 +421,7 @@ public class JsonParserTest {
     void testParseNoNameDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-name-dataverse.json")) {
-            dvJson = Json.createReader(jsonFile).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
@@ -447,7 +436,7 @@ public class JsonParserTest {
     void testParseNoContactEmailsDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-contacts-dataverse.json")) {
-            dvJson = Json.createReader(jsonFile).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
@@ -505,8 +494,7 @@ public class JsonParserTest {
     void testParseEmptyDataset() throws JsonParseException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dsJson = Json.createReader(reader).readObject();
+            dsJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             System.out.println(dsJson != null);
             assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson));
         } catch (IOException ioe) {
@@ -525,8 +513,7 @@ public class JsonParserTest {
     void testParseOvercompleteDatasetVersion() throws IOException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-version.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dsJson = Json.createReader(reader).readObject();
+            dsJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             Assumptions.assumeTrue(dsJson != null);
             assertDoesNotThrow(() -> sut.parseDatasetVersion(dsJson));
         }
@@ -649,7 +636,7 @@ public class JsonParserTest {
     void testMailDomainGroupMissingName() {
         // given
         String noname = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [] }";
-        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        JsonObject obj = JsonUtil.getJsonObject(noname);
         // when && then
         assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
     }
@@ -658,7 +645,7 @@ public class JsonParserTest {
     void testMailDomainGroupMissingDomains() {
         // given
         String noname = "{ \"name\": \"test\", \"alias\": \"test\" }";
-        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        JsonObject obj = JsonUtil.getJsonObject(noname);
         // when && then
         assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
     }
@@ -667,7 +654,7 @@ public class JsonParserTest {
     void testMailDomainGroupNotEnabledRegexDomains() {
         // given
         String regexNotEnabled = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [\"^foobar\\\\.com\"] }";
-        JsonObject obj = Json.createReader(new StringReader(regexNotEnabled)).readObject();
+        JsonObject obj = JsonUtil.getJsonObject(regexNotEnabled);
         // when && then
         assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
     }
@@ -705,7 +692,7 @@ public class JsonParserTest {
     }
 
     JsonObject json( String s ) {
-        return Json.createReader( new StringReader(s) ).readObject();
+        return JsonUtil.getJsonObject(s);
     }
     
     public boolean assertFieldsEqual( DatasetField ex, DatasetField act ) {
@@ -1003,3 +990,4 @@ public class JsonParserTest {
         assertEquals(dsv1.getReleaseTime().toString(), dsv2.getReleaseTime().toString());
     }
 }
+
