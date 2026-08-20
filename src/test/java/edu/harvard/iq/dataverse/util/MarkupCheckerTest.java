@@ -31,7 +31,7 @@ public class MarkupCheckerTest {
     }, nullValues = {"NULL"})
     public void testSanitizeBasicHTML(String unsafe, String safe) {
         String actual = MarkupChecker.sanitizeBasicHTML(unsafe);
-        assertHtmlEqual(safe, actual);
+        MarkupCheckerUtil.assertHtmlEqual(safe, actual);
         // Sanity check that the key tag we strip is truly gone
         if(actual != null) {
             assertFalse(actual.toLowerCase().contains("script"));
@@ -59,7 +59,7 @@ public class MarkupCheckerTest {
     }, nullValues = {"NULL"})
     public void testSanitizeAdvancedHTML(String unsafe, String safe) {
         String actual = MarkupChecker.sanitizeAdvancedHTML(unsafe);
-        assertHtmlEqual(safe, actual);
+        MarkupCheckerUtil.assertHtmlEqual(safe, actual);
         // Sanity check that the key tag we strip is truly gone
         if(actual != null) {
             assertFalse(actual.toLowerCase().contains("script"));
@@ -87,38 +87,5 @@ public class MarkupCheckerTest {
     @Test
     public void testEscapeHtml() {
         assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));
-    }
-
-    /** Test HTML equivalence and ignore differences in the order of attributes
-     *   This does (in normalizeHtml()) use Jsoup to help test Jsoup though.
-     *
-     * @param expected - the HTML we expect to be returned
-     * @param actual - the HTML we actually got
-     */
-    private void assertHtmlEqual(String expected, String actual) {
-        if (expected == null || actual == null) {
-            assertEquals(expected, actual);
-            return;
-        }
-
-        String normalizedExpected = normalizeHtml(expected);
-        String normalizedActual = normalizeHtml(actual);
-        assertEquals(normalizedExpected, normalizedActual);
-    }
-
-    private String normalizeHtml(String html) {
-        org.jsoup.nodes.Document doc = Jsoup.parseBodyFragment(html);
-        for (org.jsoup.nodes.Element el : doc.getAllElements()) {
-            org.jsoup.nodes.Attributes attrs = el.attributes();
-            java.util.List<org.jsoup.nodes.Attribute> list = new java.util.ArrayList<>(attrs.asList());
-            list.sort(java.util.Map.Entry.comparingByKey());
-            for (org.jsoup.nodes.Attribute a : list) {
-                attrs.remove(a.getKey());
-            }
-            for (org.jsoup.nodes.Attribute a : list) {
-                attrs.put(a);
-            }
-        }
-        return doc.body().html().replaceAll("\\s+", "");
     }
 }
