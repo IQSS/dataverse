@@ -78,9 +78,12 @@ public class ExporterRegistryBean {
     // when implementing a reload mechanism.
     private Map<String, Exporter> exporters = Map.of();
     
-    // Caching the requirements as a map (key = format, value = list of formats that require this format).
+    // Map of direct and transitive dependents per format.
+    // Serves eviction and export cascades and, via Set::size, the topological comparator.
+    // Format: Key = format, Value = all formats that directly or indirectly declare it as a prerequisite
+    // Rules: An empty set equals a leaf, self is never included in the set.
     // Managed the same way as the exporter map.
-    private Map<String, List<String>> formatRequiredBy = Map.of();
+    private Map<String, Set<String>> transitiveDependents = Map.of();
     
     // Comparator imposing a topologically consistent order on exporters, derived from prereqDepthByFormat.
     // Managed the same way as the exporter map. Initialized with empty Map for consistency.
@@ -159,26 +162,25 @@ public class ExporterRegistryBean {
     }
     
     /**
-     * Retrieves the list of export format names that depend on the given format as a prerequisite.
+     * Retrieves all export formats that depend on the given format as a prerequisite, directly or transitively.
      *
      * @param format the name of the format for which dependent formats are to be resolved.
-     * @return a list of format names of exporters that require the specified format as a prerequisite,
-     *         or an empty list if no such dependencies exist
+     * @return an unmodifiable set of format names of exporters requiring the specified format somewhere in their
+     *         prerequisite chain, or an empty set if none do
      */
-    public List<String> getFormatsDependingOn(String format) {
-        return this.formatRequiredBy.getOrDefault(format, Collections.emptyList());
+    public Set<String> getTransitiveDependents(String format) {
+        return this.transitiveDependents.getOrDefault(format, Set.of());
     }
     
     /**
      * Returns a {@link Comparator} that orders {@link Exporter}s such that every prerequisite format sorts before
-     * all exporters depending on it (directly or transitively).
+     * all export formats depending on it (directly or transitively).
      * <p>
-     * The comparator sorts on the cached prerequisite chain depth (see {@link #buildPrerequisitesChainDepth(Map)})
-     * rather than comparing prerequisite relations directly: the {@code Comparator} contract requires a total,
-     * transitive ordering, while "is a prerequisite of" is only a partial order - unrelated exporters would
-     * compare as equal, allowing a sort to place a transitive dependent before its prerequisite.
-     * Depth turns the partial order into a total order that still respects all prerequisite constraints.
-     * Ties are broken by format name for deterministic results.
+     * The comparator sorts on the cached number of transitive dependents rather than comparing prerequisite
+     * relations directly: the {@code Comparator} contract requires a total, transitive ordering, while "is a prerequisite of"
+     * is only a partial order. The dependent count induces a valid total order because a prerequisite's dependent set
+     * is always a strict superset of each of its dependents' sets (it contains at least the dependent itself),
+     * so it always sorts first. Ties (unrelated exporters) are broken by format name for deterministic results.
      * <p>
      * The returned comparator is immutable, thread-safe, and reflects the registry state (at startup or when refreshed).
      * <p>
@@ -254,15 +256,15 @@ public class ExporterRegistryBean {
         });
         
         // Step 4 - Create prerequisite dependency graph and verify integrity
-        var requiredBy = buildAndVerifyRequirements(loadedExporters);
+        verifyRequirements(loadedExporters);
         
-        // Step 5 - Build map of prerequisite dependency graph depth per format and the comparator
-        var prerequisitesDepth = buildPrerequisitesChainDepth(loadedExporters);
-        var comparator = buildTopologicalComparator(prerequisitesDepth);
+        // Step 5 - Build the transitive dependents map and derive the comparator from it
+        var dependents = buildTransitiveDependents(loadedExporters);
+        var comparator = buildTopologicalComparator(dependents);
         
         // All good, (more or less) atomic updates now.
         this.exporters = loadedExporters;
-        this.formatRequiredBy = requiredBy;
+        this.transitiveDependents = dependents;
         this.topologicalComparator = comparator;
     }
     
@@ -280,45 +282,25 @@ public class ExporterRegistryBean {
     }
     
     /**
-     * Builds a map of prerequisite format names to the list of export formats that depend on them.
-     * For each registered exporter that declares a prerequisite format, the exporter's format name is collected
-     * under the prerequisite key. (Thus exporters without a prerequisite are not included.)
+     * Builds the prerequisite dependency map from the given exporters and verifies that every prerequisite format
+     * referenced by an exporter is itself backed by a registered exporter in the provided map.
+     * In addition, it verifies no prerequisite formats form a cyclic dependency.
      *
-     * @return a map where each key is a prerequisite format name and each value is the list of format names of
-     *         exporters that require that prerequisite; an empty map if no exporter declares a prerequisite
+     * @throws ExportException if one or more prerequisite format names in the dependency map
+     *                         do not have a corresponding entry in the provided exporters map
      */
-    static Map<String, List<String>> buildFormatRequiredByMap(Map<String, Exporter> exporters) {
+    static void verifyRequirements(Map<String, Exporter> exporters) {
         Objects.requireNonNull(exporters);
-        Map<String, List<String>> requiredByMap = new HashMap<>();
+        Map<String, List<String>> formatRequiredBy = new HashMap<>();
         
         for (Exporter exporter : exporters.values()) {
             exporter.getPrerequisiteFormatName().ifPresent(prereq ->
-                requiredByMap
+                formatRequiredBy
                     // Create new list if necessary
                     .computeIfAbsent(prereq, k -> new ArrayList<>())
                     // Put down exporter as depending on this format
                     .add(exporter.getFormatName()));
         }
-        
-        // Make a deep, read-only copy before returning
-        return requiredByMap.entrySet().stream()
-            .collect(Collectors.toUnmodifiableMap(
-                Map.Entry::getKey,
-                entry -> List.copyOf(entry.getValue())
-            ));
-    }
-    
-    /**
-     * Builds the prerequisite dependency map from the given exporters and verifies that every prerequisite format
-     * referenced by an exporter is itself backed by a registered exporter in the provided map.
-     * In addition, it verifies no prerequisite formats form a cyclic dependency.
-     *
-     * @return the built prerequisite dependency map, see {@link #buildFormatRequiredByMap(Map)}.
-     * @throws ExportException if one or more prerequisite format names in the dependency map
-     *                         do not have a corresponding entry in the provided exporters map
-     */
-    static Map<String, List<String>> buildAndVerifyRequirements(Map<String, Exporter> exporters) {
-        Map<String, List<String>> formatRequiredBy = buildFormatRequiredByMap(exporters);
 
         // Check that all prerequisite formats have a registered exporter
         if (!exporters.keySet().containsAll(formatRequiredBy.keySet())) {
@@ -356,56 +338,54 @@ public class ExporterRegistryBean {
         if (cycleDetected) {
             throw new ExportException("Exporter registry integrity check failed: cyclic dependencies detected.");
         }
-        
-        return formatRequiredBy;
     }
     
     /**
-     * Builds an unmodifiable map from each format name to the depth of its prerequisite chain.
-     * For every exporter in the provided map, the depth is computed recursively:
-     * <ul>
-     *     <li>a depth of 0 means the exporter has no prerequisite format,</li>
-     *     <li>a depth of 1 means it depends on a format that itself has no prerequisite,</li>
-     *     <li>and so on for longer chains.</li>
-     * </ul>
-     *
-     * @param exportersByFormat a map from format name to its associated {@link Exporter} instance; must not be null
-     * @return an unmodifiable map where each key is a format name and each value is the integer depth of the
-     *         prerequisite chain for that format; the map contains one entry per export format in the input
+     * Builds a map from every format name to the set of formats that depend on it, directly or transitively.
+     * Every registered format has an entry (empty set for formats nothing depends on).
+     * In addition, a format is never a member of its own set.
+     * <p>
+     * Precondition: {@code exporters} must have passed {@link #verifyRequirements(Map)}, as the chain walk
+     * assumes all prerequisites are registered and cycle-free.
      */
-    static Map<String, Integer> buildPrerequisitesChainDepth(Map<String, Exporter> exportersByFormat) {
-        Objects.requireNonNull(exportersByFormat);
-        Map<String, Integer> depthsByFormat = new HashMap<>();
-        for (Exporter e : exportersByFormat.values()) {
-            depthOf(e, exportersByFormat, depthsByFormat);
+    static Map<String, Set<String>> buildTransitiveDependents(Map<String, Exporter> exporters) {
+        Objects.requireNonNull(exporters);
+        Map<String, Set<String>> dependents = new HashMap<>();
+        // Ensure an entry for every format, including leaves.
+        exporters.keySet().forEach(name -> dependents.put(name, new HashSet<>()));
+        
+        // Each exporter has at most one prerequisite, so its ancestors form a simple chain:
+        // register the exporter as a dependent of every format on that chain.
+        for (Exporter exporter : exporters.values()) {
+            String dependent = exporter.getFormatName();
+            Optional<String> prereq = exporter.getPrerequisiteFormatName();
+            while (prereq.isPresent()) {
+                Exporter ancestor = exporters.get(prereq.get());
+                dependents.get(ancestor.getFormatName()).add(dependent);
+                prereq = ancestor.getPrerequisiteFormatName();
+            }
         }
-        return Map.copyOf(depthsByFormat);
-    }
-    
-    // Note: Make sure no cyclomatic format dependencies exist in exporters, otherwise infinite recursion may occur!
-    private static int depthOf(Exporter e, Map<String, Exporter> exportersByFormat, Map<String, Integer> depthsByFormat) {
-        // If the depth map does not already contain the depth value, compute it recursively, then return it.
-        return depthsByFormat.computeIfAbsent(
-            e.getFormatName(),
-            // Note: the following operates on Optional.map(), not Stream.map()!
-            name -> e.getPrerequisiteFormatName()
-                            .map(exportersByFormat::get)
-                            .map(prereq -> depthOf(prereq, exportersByFormat, depthsByFormat) + 1)
-                            // As no value could be found, return 0 = no prerequisite format
-                            .orElse(0));
+        
+        // Deep, read-only copy
+        return dependents.entrySet().stream()
+            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, e -> Set.copyOf(e.getValue())));
     }
     
     /**
-     * Creates a comparator ordering exporters by their prerequisite format chain depth, with format name as tiebreak.
-     * Exporters not present in the given depth map (which should not occur for registered exporters) are treated
-     * as having no prerequisite (depth 0). See {@link #getTopologicalComparator()} for the rationale.
+     * Creates a comparator ordering exporters by their number of transitive dependents in descending order.
+     * (Prerequisites carry strictly more dependents than anything depending on them and thus sort first.)
+     * The format name is used as tiebreak.
+     * Formats absent from the map (which should not occur for registered exporters) are treated as having no
+     * dependents and sort last among ties.
      *
-     * @param depthsByFormat map from format name to prerequisite chain depth; must not be null
+     * @param dependentsByFormat map from format name to its transitive dependents; must not be null
      * @return an immutable, thread-safe comparator
      */
-    static Comparator<Exporter> buildTopologicalComparator(Map<String, Integer> depthsByFormat) {
-        Objects.requireNonNull(depthsByFormat);
-        return Comparator.comparingInt((Exporter e) -> depthsByFormat.getOrDefault(e.getFormatName(), 0))
+    static Comparator<Exporter> buildTopologicalComparator(Map<String, Set<String>> dependentsByFormat) {
+        Objects.requireNonNull(dependentsByFormat);
+        return Comparator.comparingInt(
+                (Exporter e) -> dependentsByFormat.getOrDefault(e.getFormatName(), Set.of()).size())
+            .reversed() // inversed order as the more transitive dependents, the earlier it needs to be processed!
             .thenComparing(Exporter::getFormatName);
     }
 }
