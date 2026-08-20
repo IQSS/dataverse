@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.export;
 import com.google.gson.Gson;
 
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.api.dto.AlternativePersistentIdentifierDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -590,7 +592,7 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
         // when
-        OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
@@ -599,6 +601,57 @@ public class OpenAireExportUtilTest {
                 + "OtherIDIdentifier1</alternateIdentifier>"
                 + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency2\">"
                 + "OtherIDIdentifier2</alternateIdentifier>"
+                + "</alternateIdentifiers>",
+                stringWriter.toString());
+    }
+    
+    /*
+    AlternativePersistentIdentifierDTO altPid = new AlternativePersistentIdentifierDTO();
+altPid.setProtocol("doi");
+altPid.setAuthority("10.5072");
+altPid.setIdentifier("FK2/ALT123");
+altPid.setGlobalId("doi:10.5072/FK2/ALT123");
+
+datasetDTO.setAlternativePersistentIdentifiers(Collections.singletonList(altPid));
+
+String xml = OpenAireExportUtil.datasetJson2OpenAire(datasetDTO);
+
+assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">doi:10.5072/FK2/ALT123</alternateIdentifier>"));
+    */
+    
+        /**
+     * Test: 11 AlternateIdentifier (with type sub-property) (O)
+     *
+     * alternateIdentifier
+     *
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testWriteAlternateIdentifierElementWithPreviousPersistentId() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+
+        AlternativePersistentIdentifierDTO altPid = new AlternativePersistentIdentifierDTO();
+        altPid.setProtocol("doi");
+        altPid.setAuthority("10.5072");
+        altPid.setIdentifier("FK2/ALT123");
+
+        datasetDto.setAlternativePersistentIdentifiers(Collections.singletonList(altPid));
+
+        // when
+        OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, datasetDto, null);
+        xmlWriter.flush();
+
+        //then
+        assertEquals("<alternateIdentifiers>"
+                + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency1\">"
+                + "OtherIDIdentifier1</alternateIdentifier>"
+                + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency2\">"
+                + "OtherIDIdentifier2</alternateIdentifier>"
+                + "<alternateIdentifier alternateIdentifierType=\"DOI\">"
+                + "10.5072/FK2/ALT123</alternateIdentifier>"
                 + "</alternateIdentifiers>",
                 stringWriter.toString());
     }

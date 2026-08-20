@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.ExternalIdentifier;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.api.dto.AlternativePersistentIdentifierDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -141,7 +142,7 @@ public class OpenAireExportUtil {
         writeResourceTypeElement(xmlw, version, language);
 
         // 11. AlternateIdentifier (with type sub-property) (O)
-        writeAlternateIdentifierElement(xmlw, version, language);
+        writeAlternateIdentifierElement(xmlw, version, datasetDto,  language);
 
         // 12, RelatedIdentifier (with type and relation type sub-properties) (R)
         writeRelatedIdentifierElement(xmlw, version, language);
@@ -862,7 +863,7 @@ public class OpenAireExportUtil {
                                     dateOfCollectionEnd = next.getSinglePrimitive();
                                 }
                             }
-                            //12301 write collection dates even 1f start or end is blank
+                            //12301 write collection dates even if start or end is blank
                             if (StringUtils.isNotBlank(dateOfCollectionStart) || StringUtils.isNotBlank(dateOfCollectionEnd)) {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
 
@@ -887,7 +888,7 @@ public class OpenAireExportUtil {
                                     timePeriodCoveredEnd = next.getSinglePrimitive();
                                 }
                             }
-                            //12301 write collection dates even 1f start or end is blank
+                            //12301 write collection dates even if start or end is blank
                             if (StringUtils.isNotBlank(timePeriodCoveredStart) || StringUtils.isNotBlank(timePeriodCoveredEnd)) {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
                                 Map<String, String> date_map = new HashMap<String, String>();
@@ -946,10 +947,11 @@ public class OpenAireExportUtil {
      *
      * @param xmlw The Steam writer
      * @param datasetVersionDTO
+     * @param datasetDTO
      * @param language current language
      * @throws XMLStreamException
      */
-    public static void writeAlternateIdentifierElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
+    public static void writeAlternateIdentifierElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, DatasetDTO datasetDTO, String language) throws XMLStreamException {
         // alternateIdentifiers -> alternateIdentifier with alternateIdentifierType attribute
         boolean alternateIdentifier_check = false;
 
@@ -990,8 +992,40 @@ public class OpenAireExportUtil {
                 }
             }
         }
+        //12303 add alternative persistent identifiers
+        List<AlternativePersistentIdentifierDTO> altPids = datasetDTO.getAlternativePersistentIdentifiers();
+        if (altPids != null && !altPids.isEmpty()) {
+            alternateIdentifier_check = writeOpenTag(xmlw, "alternateIdentifiers", alternateIdentifier_check);
+            for (AlternativePersistentIdentifierDTO altPid : altPids) {
+                String identifierType = null;
+                String identifier = null;
+                switch (altPid.getProtocol()) {
+                    case AbstractDOIProvider.DOI_PROTOCOL:
+                        identifierType = AbstractDOIProvider.DOI_PROTOCOL.toUpperCase();
+                        identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
+                        break;
+                    case HandlePidProvider.HDL_PROTOCOL:
+                        identifierType = "Handle";
+                        identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
+                        break;
+                    default:
+                        // The AlternativePersistentIdentifier class isn't really ready for anything but
+                        // doi or handle pids, but will add this as a default.
+                        identifierType = ":unav";
+                        identifier = altPid.getAuthority() + altPid.getIdentifier();
+                        break;
+                }
+                Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
+                alternateIdentifier_map.put("alternateIdentifierType", identifierType);
+                writeFullElement(xmlw, null, "alternateIdentifier", alternateIdentifier_map, identifier, language);
+
+            }
+        }
+
         writeEndTag(xmlw, alternateIdentifier_check);
     }
+ 
+
 
     /**
      * 12, RelatedIdentifier (with type and relation type sub-properties) (R)

@@ -19,6 +19,7 @@ public class DatasetDTO implements java.io.Serializable {
         private String metadataLanguage;
         private DatasetVersionDTO datasetVersion;
         private List<DataFileDTO> dataFiles;
+        private List<AlternativePersistentIdentifierDTO> alternativePersistentIdentifiers;
     private Integer datasetFileCountLimit;
 
     public String getId() {
@@ -100,6 +101,14 @@ public class DatasetDTO implements java.io.Serializable {
 
     public void setPublicationDate(String publicationDate) {
         this.publicationDate = publicationDate;
+    }
+    
+    public List<AlternativePersistentIdentifierDTO> getAlternativePersistentIdentifiers() {
+        return alternativePersistentIdentifiers;
+    }
+
+    public void setAlternativePersistentIdentifiers(List<AlternativePersistentIdentifierDTO> alternativePersistentIdentifiers) {
+        this.alternativePersistentIdentifiers = alternativePersistentIdentifiers;
     }
 
     @Override

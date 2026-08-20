@@ -1053,6 +1053,14 @@ public class XmlMetadataTemplate {
                                 relatedIdentifier = null;
                             }
                             break;
+                        case "cstr":
+                            //12306 export cstr as Related Publication - no validation of PID
+                            if (!(relatedIdentifier.toLowerCase().startsWith("cstr:") || relatedIdentifier.startsWith("http"))) {
+                                relatedIdentifier = "cstr:" + relatedIdentifier;
+                            } else {
+                                 relatedIdentifier = null;                               
+                            }
+                            break;    
                         case "none":
                             //Try to identify PIDs and URLs and send them as related identifiers
                             if (relatedIdentifier != null) {

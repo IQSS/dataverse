@@ -604,6 +604,8 @@ public class JsonPrinter {
             bld.add("guestbookId", ds.getGuestbook().getId());
         }
         addDatasetFileCountLimit(ds, bld);
+        
+        addAlternativePersistentIdentifiers(ds, bld);
 
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
@@ -634,6 +636,26 @@ public class JsonPrinter {
         if (dvo.isInstanceofDataset() && dvo.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit)) {
             int available = effectiveDatasetFileCountLimit - datasetService.getDataFileCountByOwner(dvo.getId());
             bld.add("datasetFileUploadsAvailable", Math.max(0, available));
+        }
+    }
+    
+    private static void addAlternativePersistentIdentifiers(DvObject dataset, JsonObjectBuilder bld) {
+        Set<AlternativePersistentIdentifier> altPids = dataset.getAlternativePersistentIndentifiers();
+        System.out.print("in addAlternativePersistentIdentifiers ");
+        if (altPids != null && !altPids.isEmpty()) {
+            System.out.print("altPids != null && !altPids.isEmpty() ");
+            JsonArrayBuilder altPidsArray = JsonUtil.createArrayBuilder();
+
+            for (AlternativePersistentIdentifier altPid : altPids) {
+                altPidsArray.add(JsonUtil.createObjectBuilder()
+                        .add("protocol", altPid.getProtocol() != null ? altPid.getProtocol() : "")
+                        .add("authority", altPid.getAuthority() != null ? altPid.getAuthority() : "")
+                        .add("identifier", altPid.getIdentifier() != null ? altPid.getIdentifier() : "")
+                );
+            }
+            // Add to dataset DTO JSON object
+            System.out.print("alternativePersistentIdentifiers: " + altPidsArray);
+            bld.add("alternativePersistentIdentifiers", altPidsArray);
         }
     }
 
