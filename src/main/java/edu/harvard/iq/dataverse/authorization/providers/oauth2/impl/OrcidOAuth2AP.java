@@ -12,10 +12,9 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
-
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -26,9 +25,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.joining;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.validation.constraints.NotNull;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -71,11 +68,8 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     @Override
     public String getUserEndpoint( OAuth2AccessToken token )  {
-        try ( StringReader sRdr = new StringReader(token.getRawResponse());
-                JsonReader jRdr = Json.createReader(sRdr) ) {
-            String orcid = jRdr.readObject().getString("orcid");
-            return baseUserEndpoint.replace("{ORCID}", orcid);
-        }
+        String orcid = JsonUtil.getJsonObject(token.getRawResponse()).getString("orcid");
+        return baseUserEndpoint.replace("{ORCID}", orcid);
     }
     
     @Override
@@ -251,8 +245,8 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
     
     protected String extractOrcidNumber( String rawResponse ) throws OAuth2Exception {
-        try ( JsonReader rdr = Json.createReader( new StringReader(rawResponse)) ) {
-            JsonObject tokenData = rdr.readObject();
+        try {
+            JsonObject tokenData = JsonUtil.getJsonObject(rawResponse);
             return tokenData.getString("orcid");
         } catch ( Exception e ) {
             throw new OAuth2Exception(0, rawResponse, "Cannot find ORCiD id in access token response.");

@@ -1,20 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -311,7 +307,7 @@ public class LinkIT {
         linkDatasetsResponse.prettyPrint();
         linkDatasetsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets = Json.createReader(new StringReader(linkDatasetsResponse.asString())).readObject();
+        JsonObject linkDatasets = JsonUtil.getJsonObject(linkDatasetsResponse.asString());
         JsonArray linksList = linkDatasets.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(0, linksList.size());
 
@@ -320,7 +316,7 @@ public class LinkIT {
         linkDatasetsResponse2.prettyPrint();
         linkDatasetsResponse2.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets2 = Json.createReader(new StringReader(linkDatasetsResponse2.asString())).readObject();
+        JsonObject linkDatasets2 = JsonUtil.getJsonObject(linkDatasetsResponse2.asString());
         JsonArray linksList2 = linkDatasets2.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(1, linksList2.size());
         assertEquals(dataverse2Id, linksList2.getJsonObject(0).getInt("id"));
@@ -333,7 +329,7 @@ public class LinkIT {
         linkDatasetsResponse3.prettyPrint();
         linkDatasetsResponse3.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets3 = Json.createReader(new StringReader(linkDatasetsResponse3.asString())).readObject();
+        JsonObject linkDatasets3 = JsonUtil.getJsonObject(linkDatasetsResponse3.asString());
         JsonArray linksList3 = linkDatasets3.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(1, linksList3.size());
         assertEquals(dataverse2Id, linksList3.getJsonObject(0).getInt("id"));
@@ -370,7 +366,7 @@ public class LinkIT {
         linkDatasetsResponse5.prettyPrint();
         linkDatasetsResponse5.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets5 = Json.createReader(new StringReader(linkDatasetsResponse5.asString())).readObject();
+        JsonObject linkDatasets5 = JsonUtil.getJsonObject(linkDatasetsResponse5.asString());
         JsonArray linksList5 = linkDatasets5.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(0, linksList5.size());
 
@@ -391,7 +387,7 @@ public class LinkIT {
         linkDatasetsResponse7.prettyPrint();
         linkDatasetsResponse7.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets7 = Json.createReader(new StringReader(linkDatasetsResponse7.asString())).readObject();
+        JsonObject linkDatasets7 = JsonUtil.getJsonObject(linkDatasetsResponse7.asString());
         JsonArray linksList7 = linkDatasets7.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(0, linksList7.size());
 
