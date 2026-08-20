@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.export.service;
 
-import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 
@@ -24,16 +24,36 @@ public final class FileEmbargoExpiryInvalidator implements ExportCacheInvalidato
     private static final Logger logger = Logger.getLogger(FileEmbargoExpiryInvalidator.class.getCanonicalName());
     
     @Override
-    public boolean isStale(ExportCacheKey key) {
-        return isStaleDueToExpiredEmbargo(key.dataset());
+    public boolean isStale(DatasetVersion datasetVersion, ExportCacheKey key) {
+        if (datasetVersion == null) {
+            throw new IllegalArgumentException("datasetVersion cannot be null");
+        }
+        if (key == null) {
+            throw new IllegalArgumentException("key cannot be null");
+        }
+        
+        return isStaleDueToExpiredEmbargo(datasetVersion);
     }
     
     /**
      * Checks whether a cached export has been rendered stale because an embargo
      * on one of the dataset's files ended after the last export ran.
      */
-    private boolean isStaleDueToExpiredEmbargo(Dataset dataset) {
-        Date lastExportDate = dataset.getLastExportTime();
+    private boolean isStaleDueToExpiredEmbargo(DatasetVersion datasetVersion) {
+        if (datasetVersion.getDataset() == null) {
+            throw new IllegalArgumentException("datasetVersion must have a dataset associated and cannot be null");
+        }
+        // Only released or archived versions can have expired embargoes
+        // (See also Dataset.getLatestVersionForCopy(), which was used before within the original code)
+        if (!datasetVersion.isReleased() && !datasetVersion.isArchived()) {
+            return false;
+        }
+        
+        // The following code was originally contained in ExportServiceBean and written by @landreev.
+        // Its limitation to the DDI format was lifted, as other formats supporting file metadata may benefit from it as well.
+        // Also, it now uses the given dataset version, no longer receiving it by itself from the dataset.
+        
+        Date lastExportDate = datasetVersion.getDataset().getLastExportTime();
         // if lastExportDate == null, assume it's not set because we're exporting for the
         // first time now (e.g. during publish) and therefore no changes are needed
         if (lastExportDate == null) {
@@ -43,8 +63,8 @@ public final class FileEmbargoExpiryInvalidator implements ExportCacheInvalidato
         logger.fine("Last export date: " + exportLocalDate);
         // Track which embargoes we've already checked
         Set<Long> embargoIds = new HashSet<>();
-        // Check for all files in the latest released version
-        for (FileMetadata fm : dataset.getLatestVersionForCopy().getFileMetadatas()) {
+        // Check for all files in the given version
+        for (FileMetadata fm : datasetVersion.getFileMetadatas()) {
             // ToDo? This loop is necessary because we have not stored the date when the
             // next embargo in this datasetversion will end. If we knew that (another
             // dataset/datasetversion column), we could make one check that nextembargoEnd

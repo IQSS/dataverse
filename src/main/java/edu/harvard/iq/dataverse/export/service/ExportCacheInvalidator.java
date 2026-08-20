@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.export.service;
 
+import edu.harvard.iq.dataverse.DatasetVersion;
+
 /**
  * Represents an abstraction for determining whether a cached export needs to be invalidated and regenerated.
  * <p>
@@ -11,6 +13,12 @@ package edu.harvard.iq.dataverse.export.service;
  * this interface shall be unsealed and moved into the Exporter SPI codebase.
  */
 public sealed interface ExportCacheInvalidator permits FileEmbargoExpiryInvalidator {
-    /** Should a cached export for this key be discarded and regenerated? */
-    boolean isStale(ExportCacheKey key);
+    /**
+     * Should a cached export for this key be discarded and regenerated?
+     *
+     * @param datasetVersion the dataset version for which the export is being generated
+     * @param key the cache key associated with the export
+     * @throws IllegalArgumentException if any parameters are null or implementation expectations are not met
+     */
+    boolean isStale(DatasetVersion datasetVersion, ExportCacheKey key);
 }
