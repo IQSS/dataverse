@@ -20,19 +20,14 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
-import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.junit.jupiter.api.Test;
@@ -140,28 +135,17 @@ public class FeedbackUtilTest {
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
 
-        File datasetVersionJson = new File("src/test/resources/json/dataset-finch1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-
-        JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
-        JsonObject json1 = jsonReader1.readObject();
+        JsonObject json1 = JsonUtil.getJsonObjectFromFile("src/test/resources/json/dataset-finch1.json");
 
         JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         dsVersion = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
 
-        File datasetVersionJson2 = new File("tests/data/datasetContacts1.json");
-        String datasetVersionAsJson2 = new String(Files.readAllBytes(Paths.get(datasetVersionJson2.getAbsolutePath())));
-
-        JsonReader jsonReader12 = Json.createReader(new StringReader(datasetVersionAsJson2));
-        JsonObject json12 = jsonReader12.readObject();
+        JsonObject json12 = JsonUtil.getJsonObjectFromFile("tests/data/datasetContacts1.json");
 
         JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
 
-        File datasetVersionJsonNoContacts = new File("tests/data/datasetNoContacts.json");
-        String datasetVersionAsJsonNoContacts = new String(Files.readAllBytes(Paths.get(datasetVersionJsonNoContacts.getAbsolutePath())));
-        JsonReader jsonReaderNoContacts = Json.createReader(new StringReader(datasetVersionAsJsonNoContacts));
-        JsonObject jsonNoContacts = jsonReaderNoContacts.readObject();
+        JsonObject jsonNoContacts = JsonUtil.getJsonObjectFromFile("tests/data/datasetNoContacts.json");
         JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService);
         dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
 

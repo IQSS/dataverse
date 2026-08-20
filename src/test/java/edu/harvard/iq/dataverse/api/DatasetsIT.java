@@ -38,7 +38,6 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -3434,7 +3433,7 @@ public class DatasetsIT {
         linkDatasetsResponse.prettyPrint();
         linkDatasetsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets = Json.createReader(new StringReader(linkDatasetsResponse.asString())).readObject();
+        JsonObject linkDatasets = JsonUtil.getJsonObject(linkDatasetsResponse.asString());
         JsonArray lst = linkDatasets.getJsonObject("data").getJsonArray("linked-dataverses");
         List<Integer> ids = List.of(dataverse2Id, dataverse3Id);
         List<Integer> uniqueids = new ArrayList<>();
@@ -3861,9 +3860,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String body = response.getBody().asString();
         response.then().assertThat().statusCode(CREATED.getStatusCode());
 
-        try (StringReader rdr = new StringReader(body)) {
-            datasetId = Json.createReader(rdr).readObject().getJsonObject("data").getInt("id");
-        }
+        datasetId = JsonUtil.getJsonObject(body).getJsonObject("data").getInt("id");
         // Get the jsonLD metadata for what we recreated
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
@@ -3968,7 +3965,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response getStatusAfterReset = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
         getStatusAfterReset.then().assertThat().statusCode(OK.getStatusCode());
     
-        JsonObject statusAfterReset = Json.createReader(new StringReader(getStatusAfterReset.body().asString())).readObject();
+        JsonObject statusAfterReset = JsonUtil.getJsonObject(getStatusAfterReset.body().asString());
         assertFalse(statusAfterReset.containsKey("label"));
     
         // Attempt to set invalid status
@@ -3982,7 +3979,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Verify that the current curation label is now empty after publishing
         Response getStatusAfterPublish = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
         getStatusAfterPublish.then().assertThat().statusCode(OK.getStatusCode());
-        JsonObject statusAfterPublish = Json.createReader(new StringReader(getStatusAfterPublish.body().asString())).readObject();
+        JsonObject statusAfterPublish = JsonUtil.getJsonObject(getStatusAfterPublish.body().asString());
         JsonObject dataObject = statusAfterPublish.getJsonObject("data");
         assertFalse(dataObject.containsKey("label"), "Curation label should be empty after publishing");
           
@@ -3999,7 +3996,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Verify the label was set
         Response getStatusAfterSet = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
         getStatusAfterSet.then().assertThat().statusCode(OK.getStatusCode());
-        JsonObject statusAfterSet = Json.createReader(new StringReader(getStatusAfterSet.body().asString())).readObject();
+        JsonObject statusAfterSet = JsonUtil.getJsonObject(getStatusAfterSet.body().asString());
         JsonObject dataInSecondDraft = statusAfterSet.getJsonObject("data");
         assertEquals("State 2", dataInSecondDraft.getString("label"), "Curation label should be set to State 2");
         
@@ -4010,7 +4007,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Verify that the current curation label is now empty after updatecurrent
         Response getStatusAfterUpdateCurrent = UtilIT.getDatasetCurationStatus(datasetId, apiToken, false);
         getStatusAfterUpdateCurrent.then().assertThat().statusCode(OK.getStatusCode());
-        JsonObject statusAfterUpdateCurrent = Json.createReader(new StringReader(getStatusAfterUpdateCurrent.body().asString())).readObject();
+        JsonObject statusAfterUpdateCurrent = JsonUtil.getJsonObject(getStatusAfterUpdateCurrent.body().asString());
         JsonObject dataAfterUpdateCurrent = statusAfterUpdateCurrent.getJsonObject("data");
         assertFalse(dataAfterUpdateCurrent.containsKey("label"), "Curation label should be empty after updatecurrent");
         
@@ -4019,7 +4016,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getHistoryAfterUpdateCurrent.then().assertThat().statusCode(OK.getStatusCode());
         
         // Extract the data array from the response
-        JsonObject responseObj = Json.createReader(new StringReader(getHistoryAfterUpdateCurrent.body().asString())).readObject();
+        JsonObject responseObj = JsonUtil.getJsonObject(getHistoryAfterUpdateCurrent.body().asString());
         JsonArray historyAfterUpdateCurrent = responseObj.getJsonArray("data");
         
         // Verify history contains the State 2 label
@@ -4045,15 +4042,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     private JsonArray getDataAsJsonArray(String body) {
-        try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readObject().getJsonArray("data");
-        }
+        return JsonUtil.getJsonObject(body).getJsonArray("data");
     }
     
     private JsonObject getDataAsJsonObject(String body) {
-        try (StringReader rdr = new StringReader(body)) {
-            return Json.createReader(rdr).readObject().getJsonObject("data");
-        }
+        return JsonUtil.getJsonObject(body).getJsonObject("data");
     }
     private String getData(String body) {
             return getDataAsJsonObject(body).toString();
