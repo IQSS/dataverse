@@ -190,7 +190,7 @@ public class GuestbookResponseServiceBean {
 
             
             // Dataset name: 
-            Integer datasetId = (Integer) result[2];
+            Integer datasetId = ((Number) result[2]).intValue();
             String datasetTitle = datasetTitles.get(datasetId);
             sb.append(datasetTitle == null ? "" : StringEscapeUtils.escapeCsv(datasetTitle));
             sb.append(SEPARATOR);
