@@ -1481,7 +1481,7 @@ Reported Working S3-Compatible Storage
 
 
 `BackBlaze B2 <https://www.backblaze.com/cloud-storage>`_
-  (as of 6/11/2026)
+  (As of 2026-06-11)
   Set ``dataverse.files.<id>.disable-tagging=true``, as B2 does not support tagging (and will fail without this setting).
   Tested with ``.path-style-access=true``, ``.download-redirect=true``, and ``.upload-redirect=true``.
 
