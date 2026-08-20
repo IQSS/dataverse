@@ -14,7 +14,6 @@
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
-            <ui:param name="dataverseOwner" value="#{DataversePage.owner}"/>
             <ui:param name="pageTitle" value="#{empty dataverse.name ? bundle.new : dataverse.name}"/>
             <ui:param name="editModeDataverse" value="#{DataversePage.editMode}"/>
             <ui:define name="meta_header">
@@ -330,7 +329,7 @@
                                     <div class="col-md-3 control-label highlightBold">#{bundle['dataverse.metadataElements']}</div>
                                     <div class="col-md-9">
                                         <p class="help-block">#{bundle['dataverse.metadataElements.tip']}</p>
-                                        <h:outputLabel styleClass="metadata-blocks-default" for="metadataRoot" rendered="#{dataverseOwner != null}">
+                                        <h:outputLabel styleClass="metadata-blocks-default" for="metadataRoot" rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="metadataRoot" styleClass="metadata-blocks-default"
                                                                      value="#{DataversePage.inheritMetadataBlockFromParent}" onclick="updateMetadata(this);">
                                             </h:selectBooleanCheckbox>
@@ -435,7 +434,7 @@
                                     <div class="col-md-3 control-label highlightBold">#{bundle['dataverse.facetPickList.text']}</div>
                                     <div class="col-md-9">
                                         <p class="help-block">#{bundle['dataverse.facetPickList.tip']}</p>
-                                        <h:outputLabel styleClass="metadata-blocks-default" for="facetsRoot" rendered="#{dataverseOwner != null}">
+                                        <h:outputLabel styleClass="metadata-blocks-default" for="facetsRoot" rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="facetsRoot" styleClass="facets-blocks-default"
                                                                      value="#{DataversePage.inheritFacetFromParent}">
                                                 <p:ajax update="editFacets" listener="#{DataversePage.toggleFacetRoot}"/>
@@ -446,11 +445,11 @@
                                         </h:outputLabel>
                                         <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                                     itemLabel="#{facet.displayName}" itemValue="#{facet}"
-                                                    disabled="#{!dataverse.facetRoot and dataverseOwner != null}"
+                                                    disabled="#{!dataverse.facetRoot and DataversePage.dataverse.owner != null}"
                                                     style="margin-top:1em;">
                                             <f:facet name="sourceCaption">
                                                 <p:selectOneMenu styleClass="facet-category-default"
-                                                                 disabled="#{!dataverse.facetRoot and dataverseOwner != null}"
+                                                                 disabled="#{!dataverse.facetRoot and DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.facetMetadataBlockId}">
                                                     <f:selectItem itemLabel="#{bundle['dataverse.facetPickList.metadataBlockList.all']}" itemValue=""/>
                                                     <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.localeDisplayName}" itemValue="#{mdb.id}" />
@@ -459,7 +458,7 @@
                                             </f:facet>
                                             <f:facet name="targetCaption">#{bundle['dataverse.selected']}</f:facet>
                                             <p:ajax event="transfer" listener="#{DataversePage.onFacetTransfer}" update="editFacets" />
-                                            <f:passThroughAttribute name="aria-disabled" value="#{!dataverse.facetRoot and dataverseOwner != null}"/>
+                                            <f:passThroughAttribute name="aria-disabled" value="#{!dataverse.facetRoot and DataversePage.dataverse.owner != null}"/>
                                         </p:pickList>
                                     </div>
                                 </div>
@@ -471,7 +470,7 @@
                                 <f:ajax onerror="window.scrollTo(0, 0)" />
                             </p:commandButton>
                             <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{dataverse.id != null}"/>
-                            <p:button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{dataverseOwner.alias}" rendered="#{dataverse.id == null and DataversePage.ownerId != null}"/>
+                            <p:button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{dataverse.id == null and DataversePage.ownerId != null}"/>
                         </div>
                     </ui:fragment>
                     <!-- END Edit Mode -->
@@ -524,11 +523,11 @@
                                             <!-- Publish Button -->
                                             <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(dataverse)}">
                                                 <button type="button" class="btn btn-default btn-access" onclick="PF('confirmation').show()"
-                                                        jsf:rendered="#{!dataverse.released and (empty dataverseOwner or dataverseOwner.released)}">
+                                                        jsf:rendered="#{!dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
                                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                                 </button>
                                                 <button type="button" class="btn btn-default btn-access" onclick="PF('mayNotRelease').show()"
-                                                        jsf:rendered="#{!dataverse.released and (!empty dataverseOwner and !dataverseOwner.released)}">
+                                                        jsf:rendered="#{!dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
                                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                                 </button>
                                             </ui:fragment>
@@ -539,7 +538,7 @@
                                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
-                                                    <li class="#{dataverseOwner != null ? '' : 'disabled'}">
+                                                    <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
                                                         <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"
                                                                        oncomplete="PF('linkDataverseForm').show()"
                                                                        update=":linkDataverseForm"
@@ -640,7 +639,7 @@
                                                             </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
-                                                    <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(dataverseOwner == null)
+                                                    <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null)
                                                                              and permissionsWrapper.canIssueDeleteDataverseCommand(dataverse)}">
                                                         <li class="divider"></li>
                                                         <li>
