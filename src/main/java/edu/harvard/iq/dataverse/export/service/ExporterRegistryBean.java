@@ -83,25 +83,29 @@ public class ExporterRegistryBean {
     
     private static final Logger logger = Logger.getLogger(ExporterRegistryBean.class.getCanonicalName());
     
-    // When the class is initialized, the exporter map is an empty, non-modifiable map (key = format name).
-    // Once the exporters have been located and loaded, the map is replaced, fully loaded, still unmodifiable.
-    // No half-initialized state is exposable this way. Future optimizations may use @Lock on it, too, for example,
-    // when implementing a reload mechanism.
+    /* When the class is initialized, the exporter map is an empty, non-modifiable map (key = format name).
+     * Once the exporters have been located and loaded, the map is replaced, fully loaded, still unmodifiable.
+     * No half-initialized state is exposable this way. Future optimizations may use @Lock on it, too, for example,
+     * when implementing a reload mechanism.
+     */
     private Map<String, Exporter> exporters = Map.of();
     
-    // Map of direct and transitive dependents per format.
-    // Serves eviction and export cascades and, via Set::size, the topological comparator.
-    // Format: Key = format, Value = all formats that directly or indirectly declare it as a prerequisite
-    // Rules: An empty set equals a leaf, self is never included in the set.
-    // Managed the same way as the exporter map.
+    /* Map of direct and transitive dependents per format.
+     * Serves eviction and export cascades and, via Set::size, the topological comparator.
+     * Format: Key = format, Value = all formats that directly or indirectly declare it as a prerequisite
+     * Rules: An empty set equals a leaf, self is never included in the set.
+     * Managed the same way as the exporter map.
+     */
     private Map<String, Set<String>> transitiveDependents = Map.of();
     
-    // Comparator imposing a topologically consistent order on exporters, derived from prereqDepthByFormat.
-    // Managed the same way as the exporter map. Initialized with empty Map for consistency.
+    /* Comparator imposing a topologically consistent order on exporters, derived from prereqDepthByFormat.
+     * Managed the same way as the exporter map. Initialized with empty Map for consistency.
+     */
     private Comparator<Exporter> topologicalComparator = buildTopologicalComparator(Map.of());
     
-    // Caching the classloader used to load plugin JAR files, keeping it open, will allow reuse for reloads
-    // or loading more resources from plugin JARs. May be dropped later if not necessary.
+    /* Caching the classloader used to load plugin JAR files, keeping it open, will allow reuse for reloads
+     * or loading more resources from plugin JARs. May be dropped later if not necessary.
+     */
     private URLClassLoader exporterClassLoader;
     
     /**
