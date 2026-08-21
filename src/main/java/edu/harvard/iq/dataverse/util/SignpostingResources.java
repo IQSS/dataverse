@@ -16,9 +16,8 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -36,14 +35,16 @@ import io.gdcc.spi.export.Exporter;
 public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
     SystemConfig systemConfig;
+    ExporterRegistryBean exporterRegistry;
     DatasetVersion workingDatasetVersion;
     static final String defaultFileTypeValue = "https://schema.org/Dataset";
     static final int defaultMaxLinks = 5;
     int maxAuthors;
     int maxItems;
 
-    public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String authorLimitSetting, String itemLimitSetting) {
+    public SignpostingResources(SystemConfig systemConfig, ExporterRegistryBean exporterRegistry, DatasetVersion workingDatasetVersion, String authorLimitSetting, String itemLimitSetting) {
         this.systemConfig = systemConfig;
+        this.exporterRegistry = exporterRegistry;
         this.workingDatasetVersion = workingDatasetVersion;
         maxAuthors = SystemConfig.getIntLimitFromStringOrDefault(authorLimitSetting, defaultMaxLinks);
         maxItems = SystemConfig.getIntLimitFromStringOrDefault(itemLimitSetting, defaultMaxLinks);
@@ -75,19 +76,17 @@ public class SignpostingResources {
             valueList.add(items);
         }
 
-        String describedby = "<" + ds.getGlobalId().asURL().toString() + ">;rel=\"describedby\"" + ";type=\"" + "application/vnd.citationstyles.csl+json\"";
-        ExportService instance = ExportService.getInstance();
-        for (String[] labels : instance.getExportersLabels()) {
-            String formatName = labels[1];
-            Exporter exporter;
-            try {
-                exporter = ExportService.getInstance().getExporter(formatName);
-                describedby += ",<" + getExporterUrl(formatName, ds) + ">;rel=\"describedby\"" + ";type=\"" + exporter.getMediaType() + "\"";
-            } catch (ExportException ex) {
-                logger.warning("Could not look up exporter based on " + formatName + ". Exception: " + ex);
-            }
-        }
-        valueList.add(describedby);
+        String describedByTemplate = "<%s>;rel=\"describedby\";type=\"%s\"";
+        
+        StringBuilder describedBy = new StringBuilder();
+        describedBy.append(describedByTemplate.formatted(ds.getGlobalId().asURL(), "application/vnd.citationstyles.csl+json"));
+        exporterRegistry.getDetails()
+            .forEach(detail -> describedBy.append(
+                describedByTemplate.formatted(
+                    getExporterUrl(detail.formatName(), ds),
+                    detail.mediaType()
+                )));
+        valueList.add(describedBy.toString());
 
         String type = "<https://schema.org/AboutPage>;rel=\"type\"";
         type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
@@ -124,25 +123,16 @@ public class SignpostingResources {
                         "application/vnd.citationstyles.csl+json"
                 )
         );
-
-        ExportService instance = ExportService.getInstance();
-        for (String[] labels : instance.getExportersLabels()) {
-            String formatName = labels[1];
-            Exporter exporter;
-            try {
-                exporter = ExportService.getInstance().getExporter(formatName);
-                mediaTypes.add(
-                        jsonObjectBuilder().add(
-                                "href", getExporterUrl(formatName, ds)
-                        ).add(
-                                "type",
-                                exporter.getMediaType()
-                        )
-                );
-            } catch (ExportException ex) {
-                logger.warning("Could not look up exporter based on " + formatName + ". Exception: " + ex);
-            }
-        }
+        exporterRegistry.getDetails().forEach(detail ->
+            mediaTypes.add(
+                jsonObjectBuilder().add(
+                        "href", getExporterUrl(detail.formatName(), ds)
+                ).add(
+                        "type",
+                        detail.mediaType()
+                )
+        ));
+        
         JsonArrayBuilder linksetJsonObj = JsonUtil.createArrayBuilder();
 
         JsonObjectBuilder mandatory;
@@ -158,8 +148,9 @@ public class SignpostingResources {
         if (licenseString != null && !licenseString.isBlank()) {
             mandatory.add("license", jsonObjectBuilder().add("href", licenseString));
         }
-        if (!mediaTypes.toString().isBlank()) {
-            mandatory.add("describedby", mediaTypes);
+        var mediaTypesArray = mediaTypes.build();
+        if (!mediaTypesArray.isEmpty()) {
+            mandatory.add("describedby", mediaTypesArray);
         }
         if (items != null) {
             mandatory.add("item", items);

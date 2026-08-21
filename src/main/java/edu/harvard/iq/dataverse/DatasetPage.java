@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportException;
@@ -255,6 +256,8 @@ public class DatasetPage implements java.io.Serializable {
     DvObjectServiceBean dvObjectService;
     @EJB
     CacheFactoryBean cacheFactory;
+    @EJB
+    ExporterRegistryBean exporterRegistryService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -7019,7 +7022,7 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
         if (signpostingLinkHeader == null) {
-            SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
+            SignpostingResources sr = new SignpostingResources(systemConfig, exporterRegistryService, workingVersion,
                     JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
                     JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
             signpostingLinkHeader = sr.getLinks();

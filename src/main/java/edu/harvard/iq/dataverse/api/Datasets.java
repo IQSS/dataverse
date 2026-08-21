@@ -251,9 +251,11 @@ public class Datasets extends AbstractApiBean {
     @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
     @Operation(summary = "Export dataset metadata",
             description = "Exports dataset metadata by persistent id using the requested version and exporter.")
-    public Response exportDataset(@Context ContainerRequestContext crc, @Parameter(description = "Persistent identifier.") @QueryParam("persistentId") String persistentId,
-            @Parameter(description = "Dataset version selector.") @QueryParam("version") String versionId, @Parameter(description = "Exporter option.") @QueryParam("exporter") String exporter,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response exportDataset(
+        @Context ContainerRequestContext crc, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
+        @QueryParam("persistentId") @Parameter(description = "Persistent identifier.") String persistentId,
+        @QueryParam("version") @Parameter(description = "Dataset version selector.") String versionId,
+        @QueryParam("exporter") @Parameter(description = "Exporter option.") String exporter) {
 
         try {
             Dataset dataset = datasetService.findByGlobalId(persistentId);
@@ -801,7 +803,7 @@ public class Datasets extends AbstractApiBean {
             return Response
                     .ok(JsonUtil.createObjectBuilder()
                             .add("linkset",
-                                    new SignpostingResources(systemConfig, dsv,
+                                    new SignpostingResources(systemConfig, exporterRegistrySvc, dsv,
                                             JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
                                             JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""))
                                                     .getJsonLinkset())
