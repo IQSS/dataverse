@@ -19,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,10 +64,22 @@ public class ExporterRegistryBean {
     /**
      * Represents a set of labels associated with an exporter.
      */
-    public record Labels(
+    public sealed interface Details permits ExporterDetails {
+        String localizedDisplayName();
+        String formatName();
+        String mediaType();
+        boolean isHarvestable();
+        boolean isAvailableToUsers();
+    }
+    
+    // Package-private to disable creating details records from outside this class/package
+    record ExporterDetails (
         String localizedDisplayName,
-        String formatName
-    ) {}
+        String formatName,
+        String mediaType,
+        boolean isHarvestable,
+        boolean isAvailableToUsers
+    ) implements Details {}
     
     private static final Logger logger = Logger.getLogger(ExporterRegistryBean.class.getCanonicalName());
     
@@ -105,6 +116,20 @@ public class ExporterRegistryBean {
     }
     
     /**
+     * Retrieves an exporter by the format name specified in the given details.
+     *
+     * @param detail the details containing the format name used to look up the exporter; must not be null
+     * @return the exporter associated with the format name from the provided details
+     * @throws IllegalArgumentException if the detail parameter is null
+     */
+    public Exporter get(Details detail) {
+        if (detail == null) {
+            throw new IllegalArgumentException("Exporter details cannot be null");
+        }
+        return exporters.get(detail.formatName());
+    }
+    
+    /**
      * Retrieves a list of all registered exporters in the system.
      * @return an unmodifiable list of {@link Exporter} instances representing all the exporters currently available
      */
@@ -113,14 +138,18 @@ public class ExporterRegistryBean {
     }
     
     /**
-     * Retrieves a list of {@link Labels} representing the exporters registered in the system.
-     * @return a list of {@code Labels} objects
+     * Retrieves a list of {@link Details} representing the exporters registered in the system.
+     * @return a list of {@code Details} objects
      */
-    public List<Labels> getLabels() {
+    public List<Details> getDetails() {
         return exporters.values().stream()
-            .map(exporter -> new Labels(
+            .<Details>map(exporter -> new ExporterDetails(
                 exporter.getDisplayName(BundleUtil.getCurrentLocale()),
-                exporter.getFormatName()))
+                exporter.getFormatName(),
+                exporter.getMediaType(),
+                exporter.isHarvestable(),
+                exporter.isAvailableToUsers()
+            ))
             .toList();
     }
     
