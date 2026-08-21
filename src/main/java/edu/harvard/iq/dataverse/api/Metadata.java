@@ -7,10 +7,11 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.export.ExportService;
 
 import java.util.Date;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 
@@ -23,6 +24,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -167,18 +170,10 @@ public class Metadata extends AbstractApiBean {
         
         List<String> formatNames = new ArrayList<>(Arrays.asList(formats.split(",")));
         
-        Set<String> supportedFormatNames = new HashSet<>();
-        for (String[] providerLabels : ExportService.getInstance().getExportersLabels()) {
-            supportedFormatNames.add(providerLabels[1]);
-        }
-
-        //for (String formatName : formatNames) {
-        //    if (!supportedFormatNames.contains(formatName)) {
-        //        throw new BadRequestException(formatName + " is not a supported format");
-        //    }
-        //}
-        if (!supportedFormatNames.containsAll(formatNames)) {
-            throw new BadRequestException("Invalid/unsupported format name(s)");
+        try {
+            exporterRegistrySvc.requireAllExist(formatNames);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Invalid/unsupported format name(s)" + ex.getMessage());
         }
         
         return formatNames;

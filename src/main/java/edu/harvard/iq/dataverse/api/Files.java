@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
-import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
@@ -60,7 +59,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -888,8 +886,7 @@ public class Files extends AbstractApiBean {
     private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
         try {
-            ExportService instance = ExportService.getInstance();
-            instance.exportAllFormats(theDataset);
+            exportSvc.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {
             // Something went wrong!
