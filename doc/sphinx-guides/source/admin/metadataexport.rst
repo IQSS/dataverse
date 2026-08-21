@@ -24,6 +24,8 @@ In addition to the automated exports, a Dataverse installation admin can start a
 
 ``curl http://localhost:8080/api/admin/metadata/reExportAll?olderThan=<YYYY-MM-DD>``
 
+``curl http://localhost:8080/api/admin/metadata/reExportAll?formats=Datacite,croissant``
+
 ``curl http://localhost:8080/api/admin/metadata/clearExportTimestamps``
 
 ``curl http://localhost:8080/api/admin/metadata/:persistentId/reExportDataset?persistentId=doi:10.5072/FK2/AAA000``
@@ -31,6 +33,7 @@ In addition to the automated exports, a Dataverse installation admin can start a
 The first will attempt to export all the published, local (non-harvested) datasets that haven't been exported yet. 
 The second will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
 With the optional olderThan query parameter, the second will *force* re-export of all published, local datasets that were last exported before the olderThan date.
+Another optional parameter, ``formats`` (new as of v6.12) allows an administrator to force a reexport of specific metadata formats only. 
 
 The first two calls return a status message informing the administrator that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
 
@@ -43,6 +46,10 @@ The reExportDataset call gives you the opportunity to *force* a re-export of onl
 reExportDataset can be called with either ``persistentId`` (as shown above, with a DOI) or with the database id of a dataset (as shown below, with "42" as the database id).
 
 ``curl http://localhost:8080/api/admin/metadata/42/reExportDataset``
+
+An optional parameter, ``formats`` (new as of v6.12) can be used to force a reexport of specific metadata format only. For example:
+
+``curl http://localhost:8080/api/admin/metadata/42/reExportDataset?formats=oai_dc,oai_ddi``
 
 Note, that creating, modifying, or re-exporting an OAI set will also attempt to export all the unexported datasets found in the set.
 
