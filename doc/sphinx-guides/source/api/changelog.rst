@@ -26,7 +26,6 @@ v6.12
   - **/api/admin/index/perms/{id}**
 
 - Dataset creation API calls may now behave differently when neither a license nor terms are provided, depending on the new :ref:`dataverse.feature.do-not-assume-default-license` feature flag.
-- The metadata export APIs ``/api/admin/metadata/reExportAll`` and ``/api/admin/metadata/<id>/reExportDataset`` now support an optional parameter ``formats=`` allowing an administrator to force a reexport of the specified formats only.
 
 v6.11
 -----
