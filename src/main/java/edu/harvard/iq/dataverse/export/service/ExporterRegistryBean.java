@@ -116,6 +116,10 @@ public class ExporterRegistryBean {
      *         an empty {@code Optional} if no exporter is associated with the given format name
      */
     public Optional<Exporter> get(String formatName) {
+        // Avoid NPE being thrown from Map lookup when Map implementation does not permit null keys
+        if (formatName == null) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(exporters.get(formatName));
     }
     
@@ -129,7 +133,7 @@ public class ExporterRegistryBean {
     public Exporter get(Details detail) {
         if (detail == null) {
             throw new IllegalArgumentException("Exporter details cannot be null");
-        }
+        }   
         return exporters.get(detail.formatName());
     }
     
