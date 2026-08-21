@@ -10,7 +10,7 @@ Over in the :doc:`classic-dev-env` section we described the "happy path" of when
 context-root in glassfish-web.xml Munged by Netbeans
 ----------------------------------------------------
 
-For unknown reasons, Netbeans will sometimes change the following line under ``src/main/webapp/WEB-INF/glassfish-web.xml``:
+For unknown reasons, Netbeans will sometimes change the following line under ``src/main/webapp/WEB-INF/payara-web.xml``:
 
 ``<context-root>/</context-root>``
 
