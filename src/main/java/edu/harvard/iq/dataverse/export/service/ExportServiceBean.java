@@ -236,123 +236,127 @@ public class ExportServiceBean {
     }
     
     /**
-     * This method is added to supplement the classic exportAllFormats() in order
-     * to allow the metadata export APIs to selectively re-export only the formats
-     * specified. This is to finally allow an instance admin to avoid running
-     * a complete, from-scratch reexport when only _some_, or just one of them
-     * actually needs to be refreshed. On a large instance this can waste a
-     * significant amount of time and CPU cycles. (new as of 6.12)
-     * This method calls the cacheExport() method for every valid/supported
-     * format name supplied, or for every Exporter available, if an empty List
-     * is passed.
-     * Only the latest published version is used for exports.
-     * exportAllFormats() above is now a convenience wrapper, with the
-     * implementation moved here.
+     * Exports the given dataset in a single specified format.
+     * Delegate to the multi-format export method with a very short list.
+     * Be aware that this may cause multiple exporters to be invoked in case the format is a prerequisite for others.
      *
-     * @param dataset
-     * @param formatNames
-     * @throws ExportException
+     * @param dataset the dataset to export; must not be null
+     * @param formatName the name of the export format to use; must not be null
+     * @throws ExportException if the format name is null or if the underlying export operation fails
+     */
+    public void exportFormat(Dataset dataset, String formatName) throws ExportException {
+        // Check here to avoid NPE from List.of()
+        if (formatName == null) {
+            throw new ExportException("Format name cannot be null");
+        }
+        exportFormats(dataset, List.of(formatName));
+    }
+    
+    /**
+     * Exports the given dataset selectively in the specified formats by resolving the dataset's {@link #defaultVersion}
+     * and delegating to the version-specific export method. Upon successful completion of all exports, the dataset's
+     * last export time is updated to the current timestamp.
+     * <p>
+     * Be aware that this may cause more exporters to be invoked in case any format is a prerequisite for others.
+     * If the list is empty, this method will export all available formats.
+     *
+     * @param dataset the dataset to export; must not be null
+     * @param formatNames the list of format names to export in; an empty list means all formats
+     * @throws ExportException if the dataset is null or if any export operation fails
      */
     public void exportFormats(Dataset dataset, List<String> formatNames) throws ExportException {
         if (dataset == null) {
-            throw new ExportException("exportFormats called with null Dataset");
+            throw new ExportException("Dataset must not be null");
+        }
+        
+        exportFormats(defaultVersion(dataset), formatNames);
+        
+        // All exports done successfully, update last export time on the dataset
+        // TODO: Is it correct to update the last export time even if only some formats were exported?
+        dataset.setLastExportTime(Date.from(Instant.now()));
+    }
+    
+    /**
+     * Clears the cached exports for the specified formats (or all registered formats if the list is empty),
+     * resolves all transitive dependent formats, orders the required exporters topologically to guarantee
+     * that prerequisite formats are regenerated before their dependents, and then sequentially produces
+     * and caches the requested exports.
+     * <p>
+     * If any of the requested formats has transitive dependents in the registry, those dependents are
+     * automatically included in the export process so that they are regenerated with fresh prerequisite
+     * data.
+     *
+     * @param datasetVersion the dataset version to export; must not be null
+     * @param formatNames the names of the export formats to produce; if empty, all formats registered in
+     *                    the registry will be exported
+     * @throws ExportException if datasetVersion is null or does not fullfill {@link #isCacheable(DatasetVersion)},
+     *                         if any format name is invalid, or
+     *                         if one or more exports fail during execution
+     */
+    public void exportFormats(DatasetVersion datasetVersion, List<String> formatNames) throws ExportException {
+        if (datasetVersion == null) {
+            throw new ExportException("Dataset version must not be null");
+        }
+        if (!isCacheable(datasetVersion)) {
+            throw new ExportException("Dataset version is not cacheable, thus it cannot be exported to cache");
         }
         try {
             registry.requireAllExist(formatNames);
-        } catch (IllegalArgumentException ex) {
-            throw new ExportException("Invalid format names: " + ex.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ExportException("One or more format names are invalid: " + e.getMessage());
         }
         
-        try {
-            clearCachedFormats(dataset, formatNames);
-        } catch (IOException ex) {
-            Logger.getLogger(ExportService.class.getName()).log(Level.SEVERE, null, ex);
+        // NOTE: Evict all formats at once before producing any new exports to improve cache consistency
+        //       and force prerequisite formats to be renewed before use!
+        clearCachedFormats(datasetVersion, formatNames);
+        
+        // If the list of format names is empty, retrieve all format names from the registry and evict all.
+        if (formatNames.isEmpty()) {
+            formatNames = registry.getDetails().stream().map(ExporterRegistryBean.Details::formatName).toList();
+        // Otherwise, make sure to add all formats relying on the requested ones, as they need to be regenerated, too.
+        } else {
+            formatNames = formatNames.stream()
+                              // The flatMap replaces any stream element with the concatenated elements,
+                              // thus re-adding the format itself to the list keeps it around.
+                              .flatMap(format -> Stream.concat(
+                                  Stream.of(format),
+                                  registry.getTransitiveDependents(format).stream())
+                              )
+                              // Filter for duplicates (multiple formats may have the same dependents)
+                              .distinct()
+                              .toList();
         }
         
-        try {
-            DatasetVersion releasedVersion = dataset.getReleasedVersion();
-            if (releasedVersion == null) {
-                throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
+        // Retrieve the exporters for all formats, then order the list topologically, ensuring dependencies get done first
+        List<Exporter> exporters = formatNames.stream()
+                                  .map(registry::get)
+                                  .flatMap(Optional::stream) // safe: names were validated above!
+                                  .sorted(registry.getTopologicalComparator())
+                                  .toList();
+        
+        // THINK: What about the datacite export format? Any exporter may use it via the provider.
+        //        Shouldn't all exports have this as an implicit dependency? Same goes for schema.org and ORE export!
+        //        At the moment, the provider does a live conversion and does not read from a cached export, thus safe for now.
+        
+        // Now execute exports in sequential order
+        // Note: If parallelization of exports is to be achieved, use a different data structure (like a queue) and
+        //       group by number of dependencies. All exports at a certain depth must be done before proceeding to
+        //       avoid race conditions.
+        boolean allSucceeded = true;
+        for (Exporter exporter : exporters) {
+            String formatName = exporter.getFormatName();
+            ExportCacheKey key = new ExportCacheKey(datasetVersion, formatName);
+            try {
+                pipeline.produceAndCache(datasetVersion, key);
+            // RuntimeEx also catches ExportException and NPEs
+            } catch (IOException | RuntimeException ex) {
+                allSucceeded = false;
+                logger.log(Level.WARNING, ex, () -> "Export of " + formatName + " failed for dataset version" + datasetVersion);
             }
-            InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
-            
-            for (Exporter e : exporterMap.values()) {
-                String formatName = e.getFormatName();
-                if (formatNames.isEmpty() || formatNames.contains(formatName)) {
-                    if (e.getPrerequisiteFormatName().isPresent()) {
-                        String prereqFormatName = e.getPrerequisiteFormatName().get();
-                        try (InputStream preReqStream = getExport(dataset.getReleasedVersion(), prereqFormatName)) {
-                            dataProvider.setPrerequisiteInputStream(preReqStream);
-                            cacheExport(dataset, dataProvider, formatName, e);
-                            dataProvider.setPrerequisiteInputStream(null);
-                        } catch (IOException ioe) {
-                            throw new ExportException("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
-                        }
-                    } else {
-                        cacheExport(dataset, dataProvider, formatName, e);
-                    }
-                }
-            }
-            // Finally, if we have been able to successfully export in all available
-            // formats, we'll increment the "last exported" time stamp:
-            if (formatNames.isEmpty()) {
-                dataset.setLastExportTime(new Timestamp(new Date().getTime()));
-            }
-            
-        } catch (ServiceConfigurationError serviceError) {
-            throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
-        } catch (RuntimeException e) {
-            logger.log(Level.FINE, e.getMessage(), e);
-            throw new ExportException(
-                "Unknown runtime exception exporting metadata. " + (e.getMessage() == null ? "" : e.getMessage()));
         }
-    }
-
-    // This method finds the exporter for the format requested,
-    // then produces the dataset metadata as a JsonObject, then calls
-    // the "cacheExport()" method that will save the produced output
-    // in a file in the dataset directory.
-    public void exportFormat(Dataset dataset, String formatName) throws ExportException {
-        try {
-
-            Exporter e = exporterMap.get(formatName);
-            if (e != null) {
-                DatasetVersion releasedVersion = dataset.getReleasedVersion();
-                if (releasedVersion == null) {
-                    throw new ExportException(
-                            "No published version found during export. " + dataset.getGlobalId().toString());
-                }
-                if(e.getPrerequisiteFormatName().isPresent()) {
-                    String prereqFormatName = e.getPrerequisiteFormatName().get();
-                    try (InputStream preReqStream = getExport(releasedVersion, prereqFormatName)) {
-                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion, preReqStream);
-                        cacheExport(dataset, dataProvider, formatName, e);
-                    } catch (IOException ioe) {
-                        throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
-                    }
-                } else {
-                    InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
-                    cacheExport(dataset, dataProvider, formatName, e);
-                }
-                // As with exportAll, we should update the lastexporttime for the dataset
-                dataset.setLastExportTime(new Timestamp(new Date().getTime()));
-            } else {
-                throw new ExportException("Exporter not found");
-            }
-        } catch (IllegalStateException e) {
-            // IllegalStateException can potentially mean very different, and
-            // unexpected things. An exporter attempting to get a single primitive
-            // value from a fieldDTO that is in fact a Multiple and contains a
-            // json vector (this has happened, for example, when the code in the
-            // DDI exporter was not updated following a metadata fieldtype change),
-            // will result in IllegalStateException.
-            throw new ExportException("IllegalStateException caught when exporting " + formatName + " for dataset "
-                    + dataset.getGlobalId().toString()
-                    + "; may or may not be due to a mismatch between an exporter code and a metadata block update. "
-                    + e.getMessage());
-        }
-
-    }
+        
+        if (!allSucceeded) {
+            throw new ExportException("One or more exports failed, for details see logs");
         }
     }
     
