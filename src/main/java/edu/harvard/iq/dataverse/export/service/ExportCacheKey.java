@@ -14,7 +14,7 @@ import java.util.Objects;
  *       The cache itself derives the target auxiliary storage (dataset or datafile) at runtime.
  *       In addition, by not keeping an JPA entity reference, garbage collection is facilitated.
  */
-public record ExportCacheKey(String auxTag) {
+public record ExportCacheKey(String formatName, String friendlyVersion) {
     
     public static final String TAG_PREFIX = "export_";
     public static final String TAG_SUFFIX = ".cached";
@@ -27,15 +27,23 @@ public record ExportCacheKey(String auxTag) {
      * @throws IllegalArgumentException if the formatName is blank or empty
      */
     public ExportCacheKey(DatasetVersion version, String formatName) {
-        this(auxTag(version, formatName));
+        this(checkFormatName(formatName), checkVersion(version));
     }
     
     /** The one canonical, version-qualified aux tag. */
-    static String auxTag(DatasetVersion version, String formatName) {
+    public String auxTag() {
+        return TAG_PREFIX + formatName + "_" + friendlyVersion + TAG_SUFFIX;
+    }
+    
+    private static String checkVersion(DatasetVersion version) {
         Objects.requireNonNull(version);
+        return Objects.requireNonNull(version.getFriendlyVersionNumber());
+    }
+    
+    private static String checkFormatName(String formatName) {
         if (Objects.requireNonNull(formatName).isBlank()) {
             throw new IllegalArgumentException("formatName must not be blank or empty");
         }
-        return TAG_PREFIX + formatName + "_" + version.getFriendlyVersionNumber() + TAG_SUFFIX;
+        return formatName;
     }
 }
