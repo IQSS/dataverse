@@ -172,11 +172,6 @@ public class Metadata extends AbstractApiBean {
             supportedFormatNames.add(providerLabels[1]);
         }
 
-        //for (String formatName : formatNames) {
-        //    if (!supportedFormatNames.contains(formatName)) {
-        //        throw new BadRequestException(formatName + " is not a supported format");
-        //    }
-        //}
         if (!supportedFormatNames.containsAll(formatNames)) {
             throw new BadRequestException("Invalid/unsupported format name(s)");
         }
