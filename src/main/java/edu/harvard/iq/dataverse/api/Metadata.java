@@ -84,7 +84,7 @@ public class Metadata extends AbstractApiBean {
             }
         }
         
-        // validate the format names argument supplied (or obain an empty list 
+        // validate the format names argument supplied (or obtain an empty list 
         // that the method will produce if null is supplied):
         List<String> formatNames = validateFormatNames(formats);
 
