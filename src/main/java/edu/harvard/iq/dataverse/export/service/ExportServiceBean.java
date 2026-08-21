@@ -356,6 +356,12 @@ public class ExportServiceBean {
         }
     }
     
+    /**
+     * Cache policy: drafts are mutable and therefore never cached; released versions are cacheable.
+     * Extend here (not at call sites) when caching of further version states (e.g. deaccessioned) needs an explicit decision.
+     */
+    static boolean isCacheable(DatasetVersion version) {
+        return !version.isDraft();
     }
     
     /**
