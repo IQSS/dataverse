@@ -47,55 +47,29 @@ public class ExportServiceBean {
     
     // METHODS TO RETRIEVE EXPORTED DATA
     
-    public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException, IOException {
-
-        Dataset dataset = datasetVersion.getDataset();
-        InputStream exportInputStream = null;
-
-        if (datasetVersion.isDraft()) {
-            // For drafts we create the export on the fly rather than caching.
-            Exporter exporter = exporterMap.get(formatName);
-            if (exporter != null) {
-                try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                    // getPrerequisiteFormatName logic copied from exportFormat()
-                    if (exporter.getPrerequisiteFormatName().isPresent()) {
-                        String prereqFormatName = exporter.getPrerequisiteFormatName().get();
-                        try (InputStream preReqStream = getExport(datasetVersion, prereqFormatName)) {
-                            InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion, preReqStream);
-                            exporter.exportDataset(dataProvider, outputStream);
-                        } catch (IOException ioe) {
-                            throw new ExportException("Could not get prerequisite " + prereqFormatName + " to create " + formatName + " export for dataset " + dataset.getId(), ioe);
-                        }
-                    } else {
-                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(datasetVersion);
-                        exporter.exportDataset(dataProvider, outputStream);
-                    }
-                    return new ByteArrayInputStream(outputStream.toByteArray());
-                }
-            }
-        } else {
-            // for non-drafts (published versions) we try to locate an already existing, cached export
-            exportInputStream = getCachedExportFormat(dataset, formatName);
+    /**
+     * Retrieves a stream of the metadata export for the given dataset version in the specified format.
+     * <p>
+     * First checks for a fresh, cached export.
+     * If none is available (usually because the dataset version is not able to be cached),
+     * generates a fresh export by invoking the export pipeline and writing to a temporary location.
+     * <p>
+     * The caller is responsible for closing the returned {@link InputStream}.
+     *
+     * @param datasetVersion the dataset version to retrieve the export for; must not be null
+     * @param formatName the name of the export format to retrieve; must not be null
+     * @return an {@link InputStream} containing the export data for the requested format
+     * @throws ExportException if the input stream for the metadata export cannot be retrieved due to underlying errors
+     */
+    public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException {
+        // Note: we don't do validation here, as the lower layers will take care of it.
+        try {
+            ExportCacheKey key = new ExportCacheKey(datasetVersion, formatName);
+            return pipeline.readFreshCachedExport(datasetVersion, key)
+                           .orElse(pipeline.readFreshExport(datasetVersion, formatName));
+        } catch (IOException e) {
+            throw new ExportException("Failed to retrieve export", e);
         }
-
-        if (exportInputStream != null) {
-            return exportInputStream;
-        }
-
-        // if it doesn't exist, we'll try to run the export:
-        exportFormat(dataset, formatName);
-
-        // and then try again:
-        exportInputStream = getCachedExportFormat(dataset, formatName);
-
-        if (exportInputStream != null) {
-            return exportInputStream;
-        }
-
-        // if there is no cached export still - we have to give up and throw
-        // an exception!
-        throw new ExportException("Failed to export the dataset as " + formatName);
-
     }
 
     public String getLatestPublishedAsString(Dataset dataset, String formatName) {

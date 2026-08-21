@@ -125,6 +125,40 @@ class ExportPipelineBean {
     }
     
     /**
+     * No caching variant to produce an export for the given dataset version in the requested format.
+     * The produces metadata export will reside as a temporary file on disk, auto-deleted after consumption.
+     * <p>
+     * The requested format name must be registered in the export registry.
+     * If the exporter declares a prerequisite format, it is resolved recursively before the export is produced.
+     * Circular prerequisite chains are detected and rejected.
+     * <p>
+     * If the given dataset version does not satisfy {@link ExportServiceBean#isCacheable(DatasetVersion)},
+     * the export and any prerequisite data formats will be generated on-the-fly.
+     * (Prerequisite formats will have their own temporary files, destroyed after consumption)
+     * <p>
+     * If the dataset version is cacheable, it will still be written to a temporary file, but any prequisites
+     * will be read from the cache. If the prerequisites are not yet cached, they are going to be cached here.
+     * <p>
+     * The caller is responsible for closing the returned input stream.
+     *
+     * @param datasetVersion the dataset version whose metadata will be exported
+     * @param formatName     the name of the export format to produce; must be a registered format
+     * @throws IllegalArgumentException if the dataset version or output stream is null,
+     *                                  if no exporter is registered for the format, or
+     *                                  if a prerequisite cycle is detected
+     * @throws ExportException if the prerequisite format resolution fails, or
+     *                         if the exporter throws an {@link IllegalStateException}
+     */
+    InputStream readFreshExport(DatasetVersion datasetVersion, String formatName) throws IOException {
+        if (datasetVersion == null) {
+            throw new IllegalArgumentException("datasetVersion must not be null");
+        }
+        registry.requireExists(formatName);
+        
+        return produceToTempFile(formatName, datasetVersion, new LinkedHashSet<>());
+    }
+    
+    /**
      * Produces an export for the given dataset version and writes the result through to the export cache.
      *
      * @param datasetVersion the dataset version whose metadata will be exported
@@ -145,37 +179,6 @@ class ExportPipelineBean {
             //                 This way, the cache owns all the I/O going on.
             out -> produce(key.formatName(), datasetVersion, out, new LinkedHashSet<>())
         );
-    }
-    
-    /**
-     * No caching variant to produce an export for the given dataset version in the requested format.
-     * Writes the result to the supplied output stream.
-     * <p>
-     * The requested format name must be registered in the export registry.
-     * If the exporter declares a prerequisite format, it is resolved recursively before the export is produced.
-     * Circular prerequisite chains are detected and rejected.
-     * <p>
-     * If the dataset version fulfills {@link ExportServiceBean#isCacheable(DatasetVersion)}, these formats will be
-     * read from the cache. If the prerequisites are not yet cached, they are going to be cached here.
-     * <p>
-     * The caller is responsible for creating and closing the output stream.
-     *
-     * @param datasetVersion the dataset version whose metadata will be exported
-     * @param formatName     the name of the export format to produce; must be a registered format
-     * @param out            the output stream to write the produced export to
-     * @throws IllegalArgumentException if the dataset version or output stream is null,
-     *                                  if no exporter is registered for the format, or
-     *                                  if a prerequisite cycle is detected
-     * @throws ExportException if the prerequisite format resolution fails, or
-     *                         if the exporter throws an {@link IllegalStateException}
-     */
-    void produceAndWriteOut(DatasetVersion datasetVersion, String formatName, OutputStream out) {
-        if (datasetVersion == null || out == null) {
-            throw new IllegalArgumentException("datasetVersion and out must not be null");
-        }
-        registry.requireExists(formatName);
-        
-        produce(formatName, datasetVersion, out, new LinkedHashSet<>());
     }
     
     /**
@@ -277,10 +280,10 @@ class ExportPipelineBean {
         
         // Non-cacheable versions are always created fresh
         if (!ExportServiceBean.isCacheable(version)) {
-            return producePreReqToTempFile(prereqFormatName, version, inFlight);
+            return produceToTempFile(prereqFormatName, version, inFlight);
         }
         
-        // If cacheable, try to read from the cache
+        // If cacheable, try to read from the cache (will also trigger full invalidator chain!)
         ExportCacheKey key = new ExportCacheKey(version, prereqFormatName);
         Optional<InputStream> cached = readFreshCachedExport(version, key);
         if (cached.isPresent()) {
@@ -299,7 +302,7 @@ class ExportPipelineBean {
     
     /**
      * Produces an export for the given (non-cacheable) dataset version by writing the result to a secure temporary file,
-     * then returns an input stream over that file. This avoids huge blips in memory usage for drafts.
+     * then returns an input stream over that file. This especially avoids huge blips in memory usage for drafts.
      * <p>
      * The temporary file is created with owner-only permissions and opened with {@link StandardOpenOption#DELETE_ON_CLOSE},
      * so the file is automatically removed when the caller closes the returned stream.
@@ -314,10 +317,12 @@ class ExportPipelineBean {
      * @return an open {@link InputStream} to the temporary file containing the produced export data;
      *         the caller is responsible for closing it, which also deletes the temporary file
      */
-    private InputStream producePreReqToTempFile(String formatName, DatasetVersion version, Set<String> inFlight) throws IOException {
+    private InputStream produceToTempFile(String formatName, DatasetVersion version, Set<String> inFlight) throws IOException {
         Path tempFile = SecureTempFiles.createOwnerOnlyTempFile("dataverse-export-draft-", ".tmp");
         try {
             try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(tempFile))) {
+                // Note: Any prerequisites are recursively produced on demand, in addition to the original target format.
+                //       If the dataset version can be cached, a read attempt for prerequisites will be made.
                 produce(formatName, version, out, inFlight);
             }
             // The returned stream deletes the file on close.
