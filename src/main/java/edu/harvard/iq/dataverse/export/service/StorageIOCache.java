@@ -25,8 +25,8 @@ import java.util.logging.Logger;
  * see {@link ExportCacheKey#auxTag()}) and is the only name ever written.
  * <p>
  * The legacy, unqualified name ({@code export_<format>.cached}) predates version qualification and only ever described
- * the <em>latest released</em> version. It is therefore consulted as a read fallback exclusively for that version.
- * It will be deleted alongside the canonical name on eviction, so a stale legacy entry can never resurrect an invalidated export.
+ * the <em>latest released</em> version. It is ignored by this cache implementation for read/write cycles but may
+ * be purged using {@link #evictAll(Dataset)}.
  * <p>
  * <b>Write Atomicity:</b> Exports are always rendered to a local temp file first.
  * Then it gets persisted via {@link StorageIO#savePathAsAux(Path, String)} as an auxiliary dataset file.
@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  * Readers can never observe a half-written export under the cache key. The cost is one extra local write per export,
  * which is negligible next to export generation itself.
  * <p>
- * Note 2: This class is an application scoped CDI bean (single instance). The cache itself is stateless,
+ * Note 2: This class is an application-scoped CDI bean (single instance). The cache itself is stateless,
  * and every operation operates on their own {@code StorageIO}. But: if we add a write lock later on to avoid race
  * conditions during writes, we will require an instance wide single map to store these locks, which CDI gives us for free.
  * In addition, one might use a Hazelcast-backed map to acquire multi-instance wide locks!
