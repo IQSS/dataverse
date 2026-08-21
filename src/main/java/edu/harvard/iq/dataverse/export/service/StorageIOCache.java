@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.SecureTempFiles;
+import edu.harvard.iq.dataverse.util.logging.FailureEscalation;
 import io.gdcc.spi.export.ExportException;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -47,6 +48,10 @@ import java.util.logging.Logger;
 public final class StorageIOCache implements ExportCache {
     
     private static final Logger logger = Logger.getLogger(StorageIOCache.class.getCanonicalName());
+    
+    // TODO: these hard coded thresholds are arbitrarily high and should be configurable via JvmSettings
+    private static final FailureEscalation quietDeleteFails = new FailureEscalation(256);
+    private static final FailureEscalation tryReadFails = new FailureEscalation(256);
     
     /**
      * Reads an input stream associated with the given export cache key.
@@ -121,9 +126,12 @@ public final class StorageIOCache implements ExportCache {
             if (!storage.isAuxObjectCached(auxTag)) {
                 return Optional.empty();
             }
+            tryReadFails.recordSuccess().ifPresent(n -> logger.warning("Trying to read cached export recovered after " + n + " consecutive failures"));
         } catch (IOException e) {
             // Treat as a "cache miss" so the pipeline regenerates rather than failing over a cache IO issue.
-            logger.log(Level.FINE, e, () -> "Existence check failed for " + auxTag);
+            // Note: if necessary, elevate recording the failures per storage or even more fine-grained, including the tag.
+            logger.log(tryReadFails.incrementAndGetLevel(), e,
+                       () -> "Existence check failed for " + auxTag + " (consecutive failures: " + tryReadFails.currentStreak() + ")");
             return Optional.empty();
         }
         try {
@@ -142,10 +150,12 @@ public final class StorageIOCache implements ExportCache {
     private static void deleteQuietly(StorageIO<Dataset> storage, String auxTag) {
         try {
             storage.deleteAuxObject(auxTag);
+            quietDeleteFails.recordSuccess().ifPresent(n -> logger.log(Level.FINE, "Quiet deletes from the cache recovered after " + n + " consecutive failures."));
         } catch (IOException e) {
             // Absence is the common case here and not an error.
             // Real failures are logged but non-fatal, as the entry will be overwritten or ignored on the next pipeline run.
-            logger.log(Level.FINE, e, () -> "Could not delete aux object " + auxTag);
+            // Note: if necessary, elevate recording the failures per storage or even more fine-grained, including the tag.
+            logger.log(quietDeleteFails.incrementAndGetLevel(), e, () -> "Could not delete aux object " + auxTag);
         }
     }
     
