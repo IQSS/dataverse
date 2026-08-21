@@ -42,15 +42,8 @@ public class ExportServiceBean {
     @Inject
     ExportCache cache;
     
-    /**
-     * A collection of {@link ExportCacheInvalidator} instances.
-     * This list is intended to centralize all invalidation mechanisms for export cache entries.
-     * Any new implementations must be added here in addition to the "permits" on the interface seal.
-     * <p>
-     * Note: Once we allow plugins to provide their own invalidation logic, we must load them.
-     * This static, non-CDI list shall then be replaced by a registry pattern following implementation.
-     */
-    List<ExportCacheInvalidator> invalidators = List.of(new FileEmbargoExpiryInvalidator());
+    @EJB
+    ExportPipelineBean pipeline;
     
     // METHODS TO RETRIEVE EXPORTED DATA
     
