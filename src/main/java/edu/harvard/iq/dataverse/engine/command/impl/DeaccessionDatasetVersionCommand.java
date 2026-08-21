@@ -15,16 +15,10 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.IOException;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import java.util.concurrent.Future;
-import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -74,23 +68,21 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         
         boolean doNormalSolrDocCleanUp = true;
 
-        
-        ExportService instance = ExportService.getInstance();
-        
-
         if (managed.getDataset().getReleasedVersion() != null) {
             try {
-                instance.exportAllFormats(managed.getDataset());
+                ctxt.exportService().exportAllFormats(managed.getDataset());
             } catch (ExportException ex) {
                 // Something went wrong!
                 // But we're not going to treat it as a fatal condition.
+                logger.log(Level.WARNING,"Ignored failure to export all formats after deaccessioning", ex);
             }
         } else {
             try {
                 // otherwise, we need to wipe clean the exports we may have cached:
-                instance.clearAllCachedFormats(managed.getDataset());
-            } catch (IOException ex) {
+                ctxt.exportService().clearAllCachedFormats(managed.getDataset());
+            } catch (ExportException ex) {
                 //Try catch required due to original method for clearing cached metadata (non fatal)
+                logger.log(Level.WARNING,"Ignored failure to delete all formats after deaccessioning", ex);
             }
         }
         // And save the dataset, to get the "last exported" timestamp right:
