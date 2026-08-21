@@ -47,7 +47,7 @@ reExportDataset can be called with either ``persistentId`` (as shown above, with
 
 ``curl http://localhost:8080/api/admin/metadata/42/reExportDataset``
 
-An optional parameter, ``formats`` (new as of v6.12) can be used to force a reexport of specific metadata format only. For example:
+An optional parameter, ``formats`` (new as of v6.12) can be used to force a reexport of specific metadata formats only. For example:
 
 ``curl http://localhost:8080/api/admin/metadata/42/reExportDataset?formats=oai_dc,oai_ddi``
 

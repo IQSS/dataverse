@@ -510,7 +510,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.merge(datasetLock);
     }
 
-    /*
+    /**
      * Lists all dataset locks, optionally filtered by lock type or user, or both
      * @param lockType
      * @param user
