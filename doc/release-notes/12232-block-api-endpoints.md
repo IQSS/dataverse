@@ -8,7 +8,7 @@ In the command below, replace "demo.dataverse.org" with the name of your server.
 
 `curl https://demo.dataverse.org/api/admin/settings`
 
-If you can see your settings, follow the instructions [the guides](https://guides.dataverse.org/en/6.12/installation/config.html#blocking-api-endpoints) to block API endpoints.
+If you can see your settings, follow the instructions in [the guides](https://guides.dataverse.org/en/6.12/installation/config.html#blocking-api-endpoints) to block API endpoints.
 
 Please note that as reported in #12232, versions of the guides from 6.7 through 6.11 incorrectly described how to configure the setting `dataverse.api.blocked.endpoints`. This was fixed in pull request #12636 for the 6.12 guides. The following is the correct command to use:
 
