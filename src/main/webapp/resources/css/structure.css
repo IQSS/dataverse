@@ -1018,6 +1018,7 @@ div.ui-autocomplete > ul, div.ui-autocomplete > ul > li > input {width:100%;} /*
 span.ui-autocomplete {width:100%;} /* FIX WIDTH FOR AUTOCOMPLETE IN P:FRAGMENT */
 span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 .ui-autocomplete input {padding:6px 12px; margin:0;}
+.ui-autocomplete-moretext {padding:6px 12px; pointer-events:none; font-weight:normal; color:#333; text-decoration:none;}
 
 /* Overwrite Bootstrap */
 .btn, .input-group-btn {white-space: normal !important;}
