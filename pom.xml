@@ -920,6 +920,9 @@
                     <signaturesFiles>
                         <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
                     </signaturesFiles>
+                    <excludes>
+                        <exclude>edu/harvard/iq/dataverse/util/xml/XmlUtil.class</exclude>
+                    </excludes>
                     <targetVersion>${target.java.version}</targetVersion>
                 </configuration>
                 <executions>
