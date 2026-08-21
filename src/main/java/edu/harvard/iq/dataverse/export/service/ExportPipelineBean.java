@@ -104,6 +104,9 @@ class ExportPipelineBean {
         if (cached.isPresent()) {
             try {
                 // Apply all invalidators to see if the cache entry may be stale
+                // TODO: In case we ever have longer prerequisite format chains, this naive appraoch will need refinement.
+                //       The staleness checks may be expensive and repeated execution is not helpful.
+                //       For now, this pipeline is *stateless*, so changing the procedure needs careful consideration.
                 if (invalidators.stream().anyMatch(inv -> inv.isStale(datasetVersion, key))) {
                     // If this in fact is stale, evict, close the stream, and report back cache miss
                     cache.evict(datasetVersion.getDataset(), key);
