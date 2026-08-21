@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
@@ -249,8 +248,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         
         // And the exported metadata files
         try {
-            ExportService instance = ExportService.getInstance();
-            instance.exportAllFormats(d);
+            ctxt.exportService().exportAllFormats(d);
         } catch (ExportException ex) {
             // Just like with indexing, a failure to export is not a fatal condition.
             retVal = false;
