@@ -24,9 +24,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
 import io.gdcc.spi.export.ExportException;
-import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -35,7 +36,6 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -63,7 +63,6 @@ import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.validator.ValidatorException;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -128,6 +127,10 @@ public class FilePage implements java.io.Serializable {
     IngestServiceBean ingestService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    ExportServiceBean exportService;
+    @EJB
+    ExporterRegistryBean exporterRegistryService;
 
 
     @Inject
@@ -463,30 +466,19 @@ public class FilePage implements java.io.Serializable {
         this.version = version;
     }
     
-    public List< String[]> getExporters(){
-        List<String[]> retList = new ArrayList<>();
-        String myHostURL = systemConfig.getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
-            String formatName = provider[1];
-            String formatDisplayName = provider[0];
-            
-            Exporter exporter = null; 
-            try {
-                exporter = ExportService.getInstance().getExporter(formatName);
-            } catch (ExportException ex) {
-                exporter = null;
-            }
-            if (exporter != null && exporter.isAvailableToUsers()) {
-                // Not all metadata exports should be presented to the web users!
-                // Some are only for harvesting clients.
-                
-                String[] temp = new String[2];
-                temp[0] = formatDisplayName;
-                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalId().asString();
-                retList.add(temp);
-            }
-        }
-        return retList;  
+    public List<String[]> getExporters(){
+        String urlTemplate = systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=%s&persistentId=%s";
+        
+        return exporterRegistryService.getDetails().stream()
+            .filter(Details::isAvailableToUsers)
+            .map(details -> new String[]{
+                details.localizedDisplayName(),
+                urlTemplate.formatted(
+                    details.formatName(),
+                    fileMetadata.getDatasetVersion().getDataset().getGlobalId().asString()
+                )
+            })
+            .toList();
     }
     
     public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup) throws CommandException {
@@ -637,15 +629,13 @@ public class FilePage implements java.io.Serializable {
         editDataset = file.getOwner();
         if (editDataset.isReleased()) {
             try {
-                ExportService instance = ExportService.getInstance();
-                instance.exportAllFormats(editDataset);
-
+                exportService.exportAllFormats(editDataset);
             } catch (ExportException ex) {
                 // Something went wrong!
                 // Just like with indexing, a failure to export is not a fatal
                 // condition. We'll just log the error as a warning and keep
                 // going:
-                logger.log(Level.WARNING, "Uningest: Exception while exporting:{0}", ex.getMessage());
+                logger.log(Level.WARNING, "Uningest: Exception while exporting: {0}", ex);
             }
         }
         datafileService.save(file);
