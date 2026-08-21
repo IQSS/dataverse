@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import io.gdcc.xoai.dataprovider.DataProvider;
 import io.gdcc.xoai.dataprovider.repository.Repository;
 import io.gdcc.xoai.dataprovider.repository.RepositoryConfiguration;
@@ -21,7 +22,7 @@ import io.gdcc.xoai.model.oaipmh.OAIPMH;
 import io.gdcc.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
@@ -29,8 +30,6 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.gdcc.xoai.exceptions.BadVerbException;
 import io.gdcc.xoai.exceptions.OAIException;
@@ -72,6 +71,10 @@ public class OAIServlet extends HttpServlet {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    ExportServiceBean exportService;
+    @EJB
+    ExporterRegistryBean exporterRegistryService;
     
     @EJB
     SystemConfig systemConfig;
@@ -130,7 +133,7 @@ public class OAIServlet extends HttpServlet {
         }
         
         setRepository = new DataverseXoaiSetRepository(setService);
-        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, SystemConfig.getDataverseSiteUrlStatic());
+        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, exportService, SystemConfig.getDataverseSiteUrlStatic());
 
         repositoryConfiguration = createRepositoryConfiguration(); 
                                 
@@ -149,25 +152,13 @@ public class OAIServlet extends HttpServlet {
     }
     
     private void addSupportedMetadataFormats(Context context) {
-        for (String[] provider : ExportService.getInstance().getExportersLabels()) {
-            String formatName = provider[1];
-            Exporter exporter;
-            try {
-                exporter = ExportService.getInstance().getExporter(formatName);
-            } catch (ExportException ex) {
-                exporter = null;
-            }
-
-            if (exporter != null && (exporter instanceof XMLExporter) && exporter.isHarvestable()) {
-                MetadataFormat metadataFormat;
-
-                metadataFormat = MetadataFormat.metadataFormat(formatName);
-                metadataFormat.withNamespace(((XMLExporter) exporter).getXMLNameSpace());
-                metadataFormat.withSchemaLocation(((XMLExporter) exporter).getXMLSchemaLocation());
-
-                if (metadataFormat != null) {
-                    context.withMetadataFormat(metadataFormat);
-                }
+        // Keep in mind: since EJB 3.1 (JSR 318) the call to the EJB singleton will block until bean is initialized
+        for (Exporter exporter : exporterRegistryService.getAll()) {
+            if (exporter instanceof XMLExporter xmlExporter && Boolean.TRUE.equals(exporter.isHarvestable())) {
+                MetadataFormat metadataFormat = MetadataFormat.metadataFormat(exporter.getFormatName());
+                metadataFormat.withNamespace(xmlExporter.getXMLNameSpace());
+                metadataFormat.withSchemaLocation(xmlExporter.getXMLSchemaLocation());
+                context.withMetadataFormat(metadataFormat);
             }
         }
     }

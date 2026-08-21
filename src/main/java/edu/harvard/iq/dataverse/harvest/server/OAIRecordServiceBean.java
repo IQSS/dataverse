@@ -8,9 +8,8 @@ package edu.harvard.iq.dataverse.harvest.server;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
 import io.gdcc.spi.export.ExportException;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.time.Instant;
 import java.util.Collection;
@@ -45,8 +44,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     DatasetServiceBean datasetService;
     @EJB 
     SettingsServiceBean settingsService;
-    //@EJB
-    //ExportService exportService;
+    @EJB
+    ExportServiceBean exportService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;   
@@ -250,12 +249,18 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     public void exportAllFormats(Dataset dataset) {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
             logger.log(Level.FINE, "Attempting to run export on dataset {0}", dataset.getGlobalId());
-            exportServiceInstance.exportAllFormats(dataset);
-            dataset = datasetService.merge(dataset);
-        } catch (ExportException ee) {logger.fine("Caught export exception while trying to export. (ignoring)");}
-        catch (Exception e) {logger.fine("Caught unknown exception while trying to export (ignoring)");}
+            exportService.exportAllFormats(dataset);
+            datasetService.merge(dataset);
+        } catch (ExportException ee) {
+            // TODO: Should this really be ignored? What if we at least have a failure escalation for this?
+            //       At least the exception should be logged.
+            logger.fine("Caught export exception while trying to export. (ignoring)");
+        } catch (Exception e) {
+            // TODO: Should this really be ignored? What if we at least have a failure escalation for this?
+            //       At least the exception should be logged.
+            logger.fine("Caught unknown exception while trying to export (ignoring)");
+        }
     }
     
     @TransactionAttribute(REQUIRES_NEW)
@@ -266,8 +271,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     @TransactionAttribute(REQUIRES_NEW)
     public void exportFormatsInNewTransaction(Dataset dataset, List<String> formatNames) throws ExportException {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
-            exportServiceInstance.exportFormats(dataset, formatNames);
+            exportService.exportFormats(dataset, formatNames);
             datasetService.setLastExportTimeInNewTransaction(dataset.getId(), dataset.getLastExportTime());
         } catch (OptimisticLockException ole) {
             datasetService.setLastExportTimeInNewTransaction(dataset.getId(), dataset.getLastExportTime());
