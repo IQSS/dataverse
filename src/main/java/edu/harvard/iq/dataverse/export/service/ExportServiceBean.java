@@ -360,29 +360,9 @@ public class ExportServiceBean {
         }
 
     }
-    
-    public Exporter getExporter(String formatName) throws ExportException {
-        Exporter e = exporterMap.get(formatName);
-        if (e != null) {
-            return e;
         }
-        throw new ExportException("No such Exporter: " + formatName);
     }
     
-    public Boolean isXMLFormat(String provider) {
-        Exporter e = exporterMap.get(provider);
-        if (e != null) {
-            return e instanceof XMLExporter;
-        }
-        return null;
-    }
-
-    public String getMediaType(String provider) {
-        Exporter e = exporterMap.get(provider);
-        if (e != null) {
-            return e.getMediaType();
-        }
-        return MediaType.TEXT_PLAIN;
     }
     
     /**
