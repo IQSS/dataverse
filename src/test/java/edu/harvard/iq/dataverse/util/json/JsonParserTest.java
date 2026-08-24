@@ -348,7 +348,17 @@ public class JsonParserTest {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
     }
-    
+
+    @Test
+    public void testParseDataverseDTOWithoutGuestbookRoot() throws JsonParseException {
+        JsonObject dvJson = JsonUtil.createObjectBuilder()
+                .add("alias", "minimal")
+                .add("name", "minimal")
+                .build();
+        DataverseDTO actual = sut.parseDataverseDTO(dvJson);
+        assertNull(actual.getGuestbookRoot());
+    }
+
     @Test
     public void testParseThemeDataverse() throws JsonParseException {
         
