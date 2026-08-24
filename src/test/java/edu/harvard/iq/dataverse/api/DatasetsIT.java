@@ -343,14 +343,24 @@ public class DatasetsIT {
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Now publish the dataset and try to delete it (as superuser)
+        // Now publish the dataset and try to delete it
         Response publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         assertEquals(200, publishResponse.getStatusCode());
+
+        // Try to delete as regular user (should get 400)
+        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        deleteDatasetResponse.then().assertThat()
+                .body("message", containsString("This API can only delete a dataset that has a single draft version."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Try to delete as superuser (should get 400 with destroy message)
         deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, superuserApiToken);
         deleteDatasetResponse.prettyPrint();
         deleteDatasetResponse.then().assertThat()
                 .body("message", containsString("/destroy"))
-                .statusCode(UNAUTHORIZED.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
+
         // Try /destroy to get rid of the dataset
         deleteDatasetResponse = UtilIT.destroyDataset(datasetId, superuserApiToken);
         deleteDatasetResponse.prettyPrint();

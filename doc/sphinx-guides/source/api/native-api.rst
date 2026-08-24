@@ -3013,7 +3013,7 @@ You should expect JSON output and a 200 ("OK") response in most cases. If you re
 Delete Dataset Draft
 ~~~~~~~~~~~~~~~~~~~~
 
-Deletes the draft version of dataset ``$ID``. Only the draft version can be deleted. If the dataset has not been published (i.e. the draft is the only version), this deletes the dataset and is equivalent to the :ref:`delete-dataset-draft` API:
+Deletes the draft version of dataset ``$ID``. Only the draft version can be deleted. If the dataset has not been published (i.e. the draft is the only version), this deletes the dataset and is equivalent to the :ref:`dataset-delete-api` API:
 
 .. code-block:: bash
 
@@ -4062,7 +4062,7 @@ Delete Unpublished Dataset
 
 Delete the unpublished dataset whose id is passed:
 
-.. note:: This API will only succeed if the dataset has never been published and has only a single draft version. If the dataset has any published versions, this API will fail with a 400 (BAD REQUEST) error. Superusers who wish to delete a published dataset should use the :ref:`destroy endpoint <delete-published-dataset>` instead. To delete the draft version of a dataset that already has published versions, use the :ref:`delete-published-dataset` API.
+.. note:: This API will only succeed if the dataset has never been published and has only a single draft version. If the dataset has any published versions, this API will fail with a 400 (BAD REQUEST) error. Superusers who wish to delete a published dataset should use the :ref:`destroy endpoint <delete-published-dataset>` instead. To delete the draft version of a dataset that already has published versions, use the :ref:`delete-dataset-draft` API.
 
 .. code-block:: bash
 
