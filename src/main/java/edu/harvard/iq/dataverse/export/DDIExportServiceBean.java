@@ -115,27 +115,27 @@ public class DDIExportServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void exportDataVariable(Long varId, OutputStream os, String partialExclude, String partialInclude, Long fileMetadataId) {
+    public void exportDataVariable(DataVariable dv, OutputStream os, String partialExclude, String partialInclude, FileMetadata fm) {
 
-        export(OBJECT_TAG_VARIABLE, varId, os, partialExclude, partialInclude, fileMetadataId);
+        export(OBJECT_TAG_VARIABLE, dv, os, partialExclude, partialInclude, fm);
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void exportDataset(Long datasetId, OutputStream os, String partialExclude, String partialInclude) {
-        export(OBJECT_TAG_DATASET, datasetId, os, partialExclude, partialInclude, null);
+    public void exportDataset(Dataset dataset, OutputStream os, String partialExclude, String partialInclude) {
+        export(OBJECT_TAG_DATASET, dataset, os, partialExclude, partialInclude, null);
 
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void exportDataFile(Long varId, OutputStream os, String partialExclude, String partialInclude, Long fileMetadataId) {
-        export(OBJECT_TAG_DATAFILE, varId, os, partialExclude, partialInclude, fileMetadataId);
+    public void exportDataFile(DataFile df, OutputStream os, String partialExclude, String partialInclude, FileMetadata fm) {
+        export(OBJECT_TAG_DATAFILE, df, os, partialExclude, partialInclude, fm);
 
     }
 
     /*
      * Workhorse methods, that do all the work: 
      */
-    private void export(String objectTag, Long objectId, OutputStream os, String partialExclude, String partialInclude, Long fileMetadataId) {
+    private void export(String objectTag, Object dataObject, OutputStream os, String partialExclude, String partialInclude, FileMetadata fm) {
 
         /*
          * Some checks will need to be here, to see if the corresponding dataset
@@ -180,29 +180,15 @@ public class DDIExportServiceBean {
         XMLStreamWriter xmlw = null;
 
         // Try to resolve the supplied object id: 
-        Object dataObject = null;
+        if (dataObject == null) {
+            throw new IllegalArgumentException("Metadata Export: dataObject is null.");
+        }
 
-        if (OBJECT_TAG_VARIABLE.equals(objectTag)) {
-            dataObject = variableService.find(objectId);
-            if (dataObject == null) {
-                throw new IllegalArgumentException("Metadata Export: Invalid variable id supplied.");
-            }
-        } else if (OBJECT_TAG_DATAFILE.equals(objectTag)) {
-            dataObject = fileService.find(objectId);
-            if (dataObject == null) {
-                throw new IllegalArgumentException("Metadata Export: Invalid datafile id supplied.");
-            }
-        } else if (OBJECT_TAG_DATASET.equals(objectTag)) {
-            dataObject = datasetService.find(objectId);
-            if (dataObject == null) {
-                throw new IllegalArgumentException("Metadata Export: Invalid dataset id supplied.");
-            }
+        if (OBJECT_TAG_DATASET.equals(objectTag)) {
             releasedVersion = ((Dataset)dataObject).getReleasedVersion();
             if (releasedVersion == null) {
                 throw new IllegalArgumentException("Metadata Export: Dataset not released.");
             }
-        } else {
-            throw new IllegalArgumentException("Metadata Export: Unsupported export requested.");
         }
 
         try {
@@ -210,9 +196,9 @@ public class DDIExportServiceBean {
             xmlw.writeStartDocument();
 
             if (OBJECT_TAG_VARIABLE.equals(objectTag)) {
-                createVarDDI(xmlw, excludedFieldSet, includedFieldSet, (DataVariable) dataObject, fileMetadataId);
+                createVarDDI(xmlw, excludedFieldSet, includedFieldSet, (DataVariable) dataObject, fm);
             } else if (OBJECT_TAG_DATAFILE.equals(objectTag)) {
-                createDataFileDDI(xmlw, excludedFieldSet, includedFieldSet, (DataFile) dataObject, fileMetadataId);
+                createDataFileDDI(xmlw, excludedFieldSet, includedFieldSet, (DataFile) dataObject, fm);
             } else if (OBJECT_TAG_DATASET.equals(objectTag)) {
                 createDatasetDDI(xmlw, excludedFieldSet, includedFieldSet, releasedVersion);
             }
@@ -252,16 +238,21 @@ public class DDIExportServiceBean {
         xmlw.writeEndElement(); //varGrp
     }
 
-    private void createVarDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataVariable dv, Long fileMetadataId) throws XMLStreamException {
+    private void createVarDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataVariable dv, FileMetadata fm) throws XMLStreamException {
         xmlw.writeStartElement("var");
         writeAttribute(xmlw, "ID", "v" + dv.getId().toString());
         writeAttribute(xmlw, "name", dv.getName());
 
-        if (fileMetadataId == null) {
-            fileMetadataId = dv.getDataTable().getDataFile().getFileMetadata().getId();
+        if (fm == null) {
+            fm = dv.getDataTable().getDataFile().getFileMetadata();
+        } else {
+            // Validate that fileMetadata belongs to the DataFile associated with this variable
+            if (!fm.getDataFile().equals(dv.getDataTable().getDataFile())) {
+                throw new IllegalArgumentException("Metadata Export: Invalid fileMetadata supplied for the variable.");
+            }
         }
 
-        List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(dv.getId(), fileMetadataId);
+        List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(dv.getId(), fm.getId());
         VariableMetadata vm = null;
         if (vmList != null && vmList.size() >0) {
             vm = vmList.get(0);
@@ -497,7 +488,7 @@ public class DDIExportServiceBean {
 
     }
 
-    private void createDataFileDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df, Long fileMetadataId) throws XMLStreamException {
+    private void createDataFileDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df, FileMetadata fm) throws XMLStreamException {
         /* This method will create both the <fileDscr> and <dataDscr><var> 
          * portions of the DDI that describe the tabular data contained in 
          * the file, the file-, datatable- and variable-level metadata; or 
@@ -516,12 +507,13 @@ public class DDIExportServiceBean {
         writeAttribute(xmlw, "version", "2.0");
 
 
-        FileMetadata latestFm = df.getFileMetadata();
-        if (fileMetadataId == null) {
-            fileMetadataId = latestFm.getId();
+        if (fm == null) {
+            fm = df.getFileMetadata();
+        } else {
+            if (!fm.getDataFile().equals(df)) {
+                throw new IllegalArgumentException("Metadata Export: Invalid fileMetadata supplied for the datafile.");
+            }
         }
-
-        FileMetadata fm = fileService.findFileMetadata(fileMetadataId);
 
         createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, fm.getDatasetVersion());
         
@@ -536,7 +528,7 @@ public class DDIExportServiceBean {
 
         if (checkField("varGrp", excludedFieldSet, includedFieldSet)) {
 
-            List<VarGroup> varGroups = variableService.findAllGroupsByFileMetadata(fileMetadataId);
+            List<VarGroup> varGroups = variableService.findAllGroupsByFileMetadata(fm.getId());
 
             for (VarGroup varGrp : varGroups) {
                 createVarGroupDDI(xmlw, excludedFieldSet, null, varGrp);
@@ -562,7 +554,7 @@ public class DDIExportServiceBean {
             }
 
             for (DataVariable var : vars) {
-                createVarDDI(xmlw, excludedFieldSet, null, var, fileMetadataId);
+                createVarDDI(xmlw, excludedFieldSet, null, var, fm);
             }
         }
 
@@ -654,7 +646,7 @@ public class DDIExportServiceBean {
                 }
 
                 for (DataVariable var : vars) { 
-                    createVarDDI(xmlw, excludedFieldSet, null, var, fileMetadata.getId());
+                    createVarDDI(xmlw, excludedFieldSet, null, var, fileMetadata);
                 }
             }
             
