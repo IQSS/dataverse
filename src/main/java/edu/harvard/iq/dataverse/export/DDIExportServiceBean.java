@@ -78,12 +78,6 @@ public class DDIExportServiceBean {
     private EntityManager em;
 
     /*
-     * Constants used by the worker methods:
-     */
-    private static final String OBJECT_TAG_VARIABLE = "variable";
-    private static final String OBJECT_TAG_DATAFILE = "datafile";
-    private static final String OBJECT_TAG_DATASET = "dataset";
-    /*
      * Database and schema-specific constants:
      * Needless to say, we should *not* be defining these here - it should
      * all live in the database somewhere/somehow.
@@ -108,6 +102,7 @@ public class DDIExportServiceBean {
      */
     private XMLOutputFactory xmlOutputFactory = null;
 
+    // Called by container
     public void ejbCreate() {
         // initialize lists/service classes:
 
@@ -115,38 +110,7 @@ public class DDIExportServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void exportDataVariable(DataVariable dv, OutputStream os, String partialExclude, String partialInclude, FileMetadata fm) {
-
-        export(OBJECT_TAG_VARIABLE, dv, os, partialExclude, partialInclude, fm);
-    }
-
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void exportDataset(Dataset dataset, OutputStream os, String partialExclude, String partialInclude) {
-        export(OBJECT_TAG_DATASET, dataset, os, partialExclude, partialInclude, null);
-
-    }
-
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void exportDataFile(DataFile df, OutputStream os, String partialExclude, String partialInclude, FileMetadata fm) {
-        export(OBJECT_TAG_DATAFILE, df, os, partialExclude, partialInclude, fm);
-
-    }
-
-    /*
-     * Workhorse methods, that do all the work: 
-     */
-    private void export(String objectTag, Object dataObject, OutputStream os, String partialExclude, String partialInclude, FileMetadata fm) {
-
-        /*
-         * Some checks will need to be here, to see if the corresponding dataset
-         * is released, if all the permissions are satisfied, etc., with 
-         * approrpiate exceptions thrown otherwise. 
-         *
-         *      something like
-        
-         throw new IllegalArgumentException("ExportStudy called with a null study.");
-         throw new IllegalArgumentException("Study does not have released version, study.id = " + s.getId());
-         */
         Set<String> includedFieldSet = null;
         Set<String> excludedFieldSet = null;
         
@@ -180,28 +144,15 @@ public class DDIExportServiceBean {
         XMLStreamWriter xmlw = null;
 
         // Try to resolve the supplied object id: 
-        if (dataObject == null) {
+        if (df == null) {
             throw new IllegalArgumentException("Metadata Export: dataObject is null.");
-        }
-
-        if (OBJECT_TAG_DATASET.equals(objectTag)) {
-            releasedVersion = ((Dataset)dataObject).getReleasedVersion();
-            if (releasedVersion == null) {
-                throw new IllegalArgumentException("Metadata Export: Dataset not released.");
-            }
         }
 
         try {
             xmlw = xmlOutputFactory.createXMLStreamWriter(os);
             xmlw.writeStartDocument();
 
-            if (OBJECT_TAG_VARIABLE.equals(objectTag)) {
-                createVarDDI(xmlw, excludedFieldSet, includedFieldSet, (DataVariable) dataObject, fm);
-            } else if (OBJECT_TAG_DATAFILE.equals(objectTag)) {
-                createDataFileDDI(xmlw, excludedFieldSet, includedFieldSet, (DataFile) dataObject, fm);
-            } else if (OBJECT_TAG_DATASET.equals(objectTag)) {
-                createDatasetDDI(xmlw, excludedFieldSet, includedFieldSet, releasedVersion);
-            }
+            createDataFileDDI(xmlw, excludedFieldSet, includedFieldSet, df, fm);
 
             xmlw.writeEndDocument();
         } catch (XMLStreamException ex) {
@@ -424,7 +375,7 @@ public class DDIExportServiceBean {
                     writeAttribute(xmlw, "type", "freq");
                     // if frequency is actually a long value, we want to write "100" instead of "100.0"
                     if (Math.floor(cat.getFrequency()) == cat.getFrequency()) {
-                        xmlw.writeCharacters(new Long(cat.getFrequency().longValue()).toString());
+                        xmlw.writeCharacters(Long.valueOf(cat.getFrequency().longValue()).toString());
                     } else {
                         xmlw.writeCharacters(cat.getFrequency().toString());
                     }
