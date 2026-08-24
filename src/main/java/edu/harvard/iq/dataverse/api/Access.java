@@ -674,23 +674,6 @@ public class Access extends AbstractApiBean {
         if (!dataFile.isTabularData()) { 
            throw new BadRequestException("tabular data required");
         }
-        if (FileUtil.isRetentionExpired(dataFile)) {
-            throw new BadRequestException("unable to download file with expired retention");
-        }
-        if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
-            boolean hasPermissionToDownloadFile = false;
-
-            if (req != null && req.getUser() instanceof GuestUser) {
-                // We must be in the UI. Try to get a non-GuestUser from the session.
-                req = dvRequestService.getDataverseRequest();
-            }
-            hasPermissionToDownloadFile = permissionService.requestOn(req, dataFile).has(Permission.DownloadFile);
-            if (!hasPermissionToDownloadFile) {
-                throw new BadRequestException("no permission to download file");
-            }
-        }
-
-        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
 
         FileMetadata fm = getFileMetadataToExport(dataFile, fileMetadataId, req);
 
