@@ -1955,6 +1955,47 @@ public class DataversesIT {
     }
 
     @Test
+    public void testCreateDataverseWithGuestbookRoot() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // guestbookRoot not specified on creation should default to false
+        String defaultAlias = UtilIT.getRandomDvAlias();
+        JsonObjectBuilder jsonWithoutGuestbookRoot = JsonUtil.createObjectBuilder()
+                .add("name", defaultAlias)
+                .add("alias", defaultAlias)
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("contactEmail", defaultAlias + "@mailinator.com")
+                        )
+                );
+        Response createDefaultResponse = UtilIT.createDataverse(jsonWithoutGuestbookRoot.build(), apiToken);
+        createDefaultResponse.prettyPrint();
+        createDefaultResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(defaultAlias))
+                .body("data.guestbookRoot", equalTo(false));
+
+        // guestbookRoot explicitly set to true on creation
+        String guestbookRootAlias = UtilIT.getRandomDvAlias();
+        JsonObjectBuilder jsonWithGuestbookRoot = JsonUtil.createObjectBuilder()
+                .add("name", guestbookRootAlias)
+                .add("alias", guestbookRootAlias)
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("contactEmail", guestbookRootAlias + "@mailinator.com")
+                        )
+                )
+                .add("guestbookRoot", true);
+        Response createGuestbookRootResponse = UtilIT.createDataverse(jsonWithGuestbookRoot.build(), apiToken);
+        createGuestbookRootResponse.prettyPrint();
+        createGuestbookRootResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(guestbookRootAlias))
+                .body("data.guestbookRoot", equalTo(true));
+    }
+
+    @Test
     public void testListFacets() {
         Response createUserResponse = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
