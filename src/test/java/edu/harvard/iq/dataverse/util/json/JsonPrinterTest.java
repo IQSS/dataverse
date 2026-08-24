@@ -318,6 +318,7 @@ public class JsonPrinterTest {
         dataverse.setAffiliation("42 Inc.");
         dataverse.setDescription("Description for Dataverse 42.");
         dataverse.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
+        dataverse.setGuestbookRoot(true);
         List<DataverseContact> dataverseContacts = new ArrayList<>();
         dataverseContacts.add(new DataverseContact(dataverse, "dv42@mailinator.com"));
         dataverse.setDataverseContacts(dataverseContacts);
@@ -334,6 +335,7 @@ public class JsonPrinterTest {
         assertFalse(jsonObject.getBoolean("permissionRoot"));
         assertEquals("Description for Dataverse 42.", jsonObject.getString("description"));
         assertEquals("UNCATEGORIZED", jsonObject.getString("dataverseType"));
+        assertTrue(jsonObject.getBoolean("guestbookRoot"));
     }
 
     DatasetField constructPrimitive(String datasetFieldTypeName, String value) {

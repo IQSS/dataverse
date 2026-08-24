@@ -316,6 +316,7 @@ public class JsonParserTest {
              * hard coded to true.
              */
             assertFalse(actual.isPermissionRoot());
+            assertFalse(actual.isGuestbookRoot());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
@@ -342,6 +343,7 @@ public class JsonParserTest {
             assertEquals("student@example.edu", actualDataverseContacts.get(1).getContactEmail());
             assertEquals(0, actualDataverseContacts.get(0).getDisplayOrder());
             assertEquals(1, actualDataverseContacts.get(1).getDisplayOrder());
+            assertEquals(Boolean.FALSE, actual.getGuestbookRoot());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
