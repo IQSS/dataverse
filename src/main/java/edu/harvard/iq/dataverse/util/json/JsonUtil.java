@@ -4,8 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -20,17 +23,40 @@ import jakarta.json.JsonWriterFactory;
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonException;
+import jakarta.json.JsonMergePatch;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonNumber;
+import jakarta.json.JsonPatch;
+import jakarta.json.JsonPatchBuilder;
+import jakarta.json.JsonPointer;
+import jakarta.json.JsonReaderFactory;
 import jakarta.json.JsonString;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonBuilderFactory;
 import jakarta.json.spi.JsonProvider;
 import jakarta.json.stream.JsonGenerator;
+import jakarta.json.stream.JsonGeneratorFactory;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParserFactory;
 
 public class JsonUtil {
 
     private static final Logger logger = Logger.getLogger(JsonUtil.class.getCanonicalName());
+
+    /**
+     * A provider to create Jakarta JSON-P Factories and Builders such as {@code JsonObjectBuilder} and {@code JsonArrayBuilder}.
+     * This is a thread-safe, static, and final instance to manage JSON builder creation.
+     *
+     * <p>Using a one-time initialized factory avoids a classpath-scan on every invocation of
+     * {@code JsonUtil.createArrayBuilder()} or {@code JsonUtil.createObjectBuilder()}, creating non-neglible performance issues.
+     * </p>
+     *
+     * <p>See also <a href="https://github.com/jakartaee/jsonp-api/issues/26">JSON-P #26</a>,
+     * <a href="https://github.com/eclipse-ee4j/yasson/issues/698">Yasson #698</a> and others.</p>
+     */
+    private static final JsonProvider provider = JsonProvider.provider();
 
     private JsonUtil() {}
 
@@ -54,7 +80,7 @@ public class JsonUtil {
     public static String prettyPrint(JsonArray jsonArray) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
+        JsonWriterFactory jsonWriterFactory = provider.createWriterFactory(config);
         StringWriter stringWriter = new StringWriter();
         try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
             jsonWriter.writeArray(jsonArray);
@@ -65,7 +91,7 @@ public class JsonUtil {
     public static String prettyPrint(JsonObject jsonObject) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
+        JsonWriterFactory jsonWriterFactory = provider.createWriterFactory(config);
         StringWriter stringWriter = new StringWriter();
         try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
             jsonWriter.writeObject(jsonObject);
@@ -85,7 +111,7 @@ public class JsonUtil {
      */
     public static JsonObject getJsonObject(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 return jsonReader.readObject();
             }
         }
@@ -103,7 +129,7 @@ public class JsonUtil {
      * @see #getJsonObjectFromFile(String)
      */
     public static JsonObject getJsonObjectFromInputStream(InputStream stream) {
-        try (JsonReader jsonReader = Json.createReader(stream)) {
+        try (JsonReader jsonReader = provider.createReader(stream)) {
             return jsonReader.readObject();
         }
     }
@@ -120,7 +146,7 @@ public class JsonUtil {
      */
     public static JsonObject getJsonObjectFromFile(String fileName) throws IOException {
         try (FileReader rdr = new FileReader(fileName)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 return jsonReader.readObject();
             }
         }
@@ -136,7 +162,7 @@ public class JsonUtil {
      */
     public static JsonArray getJsonArray(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 return jsonReader.readArray();
             }
         }
@@ -159,7 +185,7 @@ public class JsonUtil {
         }
 
         try (StringReader rdr = new StringReader(serializedJson)) {
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
+            try (JsonReader jsonReader = provider.createReader(rdr)) {
                 JsonValue jsonValue = jsonReader.read();
                 if (jsonValue.getValueType() == JsonValue.ValueType.OBJECT) {
                     return jsonValue.asJsonObject();
@@ -172,18 +198,6 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * A provider to create Jakarta JSON-P Builders such as {@code JsonObjectBuilder} and {@code JsonArrayBuilder}.
-     * This is a thread-safe, static, and final instance to manage JSON builder creation.
-     *
-     * <p>Using a one-time initialized factory avoids a classpath-scan on every invocation of
-     * {@code JsonUtil.createArrayBuilder()} or {@code JsonUtil.createObjectBuilder()}, creating non-neglible performance issues.
-     * </p>
-     *
-     * <p>See also <a href="https://github.com/jakartaee/jsonp-api/issues/26">JSON-P #26</a>,
-     * <a href="https://github.com/eclipse-ee4j/yasson/issues/698">Yasson #698</a> and others.</p>
-     */
-    private static final JsonProvider provider = JsonProvider.provider();
 
     /**
      * Create a new {@link JsonObjectBuilder} from a cached provider instance.
@@ -300,5 +314,85 @@ public class JsonUtil {
      */
     public static JsonNumber createValue(BigInteger value){
         return provider.createValue(value);
+    }
+
+    public static JsonWriterFactory createWriterFactory(Map<String, ?> properties) {
+        return provider.createWriterFactory(properties);
+    }
+
+    public static JsonReader createReader(InputStream in) {
+        return provider.createReader(in);
+    }
+
+    public static JsonReader createReader(Reader reader) {
+        return provider.createReader(reader);
+    }
+
+    public static JsonWriter createWriter(OutputStream out) {
+        return provider.createWriter(out);
+    }
+
+    public static JsonWriter createWriter(Writer writer) {
+        return provider.createWriter(writer);
+    }
+
+    public static JsonReaderFactory createReaderFactory(Map<String, ?> config) {
+        return provider.createReaderFactory(config);
+    }
+
+    public static JsonParser createParser(InputStream in) {
+        return provider.createParser(in);
+    }
+
+    public static JsonParser createParser(Reader reader) {
+        return provider.createParser(reader);
+    }
+
+    public static JsonParserFactory createParserFactory(Map<String, ?> config) {
+        return provider.createParserFactory(config);
+    }
+
+    public static JsonGenerator createGenerator(OutputStream out) {
+        return provider.createGenerator(out);
+    }
+
+    public static JsonGenerator createGenerator(Writer writer) {
+        return provider.createGenerator(writer);
+    }
+
+    public static JsonGeneratorFactory createGeneratorFactory(Map<String, ?> config) {
+        return provider.createGeneratorFactory(config);
+    }
+
+    public static JsonPatch createPatch(JsonArray array) {
+        return provider.createPatch(array);
+    }
+
+    public static JsonPatch createDiff(JsonStructure source, JsonStructure target) {
+        return provider.createDiff(source, target);
+    }
+
+    public static JsonMergePatch createMergePatch(JsonValue patch) {
+        return provider.createMergePatch(patch);
+    }
+
+    public static JsonMergePatch createMergeDiff(JsonValue source, JsonValue target) {
+        return provider.createMergeDiff(source, target);
+    }
+
+    public static JsonPatchBuilder createPatchBuilder() {
+        return provider.createPatchBuilder();
+    }
+
+    public static JsonPatchBuilder createPatchBuilder(JsonArray array) {
+        return provider.createPatchBuilder(array);
+    }
+
+    public static JsonPointer createPointer(String path) {
+        return provider.createPointer(path);
+    }
+
+    public static JsonBuilderFactory createBuilderFactory(Map<String, ?> config) {
+        return provider.createBuilderFactory(config);
     }
 }

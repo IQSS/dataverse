@@ -11,7 +11,21 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.Dataverse;
+
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
@@ -150,13 +164,11 @@ public class DataversesIT {
     }
 
     @Test
-    public void testMinimalDataverse() throws FileNotFoundException {
+    public void testMinimalDataverse() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        JsonObject dvJson;
-        FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
-        dvJson = Json.createReader(reader).readObject();
+        JsonObject dvJson = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
         Response create = UtilIT.createDataverse(dvJson, apiToken);
         create.prettyPrint();
         create.then().assertThat()
@@ -2685,7 +2697,7 @@ public class DataversesIT {
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUserResponse);
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperUserResponse);
         UtilIT.setSuperuserStatus(superuserUsername, true);
-        
+
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
          */
@@ -2854,7 +2866,7 @@ public class DataversesIT {
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetPersistentId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
-        
+
         //set to super to update role 
         UtilIT.setSuperuserStatus(username, true);
 
