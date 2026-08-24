@@ -42,9 +42,6 @@ import net.handle.hdllib.HandleException;
 import net.handle.hdllib.HandleResolver;
 
 import javax.xml.stream.XMLInputFactory;
-import java.io.*;
-import java.util.*;
-
 
 /**
  *
