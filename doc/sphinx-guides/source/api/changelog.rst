@@ -20,7 +20,7 @@ v6.12
   For now, this style will remain the supported default. In a future version of Dataverse the ``message`` will always be a separate top field: ``{"data":{},"message":"..."}``.
   Integrators and client vendors are welcome to opt-in to the new style and test thoroughly by enabling :ref:`dataverse.feature.unify-api-response-message-style`.
 - The permission reindexing endpoints have been updated to use ``POST`` and require superuser access. They are now documented in the :doc:`/admin/solr-search-index` guide.
-- Change to DELETE "/api/datasets/$ID" for a superuser. This api will no longer fall back to a Dataset destroy for published versions. Instead the message "Please use '/destroy' to delete the published version" will be returned to the superuser.
+- Change to DELETE "/api/datasets/$ID". The API now returns a 400 (BAD REQUEST) error if the dataset already has a published version and will no longer allow supersusers to delete a published dataset. The error message for superusers instead refers them to the /destroy endpoint to delete the published dataset.
 
   - **/api/admin/index/perms**
 

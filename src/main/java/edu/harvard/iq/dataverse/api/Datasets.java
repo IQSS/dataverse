@@ -322,7 +322,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}")
     @Operation(summary = "Deletes a dataset",
-            description = "Deletes the latest draft version or destroys an unpublished single-version dataset after checking delete permissions.")
+            description = "Deletes a dataset that has only a draft version and has never been published. Fails if the dataset has released versions.")
     public Response deleteDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
         // (and there's a comment that says "TODO: remove this command")
@@ -339,12 +339,12 @@ public class Datasets extends AbstractApiBean {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
 
-            if (!doomedVersion.isDraft()) {
-                String msg = "This API can only delete the latest version if it is a DRAFT.";
+            if (doomed.getVersions().size() > 1 || !doomedVersion.isDraft()) {
+                String msg = "This API can only delete a dataset that has a single draft version.";
                 if (u.isSuperuser()) {
-                    msg += " Please use '/destroy' to delete the published version";
+                    msg = "This API can only delete the latest version if it is a DRAFT. Please use '/destroy' to delete the published version";
                 }
-                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, msg));
+                throw new WrappedResponse(error(BAD_REQUEST, msg));
             }
 
             // Gather the locations of the physical files that will need to be deleted
