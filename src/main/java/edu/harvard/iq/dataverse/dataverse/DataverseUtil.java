@@ -11,11 +11,9 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import jakarta.enterprise.inject.spi.CDI;
 import jakarta.ws.rs.BadRequestException;
 
 import opennlp.tools.util.StringUtil;
@@ -122,20 +120,4 @@ public class DataverseUtil {
         }
     }
 
-    public static boolean isTemplateValid(Dataverse dataverse, Template template) {
-        if (template != null) {
-            List<Template> dataverseTemplates = dataverse.getTemplates();
-            if (dataverseTemplates != null && dataverseTemplates.contains(template)) {
-                return true;
-            }
-            if (!dataverse.isTemplateRoot() && dataverse.getOwner() != null) {
-                DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
-                List<Template> ownerTemplates = dataverseService.find(dataverse.getOwner().getId()).getParentTemplates();
-                if (ownerTemplates != null && ownerTemplates.contains(template)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }

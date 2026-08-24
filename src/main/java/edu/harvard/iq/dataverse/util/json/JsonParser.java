@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainG
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
-import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
@@ -427,7 +426,7 @@ public class JsonParser {
         if (obj.containsKey("templateId")) {
             int templateId = obj.getInt("templateId", -1);
             Template template = templateService.find(Long.valueOf(templateId));
-            if (DataverseUtil.isTemplateValid(dataset.getOwner(), template)) {
+            if (templateService.isTemplateValid(dataset.getOwner(), template)) {
                 dataset.setTemplate(template);
             } else {
                 throw new JsonParseException("Invalid template id: " + templateId);
