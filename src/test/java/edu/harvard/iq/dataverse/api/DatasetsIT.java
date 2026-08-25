@@ -3627,14 +3627,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response fileMetadataDdiUserNoAuth = UtilIT.getFileMetadata(fileId, "ddi", apiTokenNoAuth);
         fileMetadataDdiUserNoAuth.prettyPrint();
         fileMetadataDdiUserNoAuth.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
+                .statusCode(FORBIDDEN.getStatusCode())
                 .body("message", equalTo("You do not have permission to download this file."));
 
         // Guest users (not logged in) are also blocked.
         Response fileMetadataDdiGuest = UtilIT.getFileMetadata(fileId, "ddi");
         fileMetadataDdiGuest.prettyPrint();
         fileMetadataDdiGuest.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
+                .statusCode(FORBIDDEN.getStatusCode())
                 .body("message", equalTo("You do not have permission to download this file."));
     }
 
