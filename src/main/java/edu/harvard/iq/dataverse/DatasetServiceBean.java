@@ -510,7 +510,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.merge(datasetLock);
     }
 
-    /*
+    /**
      * Lists all dataset locks, optionally filtered by lock type or user, or both
      * @param lockType
      * @param user
@@ -701,8 +701,8 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     // reExportAll with a date *forces* a reexport on all published datasets that were not exported or were exported before the date;
     @Asynchronous
-    public void reExportAllAsync(Date reExportDate) {
-        exportAllDatasets(true, reExportDate);
+    public void reExportAllAsync(Date reExportDate, List<String> formatNames) {
+        exportAllDatasets(true, reExportDate, formatNames);
         
     }
 
@@ -724,11 +724,14 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     private void exportAllDatasets(boolean b) {
-     exportAllDatasets(b, null);
+     exportAllDatasets(b, null, List.of());
     }
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    private void exportAllDatasets(boolean forceReExport, Date reExportDate) {
+    private void exportAllDatasets(boolean forceReExport, Date reExportDate, List<String> formatNames) {
+        if (formatNames == null) {
+            throw new IllegalArgumentException("exportAllDatasets called with null formatNames (use an empty List for \"all\"");
+        }
         Integer countAll = 0;
         Integer countSuccess = 0;
         Integer countError = 0;
@@ -775,7 +778,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                                             || dataset.getLastExportTime().before(publicationDate))))) {
                         countAll++;
                         try {
-                            recordService.exportAllFormatsInNewTransaction(dataset);
+                            recordService.exportFormatsInNewTransaction(dataset, formatNames);
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
@@ -803,13 +806,18 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @Asynchronous
     public void reExportDatasetAsync(Dataset dataset) {
-        exportDataset(dataset, true);
+        exportDataset(dataset, true, List.of());
+    }
+    
+    @Asynchronous
+    public void reExportDatasetAsync(Dataset dataset, List<String> formatNames) {
+        exportDataset(dataset, true, formatNames);
     }
 
-    public void exportDataset(Dataset dataset, boolean forceReExport) {
+    private void exportDataset(Dataset dataset, boolean forceReExport, List<String> formatNames) {
         if (dataset != null) {
             // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets,
-            // but when only one dataset is exported we do not log in a separate export logging file
+            // but when only one dataset is exported we do not use a dedicated log file
             if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
                 // can't trust dataset.getPublicationDate(), no.
@@ -818,7 +826,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                         && (dataset.getLastExportTime() == null
                         || dataset.getLastExportTime().before(publicationDate)))) {
                     try {
-                        recordService.exportAllFormatsInNewTransaction(dataset);
+                        recordService.exportFormatsInNewTransaction(dataset, formatNames);
                         logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                     } catch (Exception ex) {
                         logger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);

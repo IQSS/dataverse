@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.DatasetExportQuery;
+import io.gdcc.spi.export.FileExportQuery;
+import io.gdcc.spi.export.PageRequest;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 
@@ -14,10 +17,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.w3c.dom.Document;
 
 public class CroissantExporterTest {
 
@@ -97,6 +102,38 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
+
+                    // extra methods in the new-and-improved ExportDataProvider interface
+                    // (that we do not need for our current purposes)
+
+                    public JsonObject getDatasetJson(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q, PageRequest p) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery q) {
+                        return null;
+                    }
                 };
 
         outputStreamMax = new ByteArrayOutputStream();
@@ -156,6 +193,38 @@ public class CroissantExporterTest {
                         } catch (IOException ex) {
                             return null;
                         }
+                    }
+
+                    // extra methods in the new-and-improved ExportDataProvider interface
+                    // (that we do not need for our current purposes)
+
+                    public JsonObject getDatasetJson(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q, PageRequest p) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery q) {
+                        return null;
                     }
                 };
 
@@ -217,6 +286,38 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
+
+                    // extra methods in the new-and-improved ExportDataProvider interface
+                    // (that we do not need for our current purposes)
+
+                    public JsonObject getDatasetJson(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q, PageRequest p) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery q) {
+                        return null;
+                    }
                 };
 
         outputStreamRestricted = new ByteArrayOutputStream();
@@ -276,6 +377,38 @@ public class CroissantExporterTest {
                         } catch (IOException ex) {
                             return null;
                         }
+                    }
+    
+                    // extra methods in the new-and-improved ExportDataProvider interface
+                    // (that we do not need for our current purposes)
+
+                    public JsonObject getDatasetJson(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q, PageRequest p) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery q) {
+                        return null;
                     }
                 };
 
@@ -337,6 +470,38 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
+    
+                    // extra methods in the new-and-improved ExportDataProvider interface
+                    // (that we do not need for our current purposes)
+
+                    public JsonObject getDatasetJson(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q, PageRequest p) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery q) {
+                        return null;
+                    }
                 };
 
         outputStreamDraft = new ByteArrayOutputStream();
@@ -397,7 +562,39 @@ public class CroissantExporterTest {
                             return null;
                         }
                     }
-                };
+    
+                    // extra methods in the new-and-improved ExportDataProvider interface
+                    // (that we do not need for our current purposes)
+
+                    public JsonObject getDatasetJson(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetORE(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<JsonObject> getDatasetFileDetails(FileExportQuery q, PageRequest p) {
+                        return null;
+                    }
+
+                    @Override
+                    public JsonObject getDatasetSchemaDotOrg(DatasetExportQuery q) {
+                        return null;
+                    }
+
+                    @Override
+                    public Document getDataCiteXml(DatasetExportQuery q) {
+                        return null;
+                    }
+            };
     }
 
     @Test

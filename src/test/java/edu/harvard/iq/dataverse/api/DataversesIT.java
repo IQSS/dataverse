@@ -1,20 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
-
-import static io.restassured.RestAssured.given;
-import static io.restassured.path.json.JsonPath.with;
-
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import edu.harvard.iq.dataverse.Dataverse;
-
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,7 +25,8 @@ import java.util.logging.Logger;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
-
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,21 +35,19 @@ import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.api.parallel.ResourceAccessMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
 
-import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItemInArray;
-import static org.hamcrest.Matchers.hasKey;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.nio.file.Files;
 
-import io.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import static org.hamcrest.Matchers.greaterThan;
+import static io.restassured.RestAssured.given;
+import static io.restassured.path.json.JsonPath.with;
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ResourceLock(value = "MetadataLanguages", mode = ResourceAccessMode.READ_WRITE)
 @Isolated
@@ -2671,7 +2666,7 @@ public class DataversesIT {
     }
 
     @Test
-    public void testCreateAndGetTemplates() throws JsonParseException  {
+    public void testCreateAndGetTemplates() {
         /*
           Also Delete...and get single template
         */
@@ -2684,7 +2679,11 @@ public class DataversesIT {
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
         String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
-        
+        Response createSuperUserResponse = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUserResponse);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperUserResponse);
+        UtilIT.setSuperuserStatus(superuserUsername, true);
+
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
          */
@@ -2775,7 +2774,10 @@ public class DataversesIT {
 
         Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
-
+        // Create a separate template on "root"
+        createTemplateResponse = UtilIT.createTemplate("root", jsonString, superuserApiToken);
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Long templateId2 = createTemplateResponse.body().jsonPath().getLong("data.id");
         
         //Check for failure due unauthorized user.
         Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
@@ -2824,7 +2826,33 @@ public class DataversesIT {
             getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
 
-        
+        // Create Dataset with template
+        String datasetJson = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1-nolicense.json");
+        // Insert Bad "templateId" to the Dataset json
+        String datasetJsonWithTemplate = "{\"templateId\":0," + datasetJson.substring(1);
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Insert "templateId" from another dataverse to the Dataset json
+        datasetJsonWithTemplate = "{\"templateId\":" + templateId2 + "," + datasetJson.substring(1);
+        createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Insert Good "templateId" to the Dataset json
+        datasetJsonWithTemplate = "{\"templateId\":" + templateId + "," + datasetJson.substring(1);
+        createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        // Verify that the templateId is returned in the Dataset json
+        Response getDatasetResponse = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.templateId", equalTo(templateId.intValue()));
+        // Delete dataset
+        UtilIT.setSuperuserStatus(username, true);
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetPersistentId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
         //set to super to update role 
         UtilIT.setSuperuserStatus(username, true);
 
