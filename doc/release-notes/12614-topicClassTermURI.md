@@ -36,3 +36,22 @@ In DdiExportUtil the field "topicClassVocabURI" is overwritten with "topicClassT
 In OpenAireExportUtil the changes are made and tested like in the explanation above.
 
 In XmlMetadataTemplate there is just a new getter and an addition of the new "valueURI" attribute.
+
+You can migrate your topicClassVocabURI data containing URIs to the new topicClassTermURI field.
+In case of data migration, view the affected data with the following database query:
+
+    SELECT value FROM datasetfieldvalue dfv
+    INNER JOIN datasetfield df ON df.id = dfv.datasetfield_id
+    WHERE df.datasetfieldtype_id = (SELECT id FROM datasetfieldtype WHERE name = 'topicClassVocabURI')
+    AND value ILIKE 'http%';
+
+
+If you wish to migrate your data, a database update is then necessary:
+
+
+    UPDATE datasetfield df
+    SET datasetfieldtype_id  = (SELECT id FROM datasetfieldtype WHERE name = 'topicClassTermURI')
+    FROM datasetfieldvalue dfv
+    WHERE dfv.datasetfield_id  = df.id
+    AND df.datasetfieldtype_id = (SELECT id FROM datasetfieldtype WHERE name = 'topicClassVocabURI')
+    AND dfv.value ILIKE 'http%';
