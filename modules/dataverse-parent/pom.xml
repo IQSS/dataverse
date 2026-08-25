@@ -219,9 +219,11 @@
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>
             <releases>
                 <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
             </snapshots>
         </pluginRepository>
         <pluginRepository>
