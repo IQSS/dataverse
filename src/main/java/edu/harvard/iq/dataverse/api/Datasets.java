@@ -332,7 +332,12 @@ public class Datasets extends AbstractApiBean {
         // currently provided by this API is covered between the "deleteDraftVersion" and
         // "destroyDataset" API calls.
         // (The logic below follows the current implementation of the underlying
-        // commands!)
+        // Internally, DeleteDatasetVersionCommand redirects to DestroyDatasetCommand
+        // if the dataset only has 1 version. This API only allows deleting datasets with a single
+        // draft version. In other words, the functionality currently provided by this API is
+        // a subset of the "deleteDraftVersion" API call, which allows deleting draft versions
+        // without deleting the whole dataset,
+        // when at least one published version exists in addition to the draft.
 
         User u = getRequestUser(crc);
         return response( req -> {
@@ -342,7 +347,7 @@ public class Datasets extends AbstractApiBean {
             if (doomed.getVersions().size() > 1 || !doomedVersion.isDraft()) {
                 String msg = "This API can only delete a dataset that has a single draft version.";
                 if (u.isSuperuser()) {
-                    msg = "This API can only delete the latest version if it is a DRAFT. Please use '/destroy' to delete the published version";
+                    msg = "This API can only delete a dataset if it is a DRAFT. Please use '/destroy' to delete a published dataset.";
                 }
                 throw new WrappedResponse(error(BAD_REQUEST, msg));
             }
