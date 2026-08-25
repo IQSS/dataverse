@@ -351,15 +351,15 @@ public class DatasetsIT {
         deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         deleteDatasetResponse.then().assertThat()
-                .body("message", containsString("This API can only delete a dataset that has a single draft version."))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .body("message", containsString("unpublished"))
+                .statusCode(FORBIDDEN.getStatusCode());
 
         // Try to delete as superuser (should get 400 with destroy message)
         deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, superuserApiToken);
         deleteDatasetResponse.prettyPrint();
         deleteDatasetResponse.then().assertThat()
                 .body("message", containsString("/destroy"))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(FORBIDDEN.getStatusCode());
 
         // Try /destroy to get rid of the dataset
         deleteDatasetResponse = UtilIT.destroyDataset(datasetId, superuserApiToken);
