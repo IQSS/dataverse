@@ -102,8 +102,12 @@ class ExportPipelineBean {
         Optional<InputStream> cached = cache.read(datasetVersion.getDataset(), key);
         
         if (cached.isPresent()) {
+            // Note: Not using a try-with-resources here, as the stream would close before the requestor sees it!
+            //       This would *always* happen, even if the stream is not stale.
             try {
-                // Apply all invalidators to see if the cache entry may be stale
+                // Apply all invalidators to see if the cache entry may be stale.
+                // Note how the actual content is never handed to invalidators, avoiding premature consumption of
+                // the input stream. If this will ever become necessary, keeping the stream consumable will be crucial.
                 // TODO: In case we ever have longer prerequisite format chains, this naive appraoch will need refinement.
                 //       The staleness checks may be expensive and repeated execution is not helpful.
                 //       For now, this pipeline is *stateless*, so changing the procedure needs careful consideration.
