@@ -1171,13 +1171,6 @@
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-open-api-maven-plugin</artifactId>
                 <version>4.3.5</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.eclipse.microprofile.openapi</groupId>
-                        <artifactId>microprofile-openapi-api</artifactId>
-                        <version>4.1.1</version>
-                    </dependency>
-                </dependencies>
                 <executions>
                     <execution>
                         <goals>

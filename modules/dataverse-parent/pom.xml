@@ -170,7 +170,7 @@
     
         <!-- Testing dependencies -->
         <testcontainers.version>2.0.2</testcontainers.version>
-        <smallrye-mpconfig.version>3.7.1</smallrye-mpconfig.version>
+        <smallrye-mpconfig.version>3.18.2</smallrye-mpconfig.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <mockito.version>5.11.0</mockito.version>
 
