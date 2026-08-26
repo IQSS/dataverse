@@ -38,6 +38,16 @@ public sealed interface ExportCache permits StorageIOCache {
      */
     void evictAll(Dataset dataset) throws IOException;
     
+    /**
+     * Reports the total amount of storage in bytes consumed by all cached exports for the given dataset.
+     * This includes all versions, formats, and legacy (pre-versioning) entries associated with the dataset.
+     *
+     * @param dataset the dataset to analyze
+     * @return the number of bytes currently occupied by cached exports for the given dataset
+     * @throws IOException if the underlying storage cannot be queried
+     */
+    long usedStorage(Dataset dataset) throws IOException;
+    
     /** Callback that renders an export into the store-provided stream. */
     @FunctionalInterface
     interface ExportStreamWriter {

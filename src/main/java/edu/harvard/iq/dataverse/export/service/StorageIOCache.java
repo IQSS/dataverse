@@ -117,6 +117,20 @@ public final class StorageIOCache implements ExportCache {
         }
     }
     
+    @Override
+    public long usedStorage(Dataset dataset) throws IOException {
+        StorageIO<Dataset> storage = storageFor(dataset);
+        List<String> auxTags = storage.listAuxObjects();
+        
+        long usedStorage = 0;
+        for (String tag : auxTags) {
+            if (tag.startsWith(ExportCacheKey.TAG_PREFIX) && tag.endsWith(ExportCacheKey.TAG_SUFFIX)) {
+                usedStorage += storage.getAuxObjectSize(tag);
+            }
+        }
+        return usedStorage;
+    }
+    
     /**
      * Try reading a cached metadata export via StorageIO. Cache miss results in empty {@code Optional}.
      */

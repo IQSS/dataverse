@@ -114,6 +114,16 @@ public class ExportServiceBean {
     // ++++ ++++ ++++ METHODS FOR CACHE MANAGEMENT ++++ ++++ ++++
     
     /**
+     * Returns the amount of storage used by the cache for the given dataset.
+     * @param dataset the dataset
+     * @return the amount of storage used by the cache for the given dataset
+     * @throws IOException if an I/O error occurs
+     */
+    public long usedCacheStorage(Dataset dataset) throws IOException {
+        return cache.usedStorage(dataset);
+    }
+    
+    /**
      * Clears all cached export formats for the given dataset.
      * Because all formats are removed, the dataset's * "last exported" timestamp is also set to null,
      * reflecting no cached exports remain.
