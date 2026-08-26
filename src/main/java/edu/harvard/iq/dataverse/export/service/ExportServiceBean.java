@@ -4,29 +4,20 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
-import io.gdcc.spi.export.XMLExporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.sql.Timestamp;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.ServiceConfigurationError;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 @Stateless
 public class ExportServiceBean {
@@ -45,7 +36,7 @@ public class ExportServiceBean {
     @EJB
     ExportPipelineBean pipeline;
     
-    // METHODS TO RETRIEVE EXPORTED DATA
+    // ++++ ++++ ++++ METHODS TO RETRIEVE EXPORTED DATA ++++ ++++ ++++
     
     /**
      * Retrieves a stream of the metadata export for the given dataset version in the specified format.
@@ -71,7 +62,18 @@ public class ExportServiceBean {
             throw new ExportException("Failed to retrieve export", e);
         }
     }
-
+    
+    /**
+     * Retrieves the latest published version of the given dataset as a String in the specified export format.
+     * The export is read from the cache if available. Otherwise, it is generated on the fly.
+     *
+     * @param dataset the dataset whose latest released version is to be exported; must not be null
+     * @param formatName the name of the export format to use; must not be null and registered
+     * @return the latest published dataset content as a UTF-8 encoded String,
+     *         or null if the dataset is null, no released version exists, or an I/O error occurs
+     * @throws ExportException if an error occurs during a non-cached, on-the-fly export
+     * @throws IllegalArgumentException if the formatName is null or not registered
+     */
     public String getLatestPublishedAsString(Dataset dataset, String formatName) {
         if (dataset == null) {
             return null;
@@ -80,33 +82,18 @@ public class ExportServiceBean {
         if (releasedVersion == null) {
             return null;
         }
-        InputStream inputStream = null;
-        InputStreamReader inp = null;
-        try {
-            inputStream = getExport(releasedVersion, formatName);
-            if (inputStream != null) {
-                inp = new InputStreamReader(inputStream, "UTF8");
-                BufferedReader br = new BufferedReader(inp);
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                    sb.append('\n');
-                }
-                br.close();
-                inp.close();
-                inputStream.close();
-                return sb.toString();
-            }
+        registry.requireExists(formatName);
+        
+        // Read the export from the cache or generate it if not present.
+        ExportCacheKey key = new ExportCacheKey(releasedVersion, formatName);
+        try (InputStream inputStream = pipeline.readFreshCachedExport(releasedVersion, key)
+                                               .orElse(pipeline.readFreshExport(releasedVersion, formatName))) {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException ex) {
+            // TODO: should this be escalatable via FailureEscalation?
             logger.log(Level.FINE, ex.getMessage(), ex);
-            return null;
-        } finally {
-            IOUtils.closeQuietly(inp);
-            IOUtils.closeQuietly(inputStream);
         }
         return null;
-
     }
     
     
