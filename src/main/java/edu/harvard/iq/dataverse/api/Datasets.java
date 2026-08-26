@@ -35,8 +35,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.croissant.CroissantExportUtil;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
@@ -287,10 +287,13 @@ public class Datasets extends AbstractApiBean {
                     return error(BAD_REQUEST, "Non-draft version requested (" + versionId + ") but for published versions only the latest (" + DS_VERSION_LATEST_PUBLISHED + ") is supported.");
                 }
             }
-
-            ExportService instance = ExportService.getInstance();
-
-            InputStream is = instance.getExport(datasetVersion, exporter);
+            
+            Optional<Details> exporterDetails = exporterRegistrySvc.getDetail(exporter);
+            if (exporterDetails.isEmpty()) {
+                return error(BAD_REQUEST, "Export failed: no exporter registered for format name " + exporter);
+            }
+            
+            InputStream is = exportSvc.getExport(datasetVersion, exporter);
             if (FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()
                     && (exporter.equals("croissant") || exporter.equals("croissantSlim"))) {
                 // Rewrite the export on the fly and insert local reviews until we have a solution for https://github.com/gdcc/dataverse-spi/issues/5
@@ -302,18 +305,16 @@ public class Datasets extends AbstractApiBean {
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                 is = new ByteArrayInputStream(updatedContent.getBytes(StandardCharsets.UTF_8));
             }
-
-            String mediaType = instance.getMediaType(exporter);
-
+            
             if (datasetVersion.isReleased()) {
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
                 mdcLogService.logEntry(entry);
             }
-
+            
             return Response.ok()
-                    .entity(is)
-                    .type(mediaType).
-                    build();
+                .entity(is)
+                .type(exporterDetails.get().mediaType()).
+                build();
         } catch (Exception wr) {
             logger.warning(wr.getMessage());
             return error(Response.Status.FORBIDDEN, "Export Failed");

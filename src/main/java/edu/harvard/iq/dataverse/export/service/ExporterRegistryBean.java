@@ -146,6 +146,26 @@ public class ExporterRegistryBean {
     }
     
     /**
+     * Retrieves the details of the exporter registered for the given format name.
+     *
+     * @param formatName the name of the format to look up
+     * @return an {@code Optional} containing the {@link Details} of the matching exporter,
+     *         or an empty {@code Optional} if no registered exporter has the given format name
+     */
+    public Optional<Details> getDetail(String formatName) {
+        return exporters.values().stream()
+            .filter(exporter -> exporter.getFormatName().equals(formatName))
+            .findFirst()
+            .map(exporter -> new ExporterDetails(
+                exporter.getDisplayName(BundleUtil.getCurrentLocale()),
+                exporter.getFormatName(),
+                exporter.getMediaType(),
+                exporter.isHarvestable(),
+                exporter.isAvailableToUsers())
+            );
+    }
+    
+    /**
      * Retrieves a list of {@link Details} representing the exporters registered in the system.
      * @return a list of {@code Details} objects
      */
