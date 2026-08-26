@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.KeycloakGroupSyncServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -73,6 +74,9 @@ public class OAuth2LoginBackingBean implements Serializable {
     @EJB
     UserServiceBean userService;
 
+    @EJB
+    KeycloakGroupSyncServiceBean keycloakGroupSync;
+
     @Inject
     DataverseSession session;
 
@@ -101,6 +105,17 @@ public class OAuth2LoginBackingBean implements Serializable {
                 && idp.getId().equals(systemConfig.getDefaultAuthProvider());
     }
     
+    /**
+     * Bring the user's Dataverse authorisations in line with the groups the OIDC provider
+     * just reported. Runs before the user is put in the session, so a change of role -- in
+     * either direction -- is already in force for this very login.
+     */
+    private void syncGroupsFromIdp(AbstractOAuth2AuthenticationProvider idp, AuthenticatedUser dvUser) {
+        if (idp instanceof OIDCAuthProvider) {
+            keycloakGroupSync.syncUser(dvUser, oauthUser.getGroups());
+        }
+    }
+
     /**
      * View action for callback.xhtml, the browser redirect target for the OAuth2 provider.
      * @throws IOException
@@ -144,6 +159,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                             AuthenticatedUserDisplayInfo displayInfo = oauthUser.getDisplayInfo();
                             dvUser = authenticationSvc.createAuthenticatedUser(
                                 oauthUser.getUserRecordIdentifier(), newUsername, displayInfo, true);
+                            syncGroupsFromIdp(idp, dvUser);
                             session.setUser(dvUser);
 
                             final OAuth2TokenData tokenData = oauthUser.getTokenData();
@@ -175,6 +191,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                         dvUser.setAuthenticatedOrcid(((OrcidOAuth2AP)idp).getOrcidUrl(oauthUser.getIdInService()));
                         userService.save(dvUser);
                     }
+                    syncGroupsFromIdp(idp, dvUser);
                     session.setUser(dvUser);
                     final OAuth2TokenData tokenData = oauthUser.getTokenData();
                     if (tokenData != null) {

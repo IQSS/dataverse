@@ -192,3 +192,126 @@ The following options are available:
       of many OIDC access tokens.
     - N
     - 300
+
+.. _oidc-group-sync:
+
+Synchronizing Groups From the Provider
+--------------------------------------
+
+Dataverse can keep a user's authorizations in step with the groups they hold on the OIDC
+provider, so that the provider stays the single source of truth for who may do what. The
+synchronization runs on every login, before the user is placed in the session, so a change
+of role is already in force for the login that follows it.
+
+This feature expects the provider's group tree to be laid out as follows, where
+``<parent>``, ``<tenants>`` and the role names are configurable:
+
+.. code-block:: none
+
+  /<parent>/admins                            -> Dataverse superuser
+  /<parent>/<tenants>/<tenant>/admins         -> "admin" role on the tenant's collection
+  /<parent>/<tenants>/<tenant>/curators       -> "curator" role on the tenant's collection
+  /<parent>/<tenants>/<tenant>/users          -> "member" role on the tenant's collection
+
+Each ``<tenant>`` group must carry an attribute (``dataverse-alias`` by default) holding the
+alias of the Dataverse collection it maps to. Groups that do not fit this shape are ignored.
+
+Rather than granting roles to users one by one, Dataverse mirrors each tenant role into an
+explicit group owned by the target collection, and grants the role to that group once. A
+login then only adds or removes the user from those groups, which needs no permission
+reindex and takes effect on the user's next request. Groups and role assignments created by
+hand are never touched: only groups carrying the configured prefix are managed.
+
+Requirements on the provider:
+
+- A **group membership mapper** on the Dataverse client, emitting full group paths into a
+  claim (``groups`` by default). Dataverse reads the userinfo endpoint, so the mapper's
+  **Add to userinfo** setting must be on; adding it to the tokens alone is not enough.
+- A **service account client** (``client_credentials`` grant) that Dataverse uses to read
+  group attributes, which the provider does not put into claims. On Keycloak the account
+  needs the ``view-users`` and ``query-groups`` realm-management roles, and nothing more.
+
+If the provider cannot be reached, or the group claim is absent, nothing is changed and a
+warning is logged. A missing claim is never treated as "member of no group", so a
+misconfigured mapper cannot silently strip everyone's permissions.
+
+.. list-table::
+  :widths: 25 55 10 10
+  :header-rows: 1
+  :align: left
+
+  * - Option
+    - Description
+    - Mandatory
+    - Default
+  * - ``dataverse.auth.oidc.sync.enabled``
+    - Enable synchronizing Dataverse authorizations from the provider's groups.
+    - N
+    - ``false``
+  * - ``dataverse.auth.oidc.sync.client-id``
+    - Client id of the service account used to read group attributes.
+    - Y
+    - \-
+  * - ``dataverse.auth.oidc.sync.client-secret``
+    - Client secret of that service account.
+    - Y
+    - \-
+  * - ``dataverse.auth.oidc.sync.server-url``
+    - Base URL of the provider, without the realm. Derived from ``auth-server-url`` when omitted.
+    - N
+    - \-
+  * - ``dataverse.auth.oidc.sync.realm``
+    - Realm name. Derived from ``auth-server-url`` when omitted.
+    - N
+    - \-
+  * - ``dataverse.auth.oidc.sync.groups-claim``
+    - Name of the claim carrying the full group paths.
+    - N
+    - ``groups``
+  * - ``dataverse.auth.oidc.sync.parent-group``
+    - Name of the top-level group holding the platform's groups.
+    - N
+    - ``platica``
+  * - ``dataverse.auth.oidc.sync.tenants-group``
+    - Name of the group, under the parent, holding one subgroup per tenant.
+    - N
+    - ``tenant-users``
+  * - ``dataverse.auth.oidc.sync.superuser-group``
+    - Name of the group, under the parent, whose members become Dataverse superusers.
+    - N
+    - ``admins``
+  * - ``dataverse.auth.oidc.sync.alias-attribute``
+    - Tenant group attribute holding the alias of the Dataverse collection it maps to.
+    - N
+    - ``dataverse-alias``
+  * - ``dataverse.auth.oidc.sync.group-prefix``
+    - Prefix of the explicit groups Dataverse manages. Groups without it are never modified.
+    - N
+    - ``kc``
+  * - ``dataverse.auth.oidc.sync.role-admin``
+    - Alias of the Dataverse role granted to a tenant's ``admins``.
+    - N
+    - ``admin``
+  * - ``dataverse.auth.oidc.sync.role-curator``
+    - Alias of the Dataverse role granted to a tenant's ``curators``.
+    - N
+    - ``curator``
+  * - ``dataverse.auth.oidc.sync.role-user``
+    - Alias of the Dataverse role granted to a tenant's ``users``.
+    - N
+    - ``member``
+  * - ``dataverse.auth.oidc.sync.protected-users``
+    - Comma-separated user identifiers that never lose superuser status, whatever the provider says.
+    - N
+    - ``dataverseAdmin``
+  * - ``dataverse.auth.oidc.sync.cache-max-age``
+    - Maximum age, in seconds, of cached group attributes.
+    - N
+    - 300
+
+.. warning::
+
+  Revoking superuser status takes effect immediately only for the user logging in. Someone
+  who is already logged in keeps the flag until their session ends, because it is read from
+  the user object held in the session. Group-based roles do not have this problem: they are
+  resolved per request.

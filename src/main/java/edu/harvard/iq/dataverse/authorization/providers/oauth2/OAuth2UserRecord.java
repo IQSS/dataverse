@@ -63,6 +63,15 @@ public class OAuth2UserRecord implements Serializable {
     private final OAuth2TokenData tokenData;
 
     /**
+     * Full paths of the groups the user belongs to on the IDP, e.g.
+     * {@code /platica/tenant-users/tenant-1/admins}. Only populated by providers
+     * that are configured to emit a group claim; {@code null} means "the IDP told
+     * us nothing about groups", which is deliberately distinct from "the user
+     * belongs to no group" (an empty list).
+     */
+    private final List<String> groups;
+
+    /**
      * Constructor for users without Shibboleth attributes.
      */
     public OAuth2UserRecord(
@@ -90,6 +99,25 @@ public class OAuth2UserRecord implements Serializable {
             AuthenticatedUserDisplayInfo displayInfo,
             List<String> availableEmailAddresses
     ) {
+        this(serviceId, idInService, username, shibUniquePersistentIdentifier, idp, oidcUserId,
+                tokenData, displayInfo, availableEmailAddresses, null);
+    }
+
+    /**
+     * Full constructor, including the groups the user holds on the IDP.
+     */
+    public OAuth2UserRecord(
+            String serviceId,
+            String idInService,
+            String username,
+            String shibUniquePersistentIdentifier,
+            String idp,
+            String oidcUserId,
+            OAuth2TokenData tokenData,
+            AuthenticatedUserDisplayInfo displayInfo,
+            List<String> availableEmailAddresses,
+            List<String> groups
+    ) {
         this.serviceId = serviceId;
         this.idInService = idInService;
         this.username = username;
@@ -99,6 +127,7 @@ public class OAuth2UserRecord implements Serializable {
         this.tokenData = tokenData;
         this.displayInfo = displayInfo;
         this.availableEmailAddresses = availableEmailAddresses;
+        this.groups = groups;
     }
 
     public String getServiceId() {
@@ -131,6 +160,13 @@ public class OAuth2UserRecord implements Serializable {
 
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return displayInfo;
+    }
+
+    /**
+     * @return the IDP group paths, or {@code null} when the IDP sent no group information.
+     */
+    public List<String> getGroups() {
+        return groups;
     }
 
     public OAuth2TokenData getTokenData() {
