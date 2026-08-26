@@ -688,6 +688,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
         boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean forExportDataProvider, boolean ignoreSettingExcludeEmailFromExport) {
         Dataset dataset = dsv.getDataset();
+        DataCitation citation = new DataCitation(dsv);
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
@@ -1221,6 +1222,21 @@ public class JsonPrinter {
         }
         return varArr;
     }
+    
+        /**
+     * Export formats such as DDI require the citation to be included. See
+     * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
+     *
+     * @todo Instead of having this separate method, should "citation" be added
+     * to the regular `json` method for DatasetVersion? Will anything break?
+     * Unit tests for that method could not be found.
+     */
+    public static JsonObjectBuilder jsonWithCitation(DatasetVersion dsv, boolean includeFiles) {
+        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, includeFiles);
+        dsvWithCitation.add("citation", dsv.getCitation());
+        return dsvWithCitation;
+    }
+
 
     // TODO: add sumstat and variable categories, check formats
     public static JsonObjectBuilder json(DataVariable dv) {
