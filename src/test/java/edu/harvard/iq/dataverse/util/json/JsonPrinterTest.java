@@ -588,7 +588,7 @@ public class JsonPrinterTest {
         mockedBranding.when(BrandingUtil::getInstallationBrandName).thenReturn("Root");
 
         // verify that the guestbook id is in the dataset response
-        var jsob = JsonPrinter.json(dataset.getLatestVersion(), null, false, false, false, false).build();
+        var jsob = JsonPrinter.json(dataset.getLatestVersion(), null, false, false, false, false, false).build();
         System.out.println(jsob);
         var gbID = jsob.getInt("guestbookId");
         assertEquals(1, gbID);
