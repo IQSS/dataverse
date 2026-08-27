@@ -29,6 +29,12 @@ public class SignedUrlUriInfoTestFake extends UriInfoTestFake {
         this(signedUrlToken, signedUrlUserId, null);
     }
 
+    @Override
+    public URI getAbsolutePath() {
+        // like the real UriInfo: the request URI without its query part
+        return URI.create(getRequestUri().toString().split("\\?")[0]);
+    }
+
     // Lets a test supply the exact request URI the server would see, to exercise the real
     // URLDecoder.decode + isValidUrl validation path.
     public SignedUrlUriInfoTestFake(String signedUrlToken, String signedUrlUserId, String requestUriOverride) {

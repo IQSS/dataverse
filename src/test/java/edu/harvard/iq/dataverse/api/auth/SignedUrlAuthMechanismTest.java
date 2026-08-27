@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.api.auth.doubles.SignedUrlUriInfoTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
@@ -145,6 +146,36 @@ public class SignedUrlAuthMechanismTest {
         String signedUrl = UrlSignerUtil.signUrl(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
 
         ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, signedUrl);
+
+        assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(request));
+    }
+
+    // The anonymous guestbook-response download flow: there is no API token, so Access signs with
+    // the secret + a key derived from the download URL itself (its path, URL-decoded), and the
+    // mechanism reconstructs the same key from the request's absolute path.
+
+    @Test
+    public void testEndToEnd_guestSignedDownloadUrl_authenticatedAsGuest() throws WrappedAuthErrorResponse {
+        sut.authSvc = mock(AuthenticationServiceBean.class);
+        String base = "http://localhost:8080/api/access/datafile/42?gbrecs=true";
+        String guestKey = URLDecoder.decode("http://localhost:8080/api/access/datafile/42", StandardCharsets.UTF_8);
+        String signedUrl = UrlSignerUtil.signUrl(base, 1000, "guest", "GET", TEST_SIGNING_SECRET + guestKey);
+
+        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, "guest", signedUrl);
+
+        assertEquals(GuestUser.get(), sut.findUserFromRequest(request));
+    }
+
+    @Test
+    public void testEndToEnd_guestUrlForgedWithoutSecret_rejected() {
+        // The guest key is derived from the public download URL, which anyone knows: without the
+        // server-side secret in the signing key, anyone could forge guest download URLs.
+        sut.authSvc = mock(AuthenticationServiceBean.class);
+        String base = "http://localhost:8080/api/access/datafile/42?gbrecs=true";
+        String guestKey = "http://localhost:8080/api/access/datafile/42";
+        String forged = UrlSignerUtil.signUrl(base, 1000, "guest", "GET", guestKey);
+
+        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, "guest", forged);
 
         assertThrows(WrappedUnauthorizedAuthErrorResponse.class, () -> sut.findUserFromRequest(request));
     }
