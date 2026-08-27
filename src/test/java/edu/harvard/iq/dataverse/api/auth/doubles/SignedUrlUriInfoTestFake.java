@@ -15,6 +15,8 @@ import static jakarta.ws.rs.HttpMethod.GET;
 
 public class SignedUrlUriInfoTestFake extends UriInfoTestFake {
 
+    public static final String TEST_SIGNING_SECRET = "test-signing-secret";
+
     private final String signedUrlToken;
     private final String signedUrlUserId;
     private final String requestUriOverride;
@@ -40,9 +42,9 @@ public class SignedUrlUriInfoTestFake extends UriInfoTestFake {
         if (requestUriOverride != null) {
             return URI.create(requestUriOverride);
         }
-        // Sign the way the server does: with the configured signing secret prepended to the token. This
-        // keeps the fake consistent with SignedUrlAuthMechanism, which validates with secret + token.
-        return URI.create(UrlSignerUtil.signUrlWithApiKey(SIGNED_URL_BASE_URL, SIGNED_URL_TIMEOUT, signedUrlUserId, GET, signedUrlToken));
+        // Sign the way the server does: with the signing secret prepended to the token. This keeps
+        // the fake consistent with SignedUrlAuthMechanism, which validates with secret + token.
+        return URI.create(UrlSignerUtil.signUrl(SIGNED_URL_BASE_URL, SIGNED_URL_TIMEOUT, signedUrlUserId, GET, TEST_SIGNING_SECRET + signedUrlToken));
     }
 
     @Override

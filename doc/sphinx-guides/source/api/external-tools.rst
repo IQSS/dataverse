@@ -180,7 +180,7 @@ The signed URL mechanism is more secure than exposing API tokens and therefore r
 
 .. note::
 
-   **For Dataverse site administrators:** Signing these URLs requires a non-empty :ref:`dataverse.api.signing-secret` to be configured on the Dataverse installation. Without it, the callback and ``allowedApiCalls`` URLs are sent unsigned (a warning is logged), so tools cannot use them to access draft datasets or restricted files.
+   An ``allowedApiCalls`` ``urlTemplate`` must not use any of the reserved query parameters ``until``, ``user``, ``method``, ``token``, ``key`` or ``signed``: launching a tool whose manifest does is rejected with an error naming the parameter. See :ref:`:ApiSigningSecret` for how the URLs are signed.
 
 .. note::
 

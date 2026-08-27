@@ -62,6 +62,11 @@ public class SettingsServiceBean {
     public enum Key {
         AllowApiTokenLookupViaApi,
         /**
+         * Server-generated secret used to sign API URLs. Generated on first use;
+         * not meant to be set by admins. Deleting it rotates the secret.
+         */
+        ApiSigningSecret,
+        /**
          * Ordered, comma-separated list of custom fields to show above the fold
          * on dataset page such as "data_type,sample,pdb"
          */

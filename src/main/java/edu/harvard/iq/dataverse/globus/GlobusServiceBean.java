@@ -73,6 +73,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonReader;
@@ -90,6 +91,8 @@ public class GlobusServiceBean implements java.io.Serializable {
     protected DatasetServiceBean datasetSvc;
     @EJB
     protected SettingsServiceBean settingsSvc;
+    @EJB
+    protected ApiSigningSecretServiceBean signingSecretSvc;
     @Inject
     DataverseSession session;
     @Inject
@@ -780,11 +783,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             // Shouldn't happen
             logger.warning("Unable to get api token for user: " + user.getIdentifier());
         } else {
-            // Note: without a signing secret the callback is sent unsigned, which the dataverse-globus
-            // app cannot use - the Globus upload/download callback endpoints require an authenticated,
-            // signed request. Globus transfers therefore require dataverse.api.signing-secret.
-            callback = UrlSignerUtil.trySignUrlWithApiKey(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                    HttpMethod.GET, apiToken.getTokenString(), "Globus callback");
+            callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                    HttpMethod.GET, signingSecretSvc.getSigningKey(apiToken.getTokenString()));
         }
         appUrl = appUrl + "&callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
 

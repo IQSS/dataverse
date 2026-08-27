@@ -1,15 +1,14 @@
 package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.api.auth.doubles.SignedUrlContainerRequestTestFake;
+import edu.harvard.iq.dataverse.api.auth.doubles.SignedUrlUriInfoTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
-import edu.harvard.iq.dataverse.util.testing.JvmSetting;
-import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
+import edu.harvard.iq.dataverse.util.signing.FixedSigningSecret;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,14 +23,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@LocalJvmSettings
 public class SignedUrlAuthMechanismTest {
 
     private static final String TEST_SIGNED_URL_TOKEN = "test-signed-url-token";
     private static final String TEST_SIGNED_URL_USER_ID = "test-user";
-    // A signing secret must be configured for signed-URL authentication to be accepted at all (the
-    // mechanism rejects signed URLs when none is set); the signing key is then this secret + the token.
-    private static final String TEST_SIGNING_SECRET = "test-signing-secret";
+    // The signing key is the server's signing secret + the user's token.
+    private static final String TEST_SIGNING_SECRET = SignedUrlUriInfoTestFake.TEST_SIGNING_SECRET;
 
     private SignedUrlAuthMechanism sut;
 
@@ -40,6 +37,7 @@ public class SignedUrlAuthMechanismTest {
     @BeforeEach
     public void setUp() {
         sut = new SignedUrlAuthMechanism();
+        sut.signingSecretSvc = FixedSigningSecret.withSecret(TEST_SIGNING_SECRET);
     }
 
     @Test
@@ -53,7 +51,6 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testFindUserFromRequest_SignedUrlTokenProvided_UserExists_ValidSignedUrl_UserAuthenticated() throws WrappedAuthErrorResponse {
         AuthenticationServiceBean authenticationServiceBeanStub = mock(AuthenticationServiceBean.class);
         when(authenticationServiceBeanStub.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(testAuthenticatedUser);
@@ -70,7 +67,6 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testFindUserFromRequest_SignedUrlTokenProvided_UserExists_InvalidSignedUrl_UserNotAuthenticated() {
         AuthenticationServiceBean authenticationServiceBeanStub = mock(AuthenticationServiceBean.class);
         when(authenticationServiceBeanStub.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(testAuthenticatedUser);
@@ -87,7 +83,6 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testFindUserFromRequest_SignedUrlTokenProvided_UserExists_UserApiTokenDoesNotExist_UserNotAuthenticated() {
         AuthenticationServiceBean authenticationServiceBeanStub = mock(AuthenticationServiceBean.class);
         when(authenticationServiceBeanStub.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(testAuthenticatedUser);
@@ -102,7 +97,6 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testFindUserFromRequest_SignedUrlTokenProvided_UserDoesNotExistForTheGivenId_UserNotAuthenticated() {
         AuthenticationServiceBean authenticationServiceBeanStub = mock(AuthenticationServiceBean.class);
         when(authenticationServiceBeanStub.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(null);
@@ -116,9 +110,8 @@ public class SignedUrlAuthMechanismTest {
     }
 
     // End-to-end validation through the REAL SignedUrlAuthMechanism (URLDecoder.decode + isValidUrl),
-    // which the isValidUrl-only tests in UrlSignerUtilTest do not exercise. These tests configure a
-    // signing secret (required for signed-URL auth to be accepted) and sign with signUrlWithApiKey, so
-    // the signing key is the secret + the API token - exactly as the mechanism reconstructs it.
+    // which the isValidUrl-only tests in UrlSignerUtilTest do not exercise. These tests sign with the
+    // secret + the API token - exactly as the mechanism reconstructs the key.
 
     private void givenUserWithSigningKey(String key) {
         AuthenticationServiceBean authStub = mock(AuthenticationServiceBean.class);
@@ -130,11 +123,10 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testEndToEnd_tamperedSignedUrl_userNotAuthenticated() {
         givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
         String base = "http://localhost:8080/api/v1/datasets/:persistentId?persistentId=doi:10.5072/FK2/ABC";
-        String signedUrl = UrlSignerUtil.signUrlWithApiKey(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+        String signedUrl = UrlSignerUtil.signUrl(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNING_SECRET + TEST_SIGNED_URL_TOKEN);
         // Alter the signed portion of the URL after signing -> the signature must no longer validate.
         String tampered = signedUrl.replace("FK2/ABC", "FK2/HACKED");
 
@@ -144,10 +136,10 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    public void testEndToEnd_noSigningSecret_signedUrlRejected() {
-        // With no signing secret configured, a URL signed with only the bare API token would still hash
-        // valid (key = "" + token) - but the mechanism must refuse it, otherwise a leaked/expired token
-        // or a guest key derived from the public URL could be used to forge a signed URL.
+    public void testEndToEnd_urlSignedWithBareTokenOnly_rejected() {
+        // A URL signed with only the bare API token (no server secret in the key) must not validate:
+        // otherwise a leaked/expired token or a guest key derived from the public URL could be used
+        // to forge a signed URL without knowing the server's secret.
         givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
         String base = "http://localhost:8080/api/v1/datasets/1";
         String signedUrl = UrlSignerUtil.signUrl(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
@@ -158,7 +150,6 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testFindUserFromRequest_malformedPrivateUrlUser_standard401Not500() {
         // The user query param is attacker-controlled and reachable unauthenticated: a private-url
         // user id with a non-numeric suffix, or one whose dataset has no private URL, must produce
@@ -177,7 +168,6 @@ public class SignedUrlAuthMechanismTest {
     // and all - the returned signed URL must authenticate when presented back VERBATIM. No client-side
     // decoding, re-encoding or reconstruction may be required.
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testEndToEnd_escapedUrlSignedAndUsedVerbatim_authenticates() {
         givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
         List<String> urls = List.of(
@@ -190,7 +180,7 @@ public class SignedUrlAuthMechanismTest {
             "http://localhost:8080/api/v1/search?q=100%2525done"
         );
         for (String url : urls) {
-            String signedUrl = UrlSignerUtil.signUrlWithApiKey(url, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+            String signedUrl = UrlSignerUtil.signUrl(url, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNING_SECRET + TEST_SIGNED_URL_TOKEN);
             ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, signedUrl);
             try {
                 assertEquals(testAuthenticatedUser, sut.findUserFromRequest(request),
@@ -202,11 +192,10 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testEndToEnd_tamperedEscapedUrlUsedVerbatim_rejected() {
         givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
         String url = "http://localhost:8080/api/v1/datasets/:persistentId/userPermissions?persistentId=doi%3A10.5072%2FFK2%2FABC";
-        String signedUrl = UrlSignerUtil.signUrlWithApiKey(url, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+        String signedUrl = UrlSignerUtil.signUrl(url, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNING_SECRET + TEST_SIGNED_URL_TOKEN);
         String tampered = signedUrl.replace("FK2%2FABC", "FK2%2FHACKED");
 
         ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, tampered);
@@ -215,14 +204,13 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testEndToEnd_clientStackReEncodesSignatureParams_authenticates() {
         // Why the decoded fallback must stay: every signed URL carries ':' in its own until timestamp
         // (and clients/proxies like Apache HttpClient, OkHttp or mod_proxy may percent-encode it in
         // flight). A URL signed in decoded form and presented in a re-encoded variant must validate.
         givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
         String base = "http://localhost:8080/api/v1/datasets/42";
-        String signedUrl = UrlSignerUtil.signUrlWithApiKey(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+        String signedUrl = UrlSignerUtil.signUrl(base, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNING_SECRET + TEST_SIGNED_URL_TOKEN);
         // Simulate a stack that re-encodes ':' in query values; the path is left alone.
         int queryStart = signedUrl.indexOf('?');
         String reEncoded = signedUrl.substring(0, queryStart)
@@ -243,7 +231,7 @@ public class SignedUrlAuthMechanismTest {
     private boolean validatesEndToEndAsRdmClient(String urlAsClientBuilds) {
         givenUserWithSigningKey(TEST_SIGNED_URL_TOKEN);
         String canonical = URLDecoder.decode(urlAsClientBuilds, StandardCharsets.UTF_8);
-        String signed = UrlSignerUtil.signUrlWithApiKey(canonical, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNED_URL_TOKEN);
+        String signed = UrlSignerUtil.signUrl(canonical, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNING_SECRET + TEST_SIGNED_URL_TOKEN);
         String requestUri = urlAsClientBuilds + signed.substring(canonical.length());
         ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, requestUri);
         try {
@@ -254,7 +242,6 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = TEST_SIGNING_SECRET)
     public void testEndToEnd_allRdmIntegrationUrls_authenticate() {
         final String s = "https://demo.dataverse.org";
         final String pid = "doi:10.5072/FK2/ABC";          // raw, as most rdm paths send it

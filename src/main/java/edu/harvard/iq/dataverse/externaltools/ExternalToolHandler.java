@@ -110,8 +110,8 @@ public class ExternalToolHandler extends URLTokenUtil {
                             + externalTool.getId();
                 }
                 if (apiToken != null) {
-                    callback = UrlSignerUtil.trySignUrlWithApiKey(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                            HttpMethod.GET, apiToken.getTokenString(), "external tool callback");
+                    callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                            HttpMethod.GET, signingSecretService().getSigningKey(apiToken.getTokenString()));
                 }
                 paramsString= "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
                 if (getLocaleCode() != null) {

@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
+import jakarta.enterprise.inject.spi.CDI;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 
@@ -30,6 +32,7 @@ public class URLTokenUtil {
     protected final FileMetadata fileMetadata;
     protected ApiToken apiToken;
     protected String localeCode;
+    private ApiSigningSecretServiceBean signingSecretService;
     
     
     public static final String HTTP_METHOD="httpMethod";
@@ -207,6 +210,19 @@ public class URLTokenUtil {
         throw new IllegalArgumentException("Cannot replace reserved word: " + value);
     }
     
+    // Not a CDI bean (instances are constructed directly), so the signing-secret service is looked
+    // up lazily; tests inject a fake via setSigningSecretService.
+    protected ApiSigningSecretServiceBean signingSecretService() {
+        if (signingSecretService == null) {
+            signingSecretService = CDI.current().select(ApiSigningSecretServiceBean.class).get();
+        }
+        return signingSecretService;
+    }
+
+    public void setSigningSecretService(ApiSigningSecretServiceBean signingSecretService) {
+        this.signingSecretService = signingSecretService;
+    }
+
     public JsonObjectBuilder createPostBody(JsonObject params, JsonArray allowedApiCalls) {
         JsonObjectBuilder bodyBuilder = JsonUtil.createObjectBuilder();
         bodyBuilder.add("queryParameters", params);
@@ -222,17 +238,20 @@ public class URLTokenUtil {
                 urlTemplate = SystemConfig.getDataverseSiteUrlStatic() + urlTemplate;
                 String apiPath = replaceTokensWithValues(urlTemplate);
                 logger.fine("URL WithTokens: " + apiPath);
-                // The template comes from the tool manifest, so reserved params can be (mis)used
-                // there - most dangerously key={apiToken}, which would put the user's real API token
-                // into the URL handed to the tool: the very credential signed URLs exist to withhold.
-                // Remove all reserved params (as 6.10 did inside signUrl) before signing or sending.
-                apiPath = UrlSignerUtil.stripReservedParameters(apiPath);
+                // A reserved param in the tool manifest is a manifest bug - most dangerously
+                // key={apiToken}, which would put the user's real API token into the URL handed to
+                // the tool: the very credential signed URLs exist to withhold. Reject, don't fix.
+                String reserved = UrlSignerUtil.findReservedParameter(apiPath, UrlSignerUtil.reservedParameters);
+                if (reserved != null) {
+                    throw new IllegalArgumentException("The allowedApiCalls URL template for '" + name
+                            + "' in the external tool manifest must not use the reserved query parameter '" + reserved + "'.");
+                }
                 String url = apiPath;
                 // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
                 ApiToken apiToken = getApiToken();
                 if (apiToken != null) {
-                    url = UrlSignerUtil.trySignUrlWithApiKey(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                            httpmethod, apiToken.getTokenString(), "URL for external tool");
+                    url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                            httpmethod, signingSecretService().getSigningKey(apiToken.getTokenString()));
                 }
                 logger.fine("Signed URL: " + url);
                 apisBuilder.add(JsonUtil.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)

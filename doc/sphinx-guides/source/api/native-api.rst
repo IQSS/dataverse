@@ -9159,9 +9159,8 @@ parameters, as reordering or inserting anything invalidates the signature. If yo
 example a search term containing spaces), append the returned signature parameters to the URL exactly as you
 originally constructed it.
 
-Note that a non-empty :ref:`dataverse.api.signing-secret` must be configured on the server for this endpoint to work:
-the key used to sign the URL is created from the user's API token plus the signing-secret, and without the secret the
-endpoint returns an error instead of issuing a weakly-signed URL.
+The key used to sign the URL is created from the user's API token plus a server-side signing secret that is generated
+automatically; see :ref:`:ApiSigningSecret` for details and for how to rotate it.
 
 .. _send-feedback-admin:
 

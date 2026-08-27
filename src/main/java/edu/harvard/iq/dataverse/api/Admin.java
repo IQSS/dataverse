@@ -118,6 +118,7 @@ import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -159,6 +160,8 @@ public class Admin extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
+    @EJB
+    ApiSigningSecretServiceBean signingSecretService;
     @EJB
     AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
     @EJB
@@ -255,8 +258,16 @@ public class Admin extends AbstractApiBean {
             String content) {
         try {
             SettingsServiceBean.validateSettingName(name);
-            
+            if (SettingsServiceBean.Key.ApiSigningSecret.toString().equals(name)
+                    && (content == null || content.length() < ApiSigningSecretServiceBean.MIN_SECRET_LENGTH)) {
+                return error(Response.Status.BAD_REQUEST, "The API signing secret must be at least "
+                        + ApiSigningSecretServiceBean.MIN_SECRET_LENGTH
+                        + " characters long. Leave it unset to have the server generate one.");
+            }
             Setting s = settingsSvc.set(name, content);
+            if (SettingsServiceBean.Key.ApiSigningSecret.toString().equals(name)) {
+                signingSecretService.reset();
+            }
             return ok("Setting " + name + " added.");
         } catch (SettingsValidationException sve) {
             return error(Response.Status.BAD_REQUEST, sve.getMessage());
@@ -329,8 +340,12 @@ public class Admin extends AbstractApiBean {
             @PathParam("name") String name) {
         try {
             SettingsServiceBean.validateSettingName(name);
-            
+
             settingsSvc.delete(name);
+            if (SettingsServiceBean.Key.ApiSigningSecret.toString().equals(name)) {
+                // rotation: the next signing use generates a fresh secret
+                signingSecretService.reset();
+            }
             return ok("Setting " + name + " deleted.");
         } catch (SettingsValidationException sve) {
             return error(Response.Status.BAD_REQUEST, sve.getMessage());
@@ -2726,12 +2741,6 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
         }
 
-        // Require a signing secret: without it the key is only the user's API token, which is too weak.
-        if (!UrlSignerUtil.isSigningSecretConfigured()) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR,
-                    "Requesting signed URLs requires a signing secret to be configured. Please set the dataverse.api.signing-secret JVM option.");
-        }
-
         // "url" is required; "user" defaults to the superuser making the call (see the docs for this
         // endpoint). Use the defaulted accessors: JsonObject.getString(name) throws NullPointerException
         // when the key is absent.
@@ -2776,7 +2785,7 @@ public class Admin extends AbstractApiBean {
         int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
         String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
 
-        String signedUrl = UrlSignerUtil.signUrlWithApiKey(baseUrl, timeout, userId, method, key);
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, signingSecretService.getSigningKey(key));
         
         return ok(JsonUtil.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }

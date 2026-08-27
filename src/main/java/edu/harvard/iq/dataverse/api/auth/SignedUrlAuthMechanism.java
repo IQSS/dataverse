@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.*;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -29,6 +30,8 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
     protected AuthenticationServiceBean authSvc;
     @Inject
     protected PrivateUrlServiceBean privateUrlSvc;
+    @Inject
+    protected ApiSigningSecretServiceBean signingSecretSvc;
     
     private static final Logger logger = Logger.getLogger(SignedUrlAuthMechanism.class.getCanonicalName());
 
@@ -62,16 +65,6 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         if (userId == null) {
             // A token param was present (that is why this mechanism ran) but no user param: this can
             // never be a URL we signed, and dereferencing userId below would throw a NullPointerException.
-            // This check runs before the signing-secret warning below so that arbitrary requests that
-            // merely carry a token param cannot flood the log on installations without a secret.
-            return null;
-        }
-        // Without a signing secret we never issue signed URLs (signUrlWithApiKey refuses on the sign
-        // side), so we must not accept them here either. Otherwise a bare API token - or, for a guest,
-        // the public request URL - would be enough to forge a URL whose signature validates against the
-        // "" + token key computed below. Reject so findUserFromRequest returns the standard 401.
-        if (!UrlSignerUtil.isSigningSecretConfigured()) {
-            logger.warning("Rejecting signed URL authentication: no signing secret configured (dataverse.api.signing-secret).");
             return null;
         }
         User targetUser = null;
@@ -107,7 +100,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
             rawUrl = applyForwardedProto(rawUrl, forwardedProto);
 
             String requestMethod = containerRequestContext.getMethod();
-            String signedUrlSigningKey = UrlSignerUtil.getApiSigningKey(userApiToken.getTokenString());
+            String signedUrlSigningKey = signingSecretSvc.getSigningKey(userApiToken.getTokenString());
             if (isSignedUrlValid(rawUrl, userId, requestMethod, signedUrlSigningKey)) {
                 user = targetUser;
             }

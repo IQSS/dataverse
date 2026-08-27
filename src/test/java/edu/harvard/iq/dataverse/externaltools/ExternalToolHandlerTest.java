@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.signing.FixedSigningSecret;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,7 @@ import jakarta.json.JsonObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -213,7 +215,6 @@ public class ExternalToolHandlerTest {
     
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = "test-only-signing-secret")
     public void testGetToolUrlWithAllowedApiCalls() {
         System.out.println("allowedApiCalls test");
         Dataset ds = new Dataset();
@@ -228,6 +229,7 @@ public class ExternalToolHandlerTest {
         System.out.println("allowedApiCalls et created");
         System.out.println(et.getAllowedApiCalls());
         URLTokenUtil externalToolHandler = new ExternalToolHandler(et, ds, at, null);
+        externalToolHandler.setSigningSecretService(FixedSigningSecret.withSecret("test-only-signing-secret"));
         System.out.println("allowedApiCalls eth created");
         JsonObject jo = externalToolHandler
                 .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
@@ -244,11 +246,10 @@ public class ExternalToolHandlerTest {
 
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
-    @JvmSetting(key = JvmSettings.API_SIGNING_SECRET, value = "test-only-signing-secret")
-    public void testGetToolUrlWithAllowedApiCallsStripsReservedParameters() {
-        // A manifest can (mis)use reserved words in an allowedApiCalls urlTemplate - most dangerously
-        // key={apiToken}. The user's real API token must never end up in the URL handed to the tool,
-        // and stray reserved params must not spoof or break the signing.
+    public void testGetToolUrlWithAllowedApiCallsRejectsReservedParameters() {
+        // A manifest that (mis)uses reserved words in an allowedApiCalls urlTemplate - most
+        // dangerously key={apiToken}, which would put the user's real API token into the URL handed
+        // to the tool - is a manifest bug and must be rejected, not silently rewritten.
         Dataset ds = new Dataset();
         ds.setId(1L);
         ApiToken at = new ApiToken();
@@ -258,16 +259,11 @@ public class ExternalToolHandlerTest {
         at.setTokenString("secret-api-token-1234");
         ExternalTool et = getToolWithAllowedApiCallsUrlTemplate("/api/v1/datasets/{datasetId}?key={apiToken}&signed=true&user=Fred");
         URLTokenUtil handler = new ExternalToolHandler(et, ds, at, null);
-        JsonObject jo = handler
-                .createPostBody(handler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
-        String signedUrl = jo.getJsonArray("signedUrls").getJsonObject(0).getString("signedUrl");
-        assertFalse(signedUrl.contains("secret-api-token-1234"), "the user's API token must not appear in the signed URL");
-        assertFalse(signedUrl.contains("key="));
-        assertFalse(signedUrl.contains("signed=true"));
-        assertFalse(signedUrl.contains("user=Fred"));
-        assertTrue(signedUrl.contains("https://librascholar.org/api/v1/datasets/1"));
-        assertTrue(signedUrl.contains("user=dataverseAdmin"));
-        assertTrue(signedUrl.contains("&token="));
+        handler.setSigningSecretService(FixedSigningSecret.withSecret("test-only-signing-secret"));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> handler
+                .createPostBody(handler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build());
+        assertTrue(e.getMessage().contains("key"), "the error must name the offending reserved parameter");
+        assertFalse(e.getMessage().contains("secret-api-token-1234"), "the error must not leak the user's API token");
     }
 
     private static ExternalTool getToolWithAllowedApiCallsUrlTemplate(String urlTemplate) {
@@ -295,18 +291,12 @@ public class ExternalToolHandlerTest {
 
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
-    public void testGetToolUrlWithAllowedApiCallsNoSigningSecret() {
-        // Without dataverse.api.signing-secret configured, the URL must be sent unsigned (no signing
-        // parameters at all) instead of weakly signed - and no IllegalStateException may escape.
+    public void testGetToolUrlWithAllowedApiCallsGuestGetsUnsignedUrl() {
+        // Without an API token (guest user) the URL is sent unsigned: there is no user key to sign with.
         Dataset ds = new Dataset();
         ds.setId(1L);
-        ApiToken at = new ApiToken();
-        AuthenticatedUser au = new AuthenticatedUser();
-        au.setUserIdentifier("dataverseAdmin");
-        at.setAuthenticatedUser(au);
-        at.setTokenString("1234");
         ExternalTool et = ExternalToolServiceBeanTest.getAllowedApiCallsTool();
-        URLTokenUtil externalToolHandler = new ExternalToolHandler(et, ds, at, null);
+        URLTokenUtil externalToolHandler = new ExternalToolHandler(et, ds, null, null);
         JsonObject jo = externalToolHandler
                 .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
         String signedUrl = jo.getJsonArray("signedUrls").getJsonObject(0).getString("signedUrl");

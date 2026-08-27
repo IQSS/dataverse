@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -59,6 +60,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(ManagePermissionsPage.class.getCanonicalName());
 
+    @EJB
+    ApiSigningSecretServiceBean signingSecretService;
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -736,10 +739,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
             }
             if (key != null) {
-                if (UrlSignerUtil.isSigningSecretConfigured()) {
-                    return UrlSignerUtil.signUrlWithApiKey(fullApiPath, 10, userId, "GET", key);
-                }
-                logger.warning("Cannot sign the permissions-history CSV link: no signing secret configured (dataverse.api.signing-secret). The download link will not be shown.");
+                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", signingSecretService.getSigningKey(key));
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);
