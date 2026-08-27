@@ -258,12 +258,8 @@ public class Admin extends AbstractApiBean {
             String content) {
         try {
             SettingsServiceBean.validateSettingName(name);
-            if (SettingsServiceBean.Key.ApiSigningSecret.toString().equals(name)
-                    && (content == null || content.length() < ApiSigningSecretServiceBean.MIN_SECRET_LENGTH)) {
-                return error(Response.Status.BAD_REQUEST, "The API signing secret must be at least "
-                        + ApiSigningSecretServiceBean.MIN_SECRET_LENGTH
-                        + " characters long. Leave it unset to have the server generate one.");
-            }
+            SettingsServiceBean.validateSettingValue(name, content);
+
             Setting s = settingsSvc.set(name, content);
             return ok("Setting " + name + " added.");
         } catch (SettingsValidationException sve) {
@@ -284,7 +280,8 @@ public class Admin extends AbstractApiBean {
         try {
             SettingsServiceBean.validateSettingName(name);
             SettingsServiceBean.validateSettingLang(lang);
-            
+            SettingsServiceBean.validateSettingValue(name, content);
+
             Setting s = settingsSvc.set(name, lang, content);
             return ok("Setting " + name + " added for language " + lang + ".");
         } catch (SettingsValidationException sve) {

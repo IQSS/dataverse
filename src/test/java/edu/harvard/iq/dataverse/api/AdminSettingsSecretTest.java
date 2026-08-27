@@ -43,6 +43,14 @@ class AdminSettingsSecretTest {
     }
 
     @Test
+    void shortSigningSecretIsRejectedOnTheLocalizedEndpointToo() {
+        Response response = admin.putSettingLang(SECRET_KEY, "en", "too-short");
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        verify(admin.settingsSvc, never()).set(anyString(), anyString(), anyString());
+    }
+
+    @Test
     void otherSettingsAreNotLengthChecked() {
         Response response = admin.putSetting(":SystemEmail", "a@b.cd");
 
