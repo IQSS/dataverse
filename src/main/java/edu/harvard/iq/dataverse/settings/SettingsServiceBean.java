@@ -1069,8 +1069,13 @@ public class SettingsServiceBean {
         
         s = em.merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
-                            .setInfo(name + ": " + content));
+                            .setInfo(name + ": " + loggableValue(name, content)));
         return s;
+    }
+
+    /** Secrets must not end up in the actionlogrecord table in plaintext. */
+    static String loggableValue(String name, String content) {
+        return Key.ApiSigningSecret.toString().equals(name) ? "[redacted]" : content;
     }
     
     /**
@@ -1101,7 +1106,7 @@ public class SettingsServiceBean {
         
         em.merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
-                .setInfo(name + ": " +lang + ": " + content));
+                .setInfo(name + ": " + lang + ": " + loggableValue(name, content)));
         return s;
     }
     

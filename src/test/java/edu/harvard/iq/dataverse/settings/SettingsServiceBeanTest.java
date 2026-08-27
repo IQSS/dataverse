@@ -431,4 +431,12 @@ class SettingsServiceBeanTest {
             verify(em, never()).merge(any(Setting.class));
         }
     }
+
+    @Test
+    void loggableValueRedactsTheSigningSecret() {
+        assertEquals("[redacted]", SettingsServiceBean.loggableValue(
+                SettingsServiceBean.Key.ApiSigningSecret.toString(), "the-actual-secret"));
+        assertEquals("true", SettingsServiceBean.loggableValue(
+                SettingsServiceBean.Key.AllowApiTokenLookupViaApi.toString(), "true"));
+    }
 }
