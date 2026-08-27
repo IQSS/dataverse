@@ -20,6 +20,7 @@ v6.12
   For now, this style will remain the supported default. In a future version of Dataverse the ``message`` will always be a separate top field: ``{"data":{},"message":"..."}``.
   Integrators and client vendors are welcome to opt-in to the new style and test thoroughly by enabling :ref:`dataverse.feature.unify-api-response-message-style`.
 - The permission reindexing endpoints have been updated to use ``POST`` and require superuser access. They are now documented in the :doc:`/admin/solr-search-index` guide.
+- The datafile/{fileId}/metadata/ddi (see :ref:`data-variable-metadata-access`) now returns 403/Forbidden rather than 400/Bad Request when the caller can't access the file due to permissions, embargo, or retention period (consistent with other file access APIs)
 
   - **/api/admin/index/perms**
 
