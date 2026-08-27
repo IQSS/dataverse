@@ -265,9 +265,6 @@ public class Admin extends AbstractApiBean {
                         + " characters long. Leave it unset to have the server generate one.");
             }
             Setting s = settingsSvc.set(name, content);
-            if (SettingsServiceBean.Key.ApiSigningSecret.toString().equals(name)) {
-                signingSecretService.reset();
-            }
             return ok("Setting " + name + " added.");
         } catch (SettingsValidationException sve) {
             return error(Response.Status.BAD_REQUEST, sve.getMessage());
@@ -342,10 +339,6 @@ public class Admin extends AbstractApiBean {
             SettingsServiceBean.validateSettingName(name);
 
             settingsSvc.delete(name);
-            if (SettingsServiceBean.Key.ApiSigningSecret.toString().equals(name)) {
-                // rotation: the next signing use generates a fresh secret
-                signingSecretService.reset();
-            }
             return ok("Setting " + name + " deleted.");
         } catch (SettingsValidationException sve) {
             return error(Response.Status.BAD_REQUEST, sve.getMessage());

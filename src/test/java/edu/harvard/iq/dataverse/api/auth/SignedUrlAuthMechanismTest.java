@@ -213,12 +213,10 @@ public class SignedUrlAuthMechanismTest {
         for (String url : urls) {
             String signedUrl = UrlSignerUtil.signUrl(url, 1000, TEST_SIGNED_URL_USER_ID, "GET", TEST_SIGNING_SECRET + TEST_SIGNED_URL_TOKEN);
             ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, signedUrl);
-            try {
-                assertEquals(testAuthenticatedUser, sut.findUserFromRequest(request),
-                        "signed URL must authenticate when used verbatim: " + signedUrl);
-            } catch (WrappedAuthErrorResponse e) {
-                fail("signed URL must authenticate when used verbatim: " + signedUrl);
-            }
+            User found = assertDoesNotThrow(() -> sut.findUserFromRequest(request),
+                    "signed URL must authenticate when used verbatim: " + signedUrl);
+            assertEquals(testAuthenticatedUser, found,
+                    "signed URL must authenticate when used verbatim: " + signedUrl);
         }
     }
 
@@ -249,12 +247,10 @@ public class SignedUrlAuthMechanismTest {
 
         ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, reEncoded);
 
-        try {
-            assertEquals(testAuthenticatedUser, sut.findUserFromRequest(request),
-                    "re-encoded variant of a decoded-form-signed URL must still authenticate");
-        } catch (WrappedAuthErrorResponse e) {
-            fail("re-encoded variant of a decoded-form-signed URL must still authenticate");
-        }
+        User found = assertDoesNotThrow(() -> sut.findUserFromRequest(request),
+                "re-encoded variant of a decoded-form-signed URL must still authenticate");
+        assertEquals(testAuthenticatedUser, found,
+                "re-encoded variant of a decoded-form-signed URL must still authenticate");
     }
 
     // Runs the real rdm flow: un-escape, sign, request the original (encoded) URL + signature, then the

@@ -57,7 +57,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(ManageFilePermissionsPage.class.getCanonicalName());
 
     @EJB
-    ApiSigningSecretServiceBean signingSecretService;
+    transient ApiSigningSecretServiceBean signingSecretService;
     @EJB
     DatasetServiceBean datasetService;
     @EJB

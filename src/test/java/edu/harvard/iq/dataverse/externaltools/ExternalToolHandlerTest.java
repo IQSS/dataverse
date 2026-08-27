@@ -18,7 +18,9 @@ import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.ws.rs.BadRequestException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -260,8 +262,10 @@ public class ExternalToolHandlerTest {
         ExternalTool et = getToolWithAllowedApiCallsUrlTemplate("/api/v1/datasets/{datasetId}?key={apiToken}&signed=true&user=Fred");
         URLTokenUtil handler = new ExternalToolHandler(et, ds, at, null);
         handler.setSigningSecretService(FixedSigningSecret.withSecret("test-only-signing-secret"));
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> handler
-                .createPostBody(handler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build());
+        JsonObject params = handler.getParams(JsonUtil.getJsonObject(et.getToolParameters()));
+        JsonArray allowedApiCalls = JsonUtil.getJsonArray(et.getAllowedApiCalls());
+        BadRequestException e = assertThrows(BadRequestException.class,
+                () -> handler.createPostBody(params, allowedApiCalls));
         assertTrue(e.getMessage().contains("key"), "the error must name the offending reserved parameter");
         assertFalse(e.getMessage().contains("secret-api-token-1234"), "the error must not leak the user's API token");
     }

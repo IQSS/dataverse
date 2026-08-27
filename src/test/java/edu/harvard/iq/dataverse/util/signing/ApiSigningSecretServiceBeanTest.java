@@ -6,27 +6,27 @@ import jakarta.persistence.PersistenceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ApiSigningSecretServiceBeanTest {
+class ApiSigningSecretServiceBeanTest {
 
     private SettingsServiceBean settingsService;
     private ApiSigningSecretServiceBean bean;
 
     @BeforeEach
     void setUp() {
-        settingsService = Mockito.mock(SettingsServiceBean.class);
+        settingsService = mock(SettingsServiceBean.class);
         bean = new ApiSigningSecretServiceBean();
         bean.settingsService = settingsService;
     }
@@ -53,16 +53,6 @@ public class ApiSigningSecretServiceBeanTest {
     }
 
     @Test
-    void cachesTheSecretAfterFirstRead() {
-        when(settingsService.getValueForKey(Key.ApiSigningSecret)).thenReturn("stored-secret");
-
-        bean.getSecret();
-        bean.getSecret();
-
-        verify(settingsService, times(1)).getValueForKey(Key.ApiSigningSecret);
-    }
-
-    @Test
     void concurrentGenerationLoserAdoptsTheWinnersSecret() {
         // First read: nothing stored. Store fails (another node won the race). Re-read: winner's value.
         when(settingsService.getValueForKey(Key.ApiSigningSecret)).thenReturn(null, "winner-secret");
@@ -73,6 +63,15 @@ public class ApiSigningSecretServiceBeanTest {
     }
 
     @Test
+    void failsLoudlyWhenSecretCannotBeStoredOrRead() {
+        when(settingsService.getValueForKey(Key.ApiSigningSecret)).thenReturn(null);
+        when(settingsService.setValueForKey(eq(Key.ApiSigningSecret), any()))
+                .thenThrow(new PersistenceException("db down"));
+
+        assertThrows(IllegalStateException.class, () -> bean.getSecret());
+    }
+
+    @Test
     void signingKeyIsSecretPlusApiToken() {
         when(settingsService.getValueForKey(Key.ApiSigningSecret)).thenReturn("secret");
 
@@ -80,25 +79,9 @@ public class ApiSigningSecretServiceBeanTest {
     }
 
     @Test
-    void resetForcesReReadSoDeletingTheSettingRotatesTheSecret() {
-        when(settingsService.getValueForKey(Key.ApiSigningSecret)).thenReturn("old-secret", (String) null);
-
-        assertEquals("old-secret", bean.getSecret());
-        bean.reset();
-        String rotated = bean.getSecret();
-
-        assertNotEquals("old-secret", rotated);
-        verify(settingsService).setValueForKey(eq(Key.ApiSigningSecret), any());
-    }
-
-    @Test
     void generatedSecretsDiffer() {
         when(settingsService.getValueForKey(Key.ApiSigningSecret)).thenReturn(null);
-        String first = bean.getSecret();
-        bean.reset();
-        when(settingsService.getValueForKey(Key.ApiSigningSecret)).thenReturn(null);
-        String second = bean.getSecret();
 
-        assertNotEquals(first, second);
+        assertNotEquals(bean.getSecret(), bean.getSecret());
     }
 }

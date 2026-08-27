@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.util.signing;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import jakarta.ejb.EJB;
-import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateless;
 import jakarta.persistence.PersistenceException;
 
 import java.security.SecureRandom;
@@ -12,10 +12,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The server-generated API signing secret ({@link Key#ApiSigningSecret}): generated on first use,
- * stored in the database, never configured by admins. Deleting the setting rotates it.
+ * The server-generated API signing secret ({@link Key#ApiSigningSecret}): generated on first use
+ * and stored in the database, which stays the single source of truth - deleting the setting
+ * rotates the secret, and every node picks a change up immediately. Across servers, the unique
+ * constraint on the setting table decides a first-generation race.
  */
-@Singleton
+@Stateless
 public class ApiSigningSecretServiceBean {
 
     /**
@@ -31,29 +33,7 @@ public class ApiSigningSecretServiceBean {
     @EJB
     SettingsServiceBean settingsService;
 
-    private volatile String cached;
-
     public String getSecret() {
-        String secret = cached;
-        if (secret == null) {
-            secret = readOrGenerate();
-        }
-        return secret;
-    }
-
-    public String getSigningKey(String userApiToken) {
-        return getSecret() + userApiToken;
-    }
-
-    /** Lets a deleted (rotated) setting take effect without a restart. */
-    public void reset() {
-        cached = null;
-    }
-
-    private synchronized String readOrGenerate() {
-        if (cached != null) {
-            return cached;
-        }
         String secret = settingsService.getValueForKey(Key.ApiSigningSecret);
         if (secret == null || secret.isEmpty()) {
             byte[] bytes = new byte[32];
@@ -69,7 +49,10 @@ public class ApiSigningSecretServiceBean {
         if (secret == null || secret.isEmpty()) {
             throw new IllegalStateException("Could not read or generate the API signing secret.");
         }
-        cached = secret;
         return secret;
+    }
+
+    public String getSigningKey(String userApiToken) {
+        return getSecret() + userApiToken;
     }
 }

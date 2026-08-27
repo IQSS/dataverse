@@ -92,7 +92,7 @@ public class GlobusServiceBean implements java.io.Serializable {
     @EJB
     protected SettingsServiceBean settingsSvc;
     @EJB
-    protected ApiSigningSecretServiceBean signingSecretSvc;
+    protected transient ApiSigningSecretServiceBean signingSecretSvc;
     @Inject
     DataverseSession session;
     @Inject

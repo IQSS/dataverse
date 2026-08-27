@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jakarta.json.Json;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -243,7 +244,9 @@ public class URLTokenUtil {
                 // the tool: the very credential signed URLs exist to withhold. Reject, don't fix.
                 String reserved = UrlSignerUtil.findReservedParameter(apiPath, UrlSignerUtil.reservedParameters);
                 if (reserved != null) {
-                    throw new IllegalArgumentException("The allowedApiCalls URL template for '" + name
+                    // BadRequestException so the message naming the parameter reaches the tool
+                    // author as a 400 from the toolparams endpoints, instead of a generic 500.
+                    throw new BadRequestException("The allowedApiCalls URL template for '" + name
                             + "' in the external tool manifest must not use the reserved query parameter '" + reserved + "'.");
                 }
                 String url = apiPath;

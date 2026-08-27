@@ -629,8 +629,16 @@ public class Access extends AbstractApiBean {
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET",
-                signingSecretService.getSigningKey(key));
+        String signedUrl;
+        try {
+            signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET",
+                    signingSecretService.getSigningKey(key));
+        } catch (IllegalArgumentException e) {
+            // A reserved param can be smuggled past the builder-level removal above inside a
+            // percent-encoded value and only materialize in the URL-decoded form signed here.
+            // Such a request is crafted: refuse it instead of signing a URL we did not build.
+            return error(BAD_REQUEST, "The request contains a reserved query parameter.");
+        }
         return ok(JsonUtil.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
 

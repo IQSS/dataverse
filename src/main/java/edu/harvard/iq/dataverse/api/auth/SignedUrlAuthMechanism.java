@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_TOKEN;
@@ -26,12 +27,21 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
 
     public static final String RESPONSE_MESSAGE_BAD_SIGNED_URL = "Bad signed URL";
 
-    @Inject
     protected AuthenticationServiceBean authSvc;
-    @Inject
     protected PrivateUrlServiceBean privateUrlSvc;
-    @Inject
     protected ApiSigningSecretServiceBean signingSecretSvc;
+
+    @Inject
+    public SignedUrlAuthMechanism(AuthenticationServiceBean authSvc, PrivateUrlServiceBean privateUrlSvc,
+            ApiSigningSecretServiceBean signingSecretSvc) {
+        this.authSvc = authSvc;
+        this.privateUrlSvc = privateUrlSvc;
+        this.signingSecretSvc = signingSecretSvc;
+    }
+
+    SignedUrlAuthMechanism() {
+        // tests assign the collaborators directly
+    }
     
     private static final Logger logger = Logger.getLogger(SignedUrlAuthMechanism.class.getCanonicalName());
 
@@ -94,9 +104,9 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         }
         if (targetUser != null && userApiToken != null) {
             String rawUrl = uriInfo.getRequestUri().toString();
-            logger.fine("Original URL: " + rawUrl);
+            logger.log(Level.FINE, "Original URL: {0}", rawUrl);
             String forwardedProto = containerRequestContext.getHeaderString("X-Forwarded-Proto");
-            logger.fine("X-Forwarded-Proto is: " + forwardedProto);
+            logger.log(Level.FINE, "X-Forwarded-Proto is: {0}", forwardedProto);
             rawUrl = applyForwardedProto(rawUrl, forwardedProto);
 
             String requestMethod = containerRequestContext.getMethod();
