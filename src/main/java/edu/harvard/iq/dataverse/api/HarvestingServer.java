@@ -11,17 +11,15 @@ import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.json.Json;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.ws.rs.DELETE;
@@ -76,7 +74,7 @@ public class HarvestingServer extends AbstractApiBean {
             return ok(jsonObjectBuilder().add("oaisets", ""));
         }
 
-        JsonArrayBuilder hcArr = Json.createArrayBuilder();
+        JsonArrayBuilder hcArr = JsonUtil.createArrayBuilder();
 
         for (OAISet set : oaiSets) {
             hcArr.add(oaiSetAsJson(set));
@@ -144,13 +142,9 @@ public class HarvestingServer extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.superUser.required"));
         }
 
-        StringReader rdr = new StringReader(jsonBody);
-        
-	try( JsonReader jrdr = Json.createReader(rdr) )
-	{
-		JsonObject json = jrdr.readObject();
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
-		OAISet set = new OAISet();
+        OAISet set = new OAISet();
 
 
 		String name, desc, defn;
@@ -193,8 +187,6 @@ public class HarvestingServer extends AbstractApiBean {
 		set.setDefinition(defn);
 		oaiSetService.save(set);
 		return created("/harvest/server/oaisets" + name, oaiSetAsJson(set));
-	}
-	
     }
 
     @PUT
@@ -220,11 +212,8 @@ public class HarvestingServer extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.superUser.required"));
         }
 
-        StringReader rdr = new StringReader(jsonBody);
-        
-        try (JsonReader jrdr = Json.createReader(rdr)) {
-            JsonObject json = jrdr.readObject();
-            OAISet update;
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
+        OAISet update;
             //Validating spec 
             if (!StringUtils.isEmpty(spec)) {
                 update = oaiSetService.findBySpec(spec);
@@ -255,7 +244,6 @@ public class HarvestingServer extends AbstractApiBean {
             update.setDefinition(defn);
             oaiSetService.save(update);
             return ok("/harvest/server/oaisets" + spec, oaiSetAsJson(update));
-        }
     }
     
     @DELETE
@@ -325,7 +313,7 @@ public class HarvestingServer extends AbstractApiBean {
     
     /* Auxiliary, helper methods: */
     public static JsonArrayBuilder oaiSetsAsJsonArray(List<OAISet> oaiSets) {
-        JsonArrayBuilder hdArr = Json.createArrayBuilder();
+        JsonArrayBuilder hdArr = JsonUtil.createArrayBuilder();
 
         for (OAISet set : oaiSets) {
             hdArr.add(oaiSetAsJson(set));

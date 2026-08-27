@@ -20,7 +20,7 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
-        <it.groups>integration,migration</it.groups>
+        <it.groups>integration,migration,performance</it.groups>
         <!-- Provide a fallback value that won't break things if JaCoCo prepare-agent steps don't set it. -->
         <!-- Note: you must use @{} style late variable binding in argLine, otherwise JaCoCo cannot inject the right settings! -->
         <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
@@ -156,7 +156,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.2.1</version>
+            <version>5.6.3</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
@@ -697,7 +697,7 @@
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>dataverse-spi</artifactId>
-            <version>2.0.0</version>
+            <version>2.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.cache</groupId>
@@ -886,6 +886,59 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <version>3.10</version>
+                <configuration>
+                    <!-- If the used Java version is too new, don't fail, just do nothing: -->
+                    <failOnUnsupportedJava>false</failOnUnsupportedJava>
+                    <!--
+                      If a class is missing while parsing signatures files, all methods
+                      and fields from this class are silently ignored. This is useful
+                      in multi-module Maven projects where only some modules have the
+                      dependency to which the signature file(s) apply.
+                      
+                      This settings prints no warning at all, so verify the signatures
+                      at least once with full dependencies.
+                    -->
+                    <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+                    <bundledSignatures>
+                        <!-- See https://github.com/policeman-tools/forbidden-apis/wiki/BundledSignatures -->
+                        <bundledSignature>jdk-non-portable</bundledSignature>
+                        <bundledSignature>jdk-internal</bundledSignature>
+                        
+                        <!-- Enabling the following checks will require refactoring within the codebase -->
+                        <!--
+                            <bundledSignature>jdk-reflection</bundledSignature>
+                            <bundledSignature>jdk-unsafe</bundledSignature>
+                            <bundledSignature>jdk-deprecated</bundledSignature>
+                            <bundledSignature>jdk-system-out</bundledSignature>
+                            <bundledSignature>commons-io-unsafe-${commons.io.version}</bundledSignature>
+                        -->
+                    </bundledSignatures>
+                    <signaturesFiles>
+                        <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
+                    </signaturesFiles>
+                    <targetVersion>${target.java.version}</targetVersion>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>for-classes</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>for-test-classes</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>testCheck</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -1106,7 +1159,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
+                    <configLocation>${project.basedir}/src/maven/checkstyle.xml</configLocation>
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                 </configuration>

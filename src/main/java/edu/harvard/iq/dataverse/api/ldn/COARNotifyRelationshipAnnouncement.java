@@ -273,7 +273,7 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
                 String xmlContent = EntityUtils.toString(xmlResponse.getEntity(), "UTF-8");
                 logger.fine("Retrieved DataCite XML");
 
-                javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+                javax.xml.parsers.DocumentBuilderFactory factory = edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureDocumentBuilderFactory();
                 factory.setNamespaceAware(true);
                 javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
                 org.w3c.dom.Document doc = builder.parse(
@@ -332,7 +332,7 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
      * Build the JSON object representing the citing resource.
      */
     private JsonObject buildCitingResourceJson(String subjectId, String relationship, ResourceMetadata metadata) {
-        JsonObjectBuilder citingResourceBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder citingResourceBuilder = JsonUtil.createObjectBuilder()
                 .add("@id", subjectId)
                 .add("relationship", relationship);
 

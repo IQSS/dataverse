@@ -41,9 +41,9 @@ public class ExternalToolHandlerTest {
         ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
         // One query parameter, not a reserved word, no {fileId} (required) used.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("mode", "mode1")
                         )
                 )
@@ -62,9 +62,9 @@ public class ExternalToolHandlerTest {
         assertEquals("A DataFile is required.", expectedException1.getMessage());
 
         // One query parameter, not a reserved word, no {fileMetadata} (required) used.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("mode", "mode1")
                         )
                 )
@@ -81,12 +81,12 @@ public class ExternalToolHandlerTest {
 
         
         // Two query parameters.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("mode", "mode1")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "value2")
                         )
                 )
@@ -101,12 +101,12 @@ public class ExternalToolHandlerTest {
         assertEquals("A DataFile is required.", expectedException2.getMessage());
 
         // Two query parameters, both reserved words, one is {fileId} which is required.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
                 )
@@ -129,15 +129,15 @@ public class ExternalToolHandlerTest {
 
         // Three query parameters, all reserved words, two {fileId}{fileMetadataId} which are required.
         fmd.setId(2L);
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key3", "{fileMetadataId}")
                         )
                 )
@@ -148,12 +148,12 @@ public class ExternalToolHandlerTest {
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7&key3=2", result6);
 
         // Two query parameters, both reserved words, no apiToken
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
                 )
@@ -164,18 +164,18 @@ public class ExternalToolHandlerTest {
         assertEquals("?key1=42", result4);
 
         //localeCode test
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key3", "{fileMetadataId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key4", "{localeCode}")
                         )
                 )
@@ -186,12 +186,12 @@ public class ExternalToolHandlerTest {
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7&key3=2&key4=en", result7);
 
         // Two query parameters, attempt to use a reserved word that doesn't exist.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{junk}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
                 )
@@ -252,15 +252,15 @@ public class ExternalToolHandlerTest {
         String toolUrl = "http://example.com";
         var externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("siteUrl", "{siteUrl}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("datasetPid", "{datasetPid}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("localeCode", "{localeCode}")
                         )
                 )

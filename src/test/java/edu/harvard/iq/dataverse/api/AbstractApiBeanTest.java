@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,13 +7,12 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.FeatureFlag;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalFeatureFlags;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
@@ -62,11 +60,10 @@ class AbstractApiBeanTest {
     void testMessagesNoJsonObject() {
         String message = "myMessage";
         Response response = sut.ok(message);
-        JsonReader jsonReader = Json.createReader(new StringReader((String) response.getEntity().toString()));
-        JsonObject jsonObject = jsonReader.readObject();
-        Map<String, Boolean> config = new HashMap<>();
+        JsonObject jsonObject = JsonUtil.getJsonObject(response.getEntity().toString());
+        Map<String, Object> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jwf = Json.createWriterFactory(config);
+        JsonWriterFactory jwf = JsonUtil.createWriterFactory(config);
         StringWriter sw = new StringWriter();
         try (JsonWriter jsonWriter = jwf.createWriter(sw)) {
             jsonWriter.writeObject(jsonObject);
@@ -85,18 +82,16 @@ class AbstractApiBeanTest {
         Response response = sut.ok(message);
         
         // then
-        JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObject(response.getEntity().toString());
         assertEquals(message, jsonObject.getString(ApiConstants.MESSAGE_FIELD));
     }
 
     @Test
     void testMessageAndDataDefaultStyle() {
         String message = "myMessage";
-        Response response = sut.ok(message, Json.createObjectBuilder().add("test", "value"));
+        Response response = sut.ok(message, JsonUtil.createObjectBuilder().add("test", "value"));
 
-        JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObject(response.getEntity().toString());
 
         assertEquals(message, jsonObject.getString(ApiConstants.MESSAGE_FIELD));
         assertEquals("value", jsonObject.getJsonObject(ApiConstants.DATA_FIELD).getString("test"));
@@ -106,10 +101,9 @@ class AbstractApiBeanTest {
     @JvmSetting(key = JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE, value = "true")
     void testMessageAndDataLegacyStyle() {
         String message = "myMessage";
-        Response response = sut.ok(message, Json.createObjectBuilder().add("test", "value"));
+        Response response = sut.ok(message, JsonUtil.createObjectBuilder().add("test", "value"));
 
-        JsonReader jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObject(response.getEntity().toString());
 
         assertEquals(message, jsonObject.getJsonObject(ApiConstants.MESSAGE_FIELD).getString(ApiConstants.MESSAGE_FIELD));
         assertEquals("value", jsonObject.getJsonObject(ApiConstants.DATA_FIELD).getString("test"));

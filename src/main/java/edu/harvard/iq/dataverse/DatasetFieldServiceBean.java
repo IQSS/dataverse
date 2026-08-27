@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -20,16 +19,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
@@ -298,8 +296,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         cvocMapByTermUri=new HashMap<>();
         cvocFieldSet = new HashSet<>();
 
-        try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
-            JsonArray cvocConfJsonArray = jsonReader.readArray();
+        try {
+            JsonArray cvocConfJsonArray = JsonUtil.getJsonArray(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf));
             for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
                 DatasetFieldType dft = findByNameOpt(jo.getString("field-name"));
                 if (dft == null) {
@@ -345,7 +343,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     }
                 }
             }
-            } catch(JsonException e) {
+        } catch(JsonException e) {
                 logger.warning("Ignoring External Vocabulary setting due to parsing error: " + e.getLocalizedMessage());
             }
         return byTermUriField ? cvocMapByTermUri : cvocMap;
@@ -479,8 +477,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             ExternalVocabularyValue.class)
                     .setParameter("uri", termUri).getSingleResult();
             String valString = evv.getValue();
-            try (JsonReader jr = Json.createReader(new StringReader(valString))) {
-                return jr.readObject();
+            try {
+                return JsonUtil.getJsonObject(valString);
             } catch (Exception e) {
                 logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
             }
@@ -582,8 +580,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == 200) {
                         logger.fine("Returned data: " + data);
-                        try (JsonReader jsonReader = Json.createReader(new StringReader(data))) {
-                            String dataObj = filterResponse(cvocEntry, jsonReader.readObject(), term).toString();
+                        try {
+                            String dataObj = filterResponse(cvocEntry, JsonUtil.getJsonObject(data), term).toString();
                             evv.setValue(dataObj);
                             evv.setLastUpdateDate(Timestamp.from(Instant.now()));
                             logger.fine("JsonObject: " + dataObj);
@@ -645,7 +643,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      */
     private JsonObject filterResponse(JsonObject cvocEntry, JsonObject readObject, String termUri) {
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
         logger.fine("RF: " + filtering.toString());
         JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
@@ -658,7 +656,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     logger.fine("F: " + filter.toString());
                     JsonArray params = filter.getJsonArray("params");
                     if (params == null) {
-                        params = Json.createArrayBuilder().build();
+                        params = JsonUtil.createArrayBuilder().build();
                     }
                     logger.fine("Params: " + params.toString());
                     List<Object> vals = new ArrayList<Object>();
@@ -790,7 +788,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         }
                     }
                 } else {
-                    JsonArrayBuilder parts = Json.createArrayBuilder();
+                    JsonArrayBuilder parts = JsonUtil.createArrayBuilder();
                     for (JsonValue subPath : arr) {
                         if (subPath instanceof JsonObject) {
                             JsonValue nextValue = ((JsonObject) subPath).get(keyVal[0]);

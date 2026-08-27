@@ -33,10 +33,15 @@ import java.util.Comparator;
         @Index(columnList = "datasetversion_id"),
         @Index(columnList = "authenticateduser_id"),
         @Index(columnList = "dataset_id"),
+        @Index(columnList = "responsetime"),
         @Index(columnList = "dataset_id, guestbook_id", name="INDEX_GUESTBOOKRESPONSE_dataset_id_guestbook_id"),
         @Index(columnList = "dataset_id, eventtype", name="INDEX_GUESTBOOKRESPONSE_dataset_id_eventtype")
 })
-
+/* Note: Flyway is being used to create two additional indexes, which can't be done via @Index. These help performance of download count queries:
+  - INDEX_GUESTBOOKRESPONSE_dataset_not_access_req ON GUESTBOOKRESPONSE (dataset_id) WHERE eventtype != 'AccessRequest'
+  - INDEX_GUESTBOOKRESPONSE_datafile_not_access_req ON GUESTBOOKRESPONSE (datafile_id) WHERE eventtype != 'AccessRequest'
+*/
+        
 @NamedQueries(
         @NamedQuery(name = "GuestbookResponse.findByAuthenticatedUserId",
                 query = "SELECT gbr FROM GuestbookResponse gbr WHERE gbr.authenticatedUser.id=:authenticatedUserId")

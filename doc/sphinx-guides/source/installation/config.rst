@@ -252,16 +252,34 @@ For any resources to be integrated with Dataverse, find documentation how to set
 Ongoing Security of Your Installation
 +++++++++++++++++++++++++++++++++++++
 
-Like any application, you should keep up-to-date with patches to both the Dataverse software and the platform (usually Linux) it runs on. Dataverse releases are announced on the dataverse-community_ mailing list, the Dataverse blog_, and in chat.dataverse.org_.
+New Releases
+^^^^^^^^^^^^
+
+Like any application, you should keep up-to-date with new releases of Dataverse, which often contain security fixes.
+
+Dataverse releases are announced on the dataverse-community_ mailing list, Zulip_, and the Dataverse blog_.
 
 .. _dataverse-community: https://groups.google.com/g/dataverse-community
+.. _Zulip: https://dataverse.zulipchat.com/
 .. _blog: https://dataverse.org/blog
-.. _chat.dataverse.org: https://chat.dataverse.org
 
-In addition to these public channels, you can subscribe to receive security notices via email from the Dataverse team. These notices are sent to the ``contact_email`` in the installation spreadsheet_ and you can open an issue in the dataverse-installations_ repo to add or change the contact email. Security notices are also sent to people and organizations that prefer to remain anonymous. To be added to this private list, please email support@dataverse.org.
+These announcements link to release notes, which can be found on GitHub:
 
-.. _spreadsheet: https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/edit#gid=0
-.. _dataverse-installations: https://github.com/IQSS/dataverse-installations
+- Backend: https://github.com/IQSS/dataverse/releases
+- Frontend: https://github.com/IQSS/dataverse-frontend/releases
+
+If the release contains a security-related fix, the release notes will mention generically that a fix is included. Some details are provided via private security advisories, described below.
+
+.. _security-advisories:
+
+Security Advisories
+^^^^^^^^^^^^^^^^^^^
+
+We highly recommend signing up to receive security advisories from the Dataverse team. These advisories are not archived publicly because we don't want attackers to use exploits against you. For this reason we also control who is subscribed to the security advisory mailing list.
+
+To subscribe, email support@dataverse.org and ask to be added to the Dataverse security advisory mailing list.
+
+Below you'll see a step called :ref:`map-of-installations` where you can provide a email address we can use to contact you. We typically automatically add this address to the security list but please feel free to reach out early.
 
 For additional details about security practices by the Dataverse team, see the :doc:`/developers/security` section of the Developer Guide.
 
@@ -270,7 +288,7 @@ For additional details about security practices by the Dataverse team, see the :
 Reporting Security Issues
 +++++++++++++++++++++++++
 
-If you have a security issue to report, please email it to security@dataverse.org.
+If you have a security issue to report, please email it to security@dataverse.org. We usually give credit to security researchers in our release notes. We expect security researchers to look for this information in SECURITY.md (:download:`plain-text <../../../../.github/SECURITY.md>`, `HTML <https://github.com/IQSS/dataverse/security>`_) and include it there.
 
 .. _network-ports:
 
@@ -2572,6 +2590,8 @@ One way to submit your sitemap URL to Google is by using their "Search Console" 
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
 
+.. _map-of-installations:
+
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3374,11 +3394,11 @@ dataverse.api.blocked.endpoints
 
 A comma-separated list of API endpoints that should be blocked. A minimal example that blocks endpoints for security reasons:
 
-``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users'``
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=admin,builtin-users'``
 
 Another example:
 
-``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users,api/datasets/:persistentId/versions/:versionId/files,api/files/:id'``
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=admin,builtin-users,datasets/:persistentId/versions/:versionId/files,files/:id'``
 
 Defaults to an empty string (no endpoints blocked), but, in almost all cases, should include at least ``admin, builtin-users`` as a security measure.
 

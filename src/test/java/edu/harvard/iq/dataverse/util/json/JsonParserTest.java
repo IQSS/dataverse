@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
@@ -30,20 +31,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,6 +57,7 @@ public class JsonParserTest {
     MockSettingsSvc settingsSvc = null;
     LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
+    TemplateServiceBean templateService = Mockito.mock(TemplateServiceBean.class);
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -175,7 +173,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
     }
     
     @Test 
@@ -259,8 +257,7 @@ public class JsonParserTest {
 "          }"; 
    
         String text = compoundString;
-        JsonReader jsonReader = Json.createReader(new StringReader(text));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(text);
 
         assertThrows(JsonParseException.class, () -> sut.parseField(obj));
     }
@@ -300,10 +297,8 @@ public class JsonParserTest {
      */
     @Test
     public void testParseCompleteDataverse() throws JsonParseException {
-        
-        JsonObject dvJson;
-        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
-            dvJson = Json.createReader(reader).readObject();
+        try {
+            JsonObject dvJson = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataverse-complete.json");
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("Scientific Research", actual.getName());
             assertEquals("science", actual.getAlias());
@@ -333,9 +328,8 @@ public class JsonParserTest {
      */
     @Test
     public void parseDataverseDTO() throws JsonParseException {
-        JsonObject dvJson;
-        try (FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-complete.json")) {
-            dvJson = Json.createReader(reader).readObject();
+        try {
+            JsonObject dvJson = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataverse-complete.json");
             DataverseDTO actual = sut.parseDataverseDTO(dvJson);
             List<DataverseContact> actualDataverseContacts = actual.getDataverseContacts();
             assertEquals("Scientific Research", actual.getName());
@@ -358,8 +352,7 @@ public class JsonParserTest {
         
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/dataverse-theme.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dvJson = Json.createReader(reader).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
             assertEquals("testAlias", actual.getAlias());
@@ -392,8 +385,7 @@ public class JsonParserTest {
         
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/minimal-dataverse.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dvJson = Json.createReader(reader).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             Dataverse actual = sut.parseDataverse(dvJson);
             assertEquals("testDv", actual.getName());
             assertEquals("testAlias", actual.getAlias());
@@ -416,7 +408,7 @@ public class JsonParserTest {
     void testParseNoAliasDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-alias-dataverse.json")) {
-            dvJson = Json.createReader(jsonFile).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
@@ -430,7 +422,7 @@ public class JsonParserTest {
     void testParseNoNameDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-name-dataverse.json")) {
-            dvJson = Json.createReader(jsonFile).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
@@ -445,7 +437,7 @@ public class JsonParserTest {
     void testParseNoContactEmailsDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-contacts-dataverse.json")) {
-            dvJson = Json.createReader(jsonFile).readObject();
+            dvJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
@@ -503,10 +495,9 @@ public class JsonParserTest {
     void testParseEmptyDataset() throws JsonParseException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dsJson = Json.createReader(reader).readObject();
+            dsJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             System.out.println(dsJson != null);
-            assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson));
+            assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson, null));
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
@@ -523,8 +514,7 @@ public class JsonParserTest {
     void testParseOvercompleteDatasetVersion() throws IOException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-version.json")) {
-            InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
-            dsJson = Json.createReader(reader).readObject();
+            dsJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             Assumptions.assumeTrue(dsJson != null);
             assertDoesNotThrow(() -> sut.parseDatasetVersion(dsJson));
         }
@@ -647,7 +637,7 @@ public class JsonParserTest {
     void testMailDomainGroupMissingName() {
         // given
         String noname = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [] }";
-        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        JsonObject obj = JsonUtil.getJsonObject(noname);
         // when && then
         assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
     }
@@ -656,7 +646,7 @@ public class JsonParserTest {
     void testMailDomainGroupMissingDomains() {
         // given
         String noname = "{ \"name\": \"test\", \"alias\": \"test\" }";
-        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        JsonObject obj = JsonUtil.getJsonObject(noname);
         // when && then
         assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
     }
@@ -665,26 +655,26 @@ public class JsonParserTest {
     void testMailDomainGroupNotEnabledRegexDomains() {
         // given
         String regexNotEnabled = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [\"^foobar\\\\.com\"] }";
-        JsonObject obj = Json.createReader(new StringReader(regexNotEnabled)).readObject();
+        JsonObject obj = JsonUtil.getJsonObject(regexNotEnabled);
         // when && then
         assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
     }
 
     @Test
     public void testparseFiles() throws JsonParseException {
-        JsonArrayBuilder metadatasJsonBuilder = Json.createArrayBuilder();
-        JsonObjectBuilder fileMetadataGood = Json.createObjectBuilder();
+        JsonArrayBuilder metadatasJsonBuilder = JsonUtil.createArrayBuilder();
+        JsonObjectBuilder fileMetadataGood = JsonUtil.createObjectBuilder();
         fileMetadataGood.add("label", "myLabel");
-        JsonObjectBuilder fileGood = Json.createObjectBuilder();
+        JsonObjectBuilder fileGood = JsonUtil.createObjectBuilder();
         fileMetadataGood.add("dataFile", fileGood);
-        fileMetadataGood.add("categories", Json.createArrayBuilder()
+        fileMetadataGood.add("categories", JsonUtil.createArrayBuilder()
                 .add("Documentation")
         );
-        JsonObjectBuilder fileMetadataBad = Json.createObjectBuilder();
+        JsonObjectBuilder fileMetadataBad = JsonUtil.createObjectBuilder();
         fileMetadataBad.add("label", "bad");
-        JsonObjectBuilder fileBad = Json.createObjectBuilder();
+        JsonObjectBuilder fileBad = JsonUtil.createObjectBuilder();
         fileMetadataBad.add("dataFile", fileBad);
-        fileMetadataBad.add("categories", Json.createArrayBuilder()
+        fileMetadataBad.add("categories", JsonUtil.createArrayBuilder()
                 .add(BigDecimal.ONE)
         );
         metadatasJsonBuilder.add(fileMetadataGood);
@@ -698,12 +688,12 @@ public class JsonParserTest {
         assertEquals("myLabel", fileMetadatas.get(0).getLabel());
         assertEquals("Documentation", fileMetadatas.get(0).getCategories().get(0).getName());
         assertEquals(null, fileMetadatas.get(1).getCategories());
-        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
+        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("label", "myLabel").add("dataFile", JsonUtil.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
         assertEquals(null, codeCoverage.get(0).getCategories());
     }
 
     JsonObject json( String s ) {
-        return Json.createReader( new StringReader(s) ).readObject();
+        return JsonUtil.getJsonObject(s);
     }
     
     public boolean assertFieldsEqual( DatasetField ex, DatasetField act ) {
@@ -819,7 +809,7 @@ public class JsonParserTest {
 
     @Test
     public void testEnum() throws JsonParseException {
-        JsonArrayBuilder arr = Json.createArrayBuilder();
+        JsonArrayBuilder arr = JsonUtil.createArrayBuilder();
         for (Type entry : Arrays.asList(Type.REVOKEROLE, Type.ASSIGNROLE)) {
             arr.add(entry.name());
         }
@@ -965,4 +955,40 @@ public class JsonParserTest {
             assertTrue(e.getMessage().contains("Guestbook Response entry is required but not present"));
         }
     }
+
+    // Testing that output of JsonPrinter can be used as input to JsonParser
+    // Additional tests can be added but this was created for Issue: API inconsistency for release time between JsonParser/JsonPrinter #11594
+    @Test
+    public void testDatasetVersionJsonPrinterJsonParser() throws JsonParseException {
+        // Set up to prevent NullPointerExceptions
+        String sut = "foobar";
+        DatasetType foobar = new DatasetType();
+        foobar.setName(sut);
+        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
+        termsOfUseAndAccess.setTermsOfUse("TOU");
+        settingsSvc = new MockSettingsSvc();
+        DatasetType datasetType = new DatasetType();
+        datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
+        datasetType.setId(1l);
+        Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
+
+        Dataset ds = new Dataset();
+        DatasetVersion dsv1 = new DatasetVersion();
+        DatasetVersion dsv2 = new DatasetVersion();
+
+        ds.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        ds.setDatasetType(foobar);
+        dsv1.setDataset(ds);
+        dsv1.setReleaseTime(Date.from(Instant.now()));
+        dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
+        dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
+
+        // Test output of JsonPrinter can be used as input to JsonParser
+        JsonObject json = JsonPrinter.json(dsv1, false).build();
+        jsonParser.parseDatasetVersion(json, dsv2);
+
+        assertEquals(dsv1.getReleaseTime().toString(), dsv2.getReleaseTime().toString());
+    }
 }
+
