@@ -148,9 +148,13 @@ public class KeycloakGroupSyncServiceBean {
                 }
                 ExplicitGroup group = explicitGroupService.findInOwner(dataverse.getId(),
                         groupAliasInOwner(assignment.role));
-                if (group != null) {
-                    desiredGroupAliases.add(group.getAlias());
+                if (group == null) {
+                    logger.warning("No group " + groupAliasInOwner(assignment.role) + " on collection '"
+                            + dataverse.getAlias() + "', so " + assignment.tenantGroupPath
+                            + " grants nothing. See the warnings above for why it could not be created.");
+                    continue;
                 }
+                desiredGroupAliases.add(group.getAlias());
             }
 
             reconcileMembership(user, desiredGroupAliases);
@@ -297,26 +301,20 @@ public class KeycloakGroupSyncServiceBean {
     }
 
     /**
-     * Look for a role by alias, starting at the collection and walking up to the root, then
-     * falling back to the built-in roles. This lets an institution override a role locally
-     * while the shared definitions live at the root.
+     * Look for a role by alias among those usable at the collection: its own, its ancestors',
+     * and the built-in ones.
+     * <p>
+     * Deliberately does not use {@code findCustomRoleByAliasAndOwner} or
+     * {@code findBuiltinRoleByAlias}: both call {@code getSingleResult()}, and a
+     * {@code NoResultException} escaping an EJB business method marks the caller's transaction
+     * for rollback. Catching it here would not undo that -- every later query in the same
+     * transaction would fail with "Client's transaction aborted". A role simply not existing
+     * is an ordinary answer, not a reason to lose the transaction.
      */
     private Optional<DataverseRole> findRole(String alias, Dataverse dataverse) {
-        for (Dataverse candidate = dataverse; candidate != null; candidate = candidate.getOwner()) {
-            try {
-                DataverseRole role = roleService.findCustomRoleByAliasAndOwner(alias, candidate.getId());
-                if (role != null) {
-                    return Optional.of(role);
-                }
-            } catch (Exception ignored) {
-                // No custom role with that alias on this collection; keep walking up.
-            }
-        }
-        try {
-            return Optional.ofNullable(roleService.findBuiltinRoleByAlias(alias));
-        } catch (Exception ignored) {
-            return Optional.empty();
-        }
+        return roleService.availableRoles(dataverse.getId()).stream()
+                .filter(role -> alias.equals(role.getAlias()))
+                .findFirst();
     }
 
     // ------------------------------------------------------- reconciliation
