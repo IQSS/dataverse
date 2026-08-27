@@ -308,6 +308,56 @@ misconfigured mapper cannot silently strip everyone's permissions.
     - Maximum age, in seconds, of cached group attributes.
     - N
     - 300
+  * - ``dataverse.auth.oidc.sync.interval-minutes``
+    - How often the reconciliation sweep runs. Set to ``0`` to sync at login only.
+    - N
+    - 15
+  * - ``dataverse.auth.oidc.sync.provider-id``
+    - Id of the authentication provider whose accounts the sweep matches against.
+    - N
+    - ``oidc``
+  * - ``dataverse.auth.oidc.sync.min-removals``
+    - A sweep may always remove at least this many memberships, whatever the ratio says.
+    - N
+    - 5
+  * - ``dataverse.auth.oidc.sync.max-removal-ratio``
+    - Fraction of existing memberships a single sweep may remove before it aborts.
+    - N
+    - 0.2
+
+Reconciliation Sweep
+~~~~~~~~~~~~~~~~~~~~
+
+Synchronizing at login only ever sees the person walking through the door. A user demoted on
+the provider who never logs in again would keep their authorizations indefinitely, so a timer
+periodically reconciles every tenant. Its interval is the installation's worst-case delay for
+a permission change to take effect.
+
+The sweep reads everything from the provider before writing anything, and skips -- leaving
+membership untouched -- any group it could not read. A failed read must never look like an
+empty group.
+
+It also refuses to write when the change looks like a wipe: if a single sweep would remove
+more memberships than ``max-removal-ratio`` of the current total (with ``min-removals`` as an
+absolute floor), it logs the intended change at ``SEVERE`` and writes nothing. This is what
+stops a renamed group or a mistyped path from stripping everyone's permissions in one pass.
+Raising the thresholds is the deliberate way to push a large legitimate change through.
+
+Each group is written in its own transaction, so one unreachable tenant leaves the others
+reconciled rather than aborting the whole sweep.
+
+In a cluster the sweep only runs on the node started with ``-Ddataverse.timerServer=true``,
+the same rule the harvesting and saved-search timers follow.
+
+To run it immediately -- when testing a configuration change, or to force a revocation through
+without waiting out the interval:
+
+.. code-block:: bash
+
+  curl -X POST -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/oidc/sync"
+
+Users who exist on the provider but have never logged into Dataverse have no account yet, so
+the sweep cannot add them to anything. Their first login handles them.
 
 .. warning::
 

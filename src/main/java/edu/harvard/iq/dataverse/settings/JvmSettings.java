@@ -276,6 +276,10 @@ public enum JvmSettings {
     OIDC_SYNC_ROLE_USER(SCOPE_OIDC_SYNC, "role-user"),
     OIDC_SYNC_PROTECTED_USERS(SCOPE_OIDC_SYNC, "protected-users"),
     OIDC_SYNC_CACHE_MAXAGE(SCOPE_OIDC_SYNC, "cache-max-age"),
+    OIDC_SYNC_PROVIDER_ID(SCOPE_OIDC_SYNC, "provider-id"),
+    OIDC_SYNC_INTERVAL(SCOPE_OIDC_SYNC, "interval-minutes"),
+    OIDC_SYNC_MIN_REMOVALS(SCOPE_OIDC_SYNC, "min-removals"),
+    OIDC_SYNC_MAX_REMOVAL_RATIO(SCOPE_OIDC_SYNC, "max-removal-ratio"),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),

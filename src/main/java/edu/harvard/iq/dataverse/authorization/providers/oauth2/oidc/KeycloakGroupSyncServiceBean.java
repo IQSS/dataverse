@@ -11,11 +11,14 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,6 +114,9 @@ public class KeycloakGroupSyncServiceBean {
     @EJB
     UserServiceBean userService;
 
+    @EJB
+    KeycloakGroupMembershipWriter membershipWriter;
+
     /**
      * Reconcile a user against the group paths Keycloak just told us about, typically at login.
      *
@@ -164,6 +170,245 @@ public class KeycloakGroupSyncServiceBean {
             logger.log(Level.SEVERE, "Keycloak group sync failed for " + user.getIdentifier()
                     + "; the user's authorisations were left as they were.", ex);
         }
+    }
+
+    /**
+     * Reconcile every tenant against Keycloak, for users who are not logging in.
+     * <p>
+     * The login sync only ever sees the person walking through the door. This sweep is what
+     * catches the rest: someone demoted in Keycloak who never comes back, a change made
+     * directly in the Keycloak console, a tenant whose attribute was fixed after the fact.
+     * <p>
+     * Users who exist in Keycloak but have never logged into Dataverse have no account here
+     * yet, so they cannot be added to anything. Their first login handles them.
+     *
+     * @return a short human-readable report of what happened
+     */
+    public String reconcileAll() {
+        if (!isEnabled()) {
+            return "Keycloak group sync is disabled.";
+        }
+        if (!keycloakAdmin.isConfigured()) {
+            return "Keycloak group sync is enabled but not configured; nothing done.";
+        }
+
+        // Read everything from Keycloak first, and only then write. A partial read must not
+        // turn into a partial revocation.
+        String tenantsPath = KeycloakAdminClient.normalisePath(parentGroup() + "/" + tenantsGroup());
+        List<JsonObject> tenants = keycloakAdmin.getSubgroups(tenantsPath);
+        if (tenants.isEmpty()) {
+            logger.warning("Keycloak reported no tenants under " + tenantsPath
+                    + ". Doing nothing rather than risk revoking everyone.");
+            return "No tenants found under " + tenantsPath + "; nothing done.";
+        }
+
+        Map<String, Set<String>> desiredMembers = new HashMap<>();
+        int unreadable = 0;
+        int skippedTenants = 0;
+
+        for (JsonObject tenant : tenants) {
+            String tenantName = tenant.getString("name", null);
+            if (tenantName == null) {
+                continue;
+            }
+            String tenantPath = tenantsPath + "/" + tenantName;
+            Optional<Dataverse> collection = resolveCollection(tenantPath);
+            if (collection.isEmpty()) {
+                skippedTenants++;
+                continue;
+            }
+            Dataverse dataverse = collection.get();
+            provisionIfNeeded(dataverse, null);
+
+            for (JsonObject subgroup : keycloakAdmin.getSubgroups(tenantPath)) {
+                Optional<TenantRole> role = TenantRole.fromKeycloakGroupName(subgroup.getString("name", ""));
+                String subgroupId = subgroup.getString("id", null);
+                if (role.isEmpty() || subgroupId == null) {
+                    continue;
+                }
+                ExplicitGroup group = explicitGroupService.findInOwner(dataverse.getId(),
+                        groupAliasInOwner(role.get()));
+                if (group == null) {
+                    continue;
+                }
+                Optional<List<JsonObject>> members = keycloakAdmin.getGroupMembers(subgroupId);
+                if (members.isEmpty()) {
+                    // Could not read this group. Leave its membership exactly as it is.
+                    logger.warning("Could not read the members of " + tenantPath + "/"
+                            + role.get().keycloakGroupName + "; leaving " + group.getAlias() + " untouched.");
+                    unreadable++;
+                    continue;
+                }
+                desiredMembers.put(group.getAlias(), identifiersOf(members.get()));
+            }
+        }
+
+        String report = applyMembership(desiredMembers)
+                + reconcileSuperuserSweep()
+                + (skippedTenants > 0 ? ", " + skippedTenants + " tenant(s) skipped" : "")
+                + (unreadable > 0 ? ", " + unreadable + " group(s) unreadable and left untouched" : "");
+        logger.info("Keycloak reconciliation: " + report);
+        return report;
+    }
+
+    /**
+     * Map Keycloak members onto Dataverse accounts. Members who have never logged in have no
+     * account yet and are dropped here.
+     */
+    private List<AuthenticatedUser> usersOf(List<JsonObject> keycloakMembers) {
+        List<AuthenticatedUser> users = new ArrayList<>();
+        for (JsonObject member : keycloakMembers) {
+            String subject = member.getString("id", null);
+            if (subject == null) {
+                continue;
+            }
+            AuthenticatedUser user = authenticationService.lookupUser(oidcProviderId(), subject);
+            if (user == null) {
+                logger.fine(() -> "Keycloak user " + subject + " has never logged into Dataverse; skipping.");
+                continue;
+            }
+            users.add(user);
+        }
+        return users;
+    }
+
+    private Set<String> identifiersOf(List<JsonObject> keycloakMembers) {
+        return usersOf(keycloakMembers).stream()
+                .map(AuthenticatedUser::getIdentifier)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Write the computed membership, but refuse to do it if the change looks like a wipe.
+     * A bad group path or a Keycloak reorganisation should not be able to strip everyone's
+     * permissions in one sweep; it should page a human instead.
+     */
+    private String applyMembership(Map<String, Set<String>> desiredMembers) {
+        Map<ExplicitGroup, Set<String>> removals = new HashMap<>();
+        Map<ExplicitGroup, Set<String>> additions = new HashMap<>();
+        int currentTotal = 0;
+
+        for (Map.Entry<String, Set<String>> entry : desiredMembers.entrySet()) {
+            ExplicitGroup group = explicitGroupService.getProvider().get(entry.getKey());
+            if (group == null) {
+                continue;
+            }
+            Set<String> current = group.getContainedRoleAssgineeIdentifiers();
+            currentTotal += current.size();
+
+            Set<String> toRemove = new HashSet<>(current);
+            toRemove.removeAll(entry.getValue());
+            if (!toRemove.isEmpty()) {
+                removals.put(group, toRemove);
+            }
+            Set<String> toAdd = new HashSet<>(entry.getValue());
+            toAdd.removeAll(current);
+            if (!toAdd.isEmpty()) {
+                additions.put(group, toAdd);
+            }
+        }
+
+        int removalCount = removals.values().stream().mapToInt(Set::size).sum();
+        int limit = removalLimit(currentTotal);
+        if (removalCount > limit) {
+            logger.severe("Keycloak reconciliation would remove " + removalCount + " of " + currentTotal
+                    + " memberships, over the safety limit of " + limit + ". Refusing to write anything. "
+                    + "Check the Keycloak group layout and the sync configuration, then re-run.");
+            return "aborted: " + removalCount + " removals exceed the safety limit of " + limit;
+        }
+
+        // One transaction per group, so a failure on one tenant leaves the others reconciled.
+        Set<ExplicitGroup> touched = new HashSet<>();
+        touched.addAll(removals.keySet());
+        touched.addAll(additions.keySet());
+
+        int written = 0;
+        int failed = 0;
+        for (ExplicitGroup group : touched) {
+            boolean ok = membershipWriter.apply(group.getAlias(),
+                    removals.getOrDefault(group, Set.of()),
+                    additions.getOrDefault(group, Set.of()));
+            if (ok) {
+                written++;
+            } else {
+                failed++;
+            }
+        }
+
+        return written + " group(s) updated (" + removalCount + " removals, "
+                + additions.values().stream().mapToInt(Set::size).sum() + " additions)"
+                + (failed > 0 ? ", " + failed + " group(s) failed" : "");
+    }
+
+    /**
+     * Reconcile the superuser flag from the platform-wide admins group.
+     * <p>
+     * Note this updates the database only. Someone with a live session keeps the flag until
+     * that session ends, because it is read from the user object held in the session.
+     */
+    private String reconcileSuperuserSweep() {
+        Optional<JsonObject> adminGroup = keycloakAdmin.getGroupByPath(
+                parentGroup() + "/" + superuserGroup());
+        if (adminGroup.isEmpty()) {
+            return "";
+        }
+        String groupId = adminGroup.get().getString("id", null);
+        if (groupId == null) {
+            return "";
+        }
+        Optional<List<JsonObject>> members = keycloakAdmin.getGroupMembers(groupId);
+        if (members.isEmpty()) {
+            logger.warning("Could not read the members of the platform admins group; "
+                    + "leaving superuser flags untouched.");
+            return "";
+        }
+        List<AuthenticatedUser> shouldBeSuperuser = usersOf(members.get());
+        Set<String> shouldBeSuperuserIds = shouldBeSuperuser.stream()
+                .map(AuthenticatedUser::getIdentifier)
+                .collect(Collectors.toSet());
+
+        int changed = 0;
+        for (AuthenticatedUser user : authenticationService.findSuperUsers()) {
+            if (!shouldBeSuperuserIds.contains(user.getIdentifier())
+                    && !protectedUsers().contains(user.getUserIdentifier())) {
+                user.setSuperuser(false);
+                userService.save(user);
+                logger.info("Keycloak reconciliation: revoked superuser status for " + user.getIdentifier());
+                changed++;
+            }
+        }
+        for (AuthenticatedUser user : shouldBeSuperuser) {
+            if (!user.isSuperuser()) {
+                user.setSuperuser(true);
+                userService.save(user);
+                logger.info("Keycloak reconciliation: granted superuser status for " + user.getIdentifier());
+                changed++;
+            }
+        }
+        return changed > 0 ? ", " + changed + " superuser change(s)" : "";
+    }
+
+    private String oidcProviderId() {
+        return JvmSettings.OIDC_SYNC_PROVIDER_ID.lookupOptional().orElse("oidc");
+    }
+
+    /**
+     * How many memberships a single sweep is allowed to remove.
+     * <p>
+     * A bad group path or a Keycloak reorganisation should not be able to strip everyone's
+     * permissions in one pass. The absolute floor keeps small installations workable, where any
+     * ratio would be too tight to ever remove anybody.
+     */
+    int removalLimit(int currentTotal) {
+        return Math.max(minRemovals(), (int) Math.ceil(removalRatio() * currentTotal));
+    }
+
+    private int minRemovals() {
+        return JvmSettings.OIDC_SYNC_MIN_REMOVALS.lookupOptional(Integer.class).orElse(5);
+    }
+
+    private double removalRatio() {
+        return JvmSettings.OIDC_SYNC_MAX_REMOVAL_RATIO.lookupOptional(Double.class).orElse(0.2);
     }
 
     public boolean isEnabled() {
@@ -410,7 +655,13 @@ public class KeycloakGroupSyncServiceBean {
      */
     private DataverseRequest internalRequest(AuthenticatedUser actingUser) {
         AuthenticatedUser adminUser = authenticationService.getAdminUser();
-        return new DataverseRequest(adminUser != null ? adminUser : actingUser, IpAddress.valueOf("0.0.0.0"));
+        User attributedTo = adminUser != null ? adminUser : actingUser;
+        if (attributedTo == null) {
+            // No superuser yet and no one logged in (a timer sweep on a fresh installation).
+            // The request's user must not be null: the assignment history dereferences it.
+            attributedTo = GuestUser.get();
+        }
+        return new DataverseRequest(attributedTo, IpAddress.valueOf("0.0.0.0"));
     }
 
     // ------------------------------------------------------- configuration

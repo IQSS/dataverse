@@ -131,6 +131,43 @@ class KeycloakGroupSyncServiceBeanTest {
 
     @Nested
     @LocalJvmSettings
+    class RemovalSafetyLimit {
+
+        @Test
+        void allowsAFifthOfTheMembershipsToGoAtOnce() {
+            assertEquals(20, sut.removalLimit(100));
+            assertEquals(40, sut.removalLimit(200));
+        }
+
+        @Test
+        void roundsUpSoTheLimitIsNeverZero() {
+            assertEquals(5, sut.removalLimit(1));
+            assertEquals(5, sut.removalLimit(0));
+        }
+
+        @Test
+        void keepsAnAbsoluteFloorForSmallInstallations() {
+            // 20% of 10 is 2, which would make routine cleanup impossible on a small install.
+            assertEquals(5, sut.removalLimit(10));
+        }
+
+        @Test
+        @JvmSetting(key = JvmSettings.OIDC_SYNC_MIN_REMOVALS, value = "0")
+        @JvmSetting(key = JvmSettings.OIDC_SYNC_MAX_REMOVAL_RATIO, value = "0.5")
+        void honoursTheConfiguredThresholds() {
+            assertEquals(50, sut.removalLimit(100));
+            assertEquals(0, sut.removalLimit(0));
+        }
+
+        @Test
+        @JvmSetting(key = JvmSettings.OIDC_SYNC_MIN_REMOVALS, value = "1000000")
+        void canBeSetHighEnoughToEffectivelyDisableTheGuard() {
+            assertEquals(1000000, sut.removalLimit(100));
+        }
+    }
+
+    @Nested
+    @LocalJvmSettings
     class NormalisePath {
 
         @Test

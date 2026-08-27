@@ -22,7 +22,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +55,13 @@ public class KeycloakAdminClient {
     private static final Duration TOKEN_EXPIRY_MARGIN = Duration.ofSeconds(30);
 
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
+
+    private static final int MEMBER_PAGE_SIZE = 100;
+
+    /** Backstop against paging forever if a group is unexpectedly huge. */
+    private static final int MAX_GROUP_MEMBERS = 100_000;
+
+    private static final int MAX_SUBGROUPS = 5_000;
 
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(REQUEST_TIMEOUT)
@@ -117,6 +126,74 @@ public class KeycloakAdminClient {
                 .filter(values -> !values.isEmpty())
                 .map(values -> values.getString(0))
                 .filter(value -> !value.isBlank());
+    }
+
+    /**
+     * List the direct subgroups of a group, by full path.
+     * <p>
+     * Keycloak moved this around: older versions inline {@code subGroups} in the group
+     * representation, newer ones expose a dedicated {@code /children} endpoint and leave the
+     * inline list empty. Both are tried, so this works across versions.
+     *
+     * @return the subgroups, or an empty list when the group has none or Keycloak is unreachable
+     */
+    public List<JsonObject> getSubgroups(String groupPath) {
+        Optional<JsonObject> group = getGroupByPath(groupPath);
+        if (group.isEmpty()) {
+            return List.of();
+        }
+        List<JsonObject> inlined = objectsIn(group.get().get("subGroups"));
+        if (!inlined.isEmpty()) {
+            return inlined;
+        }
+        String id = group.get().getString("id", null);
+        if (id == null) {
+            return List.of();
+        }
+        return objectsIn(get("/admin/realms/" + realm() + "/groups/" + id + "/children?max=" + MAX_SUBGROUPS)
+                .orElse(null));
+    }
+
+    /**
+     * List the members of a group, following pagination to the end.
+     * <p>
+     * Returns empty when Keycloak cannot be reached, which callers must treat as "no
+     * information" rather than "the group is empty" -- revoking on a failed read would strip
+     * everyone's permissions.
+     *
+     * @return the members, or empty when the group does not exist or Keycloak is unreachable
+     */
+    public Optional<List<JsonObject>> getGroupMembers(String groupId) {
+        List<JsonObject> members = new ArrayList<>();
+        int first = 0;
+        while (true) {
+            Optional<JsonValue> page = get("/admin/realms/" + realm() + "/groups/" + groupId
+                    + "/members?briefRepresentation=true&first=" + first + "&max=" + MEMBER_PAGE_SIZE);
+            if (page.isEmpty()) {
+                return Optional.empty();
+            }
+            List<JsonObject> batch = objectsIn(page.get());
+            members.addAll(batch);
+            if (batch.size() < MEMBER_PAGE_SIZE) {
+                return Optional.of(members);
+            }
+            first += MEMBER_PAGE_SIZE;
+            if (members.size() > MAX_GROUP_MEMBERS) {
+                logger.warning("Group " + groupId + " has more than " + MAX_GROUP_MEMBERS
+                        + " members; refusing to page further. Raise the limit if this is legitimate.");
+                return Optional.of(members);
+            }
+        }
+    }
+
+    private static List<JsonObject> objectsIn(JsonValue value) {
+        if (value == null || value.getValueType() != JsonValue.ValueType.ARRAY) {
+            return List.of();
+        }
+        return value.asJsonArray().stream()
+                .filter(entry -> entry.getValueType() == JsonValue.ValueType.OBJECT)
+                .map(JsonValue::asJsonObject)
+                .collect(Collectors.toList());
     }
 
     /**

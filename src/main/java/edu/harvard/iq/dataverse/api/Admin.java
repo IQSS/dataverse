@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.KeycloakGroupSyncServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsValidationException;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -157,6 +158,8 @@ public class Admin extends AbstractApiBean {
 
     @EJB
     AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
+    @EJB
+    KeycloakGroupSyncServiceBean keycloakGroupSync;
     @EJB
     BuiltinUserServiceBean builtinUserService;
     @EJB
@@ -609,6 +612,26 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+    /**
+     * Run the Keycloak group reconciliation sweep now, instead of waiting for the timer.
+     * Useful for testing a configuration change, and for forcing a revocation through without
+     * waiting out the interval.
+     */
+    @POST
+    @AuthRequired
+    @Path("oidc/sync")
+    public Response reconcileKeycloakGroups(@Context ContainerRequestContext crc) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        return ok(keycloakGroupSync.reconcileAll());
     }
 
     @Deprecated
