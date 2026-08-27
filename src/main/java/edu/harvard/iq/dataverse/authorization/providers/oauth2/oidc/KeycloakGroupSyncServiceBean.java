@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -239,7 +240,13 @@ public class KeycloakGroupSyncServiceBean {
                     unreadable++;
                     continue;
                 }
-                desiredMembers.put(group.getAlias(), identifiersOf(members.get()));
+                String what = tenantPath + "/" + role.get().keycloakGroupName;
+                Optional<Set<String>> resolved = identifiersOf(members.get(), what);
+                if (resolved.isEmpty()) {
+                    unreadable++;
+                    continue;
+                }
+                desiredMembers.put(group.getAlias(), resolved.get());
             }
         }
 
@@ -255,6 +262,28 @@ public class KeycloakGroupSyncServiceBean {
      * Map Keycloak members onto Dataverse accounts. Members who have never logged in have no
      * account yet and are dropped here.
      */
+    /**
+     * Map Keycloak members onto Dataverse accounts, refusing to answer at all when a non-empty
+     * group maps to nothing.
+     * <p>
+     * This is the guard that matters most. "The group has 20 members, none of whom I can find"
+     * is never a legitimate answer -- it means the provider id, the realm or the subject claim
+     * is wrong. Reporting it as an empty group would revoke every one of those 20 people.
+     *
+     * @return the resolved accounts, or empty when the mapping is not trustworthy
+     */
+    private Optional<List<AuthenticatedUser>> resolveMembers(List<JsonObject> keycloakMembers, String what) {
+        List<AuthenticatedUser> users = usersOf(keycloakMembers);
+        if (!keycloakMembers.isEmpty() && users.isEmpty()) {
+            logger.severe("Keycloak reports " + keycloakMembers.size() + " member(s) in " + what
+                    + " but none of them match a Dataverse account. Refusing to treat this as an empty"
+                    + " group. Check dataverse.auth.oidc.sync.provider-id and the realm: the accounts"
+                    + " are looked up by their subject under provider id(s) " + oidcProviderIds() + ".");
+            return Optional.empty();
+        }
+        return Optional.of(users);
+    }
+
     private List<AuthenticatedUser> usersOf(List<JsonObject> keycloakMembers) {
         List<AuthenticatedUser> users = new ArrayList<>();
         for (JsonObject member : keycloakMembers) {
@@ -262,7 +291,7 @@ public class KeycloakGroupSyncServiceBean {
             if (subject == null) {
                 continue;
             }
-            AuthenticatedUser user = authenticationService.lookupUser(oidcProviderId(), subject);
+            AuthenticatedUser user = lookupBySubject(subject);
             if (user == null) {
                 logger.fine(() -> "Keycloak user " + subject + " has never logged into Dataverse; skipping.");
                 continue;
@@ -272,10 +301,11 @@ public class KeycloakGroupSyncServiceBean {
         return users;
     }
 
-    private Set<String> identifiersOf(List<JsonObject> keycloakMembers) {
-        return usersOf(keycloakMembers).stream()
-                .map(AuthenticatedUser::getIdentifier)
-                .collect(Collectors.toSet());
+    private Optional<Set<String>> identifiersOf(List<JsonObject> keycloakMembers, String what) {
+        return resolveMembers(keycloakMembers, what)
+                .map(users -> users.stream()
+                        .map(AuthenticatedUser::getIdentifier)
+                        .collect(Collectors.toSet()));
     }
 
     /**
@@ -309,6 +339,17 @@ public class KeycloakGroupSyncServiceBean {
         }
 
         int removalCount = removals.values().stream().mapToInt(Set::size).sum();
+        int additionCount = additions.values().stream().mapToInt(Set::size).sum();
+
+        // A sweep that empties everything it looked at is a configuration failure, not a
+        // legitimate change -- and the absolute floor must not license it on a small
+        // installation, which is exactly how this got through once.
+        if (currentTotal > 0 && removalCount >= currentTotal && additionCount == 0) {
+            logger.severe("Keycloak reconciliation would remove every one of the " + currentTotal
+                    + " managed memberships and add none. Refusing: this is a configuration failure,"
+                    + " not a legitimate change. Check the group layout and provider id, then re-run.");
+            return "aborted: the sweep would empty every managed group";
+        }
         int limit = removalLimit(currentTotal);
         if (removalCount > limit) {
             logger.severe("Keycloak reconciliation would remove " + removalCount + " of " + currentTotal
@@ -336,7 +377,7 @@ public class KeycloakGroupSyncServiceBean {
         }
 
         return written + " group(s) updated (" + removalCount + " removals, "
-                + additions.values().stream().mapToInt(Set::size).sum() + " additions)"
+                + additionCount + " additions)"
                 + (failed > 0 ? ", " + failed + " group(s) failed" : "");
     }
 
@@ -362,20 +403,50 @@ public class KeycloakGroupSyncServiceBean {
                     + "leaving superuser flags untouched.");
             return "";
         }
-        List<AuthenticatedUser> shouldBeSuperuser = usersOf(members.get());
+        Optional<List<AuthenticatedUser>> resolved = resolveMembers(members.get(),
+                parentGroup() + "/" + superuserGroup());
+        if (resolved.isEmpty()) {
+            logger.severe("Leaving every superuser flag untouched.");
+            return "";
+        }
+        List<AuthenticatedUser> shouldBeSuperuser = resolved.get();
         Set<String> shouldBeSuperuserIds = shouldBeSuperuser.stream()
                 .map(AuthenticatedUser::getIdentifier)
                 .collect(Collectors.toSet());
 
+        // Only ever demote accounts that authenticate through the provider we are syncing.
+        // Keycloak is the source of truth for its own users, not for builtin accounts or
+        // service accounts belonging to other providers.
+        Set<String> ownedProviders = oidcProviderIds();
+        List<AuthenticatedUser> demotable = authenticationService.findSuperUsers().stream()
+                .filter(user -> !shouldBeSuperuserIds.contains(user.getIdentifier()))
+                .filter(user -> !protectedUsers().contains(user.getUserIdentifier()))
+                .filter(user -> {
+                    AuthenticatedUserLookup lookup = user.getAuthenticatedUserLookup();
+                    if (lookup == null || !ownedProviders.contains(lookup.getAuthenticationProviderId())) {
+                        logger.fine(() -> "Not demoting " + user.getIdentifier()
+                                + ": not an account of a synchronised provider.");
+                        return false;
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
+
+        int limit = removalLimit(demotable.size() + shouldBeSuperuser.size());
+        if (demotable.size() > limit) {
+            logger.severe("Keycloak reconciliation would revoke superuser from " + demotable.size()
+                    + " account(s), over the safety limit of " + limit + ": "
+                    + demotable.stream().map(AuthenticatedUser::getIdentifier).collect(Collectors.toList())
+                    + ". Refusing. Check the '" + superuserGroup() + "' group before re-running.");
+            return ", superuser changes aborted (" + demotable.size() + " revocations exceed the limit of " + limit + ")";
+        }
+
         int changed = 0;
-        for (AuthenticatedUser user : authenticationService.findSuperUsers()) {
-            if (!shouldBeSuperuserIds.contains(user.getIdentifier())
-                    && !protectedUsers().contains(user.getUserIdentifier())) {
-                user.setSuperuser(false);
-                userService.save(user);
-                logger.info("Keycloak reconciliation: revoked superuser status for " + user.getIdentifier());
-                changed++;
-            }
+        for (AuthenticatedUser user : demotable) {
+            user.setSuperuser(false);
+            userService.save(user);
+            logger.info("Keycloak reconciliation: revoked superuser status for " + user.getIdentifier());
+            changed++;
         }
         for (AuthenticatedUser user : shouldBeSuperuser) {
             if (!user.isSuperuser()) {
@@ -388,8 +459,30 @@ public class KeycloakGroupSyncServiceBean {
         return changed > 0 ? ", " + changed + " superuser change(s)" : "";
     }
 
-    private String oidcProviderId() {
-        return JvmSettings.OIDC_SYNC_PROVIDER_ID.lookupOptional().orElse("oidc");
+    /**
+     * Ids of the authentication providers whose accounts this sync owns.
+     * <p>
+     * Never guess this. A provider configured through MicroProfile Config -- the usual case --
+     * is registered as {@code oidc-mpconfig}, not {@code oidc}, and guessing wrong makes every
+     * account lookup return null, which reads as "nobody is in any group" and revokes
+     * everyone. So ask the registry which OIDC providers actually exist.
+     */
+    Set<String> oidcProviderIds() {
+        Optional<String> configured = JvmSettings.OIDC_SYNC_PROVIDER_ID.lookupOptional();
+        if (configured.isPresent()) {
+            return Set.of(configured.get());
+        }
+        return authenticationService.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class);
+    }
+
+    private AuthenticatedUser lookupBySubject(String subject) {
+        for (String providerId : oidcProviderIds()) {
+            AuthenticatedUser user = authenticationService.lookupUser(providerId, subject);
+            if (user != null) {
+                return user;
+            }
+        }
+        return null;
     }
 
     /**

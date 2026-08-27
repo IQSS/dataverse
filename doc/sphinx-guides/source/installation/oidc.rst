@@ -313,9 +313,11 @@ misconfigured mapper cannot silently strip everyone's permissions.
     - N
     - 15
   * - ``dataverse.auth.oidc.sync.provider-id``
-    - Id of the authentication provider whose accounts the sweep matches against.
+    - Id of the authentication provider whose accounts the sweep owns. Leave unset: it is read
+      from the provider registry, which is safer than guessing (a provider configured through
+      MicroProfile Config is registered as ``oidc-mpconfig``, not ``oidc``).
     - N
-    - ``oidc``
+    - auto-detected
   * - ``dataverse.auth.oidc.sync.min-removals``
     - A sweep may always remove at least this many memberships, whatever the ratio says.
     - N
@@ -337,8 +339,18 @@ The sweep reads everything from the provider before writing anything, and skips 
 membership untouched -- any group it could not read. A failed read must never look like an
 empty group.
 
-It also refuses to write when the change looks like a wipe: if a single sweep would remove
-more memberships than ``max-removal-ratio`` of the current total (with ``min-removals`` as an
+The sweep matches provider accounts to Dataverse accounts by subject. If a group has members
+but none of them resolve to a Dataverse account, that is reported as an error and the group is
+left untouched: it means the provider id, realm or subject claim is wrong, and treating it as
+an empty group would revoke everyone in it.
+
+Superuser status is only ever revoked from accounts belonging to a synchronised provider.
+Builtin accounts and accounts from other providers are out of scope, so a service account
+never loses its privileges to this sweep.
+
+It also refuses to write when the change looks like a wipe: a sweep that would empty every
+managed group and add nobody is always refused, whatever the thresholds say. Beyond that, if a
+single sweep would remove more memberships than ``max-removal-ratio`` of the current total (with ``min-removals`` as an
 absolute floor), it logs the intended change at ``SEVERE`` and writes nothing. This is what
 stops a renamed group or a mistyped path from stripping everyone's permissions in one pass.
 Raising the thresholds is the deliberate way to push a large legitimate change through.
