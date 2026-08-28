@@ -32,7 +32,7 @@ public class UpdateDatasetGuestbookCommand extends AbstractCommand<Dataset> {
             // Make sure the requested guestbook is available via the dataset's ancestry
             final List<Guestbook> guestbooks = dataset.getOwner().getAvailableGuestbooks();
             for (Guestbook gb : guestbooks) {
-                if (gb.getId() == guestbook.getId()) {
+                if (gb.getId().equals(guestbook.getId())) {
                     allowedGuestbook = gb;
                     break;
                 }

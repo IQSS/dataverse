@@ -159,8 +159,8 @@ public class Files extends AbstractApiBean {
         if (restrictStr != null && restrictStr.trim().startsWith("{")) {
             // process as json
             jakarta.json.JsonObject jsonObject;
-            try (StringReader stringReader = new StringReader(restrictStr)) {
-                jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                jsonObject = JsonUtil.getJsonObject(restrictStr);
                 if (jsonObject.containsKey("restrict")) {
                     restrict = Boolean.valueOf(jsonObject.getBoolean("restrict"));
                     returnMessage += restrict ? "restricted." : "unrestricted.";
@@ -1134,7 +1134,7 @@ public class Files extends AbstractApiBean {
         if (!dataFile.isTabularData()) {
             return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
         }
-        return ok(jsonDT(dataFile.getDataTables()));
+        return ok(jsonDT(dataFile.getDataTables(), true));
     }
 
     @POST
@@ -1153,8 +1153,8 @@ public class Files extends AbstractApiBean {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             jakarta.json.JsonObject jsonObject;
-            try (StringReader stringReader = new StringReader(jsonBody)) {
-                jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                jsonObject = JsonUtil.getJsonObject(jsonBody);
                 JsonArray requestedCategoriesJson = jsonObject.getJsonArray("categories");
                 FileMetadata fileMetadata = dataFile.getFileMetadata();
                 if (replaceData) {
@@ -1191,8 +1191,8 @@ public class Files extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
             }
             jakarta.json.JsonObject jsonObject;
-            try (StringReader stringReader = new StringReader(jsonBody)) {
-                jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                jsonObject = JsonUtil.getJsonObject(jsonBody);
                 JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
                 if (replaceData) {
                     dataFile.setTags(Lists.newArrayList());

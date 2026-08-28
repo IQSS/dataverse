@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5.7.0
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -29,7 +29,7 @@ jobs:
         run: scripts/installer/custom-build-number
 
       - name: Build application war
-        run: mvn package
+        run: mvn package -U
 
       - name: Get war file name
         working-directory: target
