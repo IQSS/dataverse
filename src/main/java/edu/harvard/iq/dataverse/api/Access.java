@@ -619,10 +619,11 @@ public class Access extends AbstractApiBean {
             builder.replaceQueryParam("gbrids", gbrids);
         }
         builder.replaceQueryParam("persistentId", null); // remove this as a parm and add the id to the path
-        // The request URI carries params that must not end up in the signed URL: "signed" (which
-        // selected this flow - re-signing it would loop), "key" (the query-param API token - a
-        // credential), and the signing params when the request was itself authenticated with a
-        // signed URL. signUrl refuses a URL containing signing params rather than fixing it.
+        // URL construction, not caller input: the incoming request legitimately carries these
+        // params ("signed" selected this flow, "key"/signing params may have authenticated it),
+        // and they must not be carried into the new URL being built. Caller-provided URLs
+        // (requestSignedUrl, tool manifests) are rejected instead - and signUrl still refuses
+        // to sign if a signing param slips through here.
         for (String reserved : UrlSignerUtil.reservedParameters) {
             builder.replaceQueryParam(reserved, (Object[]) null);
         }
