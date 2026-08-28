@@ -1683,7 +1683,13 @@ Keeping Your Installation Reachable Under Rate Limiting
 
 The tier 0 bucket is shared by all guests, so heavy anonymous traffic (search engine bots, AI crawlers) can exhaust it. Every guest then receives "429 Too Many Requests" - including on the homepage, and including on the login page they would need in order to authenticate into a higher tier. To visitors the installation simply looks down.
 
-Two measures at the reverse proxy keep the front door usable while rate limiting protects the application. The examples below are for Apache (the proxy assumed elsewhere in this guide, e.g. under :doc:`shibboleth`); the same pattern works on nginx with ``try_files`` and ``error_page 429``. They pair well with a configuration that limits the page/read commands using the settings above, for example a shared tier 0 limit of 3600 calls per hour and a per-user tier 1 limit of 12000 calls per hour on actions such as ``CheckRateLimitForCollectionPageCommand``, ``CheckRateLimitForDatasetPageCommand``, ``GetDataverseCommand``, ``GetDatasetCommand``, ``GetLatestPublishedDatasetVersionCommand``, ``GetLatestAccessibleDatasetVersionCommand``, and ``GetPrivateUrlCommand``.
+Two measures at the reverse proxy keep the front door usable while rate limiting protects the application.
+
+.. important::
+
+  Whatever design you use, make sure both the homepage and the error page carry a clearly visible link or button to the login page (``/loginpage.xhtml``). Logging in is how users escape the shared guest tier, so the login link is the functional core of these pages, not a nicety: without it, visitors are informed but still cannot reach the authentication step that lifts the limit. The sample pages below include it.
+
+The examples below are for Apache (the proxy assumed elsewhere in this guide, e.g. under :doc:`shibboleth`); the same pattern works on nginx with ``try_files`` and ``error_page 429``. They pair well with a configuration that limits the page/read commands using the settings above, for example a shared tier 0 limit of 3600 calls per hour and a per-user tier 1 limit of 12000 calls per hour on actions such as ``CheckRateLimitForCollectionPageCommand``, ``CheckRateLimitForDatasetPageCommand``, ``GetDataverseCommand``, ``GetDatasetCommand``, ``GetLatestPublishedDatasetVersionCommand``, ``GetLatestAccessibleDatasetVersionCommand``, and ``GetPrivateUrlCommand``.
 
 Serving the Homepage Statically from the Proxy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1717,6 +1723,7 @@ A few things to watch:
 - The exclusion (``ProxyPassMatch ... "!"``) must come before the catch-all ``ProxyPass``.
 - The file must be a complete, standalone HTML document - not the content-block fragment used with the ``:HomePageCustomizationFile`` database setting (see :ref:`Branding Your Installation`). Use absolute URLs for all assets and links, and avoid requiring JavaScript to render.
 - ``:HomePageCustomizationFile`` can stay configured as a harmless fallback (it only affects the root page render if a request ever reaches the application server), or be removed.
+- Keep the login link/button prominent (see the note above) - on this page it doubles as the escape hatch when the rest of the site is rate limited.
 
 A Friendly 429 Page from the Proxy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1739,7 +1746,7 @@ When a guest does hit the limit, the bare backend error tells them nothing. A st
 A few things to watch:
 
 - The per-status form ``ProxyErrorOverride On 429`` needs Apache httpd 2.4.47 or newer upstream; RHEL/AlmaLinux 8's 2.4.37 has it backported. ``ErrorDocument`` preserves the original 429 status code.
-- The error page renders at the original request URL (an internal redirect), so all URLs in ``429.html`` must be absolute - relative paths break on nested URLs.
+- The error page renders at the original request URL (an internal redirect), so all URLs in ``429.html`` must be absolute - relative paths break on nested URLs. That includes the login link - the one element this page must have (see the note above).
 - ``ProxyErrorOverride`` applies to the whole virtual host, so API clients also receive the HTML page instead of the JSON error body on 429. Installations that care can exempt the API:
 
   .. code-block:: apacheconf
