@@ -112,7 +112,7 @@ Once the user identifies which files are to be added, the requestGlobusTransferP
 
   curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST  -d "$JSON_DATA" "$SERVER_URL/api/datasets/:persistentId/requestGlobusUploadPaths?persistentId=$PERSISTENT_IDENTIFIER"
 
-Note that when using the dataverse-globus app or the return from the previous call, the URL for this call will be signed and no API_TOKEN is needed.
+Note that when using the dataverse-globus app or the return from the previous call, the URL for this call will be signed and no API_TOKEN is needed. 
   
 In the managed case, the JSON body sent must include the id of the Globus user that will perform the transfer and the number of files that will be transferred:
 
