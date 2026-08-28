@@ -1532,16 +1532,6 @@ public class SettingsServiceBean {
     }
     
     /**
-     * Validates the provided setting name to ensure it meets the required format.
-     * Throws an {@code SettingsValidationException} if the name is invalid, including cases
-     * where it contains a colon-separated suffix that is no longer supported.
-     *
-     * @param name The name of the setting to be validated.
-     *             It must adhere to the allowable setting name format.
-     *             Names with more than one colon, which may indicate deprecated suffix formats, are not allowed.
-     * @throws SettingsValidationException if the setting name is invalid.
-     */
-    /**
      * A short API signing secret would allow offline brute-forcing of the signing key from a
      * single captured signed URL, so no write path may accept one.
      */
@@ -1554,6 +1544,16 @@ public class SettingsServiceBean {
         }
     }
 
+    /**
+     * Validates the provided setting name to ensure it meets the required format.
+     * Throws an {@code SettingsValidationException} if the name is invalid, including cases
+     * where it contains a colon-separated suffix that is no longer supported.
+     *
+     * @param name The name of the setting to be validated.
+     *             It must adhere to the allowable setting name format.
+     *             Names with more than one colon, which may indicate deprecated suffix formats, are not allowed.
+     * @throws SettingsValidationException if the setting name is invalid.
+     */
     public static void validateSettingName(String name) {
         if (SettingsServiceBean.Key.parse(name) == null) {
             // If there is more than one colon, this may be someone trying to use the old suffix settings.

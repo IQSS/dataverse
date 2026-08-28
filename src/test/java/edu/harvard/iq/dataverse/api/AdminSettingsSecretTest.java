@@ -12,6 +12,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 /** The API signing secret may be stored by admins, but never a weak (short) one. */
+// The endpoints under test still use the deprecated SettingsServiceBean.set variants; the
+// verifications must reference the same methods.
+@SuppressWarnings({"deprecation", "removal", "java:S5738"})
 class AdminSettingsSecretTest {
 
     private static final String SECRET_KEY = SettingsServiceBean.Key.ApiSigningSecret.toString();
