@@ -13,7 +13,6 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -69,19 +68,15 @@ import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.JsonNumber;
-import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
-import org.apache.http.util.EntityUtils;
 
 @Stateless
 @Named("GlobusServiceBean")
@@ -1147,10 +1142,10 @@ public class GlobusServiceBean implements java.io.Serializable {
             if (newfileJsonObject != null) {
                 logger.fine("List Size: " + newfileJsonObject.size());
                 // if (!newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
-                JsonPatch patch = Json.createPatchBuilder()
+                JsonPatch patch = JsonUtil.createPatchBuilder()
                         .add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
                 fileJsonObject = patch.apply(fileJsonObject);
-                patch = Json.createPatchBuilder()
+                patch = JsonUtil.createPatchBuilder()
                         .add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
                 fileJsonObject = patch.apply(fileJsonObject);
                 // If we already know the size of this file on the Globus end, 
@@ -1159,7 +1154,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 if (fileSizeMap != null && fileSizeMap.get(fileId) != null) {
                     Long uploadedFileSize = fileSizeMap.get(fileId);
                     myLogger.info("Found size for file " + fileId + ": " + uploadedFileSize + " bytes");
-                    patch = Json.createPatchBuilder()
+                    patch = JsonUtil.createPatchBuilder()
                             .add("/fileSize", JsonUtil.createValue(uploadedFileSize)).build();
                     fileJsonObject = patch.apply(fileJsonObject);
                 } else {

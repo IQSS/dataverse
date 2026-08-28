@@ -3373,11 +3373,11 @@ dataverse.api.blocked.endpoints
 
 A comma-separated list of API endpoints that should be blocked. A minimal example that blocks endpoints for security reasons:
 
-``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users'``
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=admin,builtin-users'``
 
 Another example:
 
-``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users,api/datasets/:persistentId/versions/:versionId/files,api/files/:id'``
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=admin,builtin-users,datasets/:persistentId/versions/:versionId/files,files/:id'``
 
 Defaults to an empty string (no endpoints blocked), but, in almost all cases, should include at least ``admin, builtin-users`` as a security measure.
 
