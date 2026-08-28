@@ -125,7 +125,7 @@ public class UserServiceBean {
     private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
         AuthenticatedUser user = new AuthenticatedUser();
 
-        user.setId(new Long((int)dbRowValues[0]));
+        user.setId(((Number)dbRowValues[0]).longValue());
         user.setUserIdentifier((String)dbRowValues[1]);
         user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));
         user.setFirstName(UserUtil.getStringOrNull(dbRowValues[3]));
@@ -157,7 +157,7 @@ public class UserServiceBean {
      * Attempt to retrieve all the user roles in 1 query
      * Consider putting limits on this -- e.g. no more than 1,000 user identifiers or something similar
      * 
-     * @param userIdentifierList
+     * @param userObjectList
      * @return
      */
     private HashMap<String, List<String>> retrieveRolesForUsers(List<Object[]> userObjectList){
@@ -170,7 +170,7 @@ public class UserServiceBean {
                                        ;
 
         List<Integer> databaseIds = userObjectList.stream()
-                                        .map(userInfo -> (Integer)userInfo[0])
+                                        .map(userInfo -> ((Number)userInfo[0]).intValue())
                                         .collect(Collectors.toList());
 
         if ((userIdentifierList==null)||(userIdentifierList.isEmpty())){
