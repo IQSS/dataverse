@@ -2751,15 +2751,20 @@ public class Admin extends AbstractApiBean {
         String userId = urlInfo.getString("user", null);
 
         String key = null;
-        AuthenticatedUser signingUser = (userId != null) ? authSvc.getAuthenticatedUser(userId) : null;
-        if (signingUser != null) {
-            // A known user was requested: sign the URL for them.
+        if (userId != null) {
+            // An explicitly requested user must exist - a typo must not silently fall back to
+            // minting a URL with the superuser's privileges (which signing with the superuser's
+            // token below would do).
+            AuthenticatedUser signingUser = authSvc.getAuthenticatedUser(userId);
+            if (signingUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User '" + userId + "' not found.");
+            }
             ApiToken apiToken = authSvc.findApiTokenByUser(signingUser);
             if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
                 key = apiToken.getTokenString();
             }
         } else {
-            // No user param, or an unknown one: sign on behalf of the superuser who made this API call.
+            // No user param: sign on behalf of the superuser who made this API call.
             userId = superuser.getUserIdentifier();
             // The superuser just authenticated, but that does not guarantee an API token exists (e.g.
             // bearer-token or session auth), so null-check rather than dereference blindly.

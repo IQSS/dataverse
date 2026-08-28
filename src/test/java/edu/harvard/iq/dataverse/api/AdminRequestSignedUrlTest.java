@@ -77,15 +77,24 @@ class AdminRequestSignedUrlTest {
     }
 
     @Test
-    void unknownUserFallsBackToTheSuperuserAndSignsWithSecretPlusToken() {
-        ApiToken apiToken = new ApiToken();
-        apiToken.setTokenString("superuser-token");
+    void unknownUserIsRejectedInsteadOfSilentlySigningForTheSuperuser() {
         when(admin.authSvc.getAuthenticatedUser("no-such-user")).thenReturn(null);
-        when(admin.authSvc.findApiTokenByUser(superuser)).thenReturn(apiToken);
 
         Response response = admin.getSignedUrl(crc, JsonUtil.createObjectBuilder()
                 .add("url", "http://localhost:8080/api/v1/datasets/1")
                 .add("user", "no-such-user").build());
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity().toString().contains("no-such-user"));
+    }
+
+    @Test
+    void absentUserDefaultsToTheSuperuserAndSignsWithSecretPlusToken() {
+        ApiToken apiToken = new ApiToken();
+        apiToken.setTokenString("superuser-token");
+        when(admin.authSvc.findApiTokenByUser(superuser)).thenReturn(apiToken);
+
+        Response response = admin.getSignedUrl(crc, urlInfo("http://localhost:8080/api/v1/datasets/1"));
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         String entity = response.getEntity().toString();
