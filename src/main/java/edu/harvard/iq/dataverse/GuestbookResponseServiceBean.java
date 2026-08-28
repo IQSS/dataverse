@@ -176,7 +176,7 @@ public class GuestbookResponseServiceBean {
     
     public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Map<Integer, String> datasetTitles, Object[] result) throws IOException {
 
-            Integer guestbookResponseId = (Integer)result[0];
+            Integer guestbookResponseId = ((Number)result[0]).intValue();
             
             StringBuilder sb = new StringBuilder();
             
@@ -190,7 +190,7 @@ public class GuestbookResponseServiceBean {
 
             
             // Dataset name: 
-            Integer datasetId = (Integer) result[2];
+            Integer datasetId = ((Number) result[2]).intValue();
             String datasetTitle = datasetTitles.get(datasetId);
             sb.append(datasetTitle == null ? "" : StringEscapeUtils.escapeCsv(datasetTitle));
             sb.append(SEPARATOR);
@@ -396,7 +396,7 @@ public class GuestbookResponseServiceBean {
 
         if (customResponses != null) {
             for (Object[] response : customResponses) {
-                Integer responseId = (Integer) response[2];
+                Integer responseId = ((Number) response[2]).intValue();
 
                 if (asString) {
                     // as combined strings of comma-separated question and answer values
@@ -974,7 +974,7 @@ public class GuestbookResponseServiceBean {
 
         if (titleResults != null) {
             for (Object[] titleObj : titleResults) {
-                Integer datasetId = (Integer) titleObj[1];
+                Integer datasetId = ((Number) titleObj[1]).intValue();
                 String datasetTitle = (String) titleObj[0];
                 
                 ret.put(datasetId, datasetTitle);

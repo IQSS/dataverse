@@ -173,7 +173,7 @@ class SiteMapUtilTest {
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath())), StandardCharsets.UTF_8));
         // System.out.println("sitemap: " + sitemapString);
 
-        String[] lines = sitemapString.split("\n");
+        String[] lines = sitemapString.split("\r?\n");
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].strip();
             if (StringUtils.isNotBlank(line)) {
