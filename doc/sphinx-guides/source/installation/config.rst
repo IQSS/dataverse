@@ -1725,6 +1725,29 @@ A few things to watch:
 - ``:HomePageCustomizationFile`` can stay configured as a harmless fallback (it only affects the root page render if a request ever reaches the application server), or be removed.
 - Keep the login link/button prominent (see the note above) - on this page it doubles as the escape hatch when the rest of the site is rate limited.
 
+Machine-Readable Site Metadata, Always Available
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The same pattern is a good home for machine-readable site metadata such as a FAIRiCat catalog: served statically from the proxy, it stays available to harvesters and aggregators regardless of rate limiting or application load. This is also why the homepage uses ``AliasMatch`` above: the request URI stays ``/``, so discovery headers set with ``<LocationMatch "^/$">`` keep firing on the static homepage.
+
+.. code-block:: apacheconf
+
+  # machine-readable site metadata, also served statically
+  Alias /metadata /var/www/metadata
+  <Directory /var/www/metadata>
+      Require all granted
+      Options -Indexes
+  </Directory>
+  ProxyPass /metadata !
+
+  RewriteEngine on
+  RewriteRule "^/\.well-known/api-catalog$" "/metadata/api-catalog.json" [PT]
+
+  # advertise the catalog from the (static) homepage
+  <LocationMatch "^/$">
+      Header always set Link "</.well-known/api-catalog>; rel=\"api-catalog\""
+  </LocationMatch>
+
 A Friendly 429 Page from the Proxy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
