@@ -308,4 +308,19 @@ public class SignedUrlAuthMechanismTest {
             assertTrue(validatesEndToEndAsRdmClient(url), "signed URL must authenticate end to end: " + url);
         }
     }
+
+    @Test
+    public void testConstructorInjectionWiresTheCollaborators() throws WrappedAuthErrorResponse {
+        AuthenticationServiceBean auth = mock(AuthenticationServiceBean.class);
+        when(auth.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(testAuthenticatedUser);
+        ApiToken apiToken = mock(ApiToken.class);
+        when(apiToken.getTokenString()).thenReturn(TEST_SIGNED_URL_TOKEN);
+        when(auth.findApiTokenByUser(testAuthenticatedUser)).thenReturn(apiToken);
+        SignedUrlAuthMechanism mechanism = new SignedUrlAuthMechanism(auth,
+                mock(PrivateUrlServiceBean.class), FixedSigningSecret.withSecret(TEST_SIGNING_SECRET));
+
+        ContainerRequestContext request = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID);
+
+        assertEquals(testAuthenticatedUser, mechanism.findUserFromRequest(request));
+    }
 }

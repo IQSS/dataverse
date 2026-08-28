@@ -349,4 +349,27 @@ public class ExternalToolHandlerTest {
 
     }
 
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    public void testGetRequestWithAllowedApiCallsSignsTheCallback() {
+        // A GET tool with allowedApiCalls receives a signed callback URL instead of raw params.
+        Dataset ds = new Dataset();
+        ds.setId(1L);
+        ApiToken at = new ApiToken();
+        AuthenticatedUser au = new AuthenticatedUser();
+        au.setUserIdentifier("dataverseAdmin");
+        at.setAuthenticatedUser(au);
+        at.setTokenString("1234");
+        ExternalTool et = ExternalToolServiceBeanTest.getAllowedApiCallsTool();
+        ExternalToolHandler handler = new ExternalToolHandler(et, ds, at, null);
+        handler.setSigningSecretService(FixedSigningSecret.withSecret("test-only-signing-secret"));
+
+        String queryString = handler.handleRequest();
+
+        assertTrue(queryString.startsWith("?callback="), queryString);
+        String callback = new String(java.util.Base64.getDecoder().decode(
+                queryString.substring("?callback=".length()).split("&")[0]), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(callback.contains("&token="), "the callback must be signed: " + callback);
+        assertFalse(callback.contains("1234&"), "the raw API token must not appear in the callback");
+    }
 }
