@@ -1724,6 +1724,7 @@ A few things to watch:
 - The file must be a complete, standalone HTML document - not the content-block fragment used with the ``:HomePageCustomizationFile`` database setting (see :ref:`Branding Your Installation`). Use absolute URLs for all assets and links, and avoid requiring JavaScript to render.
 - ``:HomePageCustomizationFile`` can stay configured as a harmless fallback (it only affects the root page render if a request ever reaches the application server), or be removed.
 - Keep the login link/button prominent (see the note above) - on this page it doubles as the escape hatch when the rest of the site is rate limited.
+- How the file gets updated is up to you; a cron job that pulls the page from a git repository works well and keeps the content under version control.
 
 Machine-Readable Site Metadata, Always Available
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1743,10 +1744,17 @@ The same pattern is a good home for machine-readable site metadata such as a FAI
   RewriteEngine on
   RewriteRule "^/\.well-known/api-catalog$" "/metadata/api-catalog.json" [PT]
 
+  # a FAIRiCat catalog is a linkset; serve it with the right content type
+  <FilesMatch "api-catalog\.json$">
+      Header set Content-Type "application/linkset+json"
+  </FilesMatch>
+
   # advertise the catalog from the (static) homepage
   <LocationMatch "^/$">
-      Header always set Link "</.well-known/api-catalog>; rel=\"api-catalog\""
+      Header always set Link "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\"; profile=\"https://signposting.org/FAIRiCat/\""
   </LocationMatch>
+
+The catalog file itself is a static linkset pointing at stable service endpoints (OAI-PMH, the native API, robots.txt, and so on): it only needs an update when your services change, so no generation machinery is required.
 
 A Friendly 429 Page from the Proxy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
