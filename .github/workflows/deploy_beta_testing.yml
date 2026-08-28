@@ -29,7 +29,7 @@ jobs:
         run: scripts/installer/custom-build-number
 
       - name: Build application war
-        run: mvn package
+        run: mvn package -U
 
       - name: Get war file name
         working-directory: target
