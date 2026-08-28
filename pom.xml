@@ -20,23 +20,26 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
-        <it.groups>integration,migration</it.groups>
+        <it.groups>integration,migration,performance</it.groups>
         <!-- Provide a fallback value that won't break things if JaCoCo prepare-agent steps don't set it. -->
         <!-- Note: you must use @{} style late variable binding in argLine, otherwise JaCoCo cannot inject the right settings! -->
         <surefire.jacoco.args>-Ddummy.jacoco.property=true</surefire.jacoco.args>
         <failsafe.jacoco.args>-Ddummy.jacoco.property=true</failsafe.jacoco.args>
         
+        <jacoco.merged.outputdir>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</jacoco.merged.outputdir>
+        <sonar.coverage.jacoco.xmlReportPaths>${jacoco.merged.outputdir}/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
         
-        <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>10.19.0</flyway.version>
+        <reload4j.version>1.2.26</reload4j.version>
+        <flyway.version>12.9.0</flyway.version>
         <auto-service.version>1.1.1</auto-service.version>
         <jhove.version>1.20.1</jhove.version>
-        <poi.version>5.4.0</poi.version>
-        <tika.version>3.2.2</tika.version>
-        <netcdf.version>5.9.1</netcdf.version>
+        <poi.version>5.5.1</poi.version>
+        <tika.version>3.3.2</tika.version>
+        <netcdf.version>5.10.0</netcdf.version>
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
         <openapi.infoVersion>${project.version}</openapi.infoVersion>
@@ -108,7 +111,7 @@
             <dependency>
                 <groupId>org.apache.james</groupId>
                 <artifactId>apache-mime4j-dom</artifactId>
-                <version>0.8.7</version>
+                <version>0.8.14</version>
             </dependency>
             <dependency>
                 <groupId>xerces</groupId>
@@ -140,10 +143,10 @@
         </dependency>
         
         <!-- TECHNICAL DEBT
-             For a very long time, in a lots of places people used org.apache.commons.httpclient to access
-             HTTP resources, wrap responses in exceptions etc.
+             For a very long time, in a lot of places people used org.apache.commons.httpclient to access
+             HTTP resources, wrap responses in exceptions, etc.
              
-             This library had been used via an transitive dependency of sword2-server. During its recent updates,
+             This library had been used via a transitive dependency of sword2-server. During its recent updates,
              the dependency was dropped, went missing, eventually breaking our code. Re-adding this 2007 goodie here
              as a direct dependency.
              
@@ -153,7 +156,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.2.1</version>
+            <version>5.6.3</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
@@ -215,7 +218,7 @@
         <dependency>
           <groupId>com.apicatalog</groupId>
           <artifactId>titanium-json-ld</artifactId>
-          <version>1.4.0</version>
+          <version>1.7.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -357,7 +360,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>4.7.5</version>
+            <version>4.7.12</version>
         </dependency>
         
         <!-- Jakarta Validation API & runtime -->
@@ -404,7 +407,7 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.7</version>
+            <version>1.10.1</version>
         </dependency>
         
         <dependency>
@@ -463,6 +466,9 @@
             <version>${poi.version}</version>
         </dependency>
         <dependency>
+            <!-- jhove 1.34 currently includes an old version of apache commons-compress
+                 if we update, the commons-compress dependency below needs to go above this
+                 (or an exclude is needed) -->
             <groupId>org.openpreservation.jhove</groupId>
             <artifactId>jhove-core</artifactId>
             <version>${jhove.version}</version>
@@ -496,7 +502,7 @@
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
             <artifactId>ezid</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.3</version>
             <type>jar</type>
             <exclusions>
                 <exclusion>
@@ -524,7 +530,7 @@
         <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
-            <version>0.10.0</version>
+            <version>0.10.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -541,7 +547,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>11.22.1</version>
+            <version>11.30.1</version>
         </dependency>
         <!-- Caching library, current main use case is for OIDC authentication -->
         <dependency>
@@ -694,7 +700,7 @@
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>dataverse-spi</artifactId>
-            <version>2.0.0</version>
+            <version>2.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.cache</groupId>
@@ -884,6 +890,59 @@
         </resources>
         <plugins>
             <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <version>3.10</version>
+                <configuration>
+                    <!-- If the used Java version is too new, don't fail, just do nothing: -->
+                    <failOnUnsupportedJava>false</failOnUnsupportedJava>
+                    <!--
+                      If a class is missing while parsing signatures files, all methods
+                      and fields from this class are silently ignored. This is useful
+                      in multi-module Maven projects where only some modules have the
+                      dependency to which the signature file(s) apply.
+                      
+                      This settings prints no warning at all, so verify the signatures
+                      at least once with full dependencies.
+                    -->
+                    <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+                    <bundledSignatures>
+                        <!-- See https://github.com/policeman-tools/forbidden-apis/wiki/BundledSignatures -->
+                        <bundledSignature>jdk-non-portable</bundledSignature>
+                        <bundledSignature>jdk-internal</bundledSignature>
+                        
+                        <!-- Enabling the following checks will require refactoring within the codebase -->
+                        <!--
+                            <bundledSignature>jdk-reflection</bundledSignature>
+                            <bundledSignature>jdk-unsafe</bundledSignature>
+                            <bundledSignature>jdk-deprecated</bundledSignature>
+                            <bundledSignature>jdk-system-out</bundledSignature>
+                            <bundledSignature>commons-io-unsafe-${commons.io.version}</bundledSignature>
+                        -->
+                    </bundledSignatures>
+                    <signaturesFiles>
+                        <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
+                    </signaturesFiles>
+                    <targetVersion>${target.java.version}</targetVersion>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>for-classes</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>for-test-classes</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>testCheck</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -1031,7 +1090,7 @@
                         </goals>
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <outputDirectory>${jacoco.merged.outputdir}</outputDirectory>
                             <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
@@ -1103,15 +1162,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                    <encoding>UTF-8</encoding>
+                    <configLocation>${project.basedir}/src/maven/checkstyle.xml</configLocation>
+                    <inputEncoding>UTF-8</inputEncoding>
                     <consoleOutput>true</consoleOutput>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-open-api-maven-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>4.3.5</version>
                 <executions>
                     <execution>
                         <goals>

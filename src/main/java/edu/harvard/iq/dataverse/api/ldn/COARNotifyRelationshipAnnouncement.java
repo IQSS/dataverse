@@ -9,8 +9,9 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
@@ -70,7 +71,6 @@ public class COARNotifyRelationshipAnnouncement {
      * Process a COAR Notify Relationship Announcement message.
      *
      * @param msgObject The JSON-LD message object
-     * @return true if the message was successfully processed, false otherwise
      */
     public void processMessage(JsonObject msgObject) {
         // Extract subject, object, and relationship from the message
@@ -168,7 +168,11 @@ public class COARNotifyRelationshipAnnouncement {
 
                     // Step 3: Retrieve and parse DataCite XML
                     if (dataciteXmlUrl != null) {
-                        parseDataCiteXml(dataciteXmlUrl, client, metadata);
+                        if (isTrustedDataCiteUrl(dataciteXmlUrl)) {
+                            parseDataCiteXml(dataciteXmlUrl, client, metadata);
+                        } else {
+                            logger.warning("DataCite XML URL is not from a trusted source: " + dataciteXmlUrl);
+                        }
                     } else {
                         logger.fine("No DataCite XML URL found in Signposting links");
                     }
@@ -188,10 +192,6 @@ public class COARNotifyRelationshipAnnouncement {
 
         return metadata;
     }
-
-    /**
-     * Extract DataCite XML URL from Signposting Link headers.
-     */
 
 /**
  * Extract DataCite XML URL from Signposting Link headers.
@@ -233,6 +233,33 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
 }
 
     /**
+     * Validate that the URL is a trusted source for DataCite XML.
+     * Supports standard DOI resolvers and DataCite API.
+     */
+    boolean isTrustedDataCiteUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return false;
+        }
+        url = url.toLowerCase();
+
+        String doiPart = null;
+        if (url.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL)) {
+            doiPart = url.substring(AbstractDOIProvider.DOI_RESOLVER_URL.length());
+        } else if (url.startsWith(AbstractDOIProvider.HTTP_DOI_RESOLVER_URL)) {
+            doiPart = url.substring(AbstractDOIProvider.HTTP_DOI_RESOLVER_URL.length());
+        } else if (url.startsWith(AbstractDOIProvider.DXDOI_RESOLVER_URL)) {
+            doiPart = url.substring(AbstractDOIProvider.DXDOI_RESOLVER_URL.length());
+        } else if (url.startsWith(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
+            doiPart = url.substring(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL.length());
+        }
+
+        if (doiPart != null) {
+            return (new UnmanagedDOIProvider()).parsePersistentId(AbstractDOIProvider.DOI_PROTOCOL, doiPart) != null;
+        }
+        return false;
+    }
+
+    /**
      * Parse DataCite XML to extract title and resource type.
      */
     private void parseDataCiteXml(String dataciteXmlUrl, CloseableHttpClient client, ResourceMetadata metadata) {
@@ -246,7 +273,7 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
                 String xmlContent = EntityUtils.toString(xmlResponse.getEntity(), "UTF-8");
                 logger.fine("Retrieved DataCite XML");
 
-                javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+                javax.xml.parsers.DocumentBuilderFactory factory = edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureDocumentBuilderFactory();
                 factory.setNamespaceAware(true);
                 javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
                 org.w3c.dom.Document doc = builder.parse(
@@ -305,7 +332,7 @@ private String extractDataCiteXmlUrl(CloseableHttpResponse headResponse) {
      * Build the JSON object representing the citing resource.
      */
     private JsonObject buildCitingResourceJson(String subjectId, String relationship, ResourceMetadata metadata) {
-        JsonObjectBuilder citingResourceBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder citingResourceBuilder = JsonUtil.createObjectBuilder()
                 .add("@id", subjectId)
                 .add("relationship", relationship);
 
