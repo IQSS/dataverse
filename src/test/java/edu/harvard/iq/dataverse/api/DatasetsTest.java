@@ -3,16 +3,43 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.*;
 import org.junit.jupiter.api.Test;
+
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class DatasetsTest {
+
+    @Test
+    public void testIsDatasetVersionNoOp() {
+        DatasetVersion incoming = emptyVersion();
+        DatasetVersion latest = emptyVersion();
+        assertTrue(Datasets.isDatasetVersionNoOp(incoming, latest));
+
+        DatasetField field = new DatasetField();
+        DatasetFieldType type = new DatasetFieldType();
+        type.setName("title");
+        type.setChildDatasetFieldTypes(List.of());
+        field.setDatasetFieldType(type);
+        field.setDatasetFieldValues(List.of(new DatasetFieldValue(field, "Changed title")));
+        incoming.setDatasetFields(List.of(field));
+
+        assertFalse(Datasets.isDatasetVersionNoOp(incoming, latest));
+    }
+
+    private static DatasetVersion emptyVersion() {
+        DatasetVersion v = new DatasetVersion();
+        v.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        return v;
+    }
 
     /**
      * Test cleanup filter
