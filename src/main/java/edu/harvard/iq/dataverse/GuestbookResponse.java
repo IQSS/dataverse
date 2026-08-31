@@ -73,13 +73,12 @@ public class GuestbookResponse implements Serializable {
     @JoinColumn(nullable=true)
     private AuthenticatedUser authenticatedUser;
 
-    @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},fetch = FetchType.LAZY)
-    //private FileAccessRequest fileAccessRequest;
-    private List<FileAccessRequest> fileAccessRequests;
+    @OneToOne(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},fetch = FetchType.LAZY)
+    private FileAccessRequest fileAccessRequest;
      
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
     @OrderBy ("id")
-    private List<CustomQuestionResponse> customQuestionResponses;
+    private List<CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
 
     @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String name;
@@ -182,6 +181,10 @@ public class GuestbookResponse implements Serializable {
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
         this.setSessionId(source.getSessionId());
+        this.setEventType(source.getEventType());
+        this.setWriteResponse(source.isWriteResponse());
+        this.setFileFormat(source.getFileFormat());
+        this.setExternalTool(source.getExternalTool());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
             for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted() ){
@@ -263,7 +266,9 @@ public class GuestbookResponse implements Serializable {
     }
     
     public List<CustomQuestionResponse> getCustomQuestionResponsesSorted(){
-        
+        if (customQuestionResponses == null) {
+            customQuestionResponses = new ArrayList<>();
+        }
         Collections.sort(customQuestionResponses, (CustomQuestionResponse cqr1, CustomQuestionResponse cqr2) -> {
             int a = cqr1.getCustomQuestion().getDisplayOrder();
             int b = cqr2.getCustomQuestion().getDisplayOrder();
@@ -275,15 +280,18 @@ public class GuestbookResponse implements Serializable {
     }
 
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
+        if(customQuestionResponses == null) {
+            customQuestionResponses = new ArrayList<>();
+        }
         this.customQuestionResponses = customQuestionResponses;
     }
     
-    public List<FileAccessRequest> getFileAccessRequests(){
-        return fileAccessRequests;
+    public FileAccessRequest getFileAccessRequest(){
+        return fileAccessRequest;
     }
 
-    public void setFileAccessRequest(List<FileAccessRequest> fARs){
-        this.fileAccessRequests = fARs;
+    public void setFileAccessRequest(FileAccessRequest fAR){
+        this.fileAccessRequest = fAR;
     }
     
     public Dataset getDataset() {
