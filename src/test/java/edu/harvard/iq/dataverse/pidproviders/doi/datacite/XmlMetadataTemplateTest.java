@@ -437,9 +437,12 @@ public class XmlMetadataTemplateTest {
         Dataset d = new Dataset();
         d.setOwner(collection);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
-        toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        TermsOfAccess toa = new TermsOfAccess();
+        toa.setTermsOfAccess("Some terms of access");
+        dv.setTermsOfAccess(toa);
+        TermsOfUseOrLicense tou = new TermsOfUseOrLicense();
+        tou.setTermsOfUse("Some more terms of use");
+        dv.setTermsOfUseOrLicense(tou);
         dv.setDataset(d);
         dv.setVersionState(VersionState.DRAFT);
 

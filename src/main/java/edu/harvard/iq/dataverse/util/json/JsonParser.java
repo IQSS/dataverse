@@ -509,26 +509,26 @@ public class JsonParser {
                 }
             }
 
-            terms.setTermsOfUse(obj.getString("termsOfUse", null));
-            terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
-            terms.setSpecialPermissions(obj.getString("specialPermissions", null));
-            terms.setRestrictions(obj.getString("restrictions", null));
-            terms.setCitationRequirements(obj.getString("citationRequirements", null));
-            terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
-            terms.setConditions(obj.getString("conditions", null));
-            terms.setDisclaimer(obj.getString("disclaimer", null));
+            termsOfUseOrLicense.setTermsOfUse(obj.getString("termsOfUse", null));
+            termsOfUseOrLicense.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+            termsOfUseOrLicense.setSpecialPermissions(obj.getString("specialPermissions", null));
+            termsOfUseOrLicense.setRestrictions(obj.getString("restrictions", null));
+            termsOfUseOrLicense.setCitationRequirements(obj.getString("citationRequirements", null));
+            termsOfUseOrLicense.setDepositorRequirements(obj.getString("depositorRequirements", null));
+            termsOfUseOrLicense.setConditions(obj.getString("conditions", null));
+            termsOfUseOrLicense.setDisclaimer(obj.getString("disclaimer", null));
 
             if (license == null) {
                 // If no license was provided or the provided license was invalid,
                 // we check if terms were provided.
-                boolean termsProvided = terms.getTermsOfUse() != null
-                        || terms.getConfidentialityDeclaration() != null
-                        || terms.getSpecialPermissions() != null
-                        || terms.getRestrictions() != null
-                        || terms.getCitationRequirements() != null
-                        || terms.getDepositorRequirements() != null
-                        || terms.getConditions() != null
-                        || terms.getDisclaimer() != null;
+                boolean termsProvided = termsOfUseOrLicense.getTermsOfUse() != null
+                        || termsOfUseOrLicense.getConfidentialityDeclaration() != null
+                        || termsOfUseOrLicense.getSpecialPermissions() != null
+                        || termsOfUseOrLicense.getRestrictions() != null
+                        || termsOfUseOrLicense.getCitationRequirements() != null
+                        || termsOfUseOrLicense.getDepositorRequirements() != null
+                        || termsOfUseOrLicense.getConditions() != null
+                        || termsOfUseOrLicense.getDisclaimer() != null;
 
                 if (!FeatureFlags.DO_NOT_ASSUME_DEFAULT_LICENSE.enabled()) {
                     if (!termsProvided) {

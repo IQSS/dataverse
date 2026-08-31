@@ -187,9 +187,9 @@ public class DatasetVersionDifferenceTest {
 
         // Set a term field
 
-        datasetVersion2.getTermsOfUseOrLicense().setTermsOfAccess("Terms o' Access");
+        datasetVersion2.getTermsOfAccess().setTermsOfAccess("Terms o' Access");
         String[] termField = new String[] {
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess"), "", "Terms o' Access" };
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfAccess"), "", "Terms o' Access" };
         changedTerms.add(termField);
 
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,

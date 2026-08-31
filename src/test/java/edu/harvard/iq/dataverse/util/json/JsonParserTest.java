@@ -761,18 +761,18 @@ public class JsonParserTest {
         // Case 1: Flag false (default), terms NOT provided -> should pick default
         System.setProperty("dataverse.feature.do-not-assume-default-license", "false");
         DatasetVersion dsv1 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
-        assertEquals(defaultLicense, dsv1.getTermsOfUseAndAccess().getLicense());
+        assertEquals(defaultLicense, dsv1.getTermsOfUseOrLicense().getLicense());
 
         // Case 2: Flag false (default), terms PROVIDED -> should NOT pick default
         String jsonWithTerms = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}, \"termsOfUse\":\"Some terms\"}";
         DatasetVersion dsv2 = sut.parseDatasetVersion(JsonUtil.getJsonObject(jsonWithTerms));
-        assertNull(dsv2.getTermsOfUseAndAccess().getLicense());
-        assertEquals("Some terms", dsv2.getTermsOfUseAndAccess().getTermsOfUse());
+        assertNull(dsv2.getTermsOfUseOrLicense().getLicense());
+        assertEquals("Some terms", dsv2.getTermsOfUseOrLicense().getTermsOfUse());
 
         // Case 3: Flag true, terms NOT provided -> should NOT pick default
         System.setProperty("dataverse.feature.do-not-assume-default-license", "true");
         DatasetVersion dsv3 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
-        assertNull(dsv3.getTermsOfUseAndAccess().getLicense());
+        assertNull(dsv3.getTermsOfUseOrLicense().getLicense());
         
         // Cleanup
         System.clearProperty("dataverse.feature.do-not-assume-default-license");
@@ -964,8 +964,8 @@ public class JsonParserTest {
         String sut = "foobar";
         DatasetType foobar = new DatasetType();
         foobar.setName(sut);
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        termsOfUseAndAccess.setTermsOfUse("TOU");
+        TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+        termsOfUseOrLicense.setTermsOfUse("TOU");
         settingsSvc = new MockSettingsSvc();
         DatasetType datasetType = new DatasetType();
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
@@ -982,7 +982,7 @@ public class JsonParserTest {
         dsv1.setDataset(ds);
         dsv1.setReleaseTime(Date.from(Instant.now()));
         dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-        dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
+        dsv1.setTermsOfUseOrLicense(termsOfUseOrLicense);
 
         // Test output of JsonPrinter can be used as input to JsonParser
         JsonObject json = JsonPrinter.json(dsv1, false).build();
