@@ -190,12 +190,14 @@ public class Guestbooks extends AbstractApiBean {
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
+
+            validateFindGuestbookResponsesParameters(sortField, sortOrder, offset, limit);
+
             Long totalUsageCount = guestbookService.findCountUsages(guestbook.getId(), null);
             Long totalResponseCount = guestbookResponseService.findCountByGuestbookId(guestbook.getId(), null);
             guestbook.setUsageCount(totalUsageCount);
             guestbook.setResponseCount(totalResponseCount);
 
-            validateFindGuestbookResponsesParameters(sortField, sortOrder, offset, limit);
             List<GuestbookResponse> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), sortField, sortOrder, offset, limit);
 
             JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
