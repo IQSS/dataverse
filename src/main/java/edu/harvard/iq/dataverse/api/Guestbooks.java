@@ -175,7 +175,7 @@ public class Guestbooks extends AbstractApiBean {
             description = "Returns guestbook metadata and response records, with pagination links when a limit is supplied.")
     public Response getResponses(@Context ContainerRequestContext crc,
                                  @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true) @PathParam("id") Long id,
-                                 @Parameter(description = "Sort Field. One of: 'Dataset'; 'Date'; 'Type'; 'File'; 'User'") @QueryParam("sort") String sortField,
+                                 @Parameter(description = "Sort Field. One of: 'date'; 'type'; 'file'; 'user'") @QueryParam("sort") String sortField,
                                  @Parameter(description = "Sort order. ('asc' or 'desc')") @QueryParam("order") String sortOrder,
                                  @Parameter(description = "Maximum number of response records to return.") @QueryParam("limit") Integer limit,
                                  @Parameter(description = "Response record offset.") @QueryParam("offset") Integer offset) {
