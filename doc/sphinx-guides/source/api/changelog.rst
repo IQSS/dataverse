@@ -27,6 +27,7 @@ v6.12
   - **/api/admin/index/perms/{id}**
 
 - Dataset creation API calls may now behave differently when neither a license nor terms are provided, depending on the new :ref:`dataverse.feature.do-not-assume-default-license` feature flag.
+- Whether file extensions are included in the "Content-disposition" header returned when downloading auxiliary files depends on whether the relevant format is one of the content types supported in Tika. A recent update to the version of Tika has added new content types, including "text/markdown", and auxiliary files with these types now have a a file extension included (e.g. ".md" in this case) in the header.
 
 v6.11
 -----

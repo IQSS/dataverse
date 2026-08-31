@@ -2709,8 +2709,8 @@ public class UtilIT {
                 id = splitted[1];
             }
         }
-        if (!UtilIT.sleepForReindex(id, apiToken, 10)) {
-            logger.warning("Still indexing after 10 seconds");
+        if (!UtilIT.sleepForReindex(id, apiToken, 20)) {
+            logger.warning("Still indexing after 20 seconds");
         }
     }
 
