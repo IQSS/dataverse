@@ -7,7 +7,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
-import java.io.StringReader;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
@@ -19,9 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import jakarta.json.JsonObject;
 import static java.lang.Thread.sleep;
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 
 /**
  * These tests are not expected to pass unless you have a Data Capture Module
@@ -54,8 +51,7 @@ public class DataCaptureModuleServiceBeanIT {
         System.out.println("out: " + uploadRequestResponse.getResponse());
         assertEquals(200, uploadRequestResponse.getHttpStatusCode());
         String uploadRequestResponseString = uploadRequestResponse.getResponse();
-        JsonReader jsonReader = Json.createReader(new StringReader((String) uploadRequestResponseString));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObject(uploadRequestResponseString);
         assertEquals("OK", jsonObject.getString("status"));
 
         // If you comment this out, expect to see a 404 when you try to download the script.

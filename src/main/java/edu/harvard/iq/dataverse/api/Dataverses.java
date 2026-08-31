@@ -419,8 +419,7 @@ public class Dataverses extends AbstractApiBean {
             logger.fine("Json is: " + jsonBody);
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            Dataset ds = parseDataset(jsonBody);
-            ds.setOwner(owner);
+            Dataset ds = parseDataset(jsonBody, owner);
             // Will make validation happen always except for the (rare) occasion of all three conditions are true
             boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
                 JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
@@ -558,8 +557,7 @@ public class Dataverses extends AbstractApiBean {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            Dataset ds = parseDataset(jsonBody);
-            ds.setOwner(owner);
+            Dataset ds = parseDataset(jsonBody, owner);
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
@@ -649,9 +647,9 @@ public class Dataverses extends AbstractApiBean {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            Dataset ds = null;
+            Dataset ds;
             try {
-                ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+                ds = jsonParser().parseDataset(importService.ddiToJson(xml), owner);
                 DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
             } catch (JsonParseException jpe) {
                 return badRequest("Error parsing data as Json: "+jpe.getMessage());
@@ -663,7 +661,6 @@ public class Dataverses extends AbstractApiBean {
 
             swordService.addDatasetSubjectIfMissing(ds.getLatestVersion());
 
-            ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
@@ -774,9 +771,9 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    private Dataset parseDataset(String datasetJson) throws WrappedResponse {
+    private Dataset parseDataset(String datasetJson, Dataverse owner) throws WrappedResponse {
         try {
-            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
+            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson), owner);
         } catch (JsonParsingException | JsonParseException jpe) {
             String message = jpe.getLocalizedMessage();
             logger.log(Level.SEVERE, "Error parsing dataset JSON. message: {0}", message);
@@ -893,7 +890,7 @@ public class Dataverses extends AbstractApiBean {
             String jsonBody) {
         try {
             Dataverse dataverse = findDataverseOrDie(identifier);
-            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(Json.createReader(new StringReader(jsonBody)).readArray(), dataverse);
+            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(JsonUtil.getJsonArray(jsonBody), dataverse);
             execCommand(new UpdateDataverseInputLevelsCommand(dataverse, createDataverseRequest(getRequestUser(crc)), newInputLevels));
             return ok(BundleUtil.getStringFromBundle("dataverse.update.success"), JsonPrinter.json(dataverse));
         } catch (WrappedResponse e) {
