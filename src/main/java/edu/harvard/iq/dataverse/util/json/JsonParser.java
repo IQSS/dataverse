@@ -352,35 +352,35 @@ public class JsonParser {
         return enums;
     }
     
-    public TermsOfUseAndAccess parseTermsOfUseAndAccess(JsonObject obj) throws JsonParseException {
-        JsonObject terms = obj.getJsonObject("termsOfUseAndAccess");
-        TermsOfUseAndAccess toaa = new TermsOfUseAndAccess();
-        toaa.setTermsOfUse(terms.getString("termsOfUse", null));
-        toaa.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
-        toaa.setSpecialPermissions(terms.getString("specialPermissions", null));
-        toaa.setRestrictions(terms.getString("restrictions", null));
-        toaa.setCitationRequirements(terms.getString("citationRequirements", null));
-        toaa.setDepositorRequirements(terms.getString("depositorRequirements", null));
-        toaa.setConditions(terms.getString("conditions", null));
-        toaa.setDisclaimer(terms.getString("disclaimer", null));
-        return parseTermsOfAccess(obj, toaa);
+    public TermsOfUseOrLicense parseTermsOfUseAndLicesne(JsonObject obj) throws JsonParseException {
+        JsonObject terms = obj.getJsonObject("termsOfUseOrLicense");
+        TermsOfUseOrLicense toal = new TermsOfUseOrLicense();
+        toal.setTermsOfUse(terms.getString("termsOfUse", null));
+        toal.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
+        toal.setSpecialPermissions(terms.getString("specialPermissions", null));
+        toal.setRestrictions(terms.getString("restrictions", null));
+        toal.setCitationRequirements(terms.getString("citationRequirements", null));
+        toal.setDepositorRequirements(terms.getString("depositorRequirements", null));
+        toal.setConditions(terms.getString("conditions", null));
+        toal.setDisclaimer(terms.getString("disclaimer", null));
+        return toal;
     }
 
-    public TermsOfUseAndAccess parseTermsOfAccess(JsonObject obj) throws JsonParseException {
+    public TermsOfAccess parseTermsOfAccess(JsonObject obj) throws JsonParseException {
         return parseTermsOfAccess(obj, null);
     }
 
-    public TermsOfUseAndAccess parseTermsOfAccess(JsonObject obj, TermsOfUseAndAccess touaIn) throws JsonParseException {
-        //This only gets values associated with the terms of access for restricted files when no TermsOfUseAndAccess object provided
+    public TermsOfAccess parseTermsOfAccess(JsonObject obj, TermsOfAccess touaIn) throws JsonParseException {
+        //This only gets values associated with the terms of access for restricted files when no TermsOfAccess object provided
         // or added to an existing object when provided
 
         JsonObject terms;
-        TermsOfUseAndAccess toaa;
+        TermsOfAccess toaa;
         if (touaIn == null) {
             terms = obj.getJsonObject("customTermsOfAccess");
-            toaa = new TermsOfUseAndAccess();
+            toaa = new TermsOfAccess();
         } else {
-            terms = obj.getJsonObject("termsOfUseAndAccess");
+            terms = obj.getJsonObject("termsOfAccess");
             toaa = touaIn;
         }
 
@@ -392,7 +392,6 @@ public class JsonParser {
         toaa.setContactForAccess(terms.getString("contactForAccess", null));
         toaa.setSizeOfCollection(terms.getString("sizeOfCollection", null));
         toaa.setStudyCompletion(terms.getString("studyCompletion", null));
-        toaa.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
 
         return toaa;
     }
@@ -484,13 +483,14 @@ public class JsonParser {
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
             dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            TermsOfAccess termsOfAccess = new TermsOfAccess();
+            TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
 
             License license = null;
 
             if (obj.containsKey("license")) {
                 try {
-                    // This method will attempt to parse the license in the format 
+                    // This method will attempt to parse the license in the format
                     // in which it appears in our json exports, as a compound
                     // field, for ex.:
                     // "license": {
@@ -500,10 +500,10 @@ public class JsonParser {
                     license = parseLicense(obj.getJsonObject("license"));
                 } catch (ClassCastException cce) {
                     logger.fine("class cast exception parsing the license section (will try parsing as a string)");
-                    // attempt to parse as string: 
+                    // attempt to parse as string:
                     // i.e. this is for backward compatibility, after the bug in #9155
-                    // was fixed, with the old style of encoding the license info 
-                    // in input json, for ex.: 
+                    // was fixed, with the old style of encoding the license info
+                    // in input json, for ex.:
                     // "license" : "CC0 1.0"
                     license = parseLicense(obj.getString("license", null));
                 }
@@ -555,17 +555,33 @@ public class JsonParser {
                 }
             }
 
-            terms.setLicense(license);
-            terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
-            terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
-            terms.setOriginalArchive(obj.getString("originalArchive", null));
-            terms.setAvailabilityStatus(obj.getString("availabilityStatus", null));
-            terms.setContactForAccess(obj.getString("contactForAccess", null));
-            terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
-            terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
-            dsv.setTermsOfUseAndAccess(terms);
-            terms.setDatasetVersion(dsv);
+            if (license == null) {
+                termsOfUseOrLicense.setLicense(license);
+                termsOfUseOrLicense.setTermsOfUse(obj.getString("termsOfUse", null));
+                termsOfUseOrLicense.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+                termsOfUseOrLicense.setSpecialPermissions(obj.getString("specialPermissions", null));
+                termsOfUseOrLicense.setRestrictions(obj.getString("restrictions", null));
+                termsOfUseOrLicense.setCitationRequirements(obj.getString("citationRequirements", null));
+                termsOfUseOrLicense.setDepositorRequirements(obj.getString("depositorRequirements", null));
+                termsOfUseOrLicense.setConditions(obj.getString("conditions", null));
+                termsOfUseOrLicense.setDisclaimer(obj.getString("disclaimer", null));
+            } else {
+                termsOfUseOrLicense.setLicense(license);
+            }
+            termsOfAccess.setTermsOfAccess(obj.getString("termsOfAccess", null));
+            termsOfAccess.setDataAccessPlace(obj.getString("dataAccessPlace", null));
+            termsOfAccess.setOriginalArchive(obj.getString("originalArchive", null));
+            termsOfAccess.setAvailabilityStatus(obj.getString("availabilityStatus", null));
+            termsOfAccess.setContactForAccess(obj.getString("contactForAccess", null));
+            termsOfAccess.setSizeOfCollection(obj.getString("sizeOfCollection", null));
+            termsOfAccess.setStudyCompletion(obj.getString("studyCompletion", null));
+            termsOfAccess.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
+
+            dsv.setTermsOfAccess(termsOfAccess);
+            termsOfAccess.setDatasetVersion(dsv);
+
+            dsv.setTermsOfUseOrLicense(termsOfUseOrLicense);
+            termsOfUseOrLicense.setDatasetVersion(dsv);
 
             JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
             if (metadataBlocks == null){
@@ -792,7 +808,7 @@ public class JsonParser {
         }
         return fields;
     }
-    
+
     public Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {
         Map<String, String> instructionsMap = new HashMap<>();
         JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");

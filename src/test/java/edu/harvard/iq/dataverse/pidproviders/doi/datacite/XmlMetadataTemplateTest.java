@@ -16,7 +16,8 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfAccess;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
@@ -151,9 +152,12 @@ public class XmlMetadataTemplateTest {
         GlobalId doi = new GlobalId("doi", "10.5072", "FK2/ABCDEF", null, null, null);
         d.setGlobalId(doi);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        dv.setTermsOfUseOrLicense(toa);
+        var termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setFileAccessRequest(true);
+        dv.setTermsOfAccess(termsOfAccess);
         dv.setDataset(d);
         DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
                 DatasetFieldType.FieldType.TEXT, false);
@@ -310,9 +314,12 @@ public class XmlMetadataTemplateTest {
         Dataset d = new Dataset();
         d.setOwner(collection);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        dv.setTermsOfUseOrLicense(toa);
+        var termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setFileAccessRequest(true);
+        dv.setTermsOfAccess(termsOfAccess);
         dv.setDataset(d);
         DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
                 DatasetFieldType.FieldType.TEXT, false);
@@ -367,9 +374,12 @@ public class XmlMetadataTemplateTest {
         Dataset d = new Dataset();
         d.setOwner(collection);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        dv.setTermsOfUseOrLicense(toa);
+        var termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setFileAccessRequest(true);
+        dv.setTermsOfAccess(termsOfAccess);
         dv.setDataset(d);
         DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
                 DatasetFieldType.FieldType.TEXT, false);

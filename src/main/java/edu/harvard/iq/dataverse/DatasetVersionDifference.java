@@ -208,46 +208,25 @@ public final class DatasetVersionDifference {
                 int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
             return Integer.valueOf(a).compareTo(b);
         });
-        getTermsDifferences();
+        getTermsOfAccessDifferences();
+        getTermsOfUseOrLicenseDifferences();
     }
     
 
        
-    private void getTermsDifferences() {
+    private void getTermsOfAccessDifferences() {
 
-        TermsOfUseAndAccess originalTerms = originalVersion.getTermsOfUseAndAccess();
+        TermsOfAccess originalTerms = originalVersion.getTermsOfAccess();
         if(originalTerms == null) {
-            originalTerms = new TermsOfUseAndAccess();
+            originalTerms = new TermsOfAccess();
         }
         // newTerms should never be null
-        TermsOfUseAndAccess newTerms = newVersion.getTermsOfUseAndAccess();
+        TermsOfAccess newTerms = newVersion.getTermsOfAccess();
         if(newTerms == null) {
             logger.warning("New version does not have TermsOfUseAndAccess");
-            newTerms = new TermsOfUseAndAccess();
+            newTerms = new TermsOfAccess();
         }
-
-        //get license name or bundle val for none to test for differences
-        String originalLicenseName = originalTerms.getLicense() != null ? originalTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
-        String newLicenseName = newTerms.getLicense() != null ? newTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
-
-        checkAndAddToChangeList(originalLicenseName, newLicenseName,
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"));        
-        checkAndAddToChangeList(originalTerms.getTermsOfUse(), newTerms.getTermsOfUse(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"));
-        checkAndAddToChangeList(originalTerms.getConfidentialityDeclaration(), newTerms.getConfidentialityDeclaration(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration"));
-        checkAndAddToChangeList(originalTerms.getSpecialPermissions(), newTerms.getSpecialPermissions(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions"));
-        checkAndAddToChangeList(originalTerms.getRestrictions(), newTerms.getRestrictions(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions"));
-        checkAndAddToChangeList(originalTerms.getCitationRequirements(), newTerms.getCitationRequirements(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements"));
-        checkAndAddToChangeList(originalTerms.getDepositorRequirements(), newTerms.getDepositorRequirements(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements"));
-        checkAndAddToChangeList(originalTerms.getConditions(), newTerms.getConditions(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions"));
-        checkAndAddToChangeList(originalTerms.getDisclaimer(), newTerms.getDisclaimer(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer"));
+        
         checkAndAddToChangeList(originalTerms.getTermsOfAccess(), newTerms.getTermsOfAccess(),
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess"));
         checkAndAddToChangeList(originalTerms.getDataAccessPlace(), newTerms.getDataAccessPlace(),
@@ -263,7 +242,44 @@ public final class DatasetVersionDifference {
         checkAndAddToChangeList(originalTerms.getStudyCompletion(), newTerms.getStudyCompletion(),
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion"));
     }
-    
+
+    private void getTermsOfUseOrLicenseDifferences() {
+
+        TermsOfUseOrLicense originalTerms = originalVersion.getTermsOfUseOrLicense();
+        if(originalTerms == null) {
+            originalTerms = new TermsOfUseOrLicense();
+        }
+        // newTerms should never be null
+        TermsOfUseOrLicense newTerms = newVersion.getTermsOfUseOrLicense();
+        if(newTerms == null) {
+            logger.warning("New version does not have TermsOfUseAndAccess");
+            newTerms = new TermsOfUseOrLicense();
+        }
+
+        //get license name or bundle val for none to test for differences
+        String originalLicenseName = originalTerms.getLicense() != null ? originalTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+        String newLicenseName = newTerms.getLicense() != null ? newTerms.getLicense().getName() : BundleUtil.getStringFromBundle("license.none.chosen");
+
+        checkAndAddToChangeList(originalLicenseName, newLicenseName,
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"));        
+        checkAndAddToChangeList(originalTerms.getTermsOfUse(), newTerms.getTermsOfUse(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"));
+        checkAndAddToChangeList(originalTerms.getConfidentialityDeclaration(), newTerms.getConfidentialityDeclaration(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration"));
+        checkAndAddToChangeList(originalTerms.getSpecialPermissions(), newTerms.getSpecialPermissions(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions"));
+        checkAndAddToChangeList(originalTerms.getRestrictions(), newTerms.getRestrictions(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions"));
+        checkAndAddToChangeList(originalTerms.getCitationRequirements(), newTerms.getCitationRequirements(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements"));
+        checkAndAddToChangeList(originalTerms.getDepositorRequirements(), newTerms.getDepositorRequirements(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements"));
+        checkAndAddToChangeList(originalTerms.getConditions(), newTerms.getConditions(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions"));
+        checkAndAddToChangeList(originalTerms.getDisclaimer(), newTerms.getDisclaimer(),
+            BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer"));
+    }
+
     private void checkAndAddToChangeList(String originalTerm, String newTerm,
             String termLabel) {
         originalTerm = StringUtil.nullToEmpty(originalTerm);

@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.json.*;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.*;
@@ -1776,7 +1777,7 @@ public class Access extends AbstractApiBean {
 
         dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
-        dataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
+        dataset.getOrCreateEditVersion().getTermsOfAccess().setFileAccessRequest(allowRequest);
 
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
