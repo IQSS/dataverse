@@ -5,14 +5,11 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.json.Json;
 import jakarta.json.JsonException;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
-
-import java.io.StringReader;
 
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLocaleCurationStatusLabel;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonRoleAssignments;
@@ -276,11 +273,9 @@ public class InAppNotificationsJsonPrinter {
         final String additionalInfo = userNotification.getAdditionalInfo();
 
         if (additionalInfo != null && !additionalInfo.isEmpty()) {
-            try (StringReader stringReader = new StringReader(additionalInfo);
-                 JsonReader jsonReader = Json.createReader(stringReader)) {
-
+            try {
                 // Try to parse the string into a JSON value
-                JsonValue additionalInfoJson = jsonReader.readValue();
+                JsonValue additionalInfoJson = JsonUtil.getJsonValue(additionalInfo);
 
                 // If successful, add the parsed JSON value.
                 notificationJson.add(KEY_ADDITIONAL_INFO, additionalInfoJson);

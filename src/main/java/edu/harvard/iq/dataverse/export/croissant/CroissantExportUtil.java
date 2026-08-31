@@ -3,16 +3,13 @@ package edu.harvard.iq.dataverse.export.croissant;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,10 +79,8 @@ public class CroissantExportUtil {
                 }
             }
             """;
-            try (JsonReader jsonReader = Json.createReader(new StringReader(contextString))) {
-                JsonObject contextObject = jsonReader.readObject();
-                job.add("@context", contextObject.getJsonObject("@context"));
-            }
+            JsonObject contextObject = JsonUtil.getJsonObject(contextString);
+            job.add("@context", contextObject.getJsonObject("@context"));
 
             job.add("@type", "sc:Dataset");
             job.add("conformsTo", "http://mlcommons.org/croissant/1.1");
