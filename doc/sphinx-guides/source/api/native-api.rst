@@ -1442,7 +1442,7 @@ Retrieve Guestbook Responses for a Guestbook
 
 For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 
-In order to retrieve the Guestbook Responses for a Guestbook within a Dataverse collection, you must know the ID if the Guestbook. This API also supports pagination by passing a page limit and an optional offset (starting point). The resulting Json will include 'Next' and 'Prev' urls for navigation as well as the total number of responses.
+In order to retrieve the Guestbook Responses for a Guestbook within a Dataverse collection, you must know the ID if the Guestbook. This API also supports pagination by passing a page limit and an optional offset (starting point). The resulting Json will include the total number of responses as `responseCount`.
 The Responses can be sorted by specifying one of the following in query parameter 'sort' and 'order':
 
 * ``type``: Event Type

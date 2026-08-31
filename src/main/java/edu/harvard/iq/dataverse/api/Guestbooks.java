@@ -21,6 +21,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
+import java.security.InvalidParameterException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -194,6 +195,7 @@ public class Guestbooks extends AbstractApiBean {
             guestbook.setUsageCount(totalUsageCount);
             guestbook.setResponseCount(totalResponseCount);
 
+            validateFindGuestbookResponsesParameters(sortField, sortOrder, offset, limit);
             List<GuestbookResponse> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), sortField, sortOrder, offset, limit);
 
             JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
@@ -205,23 +207,6 @@ public class Guestbooks extends AbstractApiBean {
             }
             guestbookResponseObject.add("responses", responseObjects);
 
-            if (limit != null) {
-                JsonObjectBuilder guestbookPageObject = jsonObjectBuilder();
-                int thisOffset = offset != null ? offset : 0;
-                int next = thisOffset + limit;
-                int prev = thisOffset - limit;
-
-                String baseUrl = crc.getUriInfo().getAbsolutePath() + "?limit=" + limit + "&offset=" ;
-                if (prev >= 0) {
-                    guestbookPageObject.add("previous",baseUrl + prev);
-                }
-                if (next < totalResponseCount) {
-                    guestbookPageObject.add("next", baseUrl + next);
-                }
-                guestbookPageObject.add("totalResponses", totalResponseCount);
-
-                guestbookResponseObject.add("pagination", guestbookPageObject);
-            }
             return ok(guestbookResponseObject);
         }, getRequestUser(crc));
     }
@@ -267,6 +252,22 @@ public class Guestbooks extends AbstractApiBean {
             return notFound("Guestbook " + guestbookId + " not found.");
         }, getRequestUser(crc));
     }
+
+    private void validateFindGuestbookResponsesParameters(String sortField, String sortOrder, Integer offset, Integer limit) throws WrappedResponse {
+        if (sortField != null && !List.of("date","type","file","user").contains(sortField.toLowerCase())) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidSortField")));
+        }
+        if (sortOrder != null && !List.of("asc","desc").contains(sortOrder.toLowerCase())) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidSortOrder")));
+        }
+        if (offset != null && offset < 0) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidOffset")));
+        }
+        if (limit != null && limit < 1) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidLimit")));
+        }
+    }
+
     private Response handleWrappedResponse(WrappedResponse ww) {
         String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
         if (!error.isEmpty()) {
