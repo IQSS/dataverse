@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.DateUtil.now;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -282,13 +283,7 @@ public class DatasetVersionDifferenceTest {
             assertEquals(expectedReplacedFiles.get(i)[1], diff.getReplacedFiles().get(i)[1]);
         }
 
-        assertEquals(changedTerms.size(), diff.getChangedTermsAccess().size());
-        for (int i = 0; i < changedTerms.size(); i++) {
-            String[] diffArray = diff.getChangedTermsAccess().get(i);
-            assertEquals(changedTerms.get(i)[0], diffArray[0]);
-            assertEquals(changedTerms.get(i)[1], diffArray[1]);
-            assertEquals(changedTerms.get(i)[2], diffArray[2]);
-        }
+        assertThat(diff.getChangedTermsAccess()).hasSameElementsAs(changedTerms);
     }
 
     @Deprecated
