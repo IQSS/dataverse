@@ -228,7 +228,7 @@ public final class DatasetVersionDifference {
         }
         
         checkAndAddToChangeList(originalTerms.getTermsOfAccess(), newTerms.getTermsOfAccess(),
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess"));
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfAccess"));
         checkAndAddToChangeList(originalTerms.getDataAccessPlace(), newTerms.getDataAccessPlace(),
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace"));
         checkAndAddToChangeList(originalTerms.getOriginalArchive(), newTerms.getOriginalArchive(),

@@ -136,7 +136,7 @@
         <div class="form-group"
             jsf:rendered="#{!empty workingVersion.termsOfAccess.termsOfAccess and (hasRestrictedFile or !empty fileDownloadHelper.filesForRequestAccess)}">
             <label jsf:for="fdTermsOfAccess" class="col-sm-3 control-label">
-                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfAccess']}
             </label>
             <h:outputText id="fdTermsOfAccess" class="col-sm-6"
                 value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfAccess.termsOfAccess)}"
