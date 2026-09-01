@@ -146,7 +146,7 @@ public class GuestbookResponseServiceBean {
 
             cq.where(cb.equal(guestbookResponseRoot.get("guestbook").get("id"), guestbookId));
             if (order != null) {
-                cq.orderBy(order);
+                cq.orderBy(order, getOrderBy(cb, guestbookResponseRoot.get("id"), isDescending));
             }
             cq.distinct(true);
 
