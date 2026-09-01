@@ -174,10 +174,11 @@ public class PidProviderFactoryBean {
                         // Defaults for testing where no account is set up
                         String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup();
                         String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup();
+                        String datafileInfoMode = JvmSettings.DATACITE_XML_DATAFILE_INFO.lookupOptional().orElse("expanded");
                         if (mdsUrl != null && restUrl != null && dcUsername != null && dcPassword != null) {
                             legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
                                     identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
-                                    dcPassword);
+                                    dcPassword, datafileInfoMode);
                         }
                         break;
                     case "FAKE":

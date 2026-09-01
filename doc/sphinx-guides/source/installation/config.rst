@@ -848,6 +848,25 @@ Here are the configuration options for PermaLinks:
 
 You must restart Payara after making changes to these settings.
 
+.. _datacite-settings:
+
+DataCite Settings
+-----------------
+
+.. _dataverse.datacite.xml.datafile-info:
+
+dataverse.datacite.xml.datafile-info
+++++++++++++++++++++++++++++++++++++
+
+``dataverse.datacite.xml.datafile-info`` controls how DataCite XML for datasets represents
+datafile sizes and formats. The default value, ``expanded``, preserves the current behavior and emits
+one ``size`` and one ``format`` element per datafile. Set the value to ``brief`` to emit a single
+``size`` element with the sum of all known datafile sizes and one ``format`` element per distinct
+datafile format. Set the value to ``none`` to omit datafile ``size`` and ``format`` elements entirely.
+This setting applies to both the DataCite metadata export and to DataCite XML sent by the PID provider,
+such as when publishing a new dataset version or explicitly updating PID-provider metadata for a
+published dataset.
+
 .. _auth-modes:
 
 Auth Modes: Local vs. Remote vs. Both
