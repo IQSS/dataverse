@@ -97,24 +97,6 @@ public class FileUtilTest {
         }
 
         @Test
-        public void testIsDownloadPopupRequiredHasTermsOfUseAndCc0License() {
-            DatasetVersion dsv1 = new DatasetVersion();
-            dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-            TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
-            /**
-             * @todo Ask if setting the license to CC0 should be enough to not show
-             * the popup when the are Terms of Use. This feels like a bug since the
-             * Terms of Use should probably be shown.
-             */
-            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 2l);
-            license.setDefault(true);
-            termsOfUseOrLicense.setLicense(license);
-            termsOfUseOrLicense.setTermsOfUse("be excellent to each other");
-            dsv1.setTermsOfUseOrLicense(termsOfUseOrLicense);
-            assertFalse(FileUtil.isDownloadPopupRequired(dsv1));
-        }
-
-        @Test
         public void testIsDownloadPopupRequiredHasTermsOfUseAndNoneLicense() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);

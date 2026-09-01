@@ -966,6 +966,8 @@ public class JsonParserTest {
         foobar.setName(sut);
         TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
         termsOfUseOrLicense.setTermsOfUse("TOU");
+        TermsOfAccess termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setTermsOfAccess("TOA");
         settingsSvc = new MockSettingsSvc();
         DatasetType datasetType = new DatasetType();
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
@@ -983,6 +985,7 @@ public class JsonParserTest {
         dsv1.setReleaseTime(Date.from(Instant.now()));
         dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
         dsv1.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        dsv1.setTermsOfAccess(termsOfAccess);
 
         // Test output of JsonPrinter can be used as input to JsonParser
         JsonObject json = JsonPrinter.json(dsv1, false).build();

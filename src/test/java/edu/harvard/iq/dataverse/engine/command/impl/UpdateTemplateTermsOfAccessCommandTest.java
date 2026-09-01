@@ -7,7 +7,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.TermsOfAccess;
-import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
@@ -37,15 +36,11 @@ public class UpdateTemplateTermsOfAccessCommandTest {
     // We'll use real POJOs for the terms to verify the data transfer logic
     private TermsOfAccess targetTermsOfAccess;
     private TermsOfAccess sourceTermsOfAccess;
-    private TermsOfUseOrLicense targetTermsOfUseOrLicense;
-    private TermsOfUseOrLicense sourceTermsOfUseOrLicense;
 
     @BeforeEach
     void setUp() {
         targetTermsOfAccess = new TermsOfAccess();
         sourceTermsOfAccess = new TermsOfAccess();
-        targetTermsOfUseOrLicense = new TermsOfUseOrLicense();
-        sourceTermsOfUseOrLicense = new TermsOfUseOrLicense();
 
         // Setup the context to return our mocked service
         lenient().when(ctxt.templates()).thenReturn(templateService);
@@ -57,7 +52,7 @@ public class UpdateTemplateTermsOfAccessCommandTest {
     void testExecute_Success() throws Exception {
         // Arrange: Populate the source with data
         sourceTermsOfAccess.setFileAccessRequest(true);
-        sourceTermsOfUseOrLicense.setTermsOfUse("Special restricted access only.");
+        sourceTermsOfAccess.setTermsOfAccess("Special restricted access only.");
         sourceTermsOfAccess.setDataAccessPlace("Secure Data Lab");
         
         when(templateService.save(template)).thenReturn(template);
