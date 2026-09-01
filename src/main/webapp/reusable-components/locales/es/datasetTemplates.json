@@ -44,7 +44,12 @@
     "deleteSuccess": "Plantilla eliminada.",
     "deleteError": "Algo salió mal al eliminar la plantilla. Inténtelo de nuevo más tarde.",
     "copySuccess": "Plantilla copiada.",
-    "copyError": "Algo salió mal al copiar la plantilla. Inténtelo de nuevo más tarde."
+    "copyError": "Algo salió mal al copiar la plantilla. Inténtelo de nuevo más tarde.",
+    "setDefaultSuccess": "La plantilla ha sido seleccionada como la plantilla predeterminada para este dataverse.",
+    "setDefaultError": "Algo salió mal al establecer la plantilla como predeterminada. Inténtelo de nuevo más tarde.",
+    "unsetDefaultSuccess": "La plantilla ha sido eliminada como la plantilla predeterminada para este dataverse.",
+    "unsetDefaultError": "Algo salió mal al eliminar la plantilla predeterminada. Inténtelo de nuevo más tarde.",
+    "editSuccess": "Plantilla actualizada."
   },
   "copyNamePrefix": "copia {{name}}",
   "preview": {
@@ -90,6 +95,25 @@
       "requestAccessHelp": "Habilitar solicitud de acceso",
       "termsOfAccessLabel": "Términos de acceso para archivos restringidos",
       "dataAccessPlaceLabel": "Lugar de acceso a los datos"
+    }
+  },
+  "editTemplate": {
+    "metadataPageTitle": "Editar metadatos de plantilla",
+    "termsPageTitle": "Editar términos de plantilla",
+    "actions": {
+      "metadata": "Metadatos",
+      "terms": "Términos"
+    },
+    "alerts": {
+      "metadataUpdated": "Metadatos de plantilla actualizados.",
+      "licenseUpdated": "Licencia/términos de plantilla actualizados.",
+      "termsOfAccessUpdated": "Términos de acceso de plantilla actualizados."
+    },
+    "errors": {
+      "saveMetadataFailed": "Algo salió mal al actualizar los metadatos de la plantilla. Inténtelo de nuevo más tarde.",
+      "saveLicenseFailed": "Algo salió mal al actualizar la licencia/términos de la plantilla. Inténtelo de nuevo más tarde.",
+      "saveTermsOfAccessFailed": "Algo salió mal al actualizar los términos de acceso de la plantilla. Inténtelo de nuevo más tarde.",
+      "loadingTemplate": "Algo salió mal al cargar la plantilla. Inténtelo de nuevo más tarde."
     }
   }
 }

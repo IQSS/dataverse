@@ -32,6 +32,8 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 
 @Path("inbox")
 public class LDNInbox extends AbstractApiBean {
@@ -66,7 +68,10 @@ public class LDNInbox extends AbstractApiBean {
     @POST
     @Path("/")
     @Consumes("application/ld+json, application/json-ld")
-    public Response acceptMessage(String body) {
+    @Operation(summary = "Accepts a Linked Data Notification",
+            description = "Accepts a whitelisted Linked Data Notification inbox message and dispatches supported relationship announcements.")
+    @RequestBody(description = "Linked Data Notification message body encoded as JSON-LD.")
+    public Response acceptMessage(@RequestBody(description = "Linked Data Notification message body encoded as JSON-LD.") String body) {
         try {
             IpAddress origin = new DataverseRequest(null, httpRequest).getSourceAddress();
             String allowedIPs = JvmSettings.LINKEDDATANOTIFICATION_ALLOWED_HOSTS.lookupOptional().orElse("");

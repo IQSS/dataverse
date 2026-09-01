@@ -45,7 +45,12 @@
     "deleteSuccess": "Template deleted.",
     "deleteError": "Something went wrong deleting the template. Try again later.",
     "copySuccess": "Template copied.",
-    "copyError": "Something went wrong copying the template. Try again later."
+    "copyError": "Something went wrong copying the template. Try again later.",
+    "setDefaultSuccess": "The template has been selected as the default template for this dataverse.",
+    "setDefaultError": "Something went wrong setting the template as default. Try again later.",
+    "unsetDefaultSuccess": "The template has been removed as the default template for this dataverse.",
+    "unsetDefaultError": "Something went wrong removing the default template. Try again later.",
+    "editSuccess": "Template updated."
   },
   "copyNamePrefix": "copy {{name}}",
   "preview": {
@@ -91,6 +96,25 @@
       "requestAccessHelp": "Enable access request",
       "termsOfAccessLabel": "Terms of Access for Restricted Files",
       "dataAccessPlaceLabel": "Data Access Place"
+    }
+  },
+  "editTemplate": {
+    "metadataPageTitle": "Edit Template Metadata",
+    "termsPageTitle": "Edit Template Terms",
+    "actions": {
+      "metadata": "Metadata",
+      "terms": "Terms"
+    },
+    "alerts": {
+      "metadataUpdated": "Template metadata updated.",
+      "licenseUpdated": "Template license/terms updated.",
+      "termsOfAccessUpdated": "Template terms of access updated."
+    },
+    "errors": {
+      "saveMetadataFailed": "Something went wrong updating the template metadata. Try again later.",
+      "saveLicenseFailed": "Something went wrong updating the template license/terms. Try again later.",
+      "saveTermsOfAccessFailed": "Something went wrong updating the template terms of access. Try again later.",
+      "loadingTemplate": "Something went wrong loading the template. Try again later."
     }
   }
 }

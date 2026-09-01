@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import jakarta.json.stream.JsonParsingException;
 import org.passay.CharacterRule;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.faces.context.FacesContext;
@@ -23,11 +24,9 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import java.io.File;
-import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
@@ -706,8 +705,8 @@ public class SystemConfig {
         if (limitEntry != null) {
             // Case A: the setting is using JSON to support multiple formats
             if (limitEntry.trim().startsWith("{")) {
-                try (JsonReader reader = Json.createReader(new StringReader(limitEntry))) {
-                    JsonObject limits = reader.readObject();
+                try {
+                    JsonObject limits = JsonUtil.getJsonObject(limitEntry);
                     
                     Map<String, Long> limitsMap = new HashMap<>();
                     // We add the default in case the JSON does not contain the default (which is optional).
@@ -803,8 +802,8 @@ public class SystemConfig {
         if (settingString != null) {
             // Case A: the setting is using JSON to support multiple clients
             if (settingString.trim().startsWith("{")) {
-                try (JsonReader reader = Json.createReader(new StringReader(settingString))) {
-                    JsonObject delays = reader.readObject();
+                try {
+                    JsonObject delays = JsonUtil.getJsonObject(settingString);
                     
                     Map<String, Float> limitsMap = new HashMap<>();
                     // We add the default in case the JSON does not contain the default (which is optional).
@@ -1442,11 +1441,9 @@ public class SystemConfig {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
         if (!setting.isEmpty()) {
-            try (JsonReader jsonReader = Json.createReader(new StringReader(setting))){
-                
+            try {
                 Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
-
-                JsonObject labelSets = jsonReader.readObject();
+                JsonObject labelSets = JsonUtil.getJsonObject(setting);
                 for (String key : labelSets.keySet()) {
                     JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
                     String[] labelArray = new String[labels.size()];

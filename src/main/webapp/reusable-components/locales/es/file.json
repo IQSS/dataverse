@@ -160,6 +160,8 @@
   "getCategoriesError": "Algo salió mal al obtener las categorías disponibles. Intenta nuevamente más tarde.",
   "previewTab": {
     "openInNewWindow": "Abrir en una nueva ventana",
-    "defaultLoadingToolError": "Algo salió mal al cargar la herramienta externa. Intenta nuevamente más tarde."
+    "defaultLoadingToolError": "Algo salió mal al cargar la herramienta externa. Intenta nuevamente más tarde.",
+    "acceptTermsAndGuestbooks": "Acepta los términos del dataset o guestbooks",
+    "termsRequired": "antes de previsualizar este fichero."
   }
 }

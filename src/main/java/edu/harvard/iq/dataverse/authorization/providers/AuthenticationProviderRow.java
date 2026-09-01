@@ -9,6 +9,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * Database-storable form of an {@code AuthenticationProvider}.
@@ -28,6 +29,7 @@ import jakarta.persistence.Table;
 })
 @Entity
 @Table(indexes = {@Index(columnList="enabled")})
+@Schema(description = "Persisted authentication provider configuration, including provider id, display text, factory alias, enabled state, and factory data.")
 public class AuthenticationProviderRow implements java.io.Serializable {
     
     @Id

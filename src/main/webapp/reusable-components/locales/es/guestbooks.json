@@ -1,7 +1,27 @@
 {
   "title": "Libros de visitas del dataset",
+  "filters": {
+    "includeFromParent": "Incluir libros de visitas de {{parent}}"
+  },
+  "actions": {
+    "create": "Crear libro de visitas del dataset",
+    "enable": "Habilitar",
+    "disable": "Deshabilitar",
+    "downloadAllResponses": "Descargar todas las respuestas",
+    "view": "Ver",
+    "copy": "Copiar",
+    "edit": "Editar",
+    "downloadResponses": "Descargar respuestas",
+    "viewResponses": "Ver respuestas"
+  },
   "errors": {
-    "getGuestbook": "Algo salió mal al obtener el libro de visitas. Inténtalo de nuevo más tarde."
+    "getGuestbook": "Algo salió mal al obtener el libro de visitas. Inténtalo de nuevo más tarde.",
+    "toggleEnabled": "Algo salió mal al actualizar el estado del libro de visitas. Inténtalo de nuevo más tarde.",
+    "downloadResponses": "Algo salió mal al descargar las respuestas del libro de visitas. Inténtalo de nuevo más tarde."
+  },
+  "alerts": {
+    "statusUpdated": "El estado del libro de visitas se ha actualizado.",
+    "downloadStarted": "La descarga ha comenzado."
   },
   "preview": {
     "title": "Vista previa del libro de visitas",
@@ -9,13 +29,41 @@
     "guestbookNameLabel": "Nombre del libro de visitas",
     "guestbookDataLabel": "Datos recopilados",
     "guestbookDataTip": "Datos del usuario recopilados por el libro de visitas.",
+    "collectedDataLabel": "Datos recopilados",
+    "collectedDataTip": "Datos del usuario recopilados por el libro de visitas.",
     "accountInformation": "Información de la cuenta",
     "customQuestionsLabel": "Preguntas personalizadas",
     "required": "Obligatorio",
     "optional": "Opcional"
   },
+  "table": {
+    "name": "Nombre del libro de visitas",
+    "created": "Creado",
+    "usage": "Uso",
+    "responses": "Respuestas",
+    "action": "Acción",
+    "guestbookCreatedAt": "Libro de visitas creado en {{alias}}"
+  },
+  "emptyState": {
+    "whyTitle": "¿Por qué usar libros de visitas?",
+    "whyBullets": [
+      "Los libros de visitas te permiten recopilar datos sobre quién descarga los ficheros de tus datasets. Puedes decidir recopilar información de la cuenta (nombre de usuario, nombre y apellido, afiliación, etc.) y crear preguntas personalizadas (por ejemplo, ¿para qué planeas usar estos datos?).",
+      "Puedes descargar los datos recopilados de los libros de visitas habilitados para almacenarlos fuera de Dataverse."
+    ],
+    "howTitle": "Cómo usar los libros de visitas",
+    "howBullets": [
+      "Un libro de visitas puede utilizarse en varios datasets, pero un dataset solo puede usar un libro de visitas.",
+      "Las preguntas personalizadas pueden tener respuestas de texto libre o permitir que el usuario seleccione una respuesta entre varias opciones."
+    ],
+    "footer": "Para comenzar, haz clic en Editar colección en este Dataverse y luego selecciona <anchorGeneral>Información general</anchorGeneral>. Para obtener más información sobre los libros de visitas, visita la sección <anchorGuide>Libro de visitas del dataset</anchorGuide> de la Guía de usuario."
+  },
   "create": {
+    "title": "Crear libro de visitas del dataset",
+    "info": "Para obtener más información sobre los libros de visitas, visita la sección <anchor>Libro de visitas del dataset</anchor> de la Guía de usuario.",
     "fields": {
+      "name": {
+        "label": "Nombre del libro de visitas"
+      },
       "dataCollected": {
         "label": "Datos recopilados",
         "help": "Información de la cuenta de Dataverse que se recopilará cuando un usuario descargue un fichero. Marca las que serán obligatorias.",
@@ -25,7 +73,26 @@
           "institution": "Institución",
           "position": "Cargo"
         }
+      },
+      "customQuestions": {
+        "label": "Preguntas personalizadas",
+        "help": "Crea tus propias preguntas para que los usuarios proporcionen más información que la de su cuenta cuando descarguen un fichero. Las preguntas pueden ser obligatorias u opcionales, y las respuestas pueden ser de texto o de opción múltiple.",
+        "typeLabel": "Tipo de pregunta",
+        "questionText": "Texto de la pregunta",
+        "required": "Campo obligatorio",
+        "addQuestion": "Añadir pregunta",
+        "types": {
+          "singleLine": "Una línea",
+          "multipleLine": "Varias líneas",
+          "multipleChoice": "Opción múltiple"
+        },
+        "responseOptions": "Opciones de respuesta",
+        "addOption": "Añadir opción de respuesta",
+        "removeOption": "Eliminar opción de respuesta",
+        "removeQuestion": "Eliminar pregunta"
       }
-    }
+    },
+    "submit": "Crear libro de visitas del dataset",
+    "cancel": "Cancelar"
   }
 }

@@ -8,5 +8,8 @@
     "label": "Host Collection",
     "description": "The collection which contains this data."
   },
-  "metadata": "Metadata"
+  "metadata": "Metadata",
+  "datasetType": {
+    "label": "Dataset Type"
+  }
 }

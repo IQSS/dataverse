@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
     <modelVersion>4.0.0</modelVersion>
@@ -14,7 +15,6 @@
         <module>../../pom.xml</module>
         <module>../../scripts/zipdownload</module>
         <module>../container-base</module>
-        <module>../dataverse-spi</module>
     </modules>
     
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
@@ -149,12 +149,12 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>7.2026.2</payara.version>
-        <postgresql.version>42.7.11</postgresql.version>
+        <payara.version>7.2026.8</payara.version>
+        <postgresql.version>42.7.12</postgresql.version>
         <solr.version>9.8.0</solr.version>
         <postgresql.server.version>16</postgresql.server.version>
-        <aws.version>2.33.0</aws.version>
-        <google.library.version>26.30.0</google.library.version>
+        <aws.version>2.51.3</aws.version>
+        <google.library.version>26.69.0</google.library.version>
     
         <!-- Basic libs, logging -->
         <slf4j.version>1.7.35</slf4j.version>
@@ -170,11 +170,10 @@
     
         <!-- Testing dependencies -->
         <testcontainers.version>2.0.2</testcontainers.version>
-        <smallrye-mpconfig.version>3.7.1</smallrye-mpconfig.version>
+        <smallrye-mpconfig.version>3.18.2</smallrye-mpconfig.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <mockito.version>5.11.0</mockito.version>
-        <maven-jacoco-plugin.version>0.8.11</maven-jacoco-plugin.version>
-        
+
         <checkstyle.version>9.3</checkstyle.version>
         
         <!-- Official Maven Plugins -->
@@ -198,12 +197,34 @@
         <maven-checkstyle-plugin.version>3.2.2</maven-checkstyle-plugin.version>
         <nexus-staging-plugin.version>1.6.13</nexus-staging-plugin.version>
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
-        
+        <sonar.version>5.7.0.6970</sonar.version>
+        <maven-jacoco-plugin.version>0.8.14</maven-jacoco-plugin.version>
+
         <!-- Container related -->
         <fabric8-dmp.version>0.48.0</fabric8-dmp.version>
+
+        <!-- SonarQube Code Quality related -->
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>iqss</sonar.organization>
+        <sonar.projectKey>IQSS_dataverse</sonar.projectKey>
+        <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     </properties>
     
     <pluginRepositories>
+        <pluginRepository>
+            <id>payara-nexus-artifacts</id>
+            <name>Payara Nexus Artifacts</name>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </snapshots>
+        </pluginRepository>
         <pluginRepository>
             <id>central</id>
             <name>Central Repository</name>
@@ -319,6 +340,11 @@
                     <version>${pomchecker-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar.version}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <version>${nexus-staging-plugin.version}</version>
@@ -418,14 +444,12 @@
         <repository>
             <id>unidata-all</id>
             <name>Unidata All</name>
-            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
-        <!-- Note the new - as of Sept. 2025 sonatype url -->
-        <!--
         <repository>
             <id>central-portal-snapshots</id>
             <name>Central Portal Snapshots</name>
@@ -439,6 +463,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+	<!--
         <repository>
             <id>s01-oss-sonatype</id>
             <name>s01-oss-sonatype</name>

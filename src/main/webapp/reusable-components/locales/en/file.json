@@ -160,6 +160,8 @@
   "getCategoriesError": "Something went wrong fetching available categories. Try again later.",
   "previewTab": {
     "openInNewWindow": "Open in New Window",
-    "defaultLoadingToolError": "Something went wrong loading the external tool. Try again later."
+    "defaultLoadingToolError": "Something went wrong loading the external tool. Try again later.",
+    "acceptTermsAndGuestbooks": "Accept the dataset terms or guestbooks",
+    "termsRequired": "before previewing this file."
   }
 }

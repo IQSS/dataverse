@@ -52,11 +52,11 @@
   "editCollection": {
     "edit": "Edit",
     "generalInfo": "General Information",
+    "datasetGuestbooks": "Dataset Guestbooks",
     "themeAndWidgets": "Theme + Widgets",
     "permissions": "Permissions",
     "groups": "Groups",
     "datasetTemplates": "Dataset Templates",
-    "datasetGuestbooks": "Dataset Guestbooks",
     "featuredDataverses": "Featured Dataverses",
     "deleteCollection": "Delete Collection"
   },

@@ -8,5 +8,8 @@
     "label": "Colección anfitriona",
     "description": "La colección que contiene estos datos."
   },
-  "metadata": "Metadatos"
+  "metadata": "Metadatos",
+  "datasetType": {
+    "label": "Tipo de dataset"
+  }
 }

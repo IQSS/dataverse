@@ -1,7 +1,27 @@
 {
   "title": "Dataset Guestbooks",
+  "filters": {
+    "includeFromParent": "Include Guestbooks from {{parent}}"
+  },
+  "actions": {
+    "create": "Create Dataset Guestbook",
+    "enable": "Enable",
+    "disable": "Disable",
+    "downloadAllResponses": "Download All Responses",
+    "view": "View",
+    "copy": "Copy",
+    "edit": "Edit",
+    "downloadResponses": "Download responses",
+    "viewResponses": "View Responses"
+  },
   "errors": {
-    "getGuestbook": "Something went wrong getting the guestbook. Try again later."
+    "getGuestbook": "Something went wrong getting the guestbook. Try again later.",
+    "toggleEnabled": "Something went wrong updating the guestbook status. Try again later.",
+    "downloadResponses": "Something went wrong downloading guestbook responses. Try again later."
+  },
+  "alerts": {
+    "statusUpdated": "The guestbook status has been updated.",
+    "downloadStarted": "Your download has started."
   },
   "preview": {
     "title": "Preview Guestbook",
@@ -9,13 +29,41 @@
     "guestbookNameLabel": "Guestbook Name",
     "guestbookDataLabel": "Collected Data",
     "guestbookDataTip": "User data collected by the guestbook.",
+    "collectedDataLabel": "Collected Data",
+    "collectedDataTip": "User data collected by the guestbook.",
     "accountInformation": "Account Information",
     "customQuestionsLabel": "Custom Questions",
     "required": "Required",
     "optional": "Optional"
   },
+  "table": {
+    "name": "Guestbook Name",
+    "created": "Created",
+    "usage": "Usage",
+    "responses": "Responses",
+    "action": "Action",
+    "guestbookCreatedAt": "Guestbook created at {{alias}}"
+  },
+  "emptyState": {
+    "whyTitle": "Why Use Guestbooks?",
+    "whyBullets": [
+      "Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?).",
+      "You can download the data collected from the enabled guestbooks to be able to store it outside of Dataverse."
+    ],
+    "howTitle": "How To Use Guestbooks",
+    "howBullets": [
+      "A guestbook can be used for multiple datasets but only one guestbook can be used for a dataset.",
+      "Custom questions can have free form text answers or have a user select an answer from several options."
+    ],
+    "footer": "To get started, click on Edit Collection in this Dataverse and then select <anchorGeneral>General Information</anchorGeneral>. To learn more about guestbooks, visit the <anchorGuide>Dataset Guestbook</anchorGuide> section of the User Guide."
+  },
   "create": {
+    "title": "Create Dataset Guestbook",
+    "info": "To learn more about guestbooks, visit the <anchor>Dataset Guestbook</anchor> section of the User Guide.",
     "fields": {
+      "name": {
+        "label": "Guestbook Name"
+      },
       "dataCollected": {
         "label": "Data Collected",
         "help": "Dataverse account information that will be collected when a user downloads a file. Check the ones that will be required.",
@@ -25,7 +73,26 @@
           "institution": "Institution",
           "position": "Position"
         }
+      },
+      "customQuestions": {
+        "label": "Custom Questions",
+        "help": "Create your own questions to have users provide more than their account information when they download a file. Questions can be required or optional and answers can be text or multiple choice.",
+        "typeLabel": "Question Type",
+        "questionText": "Question Text",
+        "required": "Required field",
+        "addQuestion": "Add question",
+        "types": {
+          "singleLine": "Single Line",
+          "multipleLine": "Multiple Line",
+          "multipleChoice": "Multiple Choice"
+        },
+        "responseOptions": "Response Options",
+        "addOption": "Add response option",
+        "removeOption": "Remove response option",
+        "removeQuestion": "Remove question"
       }
-    }
+    },
+    "submit": "Create Dataset Guestbook",
+    "cancel": "Cancel"
   }
 }

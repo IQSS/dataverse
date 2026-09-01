@@ -11,5 +11,12 @@
     "label": "Plantilla de dataset",
     "description": "La plantilla de dataset que completa información automáticamente en el formulario.",
     "helpText": "Cambiar la plantilla borrará cualquier campo en el que hayas ingresado datos."
+  },
+  "datasetType": {
+    "label": "Tipo de dataset",
+    "description": "El tipo de dataset que estás creando.",
+    "helpText": "Cambiar el tipo de dataset borrará cualquier campo en el que hayas ingresado datos.",
+    "placeholder": "Selecciona un tipo de dataset",
+    "toggleMenu": "Alternar menú de opciones de tipos de dataset"
   }
 }

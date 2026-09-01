@@ -32,6 +32,7 @@
   "allowPopups": "You must enable popups in your browser to open external tools in a new window or tab.",
   "externalToolOpeningFailed": "There was a problem opening the external tool. Please try again.",
   "exportMetadata": "Export Metadata",
+  "exportMetadataError": "There was a problem exporting the dataset metadata. Please try again.",
   "pageNumberNotFound": {
     "heading": "Page Number Not Found",
     "message": "The page number you requested does not exist. Please try a different page number."
@@ -295,6 +296,8 @@
   },
   "downloadCitation": {
     "title": "Download Citation",
+    "citeDataset": "Cite Dataset",
+    "citeDataFile": "Cite Data File",
     "viewStyledCitation": "View Styled Citation",
     "downloadEndNoteXML": "Download EndNote XML",
     "downloadRIS": "Download RIS",
@@ -302,6 +305,7 @@
     "selectCSLStyle": "Select a CSL Style",
     "citationInStyle": "Citation in {{styleName}} style",
     "downloadError": "An error occurred while downloading the citation",
+    "downloadSuccess": "Citation downloaded successfully",
     "styledCitation": "Styled Citation"
   },
   "expandableContent": {

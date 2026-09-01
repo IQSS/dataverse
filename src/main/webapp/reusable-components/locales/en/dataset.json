@@ -1,4 +1,7 @@
 {
+  "datasetType": {
+    "label": "Dataset Type"
+  },
   "filesTabTitle": "Files",
   "metadataTabTitle": "Metadata",
   "termsTabTitle": "Terms and Guestbook",

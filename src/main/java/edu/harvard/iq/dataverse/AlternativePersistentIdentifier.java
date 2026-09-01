@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import jakarta.persistence.*;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
@@ -16,6 +17,7 @@ import jakarta.persistence.*;
 }
 )
 @Entity
+@Schema(description = "Alternate persistent identifier assigned to a Dataverse object, including protocol, authority, identifier, and registration state.")
 public class AlternativePersistentIdentifier implements Serializable {
     
     @Id
