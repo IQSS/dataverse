@@ -149,6 +149,9 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
+    /**
+     * Backward-compatibility fallback for callers that still use no-arg overloads.
+     */
     private static DatafileInfoMode getConfiguredDatafileInfoMode() {
         return DatafileInfoMode.from(JvmSettings.DATACITE_XML_DATAFILE_INFO.lookupOptional().orElse("expanded"));
     }
