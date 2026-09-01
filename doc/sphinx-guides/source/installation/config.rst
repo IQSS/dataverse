@@ -856,7 +856,7 @@ DataCite Settings
 .. _dataverse.datacite.xml.datafile-info:
 
 dataverse.datacite.xml.datafile-info
-++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++
 
 ``dataverse.datacite.xml.datafile-info`` controls how DataCite XML for datasets represents
 datafile sizes and formats. The default value, ``expanded``, preserves the current behavior and emits

@@ -222,7 +222,7 @@ public class DOIDataCiteRegisterService {
 
         doiMetadata.setDescription(AbstractPidProvider.UNAVAILABLE);
 
-        String title =metadata.get("datacite.title");
+        String title = metadata.get("datacite.title");
 
         doiMetadata.setAuthors(null);
         
