@@ -3353,6 +3353,29 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 
 **Note:** This setting was previously called `dataverse.personOrOrg.orgPhraseArray` and expected a JsonArray of strings. Please update both the name and value format if using the old setting.
 
+.. _dataverse.api.signing-secret:
+
+dataverse.api.signing-secret
+++++++++++++++++++++++++++++++
+
+Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
+providing API tokens, which are long-lived and give the holder all of the permissions of the user. In contrast, signed URLs
+are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
+:ref:`api-native-signed-url` for more details.
+
+The key used to sign a URL is created from the API token of the creating user plus a server-side signing secret. By
+default, the secret is generated automatically at startup and kept only in memory: no configuration is needed, but
+signed URLs do not survive a server restart, and on a multi-server installation each server signs with its own secret.
+Set this option (to a value of at least 32 characters - shorter ones are ignored with a warning) to use a persistent
+secret instead: previously issued signed URLs then stay valid across restarts, and all servers sign and validate with
+the same key.
+
+**WARNING**:
+*Since the signing-secret is sensitive, you should treat it like a password.*
+*See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNING_SECRET`` (although you shouldn't use environment variables for passwords) .
+
 .. _dataverse.api.allow-incomplete-metadata:
 
 dataverse.api.allow-incomplete-metadata
@@ -5324,28 +5347,6 @@ This setting can be retrieved via API. See :ref:`get-dataset-summary-field-names
 The Dataverse Software 4.8.1 and below allowed API Token lookup via API but for better security this has been disabled by default. Set this to true if you really want the old behavior.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowApiTokenLookupViaApi``
-
-.. _:ApiSigningSecret:
-
-:ApiSigningSecret
-+++++++++++++++++
-
-Your Dataverse installation can create "Signed URLs" for its API calls. Using a signed URL is more secure than providing
-an API token, which is long-lived and gives the holder all of the permissions of the user. In contrast, signed URLs are
-time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
-:ref:`api-native-signed-url` for more details.
-
-The key used to sign a URL is created from the API token of the creating user plus a server-side signing secret, stored
-in this setting. The secret is generated automatically on first use, so no configuration is needed.
-
-Deleting the setting rotates the secret: the next signed URL is created with a freshly generated one. You can also store
-a secret of your own choosing, which must be at least 32 characters long. Rotating or changing the secret invalidates
-already-issued signed URLs that have not expired yet.
-
-``curl -X DELETE http://localhost:8080/api/admin/settings/:ApiSigningSecret``
-
-**WARNING**:
-*Since the signing secret is sensitive, you should treat it like a password.*
 
 :ProvCollectionEnabled
 ++++++++++++++++++++++

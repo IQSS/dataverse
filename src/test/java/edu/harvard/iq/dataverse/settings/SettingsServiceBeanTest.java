@@ -431,27 +431,4 @@ class SettingsServiceBeanTest {
             verify(em, never()).merge(any(Setting.class));
         }
     }
-
-    @Test
-    void loggableValueRedactsTheSigningSecret() {
-        assertEquals("[redacted]", SettingsServiceBean.loggableValue(
-                SettingsServiceBean.Key.ApiSigningSecret.toString(), "the-actual-secret"));
-        assertEquals("true", SettingsServiceBean.loggableValue(
-                SettingsServiceBean.Key.AllowApiTokenLookupViaApi.toString(), "true"));
-    }
-
-    @Test
-    void bulkSettingsConversionRejectsShortSigningSecret() {
-        var shortSecret = JsonUtil.createObjectBuilder().add(":ApiSigningSecret", "too-short").build();
-        assertThrows(SettingsValidationException.class,
-                () -> SettingsServiceBean.convertJsonToSettings(shortSecret));
-
-        var shortLocalized = JsonUtil.createObjectBuilder().add(":ApiSigningSecret/lang/en", "too-short").build();
-        assertThrows(SettingsValidationException.class,
-                () -> SettingsServiceBean.convertJsonToSettings(shortLocalized));
-
-        var longEnough = JsonUtil.createObjectBuilder()
-                .add(":ApiSigningSecret", "long-enough-signing-secret-0123456789").build();
-        assertDoesNotThrow(() -> SettingsServiceBean.convertJsonToSettings(longEnough));
-    }
 }

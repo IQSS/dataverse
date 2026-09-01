@@ -9160,7 +9160,8 @@ example a search term containing spaces), append the returned signature paramete
 originally constructed it.
 
 The key used to sign the URL is created from the user's API token plus a server-side signing secret that is generated
-automatically; see :ref:`:ApiSigningSecret` for details and for how to rotate it.
+automatically at startup; see :ref:`dataverse.api.signing-secret` for details, including how to configure a persistent
+secret (required for signed URLs to survive server restarts and for multi-server installations).
 
 .. _send-feedback-admin:
 
