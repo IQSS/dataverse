@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import jakarta.ejb.EJB;
@@ -349,6 +350,18 @@ public class ExportServiceBean {
      */
     static DatasetVersion defaultVersion(Dataset dataset) {
         return dataset.isReleased() ? dataset.getReleasedVersion() : dataset.getLatestVersion();
+    }
+    
+    /**
+     * Factory method to create a data provider.
+     * Intended for usage in tests, exposing a {@link ExportDataProvider} instance.
+     * Exporters should not be used directly outside of tests.
+     *
+     * @param version the dataset version to back the data provider during export operations
+     * @return an {@link ExportDataProvider} instance
+     */
+    public static ExportDataProvider createProvider(DatasetVersion version) {
+        return new InternalExportDataProvider(version);
     }
 
 }
