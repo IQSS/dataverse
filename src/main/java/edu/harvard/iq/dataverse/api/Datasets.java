@@ -335,7 +335,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion doomedVersion = doomed.getLatestVersion();
 
             if (doomed.getVersions().size() > 1 || !doomedVersion.isDraft()) {
-                String msg = "This API can only delete a dataset that has never been unpublished (only a draft version exists).";
+                String msg = "This API can only delete a dataset that has never been published (only a draft version exists).";
                 if (u.isSuperuser()) {
                     msg = msg + " Please use '/destroy' to delete a published dataset.";
                 }

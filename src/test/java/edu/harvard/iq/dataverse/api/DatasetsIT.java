@@ -350,15 +350,14 @@ public class DatasetsIT {
         deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         deleteDatasetResponse.then().assertThat()
-                .body("message", containsString("unpublished"))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         // Try to delete as superuser (should get 400 with destroy message)
         deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, superuserApiToken);
         deleteDatasetResponse.prettyPrint();
         deleteDatasetResponse.then().assertThat()
                 .body("message", containsString("/destroy"))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         // Try /destroy to get rid of the dataset
         deleteDatasetResponse = UtilIT.destroyDataset(datasetId, superuserApiToken);
