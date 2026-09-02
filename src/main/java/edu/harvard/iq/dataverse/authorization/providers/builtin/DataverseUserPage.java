@@ -179,8 +179,17 @@ public class DataverseUserPage implements java.io.Serializable {
         }
 
         if (session.getUser(true).isAuthenticated()) {
-            setCurrentUser((AuthenticatedUser) session.getUser());
-            userAuthProvider = authenticationService.lookupProvider(currentUser);
+            AuthenticatedUser sessionUser = (AuthenticatedUser) session.getUser();
+            AuthenticatedUser freshUser = userService.findFresh(sessionUser.getId());
+            if (freshUser != null) {
+                // Update properties on the session instance directly instead of replacing it
+                // (via using Session.setUser()) to avoid session ID change which would invalidate the ViewScoped bean.
+                sessionUser.setFirstName(freshUser.getFirstName());
+                sessionUser.setLastName(freshUser.getLastName());
+                sessionUser.setEmail(freshUser.getEmail());
+            }
+            setCurrentUser(freshUser != null ? freshUser : sessionUser);
+            userAuthProvider = authenticationService.lookupProvider(sessionUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             notificationTypeList = Arrays.asList(Type.values()).stream()
                     .filter(x -> !Type.CONFIRMEMAIL.equals(x) && x.hasDescription() && !settingsWrapper.isAlwaysMuted(x))
@@ -609,7 +618,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
     
     public AuthenticationProvider getUserAuthProvider() {
-        if ( userAuthProvider == null  ) {
+        if (userAuthProvider == null && currentUser != null) {
             userAuthProvider = authenticationService.lookupProvider(currentUser);
         }
         return userAuthProvider;

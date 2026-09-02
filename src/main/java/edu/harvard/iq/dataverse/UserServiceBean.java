@@ -18,6 +18,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
@@ -536,5 +537,19 @@ public class UserServiceBean {
         //assumes that AuthenticatedUser user already exists
         user.setLastApiUseTime(new Timestamp(new Date().getTime()));
         return save(user);
+    }
+
+    public AuthenticatedUser findFresh(Long id) {
+        try {
+            return em.createQuery(
+                            "SELECT u FROM AuthenticatedUser u " +
+                                    "LEFT JOIN FETCH u.authenticatedUserLookup " +
+                                    "WHERE u.id = :id", AuthenticatedUser.class)
+                    .setParameter("id", id)
+                    .setHint("jakarta.persistence.cache.retrieveMode", "BYPASS")
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 }

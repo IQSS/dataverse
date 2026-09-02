@@ -144,7 +144,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 accessToken.setAccessToken("qwe-addssd-iiiiie");
                 setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
                         new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
-                        extraEmails));
+                        extraEmails, null));
             }
         }
 
