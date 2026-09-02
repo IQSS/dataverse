@@ -31,8 +31,8 @@ class ApiSigningSecretServiceBeanTest {
     void generatesATemporarySecretWhenNoneIsConfigured() {
         ApiSigningSecretServiceBean bean = bean();
         String secret = bean.getSecret();
-        // 32 random bytes, Base64-encoded
-        assertEquals(32, Base64.getDecoder().decode(secret).length);
+        // 36  random bytes, Base64-encoded
+        assertEquals(ApiSigningSecretServiceBean.MIN_SECRET_LENGTH, Base64.getDecoder().decode(secret).length);
         // stable while the server runs, but different for every server start
         assertEquals(secret, bean.getSecret());
         assertNotEquals(secret, bean().getSecret());
@@ -43,7 +43,7 @@ class ApiSigningSecretServiceBeanTest {
     void ignoresAConfiguredSecretThatIsTooShort() {
         String secret = bean().getSecret();
         assertNotEquals("too-short", secret);
-        assertEquals(32, Base64.getDecoder().decode(secret).length);
+        assertEquals(ApiSigningSecretServiceBean.MIN_SECRET_LENGTH, Base64.getDecoder().decode(secret).length);
     }
 
     @Test

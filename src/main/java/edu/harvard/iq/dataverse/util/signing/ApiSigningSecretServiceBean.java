@@ -27,7 +27,7 @@ public class ApiSigningSecretServiceBean {
      * Admins may configure their own secret, but a short one would allow offline brute-forcing of
      * the signing key from a single captured signed URL.
      */
-    public static final int MIN_SECRET_LENGTH = 32;
+    public static final int MIN_SECRET_LENGTH = 36;
 
     private static final Logger logger = Logger.getLogger(ApiSigningSecretServiceBean.class.getCanonicalName());
     // deliberately not getInstanceStrong(), which can block on entropy on a fresh VM
@@ -48,7 +48,7 @@ public class ApiSigningSecretServiceBean {
             logger.warning("Ignoring dataverse.api.signing-secret: it is shorter than " + MIN_SECRET_LENGTH
                     + " characters, which would weaken the signing key. Using a generated secret instead.");
         }
-        byte[] bytes = new byte[32];
+        byte[] bytes = new byte[MIN_SECRET_LENGTH];
         secureRandom.nextBytes(bytes);
         secret = Base64.getEncoder().encodeToString(bytes);
         logger.warning("No persistent API signing secret is configured; generated a temporary one. Signed URLs"

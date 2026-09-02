@@ -3366,7 +3366,7 @@ are time limited and only allow the action of the API call in the URL. See :ref:
 The key used to sign a URL is created from the API token of the creating user plus a server-side signing secret. By
 default, the secret is generated automatically at startup and kept only in memory: no configuration is needed, but
 signed URLs do not survive a server restart, and on a multi-server installation each server signs with its own secret.
-Set this option (to a value of at least 32 characters - shorter ones are ignored with a warning) to use a persistent
+Set this option (to a value of at least 36 characters - shorter ones are ignored with a warning) to use a persistent
 secret instead: previously issued signed URLs then stay valid across restarts, and all servers sign and validate with
 the same key.
 
