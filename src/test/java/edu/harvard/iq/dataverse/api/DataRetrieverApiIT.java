@@ -173,7 +173,6 @@ public class DataRetrieverApiIT {
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null, null, 10);
         retrieveMyCollectionListResponse.prettyPrint();
         int count = retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.count");
-        int totalCount = retrieveMyCollectionListResponse.getBody().jsonPath().getInt("data.totalCount");
         // get the second page
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(User1ApiToken, null, offset + count + 1, 10);
         retrieveMyCollectionListResponse.prettyPrint();
