@@ -25,7 +25,9 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -330,6 +332,23 @@ public class DataAccess {
     		}
     	}
     	return label;
+    }
+
+    public static List<String> getIdsForStorageDriversWithReadableFiles() {
+        List<String> driverIds = new ArrayList<>();
+
+        // Other configured drivers
+        final String DATAVERSE_DRIVER_PREFIX = "dataverse.files.";
+        final String DATAVERSE_DRIVER_TYPE = ".type";
+        for (String property : System.getProperties().stringPropertyNames()) {
+            if (property.startsWith(DATAVERSE_DRIVER_PREFIX) && property.endsWith(DATAVERSE_DRIVER_TYPE)) {
+                String driverId = property.substring(DATAVERSE_DRIVER_PREFIX.length(), property.length() - DATAVERSE_DRIVER_TYPE.length());
+                if (StorageIO.isDataverseAccessible(driverId)) {
+                    driverIds.add(driverId);
+                }
+            }
+        }
+        return driverIds;
     }
     
     /**
