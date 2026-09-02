@@ -123,7 +123,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             bucketName = getBucketName(driverId);
             minPartSize = getMinPartSize(driverId);
-            credentialsProvider = getCredentialsProvider(driverId);
             s3WriteClient = getWriteClient(driverId);
             boolean disabledMultiPartDownload = Boolean.parseBoolean(getConfigParam(DISABLE_MULTIPART_DOWNLOAD_FOR_INDIRECT_DOWNLOAD, "false"));
             s3ReadClient = disabledMultiPartDownload? getReadClient(driverId) : s3WriteClient;
@@ -1051,7 +1050,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * @param auxiliaryFileName (optional) - file name, if different from the main
      *                          file label.
      * @return redirect url
-     * @throws IOException.
+     * @throws IOException
      */
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
         throws IOException {
@@ -1668,8 +1667,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         logger.info("Closing all S3 clients and transfer managers.");
         driverTMMap.values().forEach(S3TransferManager::close);
         driverTMMap.clear();
-        driverClientMap.values().forEach(S3AsyncClient::close);
-        driverClientMap.clear();
+        driverUploadClientMap.values().forEach(S3AsyncClient::close);
+        driverUploadClientMap.clear();
+        driverDownloadClientMap.values().forEach(S3AsyncClient::close);
+        driverDownloadClientMap.clear();
         driverPresignerMap.values().forEach(S3Presigner::close);
         driverPresignerMap.clear();
         // AwsCredentialsProvider does not need to be closed unless it's a specific implementation that requires it.
