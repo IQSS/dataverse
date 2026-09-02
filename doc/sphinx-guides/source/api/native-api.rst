@@ -9139,10 +9139,10 @@ Signed URLs were developed to support External Tools but may be useful in other 
 This API call allows a Dataverse superUser to generate a signed URL for such scenarios.
 The JSON input parameter required is an object with the following keys:
 
-- ``url`` - the exact URL to sign, including api version number and all query parameters. Provide it in its URL-decoded form (for example ``persistentId=doi:10.5072/FK2/ABC``): the signature is computed over the URL exactly as provided, and a URL signed in decoded form validates both when used as received and when parts of it get percent-encoded in flight. The URL must not already contain any of the reserved query parameters ``until``, ``user``, ``method``, ``token`` (these are appended by the signing), ``key`` or ``signed``; such a URL is rejected with a 400 (Bad Request) response.
+- ``url`` - the exact URL to sign, including api version number and all query parameters. Provide it in its URL-decoded form (for example ``persistentId=doi:10.5072/FK2/ABC``): the signature is computed over the URL exactly as provided, and a URL signed in decoded form validates both when used as received and when parts of it get percent-encoded in flight. The URL must not already contain any of the reserved query parameters ``until``, ``user``, ``method``, ``token`` (these are appended by the signing), ``key`` or ``signed``; such a URL will be rejected with a 400 (Bad Request) response.
 - ``timeOut`` - how long in minutes the signature should be valid for, default is 10 minutes
 - ``httpMethod`` - which HTTP method is required, default is GET
-- ``user`` - the user identifier for the account associated with this signature; if omitted, the URL is signed for the superuser making the call. A ``user`` that does not exist is rejected with a 400 (Bad Request) rather than silently signing for the superuser. The API call will succeed/fail based on whether the specified user has the required permissions.
+- ``user`` - the user identifier for the account associated with this signature; if omitted, the URL is signed for the superuser making the call. A ``user`` that does not exist will be rejected with a 400 (Bad Request). The API call will succeed/fail based on whether the specified user has the required permissions.
 
 A curl example using allowing access to a dataset's metadata
 

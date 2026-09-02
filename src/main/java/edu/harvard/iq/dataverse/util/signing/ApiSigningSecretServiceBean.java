@@ -51,10 +51,10 @@ public class ApiSigningSecretServiceBean {
         byte[] bytes = new byte[MIN_SECRET_LENGTH];
         secureRandom.nextBytes(bytes);
         secret = Base64.getEncoder().encodeToString(bytes);
-        logger.warning("No persistent API signing secret is configured; generated a temporary one. Signed URLs"
-                + " will not survive a server restart, and on a multi-server installation each server signs"
-                + " with its own secret. Set dataverse.api.signing-secret (at least " + MIN_SECRET_LENGTH
-                + " characters) if you need either.");
+        logger.info("No persistent API signing secret is configured; generated a new in-memory one. Signed URLs"
+                + " will not survive a server restart, and may fail on a multi-server installation (since each server signs"
+                + " with its own secret). Set dataverse.api.signing-secret (at least " + MIN_SECRET_LENGTH
+                + " characters) if you need a globally defined signing secret.");
     }
 
     public String getSecret() {

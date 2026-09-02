@@ -31,6 +31,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
     protected PrivateUrlServiceBean privateUrlSvc;
     protected ApiSigningSecretServiceBean signingSecretSvc;
 
+    // @Inject on a constructor is preferred over @Inject on the ServiceBeans. This change has not yet been made to the other AUthMechanism implementations
     @Inject
     public SignedUrlAuthMechanism(AuthenticationServiceBean authSvc, PrivateUrlServiceBean privateUrlSvc,
             ApiSigningSecretServiceBean signingSecretSvc) {
@@ -41,6 +42,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
 
     SignedUrlAuthMechanism() {
         // tests assign the collaborators directly
+        //ToDo: remove this constructor (only used for tests). Once it's gone and tests are updated, the *ServiceBean members can be made final
     }
     
     private static final Logger logger = Logger.getLogger(SignedUrlAuthMechanism.class.getCanonicalName());

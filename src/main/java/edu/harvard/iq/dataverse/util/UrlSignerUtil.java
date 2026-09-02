@@ -43,8 +43,8 @@ public class UrlSignerUtil {
             SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN, SIGNED_URL_KEY, SIGNED_URL_SIGNED);
     /**
      *
-     * @param baseUrl - the URL to sign - must not contain the query params
-     *                "until","user", "method", or "token" (this method throws if it does)
+     * @param baseUrl - the URL to sign - must not contain any of the {@link #reservedParameters}
+     *                (this method throws if it does)
      * @param timeout - how many minutes to make the URL valid for (note - time skew
      *                between the creator and receiver could affect the validation
      * @param user    - a string representing the user - should be understood by the
@@ -54,8 +54,7 @@ public class UrlSignerUtil {
      *                this could be an APIKey (when sending URL to a tool that will
      *                use it to retrieve info from Dataverse)
      * @return - the signed URL
-     * @throws IllegalArgumentException if the base URL already contains one of the four query
-     *                parameters this method appends ({@link #signingParameters})
+     * @throws IllegalArgumentException if the base URL already contains one of the {@link #reservedParameters}
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
 
