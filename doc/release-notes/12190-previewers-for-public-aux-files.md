@@ -2,6 +2,7 @@
 
 In Dataverse, restricted datafiles can have public auxiliary files 
 (e.g. ones that only contain metadata or a less sensitive subset of the data). 
+Public NcML auxiliary files are automatically generated from NetCDF and HDF5 files, for example, even if they are restricted.
 With this Dataverse release it is now possible to create previewers for this case, i.e. ones
 that allow users who cannot view the restricted file to still see a preview 
 based on the auxiliary file. (The only known examples of this to date are 
