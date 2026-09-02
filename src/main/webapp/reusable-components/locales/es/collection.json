@@ -1,0 +1,85 @@
+{
+  "noDatasetsMessage": {
+    "authenticated": "Esta colección no tiene datasets actualmente. Puedes agregar a ella usando el botón Agregar datos en esta página.",
+    "anonymous": "Esta colección no tiene datasets actualmente. Por favor, <1>inicia sesión</1> para ver si puedes agregar a ella."
+  },
+  "noItemsMessage": {
+    "authenticated": "Esta colección no tiene actualmente {{typeOfEmptyItems}}. Puedes agregar a ella usando el botón Agregar datos en esta página.",
+    "anonymous": "Esta colección no tiene actualmente {{typeOfEmptyItems}}. Por favor, <1>inicia sesión</1> para ver si puedes agregar a ella.",
+    "itemTypeMessage": {
+      "all": "colecciones, datasets o ficheros",
+      "collection": "colecciones",
+      "dataset": "datasets",
+      "file": "ficheros",
+      "collectionAndDataset": "colecciones o datasets",
+      "collectionAndFile": "colecciones o ficheros",
+      "datasetAndFile": "datasets o ficheros"
+    }
+  },
+  "sort": {
+    "title": "Ordenar",
+    "options": {
+      "relevance": "Relevancia",
+      "nameAsc": "Nombre (A-Z)",
+      "nameDesc": "Nombre (Z-A)",
+      "dateAsc": "Más antiguos",
+      "dateDesc": "Más recientes"
+    }
+  },
+  "noSearchMatches": "No hay colecciones, datasets o ficheros que coincidan con tu búsqueda. Intenta una nueva búsqueda usando otros términos o términos más generales. También puedes consultar la <anchor>guía de búsqueda</anchor> para obtener consejos.",
+  "createdAlert": "¡Has creado tu colección correctamente! Para aprender más sobre lo que puedes hacer con tu colección, consulta la <anchor>Guía del usuario</anchor>.",
+  "filterResults": "Filtrar resultados",
+  "collectionFilterTypeLabel": "Colecciones",
+  "datasetFilterTypeLabel": "Datasets",
+  "fileFilterTypeLabel": "Ficheros",
+  "searchThisCollectionPlaceholder": "Buscar en esta colección...",
+  "advancedSearch": "Búsqueda avanzada",
+  "publish": {
+    "title": "Publicar colección",
+    "button": "Publicar",
+    "question": "¿Seguro que quieres publicar tu colección? Una vez que lo hagas, debe permanecer publicada.",
+    "error": "Ocurrió un error al publicar tu colección."
+  },
+  "publishedAlert": "Tu colección ahora es pública.",
+  "accountJustCreated": "¡Bienvenido a Dataverse! Tu cuenta está lista y estamos encantados de tenerte. ¡Empieza a explorar hoy!",
+  "addFacetFilter": "Agregar filtro de faceta {{labelName}}",
+  "removeSelectedFacet": "Eliminar filtro de faceta {{labelName}}",
+  "share": {
+    "shareCollection": "Compartir colección",
+    "helpText": "Comparte esta colección en tus redes sociales favoritas."
+  },
+  "editedAlert": "¡Has actualizado tu colección correctamente!",
+  "editCollection": {
+    "edit": "Editar",
+    "generalInfo": "Información general",
+    "themeAndWidgets": "Tema + Widgets",
+    "permissions": "Permisos",
+    "groups": "Grupos",
+    "datasetTemplates": "Plantillas de dataset",
+    "datasetGuestbooks": "Libros de visitas de dataset",
+    "featuredDataverses": "Dataverses destacados",
+    "deleteCollection": "Eliminar colección"
+  },
+  "featuredItems": {
+    "title": "Elementos destacados",
+    "slider": {
+      "prevLabel": "Ir a la diapositiva anterior",
+      "nextLabel": "Ir a la siguiente diapositiva",
+      "dotLabel": "Ir a la diapositiva"
+    }
+  },
+  "deleteCollectionModal": {
+    "title": "Eliminar colección",
+    "message": "¿Seguro que quieres eliminar tu colección? No podrás recuperar esta colección.",
+    "delete": "Eliminar"
+  },
+  "collectionDeletedSuccess": "Tu colección ha sido eliminada.",
+  "defaultCollectionDeleteError": "Algo salió mal al eliminar la colección. Intenta nuevamente más tarde.",
+  "description": "Descripción",
+  "linkCollection": {
+    "title": "Vincular colección",
+    "helper": "Elige a cuál de tus colecciones te gustaría vincular esta colección.",
+    "save": "Guardar colección vinculada",
+    "success": "<wrapper>{{linkedCollectionName}} se ha vinculado correctamente a <a>{{linkingCollectionName}}</a></wrapper>"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "breadcrumbActionItem": "Subir ficheros",
+  "cancel": "Cancelar subida",
+  "info": "Arrastra y suelta ficheros y/o directorios aquí.",
+  "select": "Seleccionar ficheros para agregar",
+  "delete": "Eliminar",
+  "save": "Guardar",
+  "saveUploaded": "Guardar ficheros subidos",
+  "uploadedFileSize": "Tamaño del fichero subido",
+  "restricted": "Restringido",
+  "tags": {
+    "documentation": "Documentación",
+    "data": "Data",
+    "code": "Código",
+    "editTagOptions": "Editar opciones de etiqueta",
+    "customFileTag": "Etiqueta de fichero personalizada",
+    "creatingNewTag": "Crear una nueva etiqueta la agregará como opción de etiqueta para todos los ficheros de este dataset.",
+    "addNewTag": "Agregar nueva etiqueta de fichero...",
+    "availableTagOptions": "Opciones de etiqueta disponibles: ",
+    "apply": "Aplicar",
+    "close": "Cerrar",
+    "addCustomTag": "Agregar nueva etiqueta de fichero personalizada..."
+  },
+  "restriction": {
+    "restrictAccess": "Restringir acceso",
+    "restrictionInfoP1": "Restringir limita el acceso a los ficheros publicados. Quienes quieran usar los ficheros restringidos pueden solicitar acceso por defecto. Si desactivas la solicitud de acceso, debes agregar información sobre el acceso en el campo Términos de acceso.",
+    "restrictionInfoP2": "Aprende sobre restricción de ficheros y acceso a datasets en la Guía del usuario.",
+    "termsOfAccess": "Términos de acceso para ficheros restringidos",
+    "enableAccessRequest": "Habilitar solicitud de acceso",
+    "saveChanges": "Guardar cambios",
+    "cancelChanges": "Cancelar cambios"
+  },
+  "fileForm": {
+    "fileName": "Nombre del archivo",
+    "filePath": "Ruta del archivo",
+    "description": "Descripción",
+    "tags": "Etiquetas",
+    "selectTags": "Seleccionar etiquetas",
+    "editTagOptions": "Editar opciones de etiqueta",
+    "plus": "Agregar nueva opción de etiqueta"
+  },
+  "filesHeader": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "editFiles": "Editar ficheros",
+    "restrict": "Restringir",
+    "unrestrict": "Quitar restricción",
+    "filesUploaded_one": "{{count}} fichero subido",
+    "filesUploaded_other": "{{count}} ficheros subidos",
+    "filesSelected_one": "{{count}} fichero seleccionado",
+    "filesSelected_other": "{{count}} ficheros seleccionados",
+    "deleteSelected": "Eliminar seleccionados",
+    "addTagsToSelected": "Agregar etiquetas a los seleccionados",
+    "addTags": "Agregar etiquetas",
+    "selectAll": "Seleccionar todos"
+  },
+  "addTags": {
+    "title": "Agregar etiquetas a los ficheros seleccionados",
+    "customTag": "Etiqueta personalizada",
+    "selectTags": "Seleccionar etiquetas para agregar",
+    "saveChanges": "Guardar cambios",
+    "cancelChanges": "Cancelar cambios"
+  }
+}

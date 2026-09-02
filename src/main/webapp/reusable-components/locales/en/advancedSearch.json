@@ -1,0 +1,97 @@
+{
+  "pageTitle": "Advanced Search",
+  "clearForm": "Clear Form",
+  "collections": {
+    "name": {
+      "label": "Name",
+      "description": "The project, department, university, professor, or journal this collection will contain data for.",
+      "invalid": {
+        "maxLength": "Name must be at most {{maxLength}} characters."
+      }
+    },
+    "affiliation": {
+      "label": "Affiliation",
+      "description": "The organization with which this collection is affiliated.",
+      "invalid": {
+        "maxLength": "Affiliation must be at most {{maxLength}} characters."
+      }
+    },
+    "alias": {
+      "label": "Identifier",
+      "description": "Short name used for the URL of this collection.",
+      "invalid": {
+        "maxLength": "Identifier must be at most {{maxLength}} characters."
+      }
+    },
+    "description": {
+      "label": "Description",
+      "description": "A summary describing the purpose, nature or scope of this collection.",
+      "invalid": {
+        "maxLength": "Description must be at most {{maxLength}} characters."
+      }
+    },
+    "subject": {
+      "label": "Subject",
+      "description": "Domain-specific Subject Categories that are topically relevant to this Collection.",
+      "invalid": {
+        "maxLength": "Subject must be at most {{maxLength}} characters."
+      }
+    }
+  },
+  "files": {
+    "name": {
+      "label": "Name",
+      "description": "The name given to identify the file.",
+      "invalid": {
+        "maxLength": "Name must be at most {{maxLength}} characters."
+      }
+    },
+    "description": {
+      "label": "Description",
+      "description": "A summary describing the file and its variables.",
+      "invalid": {
+        "maxLength": "Description must be at most {{maxLength}} characters."
+      }
+    },
+    "fileType": {
+      "label": "File Type",
+      "description": "The file type, e.g. Comma Separated Values, Plain Text, R, etc.",
+      "invalid": {
+        "maxLength": "File Type must be at most {{maxLength}} characters."
+      }
+    },
+    "dataFilePersistentId": {
+      "label": "Data File Persistent ID",
+      "description": "The unique persistent identifier for the file.",
+      "invalid": {
+        "maxLength": "Data File Persistent ID must be at most {{maxLength}} characters."
+      }
+    },
+    "variableName": {
+      "label": "Variable Name",
+      "description": "The name of the variable's column in the data frame.",
+      "invalid": {
+        "maxLength": "Variable Name must be at most {{maxLength}} characters."
+      }
+    },
+    "variableLabel": {
+      "label": "Variable Label",
+      "description": "A short description of the variable.",
+      "invalid": {
+        "maxLength": "Variable Label must be at most {{maxLength}} characters."
+      }
+    },
+    "fileTags": {
+      "label": "File Tags",
+      "description": "Terms such as \"Documentation\", \"Data\", or \"Code\" that have been applied to files.",
+      "invalid": {
+        "maxLength": "File Tags must be at most {{maxLength}} characters."
+      }
+    }
+  },
+  "datasets": {
+    "invalid": {
+      "maxLength": "{{fieldName}} must be at most {{maxLength}} characters."
+    }
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "citation": {
+    "name": "Citation Metadata",
+    "datasetField": {
+      "persistentId": {
+        "name": "Persistent Identifier",
+        "description": "The Dataset's unique persistent identifier, either a DOI or Handle"
+      },
+      "alternativePersistentId": {
+        "name": "Previous Dataset Persistent ID",
+        "description": "A previously used persistent identifier for the Dataset, either a DOI or Handle"
+      },
+      "publicationDate": {
+        "name": "Publication Date",
+        "description": "The publication date of a Dataset."
+      },
+      "citationDate": {
+        "name": "Citation Date",
+        "description": "The citation date of a dataset, determined by the longest embargo on any file in version 1.0."
+      },
+      "title": { "name": "Title", "description": "The main title of the Dataset" },
+      "subtitle": {
+        "name": "Subtitle",
+        "description": "A secondary title that amplifies or states certain limitations on the main title"
+      },
+      "alternativeTitle": {
+        "name": "Alternative Title",
+        "description": "Either 1) a title commonly used to refer to the Dataset or 2) an abbreviation of the main title"
+      },
+      "alternativeURL": {
+        "name": "Alternative URL",
+        "description": "Another URL where one can view or access the data in the Dataset, e.g. a project or personal webpage"
+      },
+      "otherId": {
+        "name": "Other Identifier",
+        "description": "Another unique identifier for the Dataset (e.g. producer's or another repository's identifier)"
+      },
+      "otherIdAgency": {
+        "name": "Agency",
+        "description": "The name of the agency that generated the other identifier"
+      },
+      "otherIdValue": {
+        "name": "Identifier",
+        "description": "Another identifier uniquely identifies the Dataset"
+      },
+      "author": {
+        "name": "Author",
+        "description": "The entity, e.g. a person or organization, that created the Dataset"
+      },
+      "authorName": {
+        "name": "Name",
+        "description": "The name of the author, such as the person's name or the name of an organization"
+      },
+      "authorAffiliation": {
+        "name": "Affiliation",
+        "description": "The name of the entity affiliated with the author, e.g. an organization's name"
+      },
+      "authorIdentifierScheme": {
+        "name": "Identifier Type",
+        "description": "The type of identifier that uniquely identifies the author (e.g. ORCID, ISNI)"
+      },
+      "authorIdentifier": {
+        "name": "Identifier",
+        "description": "Uniquely identifies the author when paired with an identifier type"
+      },
+      "datasetContact": {
+        "name": "Point of Contact",
+        "description": "The entity, e.g. a person or organization, that users of the Dataset can contact with questions",
+        "tip": "Use email button above to contact."
+      },
+      "datasetContactName": {
+        "name": "Name",
+        "description": "The name of the point of contact, e.g. the person's name or the name of an organization"
+      },
+      "datasetContactAffiliation": {
+        "name": "Affiliation",
+        "description": "The name of the entity affiliated with the point of contact, e.g. an organization's name"
+      },
+      "datasetContactEmail": {
+        "name": "E-mail",
+        "description": "The point of contact's email address"
+      },
+      "dsDescription": {
+        "name": "Description",
+        "description": "A summary describing the purpose, nature, and scope of the Dataset"
+      },
+      "dsDescriptionValue": {
+        "name": "Text",
+        "description": "A summary describing the purpose, nature, and scope of the Dataset"
+      },
+      "dsDescriptionDate": {
+        "name": "Date",
+        "description": "The date when the description was added to the Dataset. If the Dataset contains more than one description, e.g. the data producer supplied one description and the data repository supplied another, this date is used to distinguish between the descriptions"
+      },
+      "subject": { "name": "Subject", "description": "The area of study relevant to the Dataset" },
+      "keyword": {
+        "name": "Keyword",
+        "description": "A key term that describes an important aspect of the Dataset and information about any controlled vocabulary used"
+      },
+      "keywordValue": {
+        "name": "Term",
+        "description": "A key term that describes important aspects of the Dataset"
+      },
+      "keywordVocabulary": {
+        "name": "Controlled Vocabulary Name",
+        "description": "The controlled vocabulary used for the keyword term (e.g. LCSH, MeSH)"
+      },
+      "keywordVocabularyURI": {
+        "name": "Controlled Vocabulary URL",
+        "description": "The URL where one can access information about the term's controlled vocabulary"
+      },
+      "topicClassification": {
+        "name": "Topic Classification",
+        "description": "Indicates a broad, important topic or subject that the Dataset covers and information about any controlled vocabulary used"
+      },
+      "topicClassValue": { "name": "Term", "description": "A topic or subject term" },
+      "topicClassVocab": {
+        "name": "Controlled Vocabulary Name",
+        "description": "The controlled vocabulary used for the keyword term (e.g. LCSH, MeSH)"
+      },
+      "topicClassVocabURI": {
+        "name": "Controlled Vocabulary URL",
+        "description": "The URL where one can access information about the term's controlled vocabulary"
+      },
+      "publication": {
+        "name": "Related Publication",
+        "description": "The article or report that uses the data in the Dataset. The full list of related publications will be displayed on the metadata tab"
+      },
+      "publicationCitation": {
+        "name": "Citation",
+        "description": "The full bibliographic citation for the related publication"
+      },
+      "publicationIDType": {
+        "name": "Identifier Type",
+        "description": "The type of identifier that uniquely identifies a related publication"
+      },
+      "publicationIDNumber": {
+        "name": "Identifier",
+        "description": "The identifier for a related publication"
+      },
+      "publicationURL": {
+        "name": "URL",
+        "description": "The URL form of the identifier entered in the Identifier field, e.g. the DOI URL if a DOI was entered in the Identifier field. Used to display what was entered in the ID Type and ID Number fields as a link. If what was entered in the Identifier field has no URL form, the URL of the publication webpage is used, e.g. a journal article webpage"
+      },
+      "notesText": { "name": "Notes", "description": "Additional information about the Dataset" },
+      "language": {
+        "name": "Language",
+        "description": "A language that the Dataset's files is written in"
+      },
+      "producer": {
+        "name": "Producer",
+        "description": "The entity, such a person or organization, managing the finances or other administrative processes involved in the creation of the Dataset"
+      },
+      "producerName": {
+        "name": "Name",
+        "description": "The name of the entity, e.g. the person's name or the name of an organization"
+      },
+      "producerAffiliation": {
+        "name": "Affiliation",
+        "description": "The name of the entity affiliated with the producer, e.g. an organization's name"
+      },
+      "producerAbbreviation": {
+        "name": "Abbreviated Name",
+        "description": "The producer's abbreviated name (e.g. IQSS, ICPSR)"
+      },
+      "producerURL": { "name": "URL", "description": "The URL of the producer's website" },
+      "producerLogoURL": { "name": "Logo URL", "description": "The URL of the producer's logo" },
+      "productionDate": {
+        "name": "Production Date",
+        "description": "The date when the data were produced (not distributed, published, or archived)"
+      },
+      "productionPlace": {
+        "name": "Production Location",
+        "description": "The location where the data and any related materials were produced or collected"
+      },
+      "contributor": {
+        "name": "Contributor",
+        "description": "The entity, such as a person or organization, responsible for collecting, managing, or otherwise contributing to the development of the Dataset"
+      },
+      "contributorType": {
+        "name": "Type",
+        "description": "Indicates the type of contribution made to the dataset"
+      },
+      "contributorName": {
+        "name": "Name",
+        "description": "The name of the contributor, e.g. the person's name or the name of an organization"
+      },
+      "grantNumber": {
+        "name": "Funding Information",
+        "description": "Information about the Dataset's financial support"
+      },
+      "grantNumberAgency": {
+        "name": "Agency",
+        "description": "The agency that provided financial support for the Dataset"
+      },
+      "grantNumberValue": {
+        "name": "Identifier",
+        "description": "The grant identifier or contract identifier of the agency that provided financial support for the Dataset"
+      },
+      "distributor": {
+        "name": "Distributor",
+        "description": "The entity, such as a person or organization, designated to generate copies of the Dataset, including any editions or revisions"
+      },
+      "distributorName": {
+        "name": "Name",
+        "description": "The name of the entity, e.g. the person's name or the name of an organization"
+      },
+      "distributorAffiliation": {
+        "name": "Affiliation",
+        "description": "The name of the entity affiliated with the distributor, e.g. an organization's name"
+      },
+      "distributorAbbreviation": {
+        "name": "Abbreviated Name",
+        "description": "The distributor's abbreviated name (e.g. IQSS, ICPSR)"
+      },
+      "distributorURL": { "name": "URL", "description": "The URL of the distributor's webpage" },
+      "distributorLogoURL": {
+        "name": "Logo URL",
+        "description": "The URL of the distributor's logo image, used to show the image on the Dataset's page"
+      },
+      "distributionDate": {
+        "name": "Distribution Date",
+        "description": "The date when the Dataset was made available for distribution/presentation"
+      },
+      "depositor": {
+        "name": "Depositor",
+        "description": "The entity, such as a person or organization, that deposited the Dataset in the repository"
+      },
+      "dateOfDeposit": {
+        "name": "Deposit Date",
+        "description": "The date when the Dataset was deposited into the repository"
+      },
+      "timePeriodCovered": {
+        "name": "Time Period",
+        "description": "The time period that the data refer to. Also known as span. This is the time period covered by the data, not the dates of coding, collecting data, or making documents machine-readable"
+      },
+      "timePeriodCoveredStart": {
+        "name": "Start Date",
+        "description": "The start date of the time period that the data refer to"
+      },
+      "timePeriodCoveredEnd": {
+        "name": "End Date",
+        "description": "The end date of the time period that the data refer to"
+      },
+      "dateOfCollection": {
+        "name": "Date of Collection",
+        "description": "The dates when the data were collected or generated"
+      },
+      "dateOfCollectionStart": {
+        "name": "Start Date",
+        "description": "The date when the data collection started"
+      },
+      "dateOfCollectionEnd": {
+        "name": "End Date",
+        "description": "The date when the data collection ended"
+      },
+      "kindOfData": {
+        "name": "Data Type",
+        "description": "The type of data included in the files (e.g. survey data, clinical data, or machine-readable text)"
+      },
+      "series": {
+        "name": "Series",
+        "description": "Information about the dataset series to which the Dataset belong"
+      },
+      "seriesName": { "name": "Name", "description": "The name of the dataset series" },
+      "seriesInformation": {
+        "name": "Information",
+        "description": "Can include 1) a history of the series and 2) a summary of features that apply to the series"
+      },
+      "software": {
+        "name": "Software",
+        "description": "Information about the software used to generate the Dataset"
+      },
+      "softwareName": {
+        "name": "Name",
+        "description": "The name of software used to generate the Dataset"
+      },
+      "softwareVersion": {
+        "name": "Version",
+        "description": "The version of the software used to generate the Dataset, e.g. 4.11"
+      },
+      "relatedMaterial": {
+        "name": "Related Material",
+        "description": "Information, such as a persistent ID or citation, about the material related to the Dataset, such as appendices or sampling information available outside of the Dataset"
+      },
+      "relatedDatasets": {
+        "name": "Related Dataset",
+        "description": "Information, such as a persistent ID or citation, about a related dataset, such as previous research on the Dataset's subject"
+      },
+      "otherReferences": {
+        "name": "Other Reference",
+        "description": "Information, such as a persistent ID or citation, about another type of resource that provides background or supporting material to the Dataset"
+      },
+      "dataSources": {
+        "name": "Data Source",
+        "description": "Information, such as a persistent ID or citation, about sources of the Dataset (e.g. a book, article, serial, or machine-readable data file)"
+      },
+      "originOfSources": {
+        "name": "Origin of Historical Sources",
+        "description": "For historical sources, the origin and any rules followed in establishing them as sources"
+      },
+      "characteristicOfSources": {
+        "name": "Characteristic of Sources",
+        "description": "Characteristics not already noted elsewhere"
+      },
+      "accessToSources": {
+        "name": "Documentation and Access to Sources",
+        "description": "1) Methods or procedures for accessing data sources and 2) any special permissions needed for access"
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "pageTitle": "Búsqueda avanzada",
+  "clearForm": "Limpiar formulario",
+  "collections": {
+    "name": {
+      "label": "Nombre",
+      "description": "El proyecto, departamento, universidad, profesor o revista para el cual esta colección contendrá datos.",
+      "invalid": {
+        "maxLength": "El nombre debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "affiliation": {
+      "label": "Afiliación",
+      "description": "La organización con la que esta colección está afiliada.",
+      "invalid": {
+        "maxLength": "La afiliación debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "alias": {
+      "label": "Identificador",
+      "description": "Nombre corto usado para la URL de esta colección.",
+      "invalid": {
+        "maxLength": "El identificador debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "description": {
+      "label": "Descripción",
+      "description": "Un resumen que describe el propósito, la naturaleza o el alcance de esta colección.",
+      "invalid": {
+        "maxLength": "La descripción debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "subject": {
+      "label": "Tema",
+      "description": "Categorías de tema específicas del dominio que son relevantes para esta colección.",
+      "invalid": {
+        "maxLength": "El tema debe tener como máximo {{maxLength}} caracteres."
+      }
+    }
+  },
+  "files": {
+    "name": {
+      "label": "Nombre",
+      "description": "El nombre dado para identificar el fichero.",
+      "invalid": {
+        "maxLength": "El nombre debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "description": {
+      "label": "Descripción",
+      "description": "Un resumen que describe el fichero y sus variables.",
+      "invalid": {
+        "maxLength": "La descripción debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "fileType": {
+      "label": "Tipo de archivo",
+      "description": "El tipo de archivo, p. ej., valores separados por comas, texto plano, R, etc.",
+      "invalid": {
+        "maxLength": "El tipo de fichero debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "dataFilePersistentId": {
+      "label": "ID persistente del fichero de datos",
+      "description": "El identificador persistente único para el fichero.",
+      "invalid": {
+        "maxLength": "El ID persistente del fichero de datos debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "variableName": {
+      "label": "Nombre de variable",
+      "description": "El nombre de la columna de la variable en el marco de datos.",
+      "invalid": {
+        "maxLength": "El nombre de variable debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "variableLabel": {
+      "label": "Etiqueta de variable",
+      "description": "Una breve descripción de la variable.",
+      "invalid": {
+        "maxLength": "La etiqueta de variable debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "fileTags": {
+      "label": "Etiquetas de archivo",
+      "description": "Términos como \"Documentation\", \"Data\" o \"Code\" que se han aplicado a los ficheros.",
+      "invalid": {
+        "maxLength": "Las etiquetas de fichero deben tener como máximo {{maxLength}} caracteres."
+      }
+    }
+  },
+  "datasets": {
+    "invalid": {
+      "maxLength": "{{fieldName}} debe tener como máximo {{maxLength}} caracteres."
+    }
+  }
+}

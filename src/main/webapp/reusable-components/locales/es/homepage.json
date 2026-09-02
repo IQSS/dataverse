@@ -1,0 +1,41 @@
+{
+  "browseCollections": "Explorar todas las colecciones",
+  "metrics": {
+    "title": "Dataverse en números",
+    "datasets": "Datasets",
+    "files": "Ficheros",
+    "total": "Total",
+    "lastMonth": "Último mes",
+    "past30days": "Últimos 30 días",
+    "downloaded": "Descargados",
+    "download30days": "Descargas (30 días)",
+    "downloadedLastMonth": "Descargados (último mes)",
+    "deposited": "Depositados",
+    "deposited30days": "Depositados (30 días)",
+    "depositedLastMonth": "Depositados (último mes)",
+    "harvested": "Recolectados",
+    "harvestedLastMonth": "Recolectados (último mes)",
+    "poweredByDataverseHub": "Desarrollado por <a>Dataverse Hub</a>"
+  },
+  "usage": {
+    "datasets": {
+      "title": "Deposita y comparte tus datos. Obtén crédito académico.",
+      "content": "{{dataverseName}} es un repositorio para datos de investigación. Deposita aquí tus datos y código.",
+      "text_button": "Agregar un dataset"
+    },
+    "collections": {
+      "title": "Organiza datasets y reúne métricas en tu propio repositorio.",
+      "content": "Una colección es un contenedor para todos tus datasets, ficheros y metadatos.",
+      "text_button": "Agregar una colección"
+    },
+    "general": {
+      "title": "¡Publicar tus datos es fácil en {{dataverseName}}!",
+      "content": "Aprende cómo comenzar a crear tu propio repositorio Dataverse aquí.",
+      "text_button": "Comenzar"
+    }
+  },
+  "searchDropdown": {
+    "header": "Servicios de búsqueda",
+    "buttonLabel": "Alternar menú de servicios de búsqueda"
+  }
+}

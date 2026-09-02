@@ -1,0 +1,5 @@
+{
+  "statusNumberNotFound": "404",
+  "message": "No podemos encontrar el <1>{{type}}</1> que estás buscando.\nLamentamos las molestias.",
+  "backToHomepage": "Volver a la página principal de {{brandName}}"
+}

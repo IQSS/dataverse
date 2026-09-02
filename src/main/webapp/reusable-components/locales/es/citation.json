@@ -1,0 +1,312 @@
+{
+  "citation": {
+    "name": "Metadatos de citación",
+    "datasetField": {
+      "persistentId": {
+        "name": "Identificador persistente",
+        "description": "El identificador persistente único del Dataset, ya sea un DOI o Handle"
+      },
+      "alternativePersistentId": {
+        "name": "ID persistente de dataset anterior",
+        "description": "Un identificador persistente utilizado previamente para el Dataset, ya sea un DOI o Handle"
+      },
+      "publicationDate": {
+        "name": "Fecha de publicación",
+        "description": "La fecha de publicación de un Dataset."
+      },
+      "citationDate": {
+        "name": "Fecha de citación",
+        "description": "La fecha de citación de un dataset, determinada por el embargo más largo en cualquier fichero de la versión 1.0."
+      },
+      "title": { "name": "Título", "description": "El título principal del Dataset" },
+      "subtitle": {
+        "name": "Subtítulo",
+        "description": "Un título secundario que amplía o indica ciertas limitaciones del título principal"
+      },
+      "alternativeTitle": {
+        "name": "Título alternativo",
+        "description": "1) Un título usado comúnmente para referirse al Dataset o 2) una abreviatura del título principal"
+      },
+      "alternativeURL": {
+        "name": "URL alternativa",
+        "description": "Otra URL donde se puede ver o acceder a los datos del Dataset, por ejemplo, una página de proyecto o personal"
+      },
+      "otherId": {
+        "name": "Otro identificador",
+        "description": "Otro identificador único del Dataset (por ejemplo, el identificador del productor u otro repositorio)"
+      },
+      "otherIdAgency": {
+        "name": "Agencia",
+        "description": "El nombre de la agencia que generó el otro identificador"
+      },
+      "otherIdValue": {
+        "name": "Identificador",
+        "description": "Otro identificador que identifica de forma única el Dataset"
+      },
+      "author": {
+        "name": "Autor",
+        "description": "La entidad, p. ej., una persona u organización, que creó el Dataset"
+      },
+      "authorName": {
+        "name": "Nombre",
+        "description": "El nombre del autor, como el nombre de la persona o el nombre de una organización"
+      },
+      "authorAffiliation": {
+        "name": "Afiliación",
+        "description": "El nombre de la entidad afiliada al autor, p. ej., el nombre de una organización"
+      },
+      "authorIdentifierScheme": {
+        "name": "Tipo de identificador",
+        "description": "El tipo de identificador que identifica de forma única al autor (p. ej., ORCID, ISNI)"
+      },
+      "authorIdentifier": {
+        "name": "Identificador",
+        "description": "Identifica de forma única al autor cuando se combina con un tipo de identificador"
+      },
+      "datasetContact": {
+        "name": "Punto de contacto",
+        "description": "La entidad, p. ej., una persona u organización, con la que los usuarios del Dataset pueden comunicarse si tienen preguntas",
+        "tip": "Usa el botón de correo electrónico de arriba para contactar."
+      },
+      "datasetContactName": {
+        "name": "Nombre",
+        "description": "El nombre del punto de contacto, p. ej., el nombre de la persona o el nombre de una organización"
+      },
+      "datasetContactAffiliation": {
+        "name": "Afiliación",
+        "description": "El nombre de la entidad afiliada al punto de contacto, p. ej., el nombre de una organización"
+      },
+      "datasetContactEmail": {
+        "name": "Correo electrónico",
+        "description": "La dirección de correo electrónico del punto de contacto"
+      },
+      "dsDescription": {
+        "name": "Descripción",
+        "description": "Un resumen que describe el propósito, la naturaleza y el alcance del Dataset"
+      },
+      "dsDescriptionValue": {
+        "name": "Texto",
+        "description": "Un resumen que describe el propósito, la naturaleza y el alcance del Dataset"
+      },
+      "dsDescriptionDate": {
+        "name": "Fecha",
+        "description": "La fecha en que la descripción se agregó al Dataset. Si el Dataset contiene más de una descripción, p. ej., el productor de datos proporcionó una descripción y el repositorio de datos proporcionó otra, esta fecha se utiliza para distinguir entre las descripciones"
+      },
+      "subject": { "name": "Tema", "description": "El área de estudio relevante para el Dataset" },
+      "keyword": {
+        "name": "Palabra clave",
+        "description": "Un término clave que describe un aspecto importante del Dataset y la información sobre cualquier vocabulario controlado usado"
+      },
+      "keywordValue": {
+        "name": "Término",
+        "description": "Un término clave que describe aspectos importantes del Dataset"
+      },
+      "keywordVocabulary": {
+        "name": "Nombre del vocabulario controlado",
+        "description": "El vocabulario controlado usado para el término clave (p. ej., LCSH, MeSH)"
+      },
+      "keywordVocabularyURI": {
+        "name": "URL del vocabulario controlado",
+        "description": "La URL donde se puede acceder a información sobre el vocabulario controlado del término"
+      },
+      "topicClassification": {
+        "name": "Clasificación del tema",
+        "description": "Indica un tema o asunto amplio e importante que cubre el Dataset y la información sobre cualquier vocabulario controlado usado"
+      },
+      "topicClassValue": { "name": "Término", "description": "Un término de tema o asunto" },
+      "topicClassVocab": {
+        "name": "Nombre del vocabulario controlado",
+        "description": "El vocabulario controlado usado para el término clave (p. ej., LCSH, MeSH)"
+      },
+      "topicClassVocabURI": {
+        "name": "URL del vocabulario controlado",
+        "description": "La URL donde se puede acceder a información sobre el vocabulario controlado del término"
+      },
+      "publication": {
+        "name": "Publicación relacionada",
+        "description": "El artículo o informe que usa los datos del Dataset. La lista completa de publicaciones relacionadas se mostrará en la pestaña de metadatos"
+      },
+      "publicationCitation": {
+        "name": "Citación",
+        "description": "La cita bibliográfica completa para la publicación relacionada"
+      },
+      "publicationIDType": {
+        "name": "Tipo de identificador",
+        "description": "El tipo de identificador que identifica de forma única una publicación relacionada"
+      },
+      "publicationIDNumber": {
+        "name": "Identificador",
+        "description": "El identificador para una publicación relacionada"
+      },
+      "publicationURL": {
+        "name": "URL",
+        "description": "La forma URL del identificador ingresado en el campo Identificador, p. ej., la URL DOI si se ingresó un DOI en el campo Identificador. Se utiliza para mostrar lo que se ingresó en los campos Tipo de ID y Número de ID como un enlace. Si lo que se ingresó en el campo Identificador no tiene forma de URL, se usa la URL de la página web de la publicación, p. ej., la página de un artículo de revista"
+      },
+      "notesText": { "name": "Notas", "description": "Información adicional sobre el Dataset" },
+      "language": {
+        "name": "Idioma",
+        "description": "Un idioma en el que están escritos los ficheros del Dataset"
+      },
+      "producer": {
+        "name": "Productor",
+        "description": "La entidad, como una persona u organización, que gestiona las finanzas u otros procesos administrativos implicados en la creación del Dataset"
+      },
+      "producerName": {
+        "name": "Nombre",
+        "description": "El nombre de la entidad, p. ej., el nombre de la persona o el nombre de una organización"
+      },
+      "producerAffiliation": {
+        "name": "Afiliación",
+        "description": "El nombre de la entidad afiliada al productor, p. ej., el nombre de una organización"
+      },
+      "producerAbbreviation": {
+        "name": "Nombre abreviado",
+        "description": "El nombre abreviado del productor (p. ej., IQSS, ICPSR)"
+      },
+      "producerURL": { "name": "URL", "description": "La URL del sitio web del productor" },
+      "producerLogoURL": { "name": "URL del logo", "description": "La URL del logo del productor" },
+      "productionDate": {
+        "name": "Fecha de producción",
+        "description": "La fecha en que se produjeron los datos (no distribuidos, publicados o archivados)"
+      },
+      "productionPlace": {
+        "name": "Lugar de producción",
+        "description": "La ubicación donde se produjeron o recolectaron los datos y cualquier material relacionado"
+      },
+      "contributor": {
+        "name": "Colaborador",
+        "description": "La entidad, como una persona u organización, responsable de recolectar, gestionar o contribuir de cualquier otra manera al desarrollo del Dataset"
+      },
+      "contributorType": {
+        "name": "Tipo",
+        "description": "Indica el tipo de contribución realizada al dataset"
+      },
+      "contributorName": {
+        "name": "Nombre",
+        "description": "El nombre del colaborador, p. ej., el nombre de la persona o el nombre de una organización"
+      },
+      "grantNumber": {
+        "name": "Información de financiamiento",
+        "description": "Información sobre el apoyo financiero del Dataset"
+      },
+      "grantNumberAgency": {
+        "name": "Agencia",
+        "description": "La agencia que proporcionó apoyo financiero para el Dataset"
+      },
+      "grantNumberValue": {
+        "name": "Identificador",
+        "description": "El identificador de la subvención o del contrato de la agencia que proporcionó apoyo financiero para el Dataset"
+      },
+      "distributor": {
+        "name": "Distribuidor",
+        "description": "La entidad, como una persona u organización, designada para generar copias del Dataset, incluidas ediciones o revisiones"
+      },
+      "distributorName": {
+        "name": "Nombre",
+        "description": "El nombre de la entidad, p. ej., el nombre de la persona o el nombre de una organización"
+      },
+      "distributorAffiliation": {
+        "name": "Afiliación",
+        "description": "El nombre de la entidad afiliada al distribuidor, p. ej., el nombre de una organización"
+      },
+      "distributorAbbreviation": {
+        "name": "Nombre abreviado",
+        "description": "El nombre abreviado del distribuidor (p. ej., IQSS, ICPSR)"
+      },
+      "distributorURL": { "name": "URL", "description": "La URL de la página del distribuidor" },
+      "distributorLogoURL": {
+        "name": "URL del logo",
+        "description": "La URL de la imagen del logo del distribuidor, utilizada para mostrar la imagen en la página del Dataset"
+      },
+      "distributionDate": {
+        "name": "Fecha de distribución",
+        "description": "La fecha en que el Dataset estuvo disponible para distribución/presentación"
+      },
+      "depositor": {
+        "name": "Depositante",
+        "description": "La entidad, como una persona u organización, que depositó el Dataset en el repositorio"
+      },
+      "dateOfDeposit": {
+        "name": "Fecha de depósito",
+        "description": "La fecha en que el Dataset fue depositado en el repositorio"
+      },
+      "timePeriodCovered": {
+        "name": "Período de tiempo",
+        "description": "El período de tiempo al que se refieren los datos. También conocido como lapso. Este es el período de tiempo cubierto por los datos, no las fechas de codificación, recolección de datos o digitalización de documentos"
+      },
+      "timePeriodCoveredStart": {
+        "name": "Fecha de inicio",
+        "description": "La fecha de inicio del período de tiempo al que se refieren los datos"
+      },
+      "timePeriodCoveredEnd": {
+        "name": "Fecha de finalización",
+        "description": "La fecha de finalización del período de tiempo al que se refieren los datos"
+      },
+      "dateOfCollection": {
+        "name": "Fecha de recolección",
+        "description": "Las fechas en que se recolectaron o generaron los datos"
+      },
+      "dateOfCollectionStart": {
+        "name": "Fecha de inicio",
+        "description": "La fecha en que comenzó la recolección de datos"
+      },
+      "dateOfCollectionEnd": {
+        "name": "Fecha de finalización",
+        "description": "La fecha en que finalizó la recolección de datos"
+      },
+      "kindOfData": {
+        "name": "Tipo de datos",
+        "description": "El tipo de datos incluidos en los ficheros (p. ej., datos de encuestas, datos clínicos o texto legible por máquina)"
+      },
+      "series": {
+        "name": "Serie",
+        "description": "Información sobre la serie de datasets a la que pertenece el Dataset"
+      },
+      "seriesName": { "name": "Nombre", "description": "El nombre de la serie de datasets" },
+      "seriesInformation": {
+        "name": "Información",
+        "description": "Puede incluir 1) una historia de la serie y 2) un resumen de características que se aplican a la serie"
+      },
+      "software": {
+        "name": "Software",
+        "description": "Información sobre el software utilizado para generar el Dataset"
+      },
+      "softwareName": {
+        "name": "Nombre",
+        "description": "El nombre del software utilizado para generar el Dataset"
+      },
+      "softwareVersion": {
+        "name": "Versión",
+        "description": "La versión del software utilizado para generar el Dataset, p. ej., 4.11"
+      },
+      "relatedMaterial": {
+        "name": "Material relacionado",
+        "description": "Información, como un ID persistente o una cita, sobre el material relacionado con el Dataset, como apéndices o información de muestreo disponible fuera del Dataset"
+      },
+      "relatedDatasets": {
+        "name": "Dataset relacionado",
+        "description": "Información, como un ID persistente o una cita, sobre un dataset relacionado, como investigaciones previas sobre el tema del Dataset"
+      },
+      "otherReferences": {
+        "name": "Otra referencia",
+        "description": "Información, como un ID persistente o una cita, sobre otro tipo de recurso que proporciona material de apoyo o de contexto para el Dataset"
+      },
+      "dataSources": {
+        "name": "Fuente de datos",
+        "description": "Información, como un ID persistente o una cita, sobre las fuentes del Dataset (p. ej., un libro, artículo, serie o fichero de datos legible por máquina)"
+      },
+      "originOfSources": {
+        "name": "Origen de las fuentes históricas",
+        "description": "Para fuentes históricas, el origen y cualquier regla seguida para establecerlas como fuentes"
+      },
+      "characteristicOfSources": {
+        "name": "Características de las fuentes",
+        "description": "Características no anotadas en otro lugar"
+      },
+      "accessToSources": {
+        "name": "Documentación y acceso a las fuentes",
+        "description": "1) Métodos o procedimientos para acceder a las fuentes de datos y 2) cualquier permiso especial necesario para el acceso"
+      }
+    }
+  }
+}

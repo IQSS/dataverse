@@ -1,0 +1,41 @@
+{
+  "browseCollections": "Browse All Collections",
+  "metrics": {
+    "title": "Dataverse in Numbers",
+    "datasets": "Datasets",
+    "files": "Files",
+    "total": "Total",
+    "lastMonth": "Last Month",
+    "past30days": "Past 30 Days",
+    "downloaded": "Downloaded",
+    "download30days": "Downloads (30 days)",
+    "downloadedLastMonth": "Downloaded (last month)",
+    "deposited": "Deposited",
+    "deposited30days": "Deposited (30 days)",
+    "depositedLastMonth": "Deposited (last month)",
+    "harvested": "Harvested",
+    "harvestedLastMonth": "Harvested (last month)",
+    "poweredByDataverseHub": "Powered by the <a>Dataverse Hub</a>"
+  },
+  "usage": {
+    "datasets": {
+      "title": "Deposit and share your data. Get academic credit.",
+      "content": "{{dataverseName}} is a repository for research data. Deposit data and code here.",
+      "text_button": "Add a dataset"
+    },
+    "collections": {
+      "title": "Organize datasets and gather metrics in your own repository.",
+      "content": "A collection is a container for all your datasets, files, and metadata.",
+      "text_button": "Add a collection"
+    },
+    "general": {
+      "title": "Publishing your data is easy on {{dataverseName}}!",
+      "content": "Learn about getting started creating your own dataverse repository here.",
+      "text_button": "Getting started"
+    }
+  },
+  "searchDropdown": {
+    "header": "Search Services",
+    "buttonLabel": "Toggle search services dropdown"
+  }
+}

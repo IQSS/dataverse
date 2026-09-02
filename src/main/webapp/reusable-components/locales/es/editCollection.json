@@ -1,0 +1,8 @@
+{
+  "pageTitle": "Editar colección",
+  "notAllowedToEditCollection": "No tienes permisos para editar esta colección.",
+  "infoAlert": {
+    "heading": "Editar colección",
+    "text": "Edita tu colección y haz clic en Guardar cambios. Los asteriscos indican campos obligatorios."
+  }
+}

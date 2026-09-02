@@ -1,0 +1,75 @@
+{
+  "pageTitle": "Elementos destacados",
+  "featuredItem": "Elemento destacado",
+  "infoMessage": "Agrega Elementos destacados para resaltar contenido clave en tu colección. Estos elementos se mostrarán como tarjetas en la página de la colección, permitiendo a los usuarios explorarlos y acceder a cada uno para más detalles.",
+  "previewCarouselHeader": "Vista previa en vivo de tus elementos destacados personalizados",
+  "deleteAll": {
+    "action": "Eliminar todos los elementos destacados",
+    "confirmation": "¿Seguro que quieres eliminar todos los elementos destacados de esta colección?",
+    "success": "Todos los elementos destacados se han eliminado correctamente."
+  },
+  "backToTypeSelectionButton": {
+    "label": "Volver a la selección de tipo de elemento destacado",
+    "dialogText": "Si vuelves atrás, se descartarán tus cambios."
+  },
+  "deleteSingleFeaturedItem": {
+    "dialog": {
+      "title": "Eliminar elemento destacado",
+      "text": "¿Seguro que quieres eliminar este elemento destacado?"
+    },
+    "success": "El elemento destacado se ha eliminado correctamente.",
+    "defaultError": "Ocurrió un error al eliminar el elemento destacado. Intenta nuevamente más tarde."
+  },
+  "removeConfirmation": "Si continúas, se descartarán tus cambios.",
+  "order": "Orden",
+  "enableEditing": "Habilitar edición",
+  "disableEditing": "Deshabilitar edición",
+  "removeFeaturedItem": "Quitar elemento destacado",
+  "addFeaturedItem": "Agregar elemento destacado",
+  "deleteFeaturedItem": "Eliminar elemento destacado",
+  "type": "Tipo",
+  "identifier": "Identificador",
+  "baseItem": {
+    "label": "Selecciona un tipo de elemento destacado",
+    "required": "Selecciona un tipo de elemento destacado o elimina el elemento.",
+    "custom": {
+      "label": "Personalizado",
+      "description": "Este tipo de elemento destacado te permite crear publicaciones de blog, noticias u otro tipo de contenido que quieras destacar en la colección. Puede incluir contenido enriquecido y una imagen opcional como banner."
+    },
+    "dvObject": {
+      "label": "Objeto de Dataverse",
+      "description": "Este tipo de elemento destacado te permite destacar una <bold>colección</bold>, un <bold>dataset</bold> o un <bold>archivo</bold>."
+    }
+  },
+  "form": {
+    "image": {
+      "label": "Imagen",
+      "description": "Sube una imagen que se usará como banner del blog y miniatura. Formatos soportados: PNG, JPG, JPEG, WEBP. Tamaño máximo de archivo: {{maxImageSize}}.",
+      "invalid": {
+        "size": "El fichero es demasiado grande. El tamaño máximo es {{maxImageSize}}"
+      },
+      "restoreInitial": "Restaurar imagen inicial",
+      "changeImage": "Cambiar imagen",
+      "removeImage": "Quitar imagen",
+      "helperText": "Para mejores resultados, usa una imagen apaisada (16:9, 4:3 o 5:3). Revisa la vista previa en la parte superior de la página para ver cómo se verá.",
+      "aspectRatioWarning": "Tu imagen tiene aproximadamente una relación de aspecto {{aspectRatio}} y puede no verse bien en el banner apaisado.\nPara mejores resultados, usa una imagen apaisada (16:9, 4:3 o 5:3). Aun puedes usarla, pero revisa la vista previa en la parte superior de la página para ver cómo se verá."
+    },
+    "content": {
+      "label": "Contenido",
+      "required": "El contenido es obligatorio",
+      "invalid": {
+        "maxLength": "El contenido debe tener {{maxLength}} caracteres o menos."
+      }
+    },
+    "dvObjectUrl": {
+      "label": "URL del objeto de Dataverse",
+      "helperText": "Pega la URL de la colección, dataset o fichero que quieres destacar. También puedes pegar directamente una URL DOI de un dataset.",
+      "required": "La URL del objeto de Dataverse es obligatoria",
+      "invalid": "La URL debe tener el formato correcto para una colección, dataset, fichero o URL DOI de dataset de Dataverse."
+    },
+    "submitStatus": {
+      "success": "Los elementos destacados se han actualizado correctamente."
+    },
+    "maxItemsReached": "Puedes agregar hasta {{maxFeaturedItems}} elementos destacados."
+  }
+}

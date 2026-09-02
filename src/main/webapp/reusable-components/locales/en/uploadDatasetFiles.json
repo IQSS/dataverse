@@ -1,0 +1,64 @@
+{
+  "breadcrumbActionItem": "Upload files",
+  "cancel": "Cancel upload",
+  "info": "Drag and drop files and/or directories here.",
+  "select": "Select files to add",
+  "delete": "Delete",
+  "save": "Save",
+  "saveUploaded": "Save uploaded files",
+  "uploadedFileSize": "Uploaded file size",
+  "restricted": "Restricted",
+  "tags": {
+    "documentation": "Documentation",
+    "data": "Data",
+    "code": "Code",
+    "editTagOptions": "Edit tag options",
+    "customFileTag": "Custom file tag",
+    "creatingNewTag": "Creating a new tag will add it as a tag option for all files in this dataset.",
+    "addNewTag": "Add new file tag...",
+    "availableTagOptions": "Available tag options: ",
+    "apply": "Apply",
+    "close": "Close",
+    "addCustomTag": "Add new custom file tag..."
+  },
+  "restriction": {
+    "restrictAccess": "Restrict Access",
+    "restrictionInfoP1": "Restricting limits access to published files. People who want to use the restricted files can request access by default. If you disable request access, you must add information about access to the Terms of Access field.",
+    "restrictionInfoP2": "Learn about restricting files and dataset access in the User Guide.",
+    "termsOfAccess": "Terms of Access for Restricted Files",
+    "enableAccessRequest": "Enable access request",
+    "saveChanges": "Save Changes",
+    "cancelChanges": "Cancel Changes"
+  },
+  "fileForm": {
+    "fileName": "File name",
+    "filePath": "File path",
+    "description": "Description",
+    "tags": "Tags",
+    "selectTags": "Select tags",
+    "editTagOptions": "Edit tag options",
+    "plus": "Add new tag option"
+  },
+  "filesHeader": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "editFiles": "Edit files",
+    "restrict": "Restrict",
+    "unrestrict": "Unrestrict",
+    "filesUploaded_one": "{{count}} file uploaded",
+    "filesUploaded_other": "{{count}} files uploaded",
+    "filesSelected_one": "{{count}} file selected",
+    "filesSelected_other": "{{count}} files selected",
+    "deleteSelected": "Delete selected",
+    "addTagsToSelected": "Add tags to selected",
+    "addTags": "Add tags",
+    "selectAll": "Select all"
+  },
+  "addTags": {
+    "title": "Add tags to selected files",
+    "customTag": "Custom tag",
+    "selectTags": "Select tags to add",
+    "saveChanges": "Save Changes",
+    "cancelChanges": "Cancel Changes"
+  }
+}

@@ -1,0 +1,56 @@
+## Reusable Frontend Components — JSF Mount
+
+This release introduces the first reusable React component built in `dataverse-frontend` and embedded into the classic JSF UI: the React file uploader (DVWebloader v2). It is the foundation for further dual-mode components (e.g. the file tree view tracked in [#6691](https://github.com/IQSS/dataverse/issues/6691)).
+
+### What changed
+
+- **New feature flag** `dataverse.feature.react-uploader` (off by default). When enabled, the classic PrimeFaces upload widget on the dataset edit page is replaced with the React uploader. The file *replace* flow keeps using the JSF widget.
+- **New feature flag** `dataverse.feature.react-tree-view` (off by default). When enabled, the dataset Files tab's "Tree" view (selectable via the existing Table/Tree toggle) is rendered by the same React lazy tree the SPA uses, instead of the classic PrimeFaces tree. The table view is unchanged. The tree supports lazy folder loading, tri-state selection (per-row checkboxes plus a header select-all), full keyboard navigation (WAI-ARIA tree pattern), URL-bookmarkable folder paths (`?view=tree&path=…`), and **client-side streaming-zip download** of the user's selection — the bundle pipes per-file response bodies into a single zip without any server-side ZIP endpoint.
+- **New JVM setting** `dataverse.reusable-components.base-url` (default `/reusable-components`) tells the JSF page where to load the reusable component bundle from. The default value points at the bundle files baked into the WAR; operators who want to host the bundle elsewhere can copy those files out and override the setting.
+- **Server-authoritative S3 tagging.** Single-part direct-upload responses from `S3AccessIO.generateTemporaryS3UploadUrls` now always include a `tagging` field: the exact value to send as the `x-amz-tagging` header on the presigned PUT, or the empty string `""` when `dataverse.files.<driverId>.disable-tagging` is set — meaning "do not send the header" (the URL was signed without it, and sending it anyway fails the signature check on MinIO-style stores, the case disable-tagging exists for). The dataverse-client-javascript SDK reads this and sends the header only for a non-empty value; a *missing* key falls back to `dv-state=temp` for compatibility with older servers. Multipart responses carry no `tagging` field: the server applies the temp tag itself at `CreateMultipartUpload`, and clients must not send `x-amz-tagging` on part uploads. **Operator note:** because multipart objects are now tagged too, a store that rejects object tagging needs `disable-tagging` set for multipart uploads to work — previously only single-part uploads required it (multipart objects were silently left untagged, escaping temp-object lifecycle cleanup). A rejected initiation now fails with an error message naming the setting.
+- **Bundle cache-busting that actually changes per build.** The script tags now use a token derived from the bundle file's mtime, not the pinned `getVersion()` string — so browsers pick up new builds automatically without a hard-refresh. Falls back to `getVersion()` if the bundle file isn't reachable on the local filesystem (e.g. when the operator has rehosted the bundle off the WAR).
+- **JSF partial-update survival.** PrimeFaces re-inserts the host `<div>` for the React mount on certain partial responses (e.g. when toggling between Table and Tree views). The standalone bundles now use a `MutationObserver` to detect when the host element is replaced and remount cleanly, so toggling no longer leaves the React tree orphaned on a removed div.
+- **Hide the legacy "Done" button when the React uploader is wired.** The classic Done button below the upload component duplicated the React uploader's own finish action and confused testers; it's now suppressed when the uploader feature flag is active and direct upload is enabled.
+- **Tree view toggle now appears for flat datasets when the React tree view is enabled.** Previously the JSF Tree/Table toggle (`DatasetPage.isFileTreeViewRequired`) was gated on the dataset having `directoryLabel` set on at least one file. Flat datasets (>1 file, no folders) didn't show the toggle, locking those users into the table view. With `dataverse.feature.react-tree-view=true`, the React tree's bulk-download UX (checkbox selection + client-side streaming zip with per-file resume / two-pass recovery) is a strict upgrade over the legacy server-zipped bulk download regardless of folder structure, so the gate drops to `> 1 file` on those installs. When the feature flag is off, the original "folders present" gate stays — the legacy PrimeFaces tree adds no value on a flat list, so behaviour is unchanged for installs that haven't opted in. Single-file and empty datasets still hide the toggle (no-op).
+- **Create-dataset moves to a two-step file flow when the flag is on.** The React uploader is API-driven and needs the dataset to exist (PID assigned) before it can request upload URLs or register files. On the create-dataset page the dataset is still transient. When `dataverse.feature.react-uploader` is enabled, the create page therefore no longer renders the upload section; users save the metadata first, then add files on the persisted dataset's edit-files page where the React uploader runs against a real PID. This matches the SPA's flow, where the React uploader is the only uploader and "metadata first, files after" is the canonical create flow. Instances that haven't enabled the feature flag keep the existing one-step "create + upload" UX with the legacy JSF widgets unchanged. We chose this over a fall-back-to-JSF approach because mixing two uploaders (legacy on create, React on edit) creates a divergent UX (different folder-upload handling, progress UI, file-list rendering).
+- **Documentation.** A new guide page covers how to host the reusable component bundle and wire it into Dataverse: see [Reusable Frontend Components](https://guides.dataverse.org/en/latest/container/running/reusable-components.html). The matching frontend-side contract lives in the [`dataverse-frontend` repo](https://github.com/IQSS/dataverse-frontend/blob/develop/docs/reusable-components.md).
+
+### Operator note: covering index migration
+
+This release ships a new Flyway migration (`V6.10.1.2.sql`) that creates `ix_filemetadata_tree` over `(datasetversion_id, directorylabel, lower(label), datafile_id)` to keep the new tree endpoint's keyset paginator fast.
+
+On large production deployments (multi-million-row `filemetadata`), plain `CREATE INDEX` takes an `ACCESS EXCLUSIVE` lock and stalls all writes for the duration of the build (potentially several minutes). Flyway runs migrations inside a transaction, which prevents using `CREATE INDEX CONCURRENTLY` in the migration file itself.
+
+Recommended for large installs: pre-create the index out-of-band before deploying the new release:
+
+```sql
+CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_filemetadata_tree
+    ON filemetadata (datasetversion_id, directorylabel text_pattern_ops, lower(label), datafile_id);
+```
+
+The migration uses `CREATE INDEX IF NOT EXISTS`, so a pre-created index is a no-op when Flyway runs. Use this exact definition — `IF NOT EXISTS` matches by name only. As a safety net, `V6.10.1.3.sql` detects an existing `ix_filemetadata_tree` that lacks `text_pattern_ops` (for example one pre-created from an earlier draft of this note) and rebuilds it with the correct definition; indexes that already match — including ones built with `CONCURRENTLY` — are left untouched.
+
+### LocalStack dev-stack notes
+
+The `dev_localstack` storage profile in `docker-compose-dev.yml` ships with `upload-redirect=true` / `download-redirect=true`, so the browser PUTs/GETs to S3 directly. Two operator-side things had to be set up explicitly to make that path work in dev:
+
+- Bucket-level CORS: the init script `conf/localstack/buckets.sh` now puts a permissive CORS rule on `mybucket` after creation. LocalStack (matching real AWS S3) ships with no default CORS rules; without this, the browser preflight returns 403.
+- Hostname resolution: Dataverse signs the presigned URLs against `http://localstack:4566` (the docker-internal hostname). For the browser to use the same URL, add `127.0.0.1 localstack` to `/etc/hosts` on the developer's machine. The same applies to `keycloak.mydomain.com` for the OIDC redirect target. This is a fundamental property of presigned-URL networking, not a Dataverse bug.
+
+### Prerequisites for using the React uploader
+
+1. `dataverse.feature.api-session-auth=true` so the bundle can call the API with the user's session cookie. **For production, also enable `dataverse.feature.api-session-auth-hardening`** to mitigate CSRF risk via Origin/Referer + `X-Dataverse-CSRF-Token` enforcement.
+2. The reusable component bundle must be reachable from the user's browser. The default setup (`dataverse.reusable-components.base-url=/reusable-components`) serves the bundle files baked into the WAR same-origin and needs no extra setup. Operators who want to host the bundle off the WAR (separate static-file server, CDN, etc.) can copy `webapp/reusable-components/` to their host of choice and point the setting at that URL.
+3. `dataverse.siteUrl` must match the URL the browser actually uses, so that Origin/Referer checks pass when session-auth hardening is enabled.
+
+### What didn't change
+
+- File replace, batch operations, and any classic JSF panels render exactly as before when the flag is off.
+- No new Java / Maven dependency on npm or Node tooling. The bundle ships as pre-built JS inside the WAR (`webapp/reusable-components/`).
+
+### Cross-repo
+
+This release pairs with:
+
+- [`@iqss/dataverse-client-javascript`](https://github.com/IQSS/dataverse-client-javascript) for the `tagging` field on the upload destination response.
+- [`dataverse-frontend`](https://github.com/IQSS/dataverse-frontend) is the source repo for the React uploader and tree-view bundles. The pre-built JS files in this PR were produced from that repo's build.

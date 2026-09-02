@@ -1,0 +1,74 @@
+{
+  "pageTitle": "Cuenta - Registrarse",
+  "createAccount": {
+    "heading": "Crear cuenta",
+    "alertText": "¿Por qué tener una cuenta de Dataverse? Para crear tu propia colección y personalizarla, agregar datasets o solicitar acceso a ficheros restringidos."
+  },
+  "hasValidTokenButNotLinkedAccount": {
+    "heading": "Cuenta no vinculada",
+    "alertText": "¡Ya casi estás! El inicio de sesión funcionó, pero no encontramos una cuenta vinculada.\n Completa tu registro para crear tu propia colección y personalizarla, agregar datasets o solicitar acceso a ficheros restringidos."
+  },
+  "accountInfo": "Información de la cuenta",
+  "aboutPrefilledFields": "Algunos campos de este formulario están precompletados con información de tu proveedor de identidad y no pueden cambiarse en esta etapa.\nEsto garantiza consistencia y seguridad. Completa los campos restantes para finalizar tu registro.",
+  "fields": {
+    "username": {
+      "label": "Nombre de usuario",
+      "description": "Entre 2 y 60 caracteres, y puedes usar “a-z”, “0-9”, “_” para tu nombre de usuario.",
+      "required": "El nombre de usuario es obligatorio.",
+      "helperText": "Crea un nombre de usuario válido de 2 a 60 caracteres que contenga letras (a-Z), números (0-9), guiones (-), guiones bajos (_) y puntos (.).",
+      "invalid": {
+        "username": "El nombre de usuario no es válido.",
+        "maxLength": "El nombre de usuario debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "firstName": {
+      "label": "Nombre",
+      "description": "El nombre que te gustaría usar para esta cuenta.",
+      "required": "El nombre es obligatorio.",
+      "invalid": {
+        "maxLength": "El nombre debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "lastName": {
+      "label": "Apellido",
+      "description": "El apellido que te gustaría usar para esta cuenta.",
+      "required": "El apellido es obligatorio.",
+      "invalid": {
+        "maxLength": "El apellido debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "emailAddress": {
+      "label": "Correo electrónico",
+      "description": "Una dirección de correo electrónico válida a la que tengas acceso para ser contactado",
+      "required": "El correo electrónico es obligatorio.",
+      "invalid": {
+        "email": "El correo electrónico no es válido.",
+        "maxLength": "El correo electrónico debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "affiliation": {
+      "label": "Afiliación",
+      "description": "La organización con la que estás afiliado.",
+      "invalid": {
+        "maxLength": "La afiliación debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "position": {
+      "label": "Cargo",
+      "description": "Tu rol o título en la organización con la que estás afiliado; por ejemplo, personal, docente, estudiante, etc.",
+      "invalid": {
+        "maxLength": "El cargo debe tener como máximo {{maxLength}} caracteres."
+      }
+    },
+    "termsAccepted": {
+      "primaryLabel": "Términos generales de uso",
+      "label": "He leído y acepto los Términos generales de uso de Dataverse según lo indicado arriba.",
+      "description": "Los términos y condiciones para usar la aplicación y los servicios.",
+      "required": "Marca la casilla para indicar que aceptas los Términos generales de uso."
+    }
+  },
+  "submit": "Crear cuenta",
+  "status": {
+    "success": "La cuenta de usuario se creó correctamente."
+  }
+}

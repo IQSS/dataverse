@@ -1,0 +1,6 @@
+{
+  "pageTitle": "Edit File Metadata",
+  "errorAlert": {
+    "notAllowedToEditFileMetadata": "You are not allowed to edit file metadata."
+  }
+}
