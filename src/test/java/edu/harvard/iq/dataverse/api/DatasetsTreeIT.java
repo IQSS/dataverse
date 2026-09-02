@@ -4,7 +4,7 @@ import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObjectBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -77,7 +77,7 @@ public class DatasetsTreeIT {
 
     private static void upload(Integer datasetId, String label,
                                String directoryLabel, String apiToken) {
-        JsonObjectBuilder metadata = Json.createObjectBuilder().add("label", label);
+        JsonObjectBuilder metadata = JsonUtil.createObjectBuilder().add("label", label);
         if (directoryLabel != null) {
             metadata.add("directoryLabel", directoryLabel);
         }

@@ -747,7 +747,7 @@ public class Datasets extends AbstractApiBean {
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
-            Response.ResponseBuilder rb = Response.ok(Json.createObjectBuilder()
+            Response.ResponseBuilder rb = Response.ok(JsonUtil.createObjectBuilder()
                             .add("status", ApiConstants.STATUS_OK)
                             .add("data", jsonTreePage(page))
                             .build())
@@ -796,15 +796,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     private static JsonObjectBuilder jsonTreePage(TreePage page) {
-        JsonArrayBuilder items = Json.createArrayBuilder();
+        JsonArrayBuilder items = JsonUtil.createArrayBuilder();
         for (TreeItem item : page.items) {
-            JsonObjectBuilder ob = Json.createObjectBuilder();
+            JsonObjectBuilder ob = JsonUtil.createObjectBuilder();
             ob.add("type", item.type);
             ob.add("name", item.name);
             ob.add("path", item.path);
             if (item instanceof FolderItem) {
                 FolderItem folder = (FolderItem) item;
-                ob.add("counts", Json.createObjectBuilder()
+                ob.add("counts", JsonUtil.createObjectBuilder()
                         .add("files", folder.fileCount)
                         .add("folders", folder.folderCount)
                         .add("bytes", folder.bytes)
@@ -818,7 +818,7 @@ public class Datasets extends AbstractApiBean {
                 if (file.contentType != null) ob.add("contentType", file.contentType);
                 if (file.access != null) ob.add("access", file.access);
                 if (file.checksumType != null && file.checksumValue != null) {
-                    ob.add("checksum", Json.createObjectBuilder()
+                    ob.add("checksum", JsonUtil.createObjectBuilder()
                             .add("type", file.checksumType)
                             .add("value", file.checksumValue));
                 }
@@ -826,7 +826,7 @@ public class Datasets extends AbstractApiBean {
             }
             items.add(ob);
         }
-        JsonObjectBuilder result = Json.createObjectBuilder();
+        JsonObjectBuilder result = JsonUtil.createObjectBuilder();
         result.add("path", page.path);
         result.add("items", items);
         if (page.nextCursor != null) {

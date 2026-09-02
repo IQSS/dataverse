@@ -21,7 +21,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
@@ -364,7 +363,7 @@ public class SystemConfig {
         // The default JSON serialiser handles backslash/quote/control-char
         // escaping. We additionally rewrite "</" to "<\\/" so the JS literal
         // can't be terminated early by a stray `</script>` in user input.
-        String json = Json.createValue(raw).toString();
+        String json = JsonUtil.createValue(raw).toString();
         return json.replace("</", "<\\/");
     }
 

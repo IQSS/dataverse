@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.datasetversiontree;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import jakarta.ejb.Stateless;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonException;
@@ -763,14 +763,14 @@ public class DatasetVersionTreeService {
     private static final String CURSOR_PHASE_FILES = "FILES";
 
     static String encodeCursor(TreeCursor cursor) {
-        JsonArrayBuilder keys = Json.createArrayBuilder();
+        JsonArrayBuilder keys = JsonUtil.createArrayBuilder();
         if (cursor.phase() == TreeCursor.Phase.FOLDERS) {
             keys.add(cursor.lastFolderName());
         } else {
             keys.add(cursor.lastFileLabel());
             keys.add(cursor.lastFileId());
         }
-        String json = Json.createObjectBuilder()
+        String json = JsonUtil.createObjectBuilder()
                 .add("p", cursor.phase() == TreeCursor.Phase.FOLDERS ? CURSOR_PHASE_FOLDERS : CURSOR_PHASE_FILES)
                 .add("k", keys)
                 .add("c", cursor.approximateCount())
@@ -785,7 +785,7 @@ public class DatasetVersionTreeService {
         }
         try {
             String decoded = new String(Base64.getUrlDecoder().decode(raw), StandardCharsets.UTF_8);
-            try (JsonReader reader = Json.createReader(new StringReader(decoded))) {
+            try (JsonReader reader = JsonUtil.createReader(new StringReader(decoded))) {
                 JsonObject obj = reader.readObject();
                 String phaseStr = obj.getString("p", null);
                 JsonArray keys = obj.getJsonArray("k");

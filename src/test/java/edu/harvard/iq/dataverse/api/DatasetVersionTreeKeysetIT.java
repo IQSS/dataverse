@@ -4,7 +4,7 @@ import io.restassured.RestAssured;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObjectBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -166,7 +166,7 @@ public class DatasetVersionTreeKeysetIT {
 
     private static Integer uploadAndGetId(Integer datasetId, String label,
                                            String directoryLabel, String apiToken) {
-        JsonObjectBuilder metadata = Json.createObjectBuilder().add("label", label);
+        JsonObjectBuilder metadata = JsonUtil.createObjectBuilder().add("label", label);
         if (directoryLabel != null) {
             metadata.add("directoryLabel", directoryLabel);
         }
