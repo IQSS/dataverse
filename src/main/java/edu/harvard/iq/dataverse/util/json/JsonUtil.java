@@ -167,8 +167,8 @@ public class JsonUtil {
             }
         }
     }
-    
-    
+
+
     /**
      * Parses a serialized JSON string and returns it as a JsonValue.
      * The returned JsonValue can be a JsonObject, JsonArray, or another type
@@ -183,7 +183,7 @@ public class JsonUtil {
         if (serializedJson == null) {
             throw new JsonException("The serialized JSON string cannot be null.");
         }
-        
+
         try (StringReader rdr = new StringReader(serializedJson)) {
             try (JsonReader jsonReader = provider.createReader(rdr)) {
                 JsonValue jsonValue = jsonReader.read();

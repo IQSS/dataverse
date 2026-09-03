@@ -139,14 +139,14 @@ public class ExternalToolServiceBean {
      * file supports The list of tools is passed in so it doesn't hit the
      * database each time
      */
-    public List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
+    public List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file, boolean canDownload) {
         List<ExternalTool> externalTools = new ArrayList<>();
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         boolean isAccessible = StorageIO.isDataverseAccessible(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier()));
         allExternalTools.forEach((externalTool) -> {
-            //Match tool and file type, then check requirements
-            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file) && (isAccessible || externalTool.accessesAuxFiles())) {
+            // Match tool and file type, then check requirements
+            if (contentType.equals(externalTool.getContentType()) && (RequirementStatus.MET == meetsRequirements(externalTool, file, canDownload)) && (isAccessible || externalTool.accessesAuxFiles())) {
                 externalTools.add(externalTool);
             }
         });
@@ -154,29 +154,41 @@ public class ExternalToolServiceBean {
         return externalTools;
     }
 
-    public boolean meetsRequirements(ExternalTool externalTool, DataFile dataFile) {
+    public enum RequirementStatus {
+        MET,
+        FILE_NOT_FOUND,
+        INSUFFICIENT_PERMISSIONS
+    }
+    
+    public RequirementStatus meetsRequirements(ExternalTool externalTool, DataFile dataFile, boolean canDownload) {
         String requirements = externalTool.getRequirements();
         if (requirements == null) {
             logger.fine("Data file id" + dataFile.getId() + ": no requirements for tool id " + externalTool.getId());
-            return true;
+            return canDownload ? RequirementStatus.MET : RequirementStatus.INSUFFICIENT_PERMISSIONS;
         }
-        boolean meetsRequirements = true;
+
         JsonObject requirementsObj = JsonUtil.getJsonObject(requirements);
         JsonArray auxFilesExist = requirementsObj.getJsonArray(ExternalTool.AUX_FILES_EXIST);
+        boolean permissionsMet = true;
         for (JsonValue jsonValue : auxFilesExist) {
             String formatTag = jsonValue.asJsonObject().getString("formatTag");
             String formatVersion = jsonValue.asJsonObject().getString("formatVersion");
             AuxiliaryFile auxFile = auxiliaryFileService.lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
             if (auxFile == null) {
                 logger.fine("Data file id" + dataFile.getId() + ": cannot find required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
-                meetsRequirements = false;
-                break;
+                return RequirementStatus.FILE_NOT_FOUND;
             } else {
                 logger.fine("Data file id" + dataFile.getId() + ": found required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
-                meetsRequirements = true;
+                if (!auxFile.getIsPublic()) {
+                    permissionsMet = false;
+                }
             }
         }
-        return meetsRequirements;
+        if (canDownload || permissionsMet) {
+            return RequirementStatus.MET;
+        } else {
+            return RequirementStatus.INSUFFICIENT_PERMISSIONS;
+        }
     }
 
     public static ExternalTool parseAddExternalToolManifest(String manifest) {

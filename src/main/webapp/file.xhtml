@@ -362,7 +362,7 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{FilePage.toolTabTitle}"
-                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.guestbookAndTermsPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
                                     <ui:include id="previewGB" src="guestbook-terms-popup-fragment.xhtml">
@@ -383,7 +383,7 @@
                                 <ui:fragment rendered="#{(!FilePage.guestbookAndTermsPopupRequired) or FilePage.termsMet}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1}">
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                              #{bundle['file.toolsTab.button.label']} <span class="caret"></span>
                                         </button>
@@ -401,7 +401,7 @@
                                         </ui:fragment>
                                     </div>
                                     <!-- END: Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0)}">
                                         <!-- Modular/Configured Explore Tool -->
                                         <ui:remove><!-- Not sure this div will ever be rendered when terms are required and FilePage.termsMet isn't true. Leaving this logic in in case that is incorrect or changes going forward --></ui:remove>
 
@@ -434,7 +434,7 @@
                                     </div>
                                 </div>
                                 <!-- FRAME EXTERNAL TOOL EMBED -->
-                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0  or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0  or FilePage.queryTools.size() > 0)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
                                 </ui:fragment>

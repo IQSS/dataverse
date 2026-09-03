@@ -280,7 +280,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
     
     protected AuthenticatedUserDisplayInfo parseActivitiesResponse( String responseBody ) {
-        DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory dbFact = edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureDocumentBuilderFactory();
         
         try ( StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = dbFact.newDocumentBuilder();
