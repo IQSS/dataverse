@@ -216,8 +216,6 @@ public class DatasetVersionDifferenceTest {
         // Change License in Draft version (from no license), which resets Disclaimer to null, but leaves termsOfAccess alone
 
         datasetVersion2.getTermsOfUseOrLicense().setLicense(license2);
-        datasetVersion2.getTermsOfUseOrLicense().setTermsOfUse("");
-        datasetVersion.getTermsOfUseOrLicense().setDisclaimer("");
 
         String[] termField4 = new String[] {
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"),
