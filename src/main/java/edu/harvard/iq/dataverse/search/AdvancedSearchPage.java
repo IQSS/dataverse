@@ -15,11 +15,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -51,7 +56,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String dvFieldAlias;
     private String dvFieldDescription;
     private String dvFieldAffiliation;
-    private List<String> dvFieldSubject;
+    private List<ControlledVocabularyValue> dvFieldSubject = new ArrayList<>();
     private String dsPublicationDate;
     private String dsPersistentId;
     private String fileFieldName;
@@ -111,8 +116,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
                 queryStrings.add(constructQuery(dsfType.getSolrField().getNameSearchable(), dsfType.getSearchValue(), getCVocConf().containsKey(dsfType.getId())));
             } else if (dsfType.getListValues() != null && !dsfType.getListValues().isEmpty()) {
                 List<String> listQueryStrings = new ArrayList<>();
-                for (String value : dsfType.getListValues()) {
-                    listQueryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
+                for (ControlledVocabularyValue cvv : dsfType.getListValues()) {
+                    listQueryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + cvv.getStrValue() + "\"");
                 }
                 queryStrings.add(constructQuery(listQueryStrings, false));
             }
@@ -146,8 +151,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
         if (dvFieldSubject != null && !dvFieldSubject.isEmpty()) {
             List<String> listQueryStrings = new ArrayList<>();
-            for (String value : dvFieldSubject) {
-                listQueryStrings.add(SearchFields.DATAVERSE_SUBJECT + ":" + "\"" + value + "\"");
+            for (ControlledVocabularyValue cvv : dvFieldSubject) {
+                listQueryStrings.add(SearchFields.DATAVERSE_SUBJECT + ":" + "\"" + cvv.getStrValue() + "\"");
             }
             queryStrings.add(constructQuery(listQueryStrings, false));
         }
@@ -252,17 +257,21 @@ public class AdvancedSearchPage implements java.io.Serializable {
         this.dvFieldAffiliation = dvFieldAffiliation;
     }
 
-    public List<String> getDvFieldSubject() {
+    public List<ControlledVocabularyValue> getDvFieldSubject() {
         return dvFieldSubject;
     }
 
-    public void setDvFieldSubject(List<String> dvFieldSubject) {
+    public void setDvFieldSubject(List<ControlledVocabularyValue> dvFieldSubject) {
         this.dvFieldSubject = dvFieldSubject;
     }
 
     public Collection<ControlledVocabularyValue> getDvFieldSubjectValues() {
         DatasetFieldType subjectType = datasetFieldService.findByName(DatasetFieldConstant.subject);
         return subjectType.getControlledVocabularyValues();
+    }
+
+    public DatasetFieldType getSubjectDatasetFieldType() {
+        return datasetFieldService.findByName(DatasetFieldConstant.subject);
     }
 
     public String getDsPublicationDate() {
