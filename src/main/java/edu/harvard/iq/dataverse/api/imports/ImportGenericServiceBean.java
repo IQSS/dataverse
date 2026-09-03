@@ -6,7 +6,10 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.dto.*;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
@@ -75,6 +78,9 @@ public class ImportGenericServiceBean {
     @EJB
     TemplateServiceBean templateService;
 
+    @EJB
+    DatasetRelationServiceBean datasetRelationService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -110,7 +116,12 @@ public class ImportGenericServiceBean {
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             logger.fine(json);
             JsonObject obj = JsonUtil.getJsonObject(json);
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService).parseDatasetVersion(obj, datasetVersion);
+            JsonParser parser = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
+            DatasetVersion dv = parser.parseDatasetVersion(obj, datasetVersion);
+            List<DatasetRelation> relations = parser.parseDatasetRelations(obj, dv);
+            if (relations != null) {
+                dv.setRelations(relations);
+            }
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);

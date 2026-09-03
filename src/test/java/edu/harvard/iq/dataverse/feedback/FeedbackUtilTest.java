@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.feedback;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
@@ -46,6 +47,7 @@ public class FeedbackUtilTest {
     private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     private static final DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
     private static final TemplateServiceBean templateService = Mockito.mock(TemplateServiceBean.class);
+    private static final DatasetRelationServiceBean datasetRelationService = Mockito.mock(DatasetRelationServiceBean.class);
     private static final String systemEmail = "support@librascholar.edu";
     private static final boolean weKnowHowToCreateMockAuthenticatedUsers = false;
 
@@ -131,16 +133,16 @@ public class FeedbackUtilTest {
 
         JsonObject json1 = JsonUtil.getJsonObjectFromFile("src/test/resources/json/dataset-finch1.json");
 
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
         dsVersion = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
 
         JsonObject json12 = JsonUtil.getJsonObjectFromFile("tests/data/datasetContacts1.json");
 
-        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService);
+        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
         dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
 
         JsonObject jsonNoContacts = JsonUtil.getJsonObjectFromFile("tests/data/datasetNoContacts.json");
-        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService);
+        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
         dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
 
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();

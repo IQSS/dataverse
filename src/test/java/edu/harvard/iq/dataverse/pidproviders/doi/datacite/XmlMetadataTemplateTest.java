@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationType;
+import edu.harvard.iq.dataverse.datasetrelation.InternalDatasetRelation;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.pidproviders.doi.DoiMetadata;
 import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
@@ -251,6 +253,16 @@ public class XmlMetadataTemplateTest {
         dType.setName(DatasetType.DATASET_TYPE_DATASET);
         d.setDatasetType(dType);
 
+        Dataset relatedDataset = new Dataset();
+        relatedDataset.setGlobalId(new GlobalId("doi", "10.5072", "FK2/RELATED", null, null, null));
+        Dataset customRelatedDataset = new Dataset();
+        customRelatedDataset.setGlobalId(new GlobalId("doi", "10.5072", "FK2/CUSTOM", null, null, null));
+        DatasetRelationType cites = new DatasetRelationType("Cites", "Cites");
+        DatasetRelationType custom = new DatasetRelationType("CustomRelation", "Custom relation");
+        dv.setRelations(List.of(
+                new InternalDatasetRelation(d, relatedDataset, cites, dv),
+                new InternalDatasetRelation(d, customRelatedDataset, custom, dv)));
+
         String xml = template.generateXML(d);
         System.out.println("Output from minimal example is " + xml);
         try {
@@ -272,6 +284,10 @@ public class XmlMetadataTemplateTest {
         assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@nameIdentifierScheme"));
         assertEquals("https://ror.org", XmlPath.from(xml).getString("resource.creators.creator[2].nameIdentifier.@schemeURI"));
         assertEquals("Qualitative Data Repository", XmlPath.from(xml).getString("resource.creators.creator[3].creatorName"));
+        assertEquals("10.5072/FK2/RELATED", XmlPath.from(xml).getString("resource.relatedIdentifiers.relatedIdentifier[0]"));
+        assertEquals("DOI", XmlPath.from(xml).getString("resource.relatedIdentifiers.relatedIdentifier[0].@relatedIdentifierType"));
+        assertEquals("Cites", XmlPath.from(xml).getString("resource.relatedIdentifiers.relatedIdentifier[0].@relationType"));
+        assertFalse(xml.contains("FK2/CUSTOM"));
         //Test when URL form was used
         assertEquals("https://ror.org/014trz974", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier"));
         assertEquals("ROR", XmlPath.from(xml).getString("resource.creators.creator[3].nameIdentifier.@nameIdentifierScheme"));

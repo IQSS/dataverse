@@ -835,6 +835,15 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + persistentId);
         return response;
     }
+
+    static Response updateDatasetMetadataViaNative(String persistentId, JsonObject json, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(json.toString())
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + persistentId);
+        return response;
+    }
     
     // https://github.com/IQSS/dataverse/issues/3777
     static Response addDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
@@ -5647,4 +5656,136 @@ public class UtilIT {
                 .replace("@QID3", cqIDs.get(2).toString())
                 .replace("@QID4", cqIDs.get(3).toString());
     }
+    public static Response replaceDatasetRelations(String persistentId, String jsonBody, String apiToken) {
+        return replaceDatasetRelations(persistentId, jsonBody, null, apiToken);
+    }
+
+    public static Response replaceDatasetRelations(String persistentId, String jsonBody, String version, String apiToken) {
+        String path = "/api/datasets/:persistentId/relations?persistentId=" + persistentId;
+        if (version != null) {
+            path += "&version=" + version;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON)
+                .body(jsonBody)
+                .put(path);
+    }
+
+    public static Response listDatasetRelations(String persistentId) {
+        return listDatasetRelations(persistentId, null, null, null, null, null, null, null);
+    }
+
+    public static Response listDatasetRelations(String persistentId, String apiToken) {
+        return listDatasetRelations(persistentId, null, null, null, null, null, null, apiToken);
+    }
+
+    public static Response listDatasetRelations(String persistentId, String version, List<String> types, List<String> datasetTypes, List<String> sources, Integer limit, Integer offset, String apiToken) {
+        return listDatasetRelations(persistentId, version, types, datasetTypes, sources, limit, offset, apiToken, false);
+    }
+
+    public static Response listDatasetRelations(String persistentId, String version, List<String> types, List<String> datasetTypes,
+            List<String> sources, Integer limit, Integer offset, String apiToken, boolean showFacets) {
+        String path = "/api/datasets/:persistentId/relations?persistentId=" + persistentId;
+        if (version != null) {
+            path += "&version=" + version;
+        }
+        if (types != null) {
+            for (String t : types) {
+                path += "&type=" + t;
+            }
+        }
+        if (datasetTypes != null) {
+            for (String dt : datasetTypes) {
+                path += "&datasetType=" + dt;
+            }
+        }
+        if (sources != null) {
+            for (String s : sources) {
+                path += "&source=" + s;
+            }
+        }
+        if (limit != null) {
+            path += "&limit=" + limit;
+        }
+        if (offset != null) {
+            path += "&offset=" + offset;
+        }
+        if (showFacets) {
+            path += "&showFacets=true";
+        }
+        if (apiToken != null && !apiToken.isEmpty()) {
+            return given().header(API_TOKEN_HTTP_HEADER, apiToken).get(path);
+        } else {
+            return given().get(path);
+        }
+    }
+
+    public static Response addDatasetRelation(String persistentId, String jsonBody, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON)
+                .body(jsonBody)
+                .post("/api/datasets/:persistentId/relations?persistentId=" + persistentId);
+    }
+
+    public static Response getDatasetRelation(String persistentId, long relationId, String apiToken) {
+        String path = "/api/datasets/:persistentId/relations/" + relationId + "?persistentId=" + persistentId;
+        if (apiToken != null && !apiToken.isEmpty()) {
+            return given().header(API_TOKEN_HTTP_HEADER, apiToken).get(path);
+        } else {
+            return given().get(path);
+        }
+    }
+
+    public static Response deleteDatasetRelation(String persistentId, long relationId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/relations/" + relationId + "?persistentId=" + persistentId);
+    }
+
+    public static Response listDatasetRelationTypes(String apiToken) {
+        String path = "/api/datasets/relationTypes";
+        if (apiToken != null && !apiToken.isEmpty()) {
+            return given().header(API_TOKEN_HTTP_HEADER, apiToken).get(path);
+        } else {
+            return given().get(path);
+        }
+    }
+
+    public static Response getDatasetRelationType(String nameOrId, String apiToken) {
+        String path = "/api/datasets/relationTypes/" + nameOrId;
+        if (apiToken != null && !apiToken.isEmpty()) {
+            return given().header(API_TOKEN_HTTP_HEADER, apiToken).get(path);
+        } else {
+            return given().get(path);
+        }
+    }
+
+    public static Response getDefaultDatasetRelationType(String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/relationTypes/defaultRelationType");
+    }
+
+    public static Response setDefaultDatasetRelationType(String nameOrId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/relationTypes/defaultRelationType/" + nameOrId);
+    }
+
+    public static Response addDatasetRelationType(String jsonIn, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType(ContentType.JSON)
+                .body(jsonIn)
+                .post("/api/datasets/relationTypes");
+    }
+
+    public static Response deleteDatasetRelationType(String nameOrId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/relationTypes/" + nameOrId);
+    }
+
 }

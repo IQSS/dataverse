@@ -300,7 +300,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // Indexing will be started immediately, unless an index is already busy for the given data
         // (it will be scheduled then for later indexing of the newest version).
         // See the documentation of asyncIndexDataset method for more details.
-        ctxt.index().asyncIndexDataset((Dataset) r, true);
+        ctxt.index().asyncIndexDataset(this.getDataset(), true);
         return true;
     }
     

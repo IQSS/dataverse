@@ -13,7 +13,12 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
-import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
+import edu.harvard.iq.dataverse.dataset.*;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationType;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationTypeServiceBean;
+import edu.harvard.iq.dataverse.datasetrelation.InternalDatasetRelation;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -59,15 +64,19 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.Response.Status;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
@@ -176,6 +185,12 @@ public abstract class AbstractApiBean {
     protected DatasetTypeServiceBean datasetTypeSvc;
 
     @EJB
+    protected DatasetRelationServiceBean datasetRelationSvc;
+
+    @EJB
+    protected DatasetRelationTypeServiceBean datasetRelationTypeSvc;
+
+    @EJB
     protected UserServiceBean userSvc;
 
 	@EJB
@@ -267,7 +282,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc, datasetTypeSvc, templateSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc, datasetTypeSvc, templateSvc, datasetRelationSvc);
         }
     });
 
@@ -529,6 +544,70 @@ public abstract class AbstractApiBean {
             }
         }));
         return dsv;
+    }
+
+    protected DatasetRelation findDatasetRelationOrDie(String relationId, String datasetId, boolean strict) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(datasetId);
+
+        long relationIdAsLong;
+        try {
+            relationIdAsLong = Long.parseLong(relationId);
+        } catch (NumberFormatException e) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.datasetrelation.error.datasetrelation.not.found.bad.id", Collections.singletonList(relationId))));
+        }
+
+        DatasetRelation relation = datasetRelationSvc.getDatasetRelationById(relationIdAsLong);
+
+        if (relation == null) {
+            throw new WrappedResponse(
+                    notFound(BundleUtil.getStringFromBundle("find.datasetrelation.error.datasetrelation.not.found.id", Collections.singletonList(relationId))));
+        }
+
+        // Generally, the relation must involve the given dataset
+        boolean relationMatchesDataset = relation.getDataset().equals(dataset);
+        if (relation instanceof InternalDatasetRelation internalRelation) {
+            relationMatchesDataset = relationMatchesDataset || internalRelation.getRelatedDataset().equals(dataset);
+        }
+        // If we are strict matching (used during relation deletion), the relation must also be defined on the given dataset
+        if (strict) {
+            relationMatchesDataset = relationMatchesDataset && relation.getDefinitionPoint().getDataset().equals(dataset);
+        }
+
+        if (!relationMatchesDataset) {
+            throw new WrappedResponse(
+                    notFound(BundleUtil.getStringFromBundle("find.datasetrelation.error.datasetrelation.not.found.id", Collections.singletonList(relationId))));
+        }
+
+        return relation;
+    }
+
+    protected DatasetRelationType findDatasetRelationTypeOrDie(String idOrName) throws WrappedResponse {
+        DatasetRelationType drt;
+
+        if (idOrName == null || idOrName.isEmpty()) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("datasets.api.datasetRelationType.error.idRequired")));
+        }
+
+        if (StringUtils.isNumeric(idOrName)) {
+            try {
+                long id = Long.parseLong(idOrName);
+                drt = datasetRelationTypeSvc.findById(id);
+            } catch (NumberFormatException ex) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("datasets.api.datasetRelationType.error.idMustBeNumber")));
+            }
+        } else {
+            drt = datasetRelationTypeSvc.findByName(idOrName);
+        }
+
+        if (drt == null) {
+            throw new WrappedResponse(
+                    notFound(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasetRelationType.error.notFound"), idOrName)));
+        }
+
+        return drt;
     }
 
     protected void validateInternalTimestampIsNotOutdated(DvObject dvObject, String sourceLastUpdateTime) throws WrappedResponse {
@@ -1039,9 +1118,9 @@ public abstract class AbstractApiBean {
                 .build())
             .type(MediaType.APPLICATION_JSON)
             .build();
-    
+
     }
-    
+
     protected Response ok(JsonArrayBuilder bld) {
         return ok(bld.build(), null, null);
     }
