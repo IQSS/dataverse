@@ -30,7 +30,11 @@ The steps for creating a Dataverse collection are:
 - Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
 - Execute a curl command or equivalent.
 
-Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is the following:
+Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs.
+The fields ``name``, ``alias``, and ``dataverseContacts`` are required.
+The optional field ``datasetFileCountLimit`` can be used to set the maximum number of files a dataset can have.
+The optional field ``guestbookRoot``, when set to true, will allow datasets in this collection to be assigned a Guestbook from a parent collection.
+The controlled vocabulary for ``dataverseType`` is the following:
 
 - ``DEPARTMENT``
 - ``JOURNALS``
