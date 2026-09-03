@@ -121,7 +121,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             bucketName = getBucketName(driverId);
             minPartSize = getMinPartSize(driverId);
-            credentialsProvider = getCredentialsProvider(driverId);
             s3 = getClient(driverId);
             tm = getTransferManager(driverId);
             s3Presigner = getPresigner(driverId);
@@ -157,7 +156,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private S3AsyncClient s3 = null;
     private S3Presigner s3Presigner = null;
-    private AwsCredentialsProvider credentialsProvider;
     private S3TransferManager tm = null;
     private String bucketName = null;
     private String key = null;
@@ -1015,8 +1013,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             } catch (S3Exception e) {
                 logger.warning("Exception generating temporary S3 url for " + key + " (" + e.getMessage() + ")");
                 return null;
-            } finally {
-                s3Presigner.close();
             }
 
             if (presignedRequest != null) {
@@ -1073,8 +1069,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } catch (S3Exception e) {
             logger.warning("Exception generating temporary S3 upload url for " + key + " (" + e.getMessage() + ")");
             return null;
-        } finally {
-            s3Presigner.close();
         }
 
         String urlString = presignedRequest.url().toString();
@@ -1135,8 +1129,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     + "&storageidentifier=" + storageIdentifier);
             response.add("complete", "/api/datasets/mpupload?globalid=" + globalId + "&uploadid=" + uploadId
                     + "&storageidentifier=" + storageIdentifier);
-
-            s3Presigner.close();
         }
 
         response.add("partSize", minPartSize);
@@ -1569,5 +1561,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public static String getNewIdentifier(String driverId) {
         return driverId + DataAccess.SEPARATOR + getConfigParamForDriver(driverId, BUCKET_NAME) + ":"
                 + FileUtil.generateStorageIdentifier();
+    }
+
+    public static void closeAll() {
+        logger.info("Closing all S3 clients and transfer managers.");
+        driverTMMap.values().forEach(S3TransferManager::close);
+        driverTMMap.clear();
+        driverClientMap.values().forEach(S3AsyncClient::close);
+        driverClientMap.clear();
+        driverPresignerMap.values().forEach(S3Presigner::close);
+        driverPresignerMap.clear();
+        // AwsCredentialsProvider does not need to be closed unless it's a specific implementation that requires it.
+        driverCredentialsProviderMap.clear();
     }
 }

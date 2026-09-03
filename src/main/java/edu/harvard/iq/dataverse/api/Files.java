@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.RequirementStatus;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
@@ -231,7 +232,7 @@ public class Files extends AbstractApiBean {
     @Tag(name = "replaceFilesInDataset", 
          description = "Replace a file to a dataset")
     @RequestBody(description = "Multipart request containing replacement file content and JSON replacement metadata.",
-            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response replaceFileInDataset(
                     @Context ContainerRequestContext crc,
                     @Parameter(description = "Data file id or persistent identifier for the file being replaced.", required = true)
@@ -989,10 +990,6 @@ public class Files extends AbstractApiBean {
                     ") does not match file content type (" + fileContentType + ").");
             }
 
-            if (!externalToolService.meetsRequirements(externalTool, dataFile)) {
-                return error(BAD_REQUEST, "External tool requirements not met for this file.");
-            }
-
             // Get the current user and create a request object
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
@@ -1007,14 +1004,18 @@ public class Files extends AbstractApiBean {
             boolean isRestricted = dataFile.isRestricted() || fileMetadata.getDatasetVersion().isDraft()
                     || FileUtil.isActivelyEmbargoed(fileMetadata) || fileMetadata.getDatasetVersion().isDeaccessioned()
                     || FileUtil.isRetentionExpired(fileMetadata);
-
-            // Check if user has permission to download the file if it's restricted
+            boolean hasPermission = true;
             if (isRestricted) {
-                boolean hasPermission = permissionSvc.requestOn(req, dataFile).has(Permission.DownloadFile);
-                if (!hasPermission) {
-                    return error(Response.Status.FORBIDDEN,
-                            "You do not have permission to access this file with the requested external tool.");
-                }
+                hasPermission = permissionSvc.requestOn(req, dataFile).has(Permission.DownloadFile);
+            }
+            RequirementStatus status = externalToolService.meetsRequirements(externalTool, dataFile, !isRestricted || hasPermission);
+            if (status == RequirementStatus.FILE_NOT_FOUND) {
+                return error(BAD_REQUEST, "External tool requirements not met for this file.");
+            }
+            if (status == RequirementStatus.INSUFFICIENT_PERMISSIONS) {
+                return error(Response.Status.FORBIDDEN,
+                        "You do not have permission to access this file with the requested external tool.");
+
             }
 
             // Determine if we need an API token for authentication
