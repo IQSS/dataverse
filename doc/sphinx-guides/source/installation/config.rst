@@ -3361,18 +3361,20 @@ dataverse.api.signing-secret
 Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
 providing API tokens, which are long-lived and give the holder all of the permissions of the user. In contrast, signed URLs
 are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
-:ref:`api-native-signed-url` for more details. 
+:ref:`api-native-signed-url` for more details.
 
-The key used to sign a URL is created from the API token of the creating user plus a signing-secret provided by an administrator.
-**Using a signing-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
-signing-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
-making the overall signing key longer.
+The key used to sign a URL is created from the API token of the creating user plus a server-side signing secret. By
+default, the secret is generated automatically at startup and kept only in memory: no configuration is needed, but
+signed URLs do not survive a server restart, and on a multi-server installation each server signs with its own secret.
+Set this option (to a value of at least 36 characters - shorter ones are ignored with a warning) to use a persistent
+secret instead: previously issued signed URLs then stay valid across restarts, and all servers sign and validate with
+the same key.
 
 **WARNING**:
 *Since the signing-secret is sensitive, you should treat it like a password.*
 *See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
-Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNING_SECRET`` (although you shouldn't use environment variables for passwords) .
 
 .. _dataverse.api.allow-incomplete-metadata:
 
