@@ -1681,6 +1681,130 @@ Note: If either of these settings exist in the database rate limiting will be en
 
   curl http://localhost:8080/api/admin/settings/:RateLimitingCapacityByTierAndAction -X PUT -d '[{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]}, {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}, {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]'
 
+.. _rate-limiting-reachability:
+
+Keeping Your Installation Reachable Under Rate Limiting
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The tier 0 bucket is shared by all guests, so heavy anonymous traffic (search engine bots, AI crawlers) can exhaust it. Every guest then receives "429 Too Many Requests" - including on the homepage, and including on the login page they would need in order to authenticate into a higher tier. To visitors the installation simply looks down.
+
+Two measures at the reverse proxy keep the front door usable while rate limiting protects the application.
+
+.. important::
+
+  Whatever design you use, make sure both the homepage and the error page carry a clearly visible link or button to the login page (``/loginpage.xhtml``). Logging in is how users escape the shared guest tier, so the login link is the functional core of these pages, not a nicety: without it, visitors are informed but still cannot reach the authentication step that lifts the limit. The sample pages below include it.
+
+The examples below are for Apache (the proxy assumed elsewhere in this guide, e.g. under :doc:`shibboleth`); the same pattern works on nginx with ``try_files`` and ``error_page 429``. They pair well with a configuration that limits the page/read commands using the settings above, for example a shared tier 0 limit of 3600 calls per hour and a per-user tier 1 limit of 12000 calls per hour on actions such as ``CheckRateLimitForCollectionPageCommand``, ``CheckRateLimitForDatasetPageCommand``, ``GetDataverseCommand``, ``GetDatasetCommand``, ``GetLatestPublishedDatasetVersionCommand``, ``GetLatestAccessibleDatasetVersionCommand``, and ``GetPrivateUrlCommand``.
+
+Serving the Homepage Statically from the Proxy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A homepage served as a static file by the proxy consumes no rate limit budget and stays up even when the application server is saturated. Download :download:`index.html </_static/installation/files/var/www/landing/index.html>` as a starting point, place it at ``/var/www/landing/index.html``, and add the following inside the SSL ``VirtualHost``:
+
+.. code-block:: apacheconf
+
+  # Front page: served statically at the site root.
+  # AliasMatch (rather than DirectoryIndex) keeps the request URI as "/",
+  # so any <LocationMatch ^/$> headers (e.g. Signposting Link headers)
+  # still fire; DirectoryIndex would internally redirect to /index.html
+  # and those headers would be lost.
+  ProxyPassMatch          ^/(index\.html)?$   "!"
+  AliasMatch              "^/(index\.html)?$" "/var/www/landing/index.html"
+
+  # pass everything else to the app server
+  ProxyPass     /         ajp://localhost:8009/
+
+  <Directory /var/www/landing>
+      Require all granted
+      # the front page carries announcements: require revalidation so
+      # returning visitors see updates immediately (cheap 304s otherwise)
+      <IfModule mod_headers.c>
+          Header set Cache-Control "no-cache"
+      </IfModule>
+  </Directory>
+
+A few things to watch:
+
+- The exclusion (``ProxyPassMatch ... "!"``) must come before the catch-all ``ProxyPass``.
+- The file must be a complete, standalone HTML document - not the content-block fragment used with the ``:HomePageCustomizationFile`` database setting (see :ref:`Branding Your Installation`). Use absolute URLs for all assets and links, and avoid requiring JavaScript to render.
+- ``:HomePageCustomizationFile`` can stay configured as a harmless fallback (it only affects the root page render if a request ever reaches the application server), or be removed.
+- Keep the login link/button prominent (see the note above) - on this page it doubles as the escape hatch when the rest of the site is rate limited.
+- How the file gets updated is up to you; a cron job that pulls the page from a git repository works well and keeps the content under version control.
+
+Machine-Readable Site Metadata, Always Available
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The same pattern is a good home for machine-readable site metadata such as a FAIRiCat catalog: served statically from the proxy, it stays available to harvesters and aggregators regardless of rate limiting or application load. This is also why the homepage uses ``AliasMatch`` above: the request URI stays ``/``, so discovery headers set with ``<LocationMatch "^/$">`` keep firing on the static homepage.
+
+.. code-block:: apacheconf
+
+  # machine-readable site metadata, also served statically
+  Alias /metadata /var/www/metadata
+  <Directory /var/www/metadata>
+      Require all granted
+      Options -Indexes
+  </Directory>
+  ProxyPass /metadata !
+
+  RewriteEngine on
+  RewriteRule "^/\.well-known/api-catalog$" "/metadata/api-catalog.json" [PT]
+
+  # a FAIRiCat catalog is a linkset; serve it with the right content type
+  <FilesMatch "api-catalog\.json$">
+      Header set Content-Type "application/linkset+json"
+  </FilesMatch>
+
+  # advertise the catalog from the (static) homepage
+  <LocationMatch "^/$">
+      Header always set Link "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\"; profile=\"https://signposting.org/FAIRiCat/\""
+  </LocationMatch>
+
+The catalog file itself is a static linkset pointing at stable service endpoints (OAI-PMH, the native API, robots.txt, and so on): it only needs an update when your services change, so no generation machinery is required.
+
+A Friendly 429 Page from the Proxy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a guest does hit the limit, the bare backend error tells them nothing. A styled error page served by the proxy can explain what is happening and point them to login. Download :download:`429.html </_static/installation/files/var/www/errorpages/429.html>` as a starting point, place it at ``/var/www/errorpages/429.html``, and add:
+
+.. code-block:: apacheconf
+
+  # local error pages - must be excluded from the proxy
+  Alias /errorpages /var/www/errorpages
+  <Directory /var/www/errorpages>
+      Require all granted
+      Options -Indexes
+  </Directory>
+  ProxyPass /errorpages !
+
+  ProxyErrorOverride On 429
+  ErrorDocument 429 /errorpages/429.html
+
+A few things to watch:
+
+- The per-status form ``ProxyErrorOverride On 429`` needs Apache httpd 2.4.47 or newer upstream; RHEL/AlmaLinux 8's 2.4.37 has it backported. ``ErrorDocument`` preserves the original 429 status code.
+- The error page renders at the original request URL (an internal redirect), so all URLs in ``429.html`` must be absolute - relative paths break on nested URLs. That includes the login link - the one element this page must have (see the note above).
+- ``ProxyErrorOverride`` applies to the whole virtual host, so API clients also receive the HTML page instead of the JSON error body on 429. Installations that care can exempt the API:
+
+  .. code-block:: apacheconf
+
+    <Location /api>
+        ProxyErrorOverride Off
+    </Location>
+
+Verifying
+^^^^^^^^^
+
+.. code-block:: bash
+
+  # homepage is served by the proxy: 200, even with the app server stopped
+  curl -s -o /dev/null -w "%{http_code}\n" https://demo.example.org/
+
+  # a rate-limited request returns the styled page with the correct status
+  curl -s -o /dev/null -w "%{http_code}\n" https://demo.example.org/dataverse/root
+  curl -s https://demo.example.org/dataverse/root | grep -i "too many requests"
+
+The last two commands only show 429 behavior once the tier 0 bucket is actually exhausted; on a quiet test system you can temporarily set a tier 0 limit of 1 call per hour to trigger it.
+
 .. _Branding Your Installation:
 
 Branding Your Installation
@@ -1819,6 +1943,8 @@ Given this location for the custom homepage HTML file, run this curl command to 
 Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
 Note: If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
+
+See also :ref:`rate-limiting-reachability` for serving a static homepage directly from a reverse proxy, which keeps the front page up even when the application server is saturated or guests are rate limited.
 
 If you decide you'd like to remove this setting, use the following curl command:
 
