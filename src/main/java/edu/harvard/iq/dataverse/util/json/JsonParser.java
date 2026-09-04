@@ -49,6 +49,7 @@ public class JsonParser {
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
     DatasetTypeServiceBean datasetTypeService;
+    TemplateServiceBean templateService;
     HarvestingClient harvestingClient = null;
     boolean allowHarvestingMissingCVV = false;
 
@@ -64,17 +65,18 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService) {
-        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, null);
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, TemplateServiceBean templateService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, null, templateService);
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, HarvestingClient harvestingClient) {
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, HarvestingClient harvestingClient, TemplateServiceBean templateService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
         this.datasetTypeService = datasetTypeService;
         this.harvestingClient = harvestingClient;
+        this.templateService = templateService;
         this.allowHarvestingMissingCVV = harvestingClient != null && harvestingClient.getAllowHarvestingMissingCVV();
     }
 
@@ -144,6 +146,9 @@ public class JsonParser {
         if (jobj.containsKey("requireFilesToPublishDataset")) {
             dv.setRequireFilesToPublishDataset(jobj.getBoolean("requireFilesToPublishDataset"));
         }
+        if (jobj.containsKey("guestbookRoot")) {
+            dv.setGuestbookRoot(jobj.getBoolean("guestbookRoot"));
+        }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
@@ -204,6 +209,9 @@ public class JsonParser {
         }
         if (jsonObject.containsKey("datasetFileCountLimit")) {
             dataverseDTO.setDatasetFileCountLimit(Integer.valueOf(jsonObject.getInt("datasetFileCountLimit")));
+        }
+        if (jsonObject.containsKey("guestbookRoot")) {
+            dataverseDTO.setGuestbookRoot(jsonObject.getBoolean("guestbookRoot"));
         }
 
         return dataverseDTO;
@@ -399,9 +407,9 @@ public class JsonParser {
         return parseDatasetVersion(obj, new DatasetVersion());
     }
 
-    public Dataset parseDataset(JsonObject obj) throws JsonParseException {
+    public Dataset parseDataset(JsonObject obj, Dataverse owner) throws JsonParseException {
         Dataset dataset = new Dataset();
-
+        dataset.setOwner(owner);
         dataset.setAuthority(obj.getString("authority", null));
         dataset.setProtocol(obj.getString("protocol", null));
         dataset.setIdentifier(obj.getString("identifier",null));
@@ -419,6 +427,16 @@ public class JsonParser {
             dataset.setDatasetType(datasetType);
         } else {
             throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
+        }
+
+        if (obj.containsKey("templateId")) {
+            int templateId = obj.getInt("templateId", -1);
+            Template template = templateService.find(Long.valueOf(templateId));
+            if (templateService.isTemplateValid(dataset.getOwner(), template)) {
+                dataset.setTemplate(template);
+            } else {
+                throw new JsonParseException("Invalid template id: " + templateId);
+            }
         }
 
         DatasetVersion dsv = new DatasetVersion();

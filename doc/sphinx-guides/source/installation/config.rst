@@ -1417,28 +1417,29 @@ List of S3 Storage Options
 .. table::
     :align: left
 
-    ===========================================  ==================  ===================================================================================  =============
-    JVM Option                                   Value               Description                                                                          Default value
-    ===========================================  ==================  ===================================================================================  =============
-    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                           ``file``
-    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                                       (none)
-    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                            (none)
-    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                          (none)
-    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                                   ``false``
-    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset in the S3 store.                    ``false``
-    dataverse.files.<id>.upload-out-of-band      ``true``/``false``  Allow upload of files by out-of-band methods (using some tool other than Dataverse)  ``false``
-    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                           (none)
-    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.                      60
-    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.            ``1024**3``
-    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.                   (none)
-    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                                      ``dataverse``
-    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.           (none)
-    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                                    (none)
-    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                              ``false``
-    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
-    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
-    dataverse.files.<id>.disable-tagging         ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server.          ``false``
-    ===========================================  ==================  ===================================================================================  =============
+    =====================================================================  ==================  ===================================================================================  =============
+    JVM Option                                                             Value               Description                                                                          Default value
+    =====================================================================  ==================  ===================================================================================  =============
+    dataverse.files.storage-driver-id                                      <id>                Enable <id> as the default storage driver.                                           ``file``
+    dataverse.files.<id>.type                                              ``s3``              **Required** to mark this storage as S3 based.                                       (none)
+    dataverse.files.<id>.label                                             <?>                 **Required** label to be shown in the UI for this storage                            (none)
+    dataverse.files.<id>.bucket-name                                       <?>                 The bucket name. See above.                                                          (none)
+    dataverse.files.<id>.download-redirect                                 ``true``/``false``  Enable direct download or proxy through Dataverse.                                   ``false``
+    dataverse.files.<id>.upload-redirect                                   ``true``/``false``  Enable direct upload of files added to a dataset in the S3 store.                    ``false``
+    dataverse.files.<id>.upload-out-of-band                                ``true``/``false``  Allow upload of files by out-of-band methods (using some tool other than Dataverse)  ``false``
+    dataverse.files.<id>.ingestsizelimit                                   <size in bytes>     Maximum size of directupload files that should be ingested                           (none)
+    dataverse.files.<id>.url-expiration-minutes                            <?>                 If direct uploads/downloads: time until links expire. Optional.                      60
+    dataverse.files.<id>.min-part-size                                     <?>                 Multipart direct uploads will occur for files larger than this. Optional.            ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url                               <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.                   (none)
+    dataverse.files.<id>.custom-endpoint-region                            <?>                 Only used when using custom endpoint. Optional.                                      ``dataverse``
+    dataverse.files.<id>.profile                                           <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.           (none)
+    dataverse.files.<id>.proxy-url                                         <?>                 URL of a proxy protecting the S3 store. Optional.                                    (none)
+    dataverse.files.<id>.path-style-access                                 ``true``/``false``  Use path style buckets instead of subdomains. Optional.                              ``false``
+    dataverse.files.<id>.chunked-encoding                                  ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
+    dataverse.files.<id>.connection-pool-size                              <?>                 The maximum number of open connections to the S3 server                              ``256``
+    dataverse.files.<id>.disable-tagging                                   ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server.          ``false``
+    dataverse.files.<id>.disable-multipart-download-for-indirect-download  ``true``/``false``  Disable multipart download for indirect downloads from S3.                           ``false``
+    =====================================================================  ==================  ===================================================================================  =============
 
 .. table::
     :align: left
@@ -1478,6 +1479,10 @@ You may provide the values for these via any `supported MicroProfile Config API 
 
 Reported Working S3-Compatible Storage
 ######################################
+
+`Ceph Object Gateway <https://docs.ceph.com/en/reef/radosgw/#ceph-object-gateway>`_ (added July 2026/Dataverse v6.12)
+Set ``dataverse.files.<id>.disable-multipart-download-for-indirect-download=true`` if not using direct download. 
+(This forces the S3 server to handle part reassembly and avoid incompatible headers that cause `412` errors from the Ceph Gateway.)
 
 `StorJ Object Store <https://www.storj.io>`_
  StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configuration to use a StorJ object store: ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
@@ -3361,18 +3366,20 @@ dataverse.api.signing-secret
 Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
 providing API tokens, which are long-lived and give the holder all of the permissions of the user. In contrast, signed URLs
 are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
-:ref:`api-native-signed-url` for more details. 
+:ref:`api-native-signed-url` for more details.
 
-The key used to sign a URL is created from the API token of the creating user plus a signing-secret provided by an administrator.
-**Using a signing-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
-signing-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
-making the overall signing key longer.
+The key used to sign a URL is created from the API token of the creating user plus a server-side signing secret. By
+default, the secret is generated automatically at startup and kept only in memory: no configuration is needed, but
+signed URLs do not survive a server restart, and on a multi-server installation each server signs with its own secret.
+Set this option (to a value of at least 36 characters - shorter ones are ignored with a warning) to use a persistent
+secret instead: previously issued signed URLs then stay valid across restarts, and all servers sign and validate with
+the same key.
 
 **WARNING**:
 *Since the signing-secret is sensitive, you should treat it like a password.*
 *See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
-Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNING_SECRET`` (although you shouldn't use environment variables for passwords) .
 
 .. _dataverse.api.allow-incomplete-metadata:
 
@@ -3394,11 +3401,11 @@ dataverse.api.blocked.endpoints
 
 A comma-separated list of API endpoints that should be blocked. A minimal example that blocks endpoints for security reasons:
 
-``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users'``
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=admin,builtin-users'``
 
 Another example:
 
-``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=api/admin,api/builtin-users,api/datasets/:persistentId/versions/:versionId/files,api/files/:id'``
+``./asadmin create-jvm-options '-Ddataverse.api.blocked.endpoints=admin,builtin-users,datasets/:persistentId/versions/:versionId/files,files/:id'``
 
 Defaults to an empty string (no endpoints blocked), but, in almost all cases, should include at least ``admin, builtin-users`` as a security measure.
 

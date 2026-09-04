@@ -515,7 +515,7 @@ public class DataverseOpenApiFilter implements OASFilter {
      */
     private Schema binarySchema() {
         return OASFactory.createSchema()
-                .type(Schema.SchemaType.STRING)
+                .type(java.util.List.of(Schema.SchemaType.STRING))
                 .format("binary");
     }
 

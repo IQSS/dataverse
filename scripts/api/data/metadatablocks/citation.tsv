@@ -130,9 +130,10 @@
 	contributorType	Research Group		11											
 	contributorType	Rights Holder		12											
 	contributorType	Sponsor		13											
-	contributorType	Supervisor		14											
-	contributorType	Work Package Leader		15											
-	contributorType	Other		16											
+	contributorType	Translator		14
+	contributorType	Supervisor		15
+	contributorType	Work Package Leader		16
+	contributorType	Other		17
 	authorIdentifierScheme	ORCID		0											
 	authorIdentifierScheme	ROR		1											
 	authorIdentifierScheme	ISNI		2											

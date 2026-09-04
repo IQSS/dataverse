@@ -57,6 +57,7 @@ public class JsonParserTest {
     MockSettingsSvc settingsSvc = null;
     LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
+    TemplateServiceBean templateService = Mockito.mock(TemplateServiceBean.class);
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -172,7 +173,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
     }
     
     @Test 
@@ -315,6 +316,7 @@ public class JsonParserTest {
              * hard coded to true.
              */
             assertFalse(actual.isPermissionRoot());
+            assertFalse(actual.isGuestbookRoot());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
@@ -341,11 +343,22 @@ public class JsonParserTest {
             assertEquals("student@example.edu", actualDataverseContacts.get(1).getContactEmail());
             assertEquals(0, actualDataverseContacts.get(0).getDisplayOrder());
             assertEquals(1, actualDataverseContacts.get(1).getDisplayOrder());
+            assertEquals(Boolean.FALSE, actual.getGuestbookRoot());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
     }
-    
+
+    @Test
+    public void testParseDataverseDTOWithoutGuestbookRoot() throws JsonParseException {
+        JsonObject dvJson = JsonUtil.createObjectBuilder()
+                .add("alias", "minimal")
+                .add("name", "minimal")
+                .build();
+        DataverseDTO actual = sut.parseDataverseDTO(dvJson);
+        assertNull(actual.getGuestbookRoot());
+    }
+
     @Test
     public void testParseThemeDataverse() throws JsonParseException {
         
@@ -496,7 +509,7 @@ public class JsonParserTest {
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
             dsJson = JsonUtil.getJsonObjectFromInputStream(jsonFile);
             System.out.println(dsJson != null);
-            assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson));
+            assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson, null));
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
@@ -970,7 +983,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
 
         Dataset ds = new Dataset();
         DatasetVersion dsv1 = new DatasetVersion();

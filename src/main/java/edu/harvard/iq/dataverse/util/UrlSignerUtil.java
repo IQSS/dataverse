@@ -2,14 +2,13 @@ package edu.harvard.iq.dataverse.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.joda.time.LocalDateTime;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,13 +25,26 @@ public class UrlSignerUtil {
     public static final String SIGNED_URL_METHOD="method";
     public static final String SIGNED_URL_USER="user";
     public static final String SIGNED_URL_UNTIL="until";
-    public static final String SIGNED_URL_KEY="key"; // do not propagate the key since it's a credential
-    public static final String SIGNED_URL_SIGNED="signed"; // we need to remove this when returning a signed url to prevent a loop of signing
-    public static final List<String> reservedParameters = List.of(SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN, SIGNED_URL_KEY, SIGNED_URL_SIGNED);
+    public static final String SIGNED_URL_KEY="key"; // reserved at the Dataverse request level: the legacy query-param API token - a credential that must never be signed into a URL
+    public static final String SIGNED_URL_SIGNED="signed"; // reserved at the Dataverse request level: requests a (re)signed URL as the response - signing it into a URL would cause a loop of signing
+    /**
+     * The four query parameters the signing algorithm itself appends. {@link #signUrl} throws if the
+     * base URL already contains one of them, rather than signing a different URL than the caller
+     * intended.
+     */
+    public static final List<String> signingParameters = List.of(SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN);
+    /**
+     * The signing parameters plus the Dataverse request-level parameters {@code key} and
+     * {@code signed}, none of which may appear in a URL being signed. Callers that build the URL to
+     * sign out of an incoming request URI - which legitimately carries such parameters - must remove
+     * them first; {@code signUrl} itself never rewrites the URL it is given.
+     */
+    public static final List<String> reservedParameters = List.of(
+            SIGNED_URL_UNTIL, SIGNED_URL_USER, SIGNED_URL_METHOD, SIGNED_URL_TOKEN, SIGNED_URL_KEY, SIGNED_URL_SIGNED);
     /**
      *
-     * @param baseUrl - the URL to sign - cannot contain query params
-     *                "until","user", "method", or "token"
+     * @param baseUrl - the URL to sign - must not contain any of the {@link #reservedParameters}
+     *                (this method throws if it does)
      * @param timeout - how many minutes to make the URL valid for (note - time skew
      *                between the creator and receiver could affect the validation
      * @param user    - a string representing the user - should be understood by the
@@ -42,21 +54,20 @@ public class UrlSignerUtil {
      *                this could be an APIKey (when sending URL to a tool that will
      *                use it to retrieve info from Dataverse)
      * @return - the signed URL
+     * @throws IllegalArgumentException if the base URL already contains one of the {@link #reservedParameters}
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
 
-        // check for reserved parameter names ("until","user", "method", or "token")
-        String[] urlQP = baseUrl.split("\\?");
-        if (urlQP.length > 1) {
-            try {
-                URIBuilder uriBuilder = new URIBuilder(baseUrl);
-                List<NameValuePair> params = uriBuilder.getQueryParams();
-                params.removeIf(pair -> reservedParameters.contains(pair.getName()));
-                uriBuilder.setParameters(params);
-                baseUrl = uriBuilder.build().toString();
-            } catch (URISyntaxException e) {
-                logger.severe("Invalid URL for signing: " + baseUrl + " " + e.getMessage());
-            }
+        // The URL is signed exactly as provided and never rewritten here (the pre-6.10 behavior):
+        // validation reconstructs the signing string from the URL-decoded request, so re-encoding or
+        // dropping params would change the signed bytes and the signature would no longer match. A
+        // base URL that already contains one of the four params this method appends is therefore a
+        // caller bug - the stray param would sit inside the signed bytes and be enforced at
+        // validation time as if it had been added here. Fail loudly instead of fixing it silently.
+        String clash = findReservedParameter(baseUrl, signingParameters);
+        if (clash != null) {
+            throw new IllegalArgumentException(
+                    "The URL to sign must not already contain the reserved parameter '" + clash + "': " + baseUrl);
         }
         boolean firstParam = !baseUrl.contains("?");
         StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
@@ -85,6 +96,34 @@ public class UrlSignerUtil {
                     "URL signature is " + (isValidUrl(signedUrl, user, method, key) ? "valid" : "invalid"));
         }
         return signedUrl;
+    }
+
+    /**
+     * Returns the name of the first query parameter of {@code url} whose name is one of
+     * {@code parameterNames}, or null if none is present (query up to any {@code #} fragment,
+     * segments split on {@code &}, name being everything before the first {@code =}). Callers that
+     * accept a URL to sign from outside (e.g. the requestSignedUrl API) can use this with
+     * {@link #reservedParameters} to reject the URL with a helpful message instead of tripping the
+     * {@link IllegalArgumentException} in {@link #signUrl}.
+     */
+    public static String findReservedParameter(String url, List<String> parameterNames) {
+        String prefix = url;
+        int fragmentStart = url.indexOf('#');
+        if (fragmentStart >= 0) {
+            prefix = url.substring(0, fragmentStart);
+        }
+        int queryStart = prefix.indexOf('?');
+        if (queryStart < 0) {
+            return null;
+        }
+        for (String pair : prefix.substring(queryStart + 1).split("&", -1)) {
+            int equals = pair.indexOf('=');
+            String name = (equals < 0) ? pair : pair.substring(0, equals);
+            if (parameterNames.contains(name)) {
+                return name;
+            }
+        }
+        return null;
     }
 
     /**
@@ -144,7 +183,9 @@ public class UrlSignerUtil {
             logger.fine("String to hash: " + urlToHash + "<key>");
             String newHash = DigestUtils.sha512Hex(urlToHash + key);
             logger.fine("Calculated Hash: " + newHash);
-            if (!hash.equals(newHash)) {
+            // constant-time comparison: String.equals returns at the first differing character,
+            // which would let an attacker learn the expected signature through timing
+            if (hash == null || !MessageDigest.isEqual(hash.getBytes(StandardCharsets.UTF_8), newHash.getBytes(StandardCharsets.UTF_8))) {
                 logger.fine("Hash doesn't match");
                 valid = false;
             }
