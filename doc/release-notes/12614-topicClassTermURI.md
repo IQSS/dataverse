@@ -37,6 +37,11 @@ In OpenAireExportUtil the changes are made and tested like in the explanation ab
 
 In XmlMetadataTemplate there is just a new getter and an addition of the new "valueURI" attribute.
 
+Preparations before DB upgrade are:
+
+    curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file citation.tsv
+
+
 You can migrate your topicClassVocabURI data containing URIs to the new topicClassTermURI field.
 In case of data migration, view the affected data with the following database query:
 
@@ -55,3 +60,8 @@ If you wish to migrate your data, a database update is then necessary:
     WHERE dfv.datasetfield_id  = df.id
     AND df.datasetfieldtype_id = (SELECT id FROM datasetfieldtype WHERE name = 'topicClassVocabURI')
     AND dfv.value ILIKE 'http%';
+
+
+After db update, reindex solr with:
+
+    curl http://localhost:8080/api/admin/index/clear && curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1" && curl http://localhost:8080/api/admin/index | jq
