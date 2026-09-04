@@ -836,7 +836,7 @@ public class JsonParserTest {
 
     @Test
     public void testParseExternalDatasetRelationDTOWithDatasetType() throws JsonParseException {
-        String json = "{\"externalIdentifier\":\"10.1234/ext-1\", \"identifierScheme\":\"doi\", \"datasetType\":\"Journal Article\", \"relationTypeName\":\"isReferencedBy\"}";
+        String json = "{\"externalIdentifier\":\"10.1234/ext-1\", \"identifierScheme\":\"doi\", \"relatedDatasetType\":{\"displayName\":\"Journal Article\"}, \"relationType\":{\"name\":\"isReferencedBy\"}}";
         JsonObject jsonObject = JsonUtil.getJsonObject(json);
         DatasetRelationDTO dto = sut.parseDatasetRelationDTO(jsonObject);
 

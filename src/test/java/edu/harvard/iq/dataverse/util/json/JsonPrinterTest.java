@@ -851,6 +851,7 @@ public class JsonPrinterTest {
         DatasetRelationType type = new DatasetRelationType("isReferencedBy", "Is referenced by");
 
         ExternalDatasetRelation rel = new ExternalDatasetRelation(dataset, "10.1234/ext-1", "doi", "Journal Article", type, version);
+        rel.setId(1L);
 
         JsonObject result = JsonPrinter.json(rel, false, false).build();
 
@@ -892,6 +893,7 @@ public class JsonPrinterTest {
         DatasetRelationType relTypeInv = new DatasetRelationType("references", "References", null, relType);
 
         InternalDatasetRelation rel = new InternalDatasetRelation(datasetA, datasetB, relType, version);
+        rel.setId(1L);
 
         // Printing with invertRelation = false
         JsonObject result = JsonPrinter.json(rel, false, false).build();
