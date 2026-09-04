@@ -28,7 +28,9 @@ public class UpdateDatasetFieldsCommandTest {
     @Mock
     private DataverseRequest dataverseRequestStub;
     @Mock
-    private TermsOfUseAndAccess termsOfUseAndAccessStub;
+    private TermsOfUseOrLicense termsOfUseOrLicenseStub;
+    @Mock
+    private TermsOfAccess termsOfAccessStub;
     @Mock
     private CommandContext commandContextMock;
     @Mock
@@ -46,7 +48,8 @@ public class UpdateDatasetFieldsCommandTest {
         when(commandContextMock.engine()).thenReturn(dataverseEngineMock);
         when(commandContextMock.datasetFieldsValidator()).thenReturn(datasetFieldsValidatorMock);
         when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
-        when(datasetVersionMock.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccessStub);
+        when(datasetVersionMock.getTermsOfUseOrLicense()).thenReturn(termsOfUseOrLicenseStub);
+        when(datasetVersionMock.getTermsOfAccess()).thenReturn(termsOfAccessStub);
     }
 
     @Test
@@ -308,7 +311,8 @@ public class UpdateDatasetFieldsCommandTest {
 
     private DatasetVersion prepareDatasetVersionWithCompoundField(DatasetFieldType fieldType, List<DatasetField> datasetFields) {
         DatasetVersion datasetVersion = new DatasetVersion();
-        datasetVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        datasetVersion.setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        datasetVersion.setTermsOfAccess(new TermsOfAccess());
 
         List<DatasetField> fields = new ArrayList<>();
         DatasetField field = new DatasetField();
@@ -346,7 +350,8 @@ public class UpdateDatasetFieldsCommandTest {
 
     private DatasetVersion prepareDatasetVersionWithSingleValueField(DatasetFieldType fieldType, String originalValue) {
         DatasetVersion datasetVersion = new DatasetVersion();
-        datasetVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        datasetVersion.setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        datasetVersion.setTermsOfAccess(new TermsOfAccess());
 
         List<DatasetField> fields = new ArrayList<>();
         DatasetField field = new DatasetField();
@@ -372,7 +377,8 @@ public class UpdateDatasetFieldsCommandTest {
 
     private DatasetVersion prepareDatasetVersionWithSingleControlledVocabularyValueField(DatasetFieldType fieldType, ControlledVocabularyValue controlledVocabularyValue) {
         DatasetVersion datasetVersion = new DatasetVersion();
-        datasetVersion.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        datasetVersion.setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        datasetVersion.setTermsOfAccess(new TermsOfAccess());
 
         List<DatasetField> fields = new ArrayList<>();
         DatasetField field = new DatasetField();
