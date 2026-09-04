@@ -90,7 +90,7 @@ public final class StorageIOCache implements ExportCache {
             // A failure above leaves the cache untouched.
             // TODO: verify for all storage drivers that they support atomic writes.
             storageFor(dataset).savePathAsAux(tempFile, key.auxTag());
-            logger.log(Level.FINE, dataset.getId() + ": Cached export written: {0}", key.auxTag());
+            logger.log(Level.FINE, () -> dataset.getId() + ": Cached export written: " + key.auxTag());
         } finally {
             try {
                 Files.deleteIfExists(tempFile);
