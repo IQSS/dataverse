@@ -151,6 +151,9 @@ public class JsonParser {
         if (jobj.containsKey("requireFilesToPublishDataset")) {
             dv.setRequireFilesToPublishDataset(jobj.getBoolean("requireFilesToPublishDataset"));
         }
+        if (jobj.containsKey("guestbookRoot")) {
+            dv.setGuestbookRoot(jobj.getBoolean("guestbookRoot"));
+        }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
@@ -211,6 +214,9 @@ public class JsonParser {
         }
         if (jsonObject.containsKey("datasetFileCountLimit")) {
             dataverseDTO.setDatasetFileCountLimit(Integer.valueOf(jsonObject.getInt("datasetFileCountLimit")));
+        }
+        if (jsonObject.containsKey("guestbookRoot")) {
+            dataverseDTO.setGuestbookRoot(jsonObject.getBoolean("guestbookRoot"));
         }
 
         return dataverseDTO;
