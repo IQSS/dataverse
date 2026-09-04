@@ -133,16 +133,16 @@ public class FeedbackUtilTest {
 
         JsonObject json1 = JsonUtil.getJsonObjectFromFile("src/test/resources/json/dataset-finch1.json");
 
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, datasetRelationService, templateService);
         dsVersion = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
 
         JsonObject json12 = JsonUtil.getJsonObjectFromFile("tests/data/datasetContacts1.json");
 
-        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
+        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, datasetRelationService, templateService);
         dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
 
         JsonObject jsonNoContacts = JsonUtil.getJsonObjectFromFile("tests/data/datasetNoContacts.json");
-        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
+        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService, datasetTypeService, datasetRelationService, templateService);
         dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
 
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();

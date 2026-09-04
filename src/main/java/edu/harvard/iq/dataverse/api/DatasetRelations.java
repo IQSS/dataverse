@@ -169,17 +169,17 @@ public class DatasetRelations extends AbstractApiBean {
                         datasetTypeNames, relationSources, effectiveLimit, effectiveOffset);
                 long totalCount = datasetRelationSvc.getTotalDatasetRelationCountFor(dataset, version, relationTypeNames,
                         datasetTypeNames, relationSources);
-                JsonObjectBuilder data = Json.createObjectBuilder()
+                JsonObjectBuilder data = JsonUtil.createObjectBuilder()
                         .add("items", json(relations, dataset, includeMetadataBlocks));
                 if (showFacets) {
-                    data.add("facets", Json.createObjectBuilder()
+                    data.add("facets", JsonUtil.createObjectBuilder()
                             // A facet omits its own filter so clients can offer alternative values.
                             .add("relationType", jsonFacetCounts(datasetRelationSvc.getDatasetRelationFacetCountsFor(dataset, version,
                                     "relationType", null, datasetTypeNames, relationSources)))
                             .add("datasetType", jsonFacetCounts(datasetRelationSvc.getDatasetRelationFacetCountsFor(dataset, version,
                                     "datasetType", relationTypeNames, null, relationSources))));
                 }
-                return Response.ok(Json.createObjectBuilder()
+                return Response.ok(JsonUtil.createObjectBuilder()
                         .add("status", ApiConstants.STATUS_OK)
                         .add("data", data)
                         .add("totalCount", totalCount)

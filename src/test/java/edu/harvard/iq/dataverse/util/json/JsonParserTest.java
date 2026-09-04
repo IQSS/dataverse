@@ -176,7 +176,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService, datasetRelationService);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, datasetRelationService, templateService);
     }
     
     @Test 
@@ -987,7 +987,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, datasetRelationService, templateService);
 
         Dataset ds = new Dataset();
         DatasetVersion dsv1 = new DatasetVersion();

@@ -282,7 +282,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc, datasetTypeSvc, templateSvc, datasetRelationSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc, datasetTypeSvc, datasetRelationSvc, templateSvc);
         }
     });
 

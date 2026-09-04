@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import jakarta.json.Json;
@@ -41,7 +42,7 @@ public class DatasetRelationTypesIT {
         String description = "Test description";
 
         // Create relation type without inverse
-        JsonObjectBuilder builder = Json.createObjectBuilder()
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder()
                 .add("name", name)
                 .add("displayName", displayName)
                 .add("description", description);
@@ -69,11 +70,11 @@ public class DatasetRelationTypesIT {
         String description2 = "Test description2";
 
         // Create relation type which is inverse of itself
-        JsonObjectBuilder builder2 = Json.createObjectBuilder()
+        JsonObjectBuilder builder2 = JsonUtil.createObjectBuilder()
                 .add("name", name2)
                 .add("displayName", displayName2)
                 .add("description", description2)
-                .add("inverse", Json.createObjectBuilder().add("name", name2));
+                .add("inverse", JsonUtil.createObjectBuilder().add("name", name2));
 
         UtilIT.addDatasetRelationType(builder2.build().toString(), apiTokenSuperuser)
                 .then().assertThat().statusCode(OK.getStatusCode());
@@ -96,11 +97,11 @@ public class DatasetRelationTypesIT {
         String inverseDescription3 = "Test inverse description3";
 
         // Create relation type with an inverse relation type
-        JsonObjectBuilder builder3 = Json.createObjectBuilder()
+        JsonObjectBuilder builder3 = JsonUtil.createObjectBuilder()
                 .add("name", name3)
                 .add("displayName", displayName3)
                 .add("description", description3)
-                .add("inverse", Json.createObjectBuilder().add("name", inverseName3)
+                .add("inverse", JsonUtil.createObjectBuilder().add("name", inverseName3)
                                                                  .add("displayName", inverseDisplayName3)
                                                                  .add("description", inverseDescription3));
 
@@ -171,19 +172,19 @@ public class DatasetRelationTypesIT {
     @Test
     public void testCreateRelationTypeValidation() {
         // Missing name
-        JsonObjectBuilder noName = Json.createObjectBuilder()
+        JsonObjectBuilder noName = JsonUtil.createObjectBuilder()
                 .add("displayName", "No Name");
         UtilIT.addDatasetRelationType(noName.build().toString(), apiTokenSuperuser)
                 .then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
         // Missing displayName
-        JsonObjectBuilder noDisplayName = Json.createObjectBuilder()
+        JsonObjectBuilder noDisplayName = JsonUtil.createObjectBuilder()
                 .add("name", "noDisplayName");
         UtilIT.addDatasetRelationType(noDisplayName.build().toString(), apiTokenSuperuser)
                 .then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         
         // Empty name
-        JsonObjectBuilder emptyName = Json.createObjectBuilder()
+        JsonObjectBuilder emptyName = JsonUtil.createObjectBuilder()
                 .add("name", "")
                 .add("displayName", "Empty Name");
         UtilIT.addDatasetRelationType(emptyName.build().toString(), apiTokenSuperuser)
@@ -193,7 +194,7 @@ public class DatasetRelationTypesIT {
     @Test
     public void testRelationTypePermissions() {
         String name = "permTest" + UtilIT.getRandomString(6);
-        JsonObjectBuilder builder = Json.createObjectBuilder()
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder()
                 .add("name", name)
                 .add("displayName", "Perm Test" + UtilIT.getRandomString(6));
         String jsonIn = builder.build().toString();
@@ -207,7 +208,7 @@ public class DatasetRelationTypesIT {
                 .then().assertThat().statusCode(OK.getStatusCode());
 
         String defaultName = "permDefault" + UtilIT.getRandomString(6);
-        UtilIT.addDatasetRelationType(Json.createObjectBuilder()
+        UtilIT.addDatasetRelationType(JsonUtil.createObjectBuilder()
                         .add("name", defaultName)
                         .add("displayName", "Perm Default " + UtilIT.getRandomString(6))
                         .build().toString(), apiTokenSuperuser)
@@ -230,7 +231,7 @@ public class DatasetRelationTypesIT {
     @Test
     public void testDeleteRelationTypeFailureWhenInUse() {
         String typeName = "inUseTest" + UtilIT.getRandomString(6);
-        JsonObjectBuilder builder = Json.createObjectBuilder()
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder()
                 .add("name", typeName)
                 .add("displayName", "In Use Test" + UtilIT.getRandomString(6));
 
@@ -246,9 +247,9 @@ public class DatasetRelationTypesIT {
         Response createDatasetB = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiTokenSuperuser);
         String pidB = UtilIT.getDatasetPersistentIdFromResponse(createDatasetB);
 
-        String relationJson = Json.createObjectBuilder()
+        String relationJson = JsonUtil.createObjectBuilder()
                 .add("relatedDatasetPid", pidB)
-                .add("relationType", Json.createObjectBuilder().add("name", typeName))
+                .add("relationType", JsonUtil.createObjectBuilder().add("name", typeName))
                 .build().toString();
 
         UtilIT.addDatasetRelation(pidA, relationJson, apiTokenSuperuser)
@@ -262,11 +263,11 @@ public class DatasetRelationTypesIT {
         // Cleanup: remove relation first
         // Need the relation ID
         Response listResponse = UtilIT.listDatasetRelations(pidA, apiTokenSuperuser);
-        int relationId = listResponse.jsonPath().getInt("data[0].id");
+        int relationId = listResponse.jsonPath().getInt("data.items[0].id");
         UtilIT.deleteDatasetRelation(pidA, relationId, apiTokenSuperuser).then().assertThat().statusCode(OK.getStatusCode());
 
         String defaultName = "defaultAfterInUse" + UtilIT.getRandomString(6);
-        UtilIT.addDatasetRelationType(Json.createObjectBuilder()
+        UtilIT.addDatasetRelationType(JsonUtil.createObjectBuilder()
                         .add("name", defaultName)
                         .add("displayName", "Default After In Use " + UtilIT.getRandomString(6))
                         .build().toString(), apiTokenSuperuser)

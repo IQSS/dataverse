@@ -785,7 +785,7 @@ public class JsonPrinter {
      * Unit tests for that method could not be found.
      */
     private static JsonObjectBuilder versionAsJsonForDTO(DatasetVersion dsv, boolean includeFiles) {
-        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, null, includeFiles, false, true, true, false);
+        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, null, includeFiles, true, false, true, true, false);
         dsvWithCitation.add("citation", dsv.getCitation());
         return dsvWithCitation;
     }
@@ -1190,7 +1190,7 @@ public class JsonPrinter {
             result.add("datasetPid", dataset.getGlobalId().toString())
                   .add("relatedDatasetPid", relatedDataset.getGlobalId().toString())
                   .add("relatedDatasetType",
-                          Json.createObjectBuilder()
+                          JsonUtil.createObjectBuilder()
                                   .add("name", relatedDataset.getDatasetType().getName())
                                   .add("displayName", relatedDataset.getDatasetType().getDisplayName()));
 
@@ -1198,7 +1198,7 @@ public class JsonPrinter {
                 DatasetVersion releasedVersion = relatedDataset.getReleasedVersion();
                 if (releasedVersion != null) {
                     result.add("relatedDataset",
-                            Json.createObjectBuilder().add("metadataBlocks", jsonByBlocks(releasedVersion.getDatasetFields()))
+                            JsonUtil.createObjectBuilder().add("metadataBlocks", jsonByBlocks(releasedVersion.getDatasetFields()))
                     );
                 }
             }
@@ -1210,7 +1210,7 @@ public class JsonPrinter {
 
             if (erel.getDatasetType() != null) {
                   result.add("relatedDatasetType",
-                        Json.createObjectBuilder().add("displayName", erel.getDatasetType()));
+                        JsonUtil.createObjectBuilder().add("displayName", erel.getDatasetType()));
             }
         }
 

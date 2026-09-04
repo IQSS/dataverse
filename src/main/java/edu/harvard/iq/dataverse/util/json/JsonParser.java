@@ -69,7 +69,7 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, TemplateServiceBean templateService) {
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, DatasetRelationServiceBean datasetRelationService, TemplateServiceBean templateService) {
         this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, datasetRelationService, null, templateService);
     }
 

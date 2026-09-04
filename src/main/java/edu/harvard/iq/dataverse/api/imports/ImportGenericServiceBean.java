@@ -116,7 +116,7 @@ public class ImportGenericServiceBean {
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             logger.fine(json);
             JsonObject obj = JsonUtil.getJsonObject(json);
-            JsonParser parser = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService, datasetRelationService);
+            JsonParser parser = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, datasetRelationService, templateService);
             DatasetVersion dv = parser.parseDatasetVersion(obj, datasetVersion);
             List<DatasetRelation> relations = parser.parseDatasetRelations(obj, dv);
             if (relations != null) {
