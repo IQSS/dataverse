@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
@@ -69,6 +70,7 @@ public class IndexServiceBeanTest {
         indexService.datasetFieldService = Mockito.mock(DatasetFieldServiceBean.class);
         indexService.datasetVersionService = Mockito.mock(DatasetVersionServiceBean.class);
         indexService.datasetVersionFilesServiceBean = Mockito.mock(DatasetVersionFilesServiceBean.class);
+        indexService.datasetRelationService = Mockito.mock(DatasetRelationServiceBean.class);
         BrandingUtil.injectServices(indexService.dataverseService, indexService.settingsService);
 
         Mockito.when(indexService.dataverseService.findRootDataverse()).thenReturn(dataverse);

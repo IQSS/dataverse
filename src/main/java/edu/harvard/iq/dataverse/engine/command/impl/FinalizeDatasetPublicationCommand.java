@@ -17,7 +17,9 @@ import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationIndexing;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -299,7 +301,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // Metadata export:
         ctxt.datasets().reExportDatasetAsync(dataset);
         
-        ctxt.index().asyncIndexDataset(dataset, true);
+        DatasetVersion priorReleasedVersion = dataset.getPriorReleasedVersion();
+        List<DatasetRelation> currentRelations = ctxt.datasetRelations()
+                .getDatasetRelationsDefinedAt(dataset.getLatestVersion());
+        List<DatasetRelation> previousRelations = priorReleasedVersion == null
+                ? List.of()
+                : ctxt.datasetRelations().getDatasetRelationsDefinedAt(priorReleasedVersion);
+        DatasetRelationIndexing.scheduleChanges(ctxt, dataset, previousRelations, currentRelations);
         
         //re-indexing dataverses that have additional subjects
         if (!dataversesToIndex.isEmpty()){

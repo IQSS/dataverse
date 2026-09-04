@@ -3,7 +3,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -47,6 +49,8 @@ public final class DatasetVersionDifference {
     private List<FileMetadata> changedVariableMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
     private List<String[]> changedTermsAccess = new ArrayList<>();
+    private List<DatasetRelation> addedRelations = new ArrayList<>();
+    private List<DatasetRelation> removedRelations = new ArrayList<>();
     private List<SummaryNote> summaryDataForNote = new ArrayList<>();
     private List<SummaryNote> blockDataForNote = new ArrayList<>();
 
@@ -179,6 +183,7 @@ public final class DatasetVersionDifference {
         
         logger.fine("Main difference loop execution time: " + (System.currentTimeMillis() - startTime) + " ms");
         initDatasetFilesDifferencesList();
+        getRelationDifferences();
 
         //Sort within blocks by datasetfieldtype display order
         for (List<DatasetField[]> blockList : detailDataByBlock) {
@@ -209,6 +214,24 @@ public final class DatasetVersionDifference {
             return Integer.valueOf(a).compareTo(b);
         });
         getTermsDifferences();
+    }
+
+    private void getRelationDifferences() {
+        Map<String, DatasetRelation> originalRelations = new HashMap<>();
+        List<DatasetRelation> originalVersionRelations = originalVersion.getRelations() == null
+                ? Collections.emptyList() : originalVersion.getRelations();
+        for (DatasetRelation relation : originalVersionRelations) {
+            originalRelations.put(relation.toVersionComparisonKey(), relation);
+        }
+
+        List<DatasetRelation> newVersionRelations = newVersion.getRelations() == null
+                ? Collections.emptyList() : newVersion.getRelations();
+        for (DatasetRelation relation : newVersionRelations) {
+            if (originalRelations.remove(relation.toVersionComparisonKey()) == null) {
+                addedRelations.add(relation);
+            }
+        }
+        removedRelations.addAll(originalRelations.values());
     }
     
 
@@ -1724,6 +1747,7 @@ public final class DatasetVersionDifference {
         }   
         
         jobVersion.add("files", getFileSummaryAsJson());
+        jobVersion.add("relations", getRelationsSummaryAsJson());
         
         if (!this.changedTermsAccess.isEmpty()) {
             jobVersion.add("termsAccessChanged", true);
@@ -1732,6 +1756,13 @@ public final class DatasetVersionDifference {
         }      
                 
         return jobVersion;
+    }
+
+    private JsonObjectBuilder getRelationsSummaryAsJson() {
+        JsonObjectBuilder job = new NullSafeJsonBuilder();
+        job.add("added", addedRelations.size());
+        job.add("removed", removedRelations.size());
+        return job;
     }
     
     private JsonObjectBuilder getSummaryNoteAsJson(SummaryNote sn){
@@ -1868,6 +1899,13 @@ public final class DatasetVersionDifference {
                 jabDiffFiles.add(jobChanged);
             });
             job.add("fileChanges", jabDiffFiles);
+        }
+
+        if (!addedRelations.isEmpty()) {
+            job.add("relationsAdded", JsonPrinter.json(addedRelations, newVersion.getDataset(), false));
+        }
+        if (!removedRelations.isEmpty()) {
+            job.add("relationsRemoved", JsonPrinter.json(removedRelations, originalVersion.getDataset(), false));
         }
 
         // Format Terms Of Access changes

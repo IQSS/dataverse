@@ -33,6 +33,9 @@ import org.ocpsoft.common.util.Strings;
 
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationType;
+import edu.harvard.iq.dataverse.datasetrelation.InternalDatasetRelation;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
@@ -1121,6 +1124,29 @@ public class XmlMetadataTemplate {
                     }
                 }
             }
+            List<DatasetRelation> datasetRelations = dataset.getLatestVersionForCopy().getRelations();
+            if (datasetRelations != null) {
+                for (DatasetRelation relation : datasetRelations) {
+                    if (!(relation instanceof InternalDatasetRelation internalRelation)
+                            || !isDataCiteRelationType(relation.getRelationType())) {
+                        continue;
+                    }
+                    GlobalId relatedDatasetId = internalRelation.getRelatedDataset().getGlobalId();
+                    if (relatedDatasetId == null) {
+                        continue;
+                    }
+                    String relatedIdentifierType = getCanonicalPublicationType(relatedDatasetId.getProtocol());
+                    if (relatedIdentifierType == null) {
+                        continue;
+                    }
+                    attributes.clear();
+                    attributes.put("relationType", relation.getRelationType().getName());
+                    attributes.put("relatedIdentifierType", relatedIdentifierType);
+                    relatedIdentifiersWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "relatedIdentifiers", relatedIdentifiersWritten);
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "relatedIdentifier", attributes,
+                            relatedDatasetId.asRawIdentifier());
+                }
+            }
             List<FileMetadata> fmds = dataset.getLatestVersionForCopy().getFileMetadatas();
             if (!((fmds==null) && fmds.isEmpty())) {
                 attributes.clear();
@@ -1187,6 +1213,26 @@ public class XmlMetadataTemplate {
             
         }
         return relatedIdentifierTypeMap.get(pubIdType);
+    }
+
+    private static boolean isDataCiteRelationType(DatasetRelationType relationType) {
+        try {
+            DataCiteRelationType.valueOf(relationType.getName());
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
+    /** The DataCite Metadata Schema 4.5 controlled list for relationType. */
+    private enum DataCiteRelationType {
+        IsCitedBy, Cites, IsSupplementTo, IsSupplementedBy, IsContinuedBy, Continues,
+        IsDescribedBy, Describes, HasMetadata, IsMetadataFor, HasVersion, IsVersionOf,
+        IsNewVersionOf, IsPreviousVersionOf, IsPartOf, HasPart, IsPublishedIn,
+        IsReferencedBy, References, IsDocumentedBy, Documents, IsCompiledBy, Compiles,
+        IsVariantFormOf, IsOriginalFormOf, IsIdenticalTo, IsReviewedBy, Reviews,
+        IsDerivedFrom, IsSourceOf, IsRequiredBy, Requires, IsObsoletedBy, Obsoletes,
+        IsCollectedBy, Collects
     }
 
     private void writeSize(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {

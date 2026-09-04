@@ -2316,6 +2316,8 @@ The optional ``excludeFiles`` parameter specifies whether the files should be li
 
 The optional ``excludeMetadataBlocks`` parameter specifies whether the metadata blocks should be listed in the output (defaults to ``false``).
 
+The optional ``excludeRelations`` parameter specifies whether the dataset's relations should be listed in the output (defaults to ``false``).
+
 
 By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
 
@@ -2851,6 +2853,8 @@ Note that you don't need to edit the top-level fields such as ``versionNumber``,
 
 Now that you've made edits to the metadata in your JSON file, you can send it to a Dataverse installation as described above.
 
+The request also reads an optional ``relations`` array. When present, it replaces the relations defined on the draft; when omitted, existing relations are preserved. Relation objects use the format described under `Dataset relations`_.
+
 .. _edit-dataset-metadata-api:
 
 Edit Dataset Metadata
@@ -2892,7 +2896,7 @@ For these edits your JSON file need only include those dataset fields which you 
 
 This endpoint also allows removing fields, as long as they are not required by the dataset. To remove a field, send an empty value (``""``) for individual fields. For multiple fields, send an empty array (``[]``). A sample JSON file for removing fields may be downloaded here: :download:`dataset-edit-metadata-delete-fields-sample.json <../_static/api/dataset-edit-metadata-delete-fields-sample.json>`
 
-If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
+If another user updates the dataset version metadata before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept.
 
 If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
@@ -2942,7 +2946,7 @@ Update Dataset Terms of Access
 
 Updates the terms of access for the restricted files of a dataset by applying it to the draft version, or by creating a draft if none exists.
 
-If another user updates an already existing draft version before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
+If another user updates an already existing draft version before you send the update request, metadata inconsistencies may occur. To prevent this, you can use the optional ``sourceLastUpdateTime`` query parameter. The intended API workflow is for the client to send along the ``lastUpdateTime`` obtained from the last ``GET`` call on the version that is being modified. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept.
 
 If this parameter is provided, the update will proceed only if the ``lastUpdateTime`` remains unchanged (meaning no one has updated the dataset metadata since you retrieved it). Otherwise, the request will fail with an error.
 
@@ -5093,6 +5097,265 @@ The fully expanded example above (without environment variables) looks like this
 
 :download:`list-reviews.json <../_static/api/list-reviews.json>` contains sample output of how the API response might look.
 
+Dataset Relations
+~~~~~~~~~~~~~~~~~
+
+Dataset relations describe how a dataset is related to another Dataverse dataset (an internal relation) or to an external resource.
+
+A relation is represented as JSON. Internal relations use ``relatedDatasetPid`` while external relations use ``externalIdentifier`` and ``identifierScheme``. Both use the name of a configured relation type (see `Dataset Relation Types`_):
+
+.. code-block:: json
+
+  {
+    "relatedDatasetPid": "doi:10.5072/FK2/BBBBBB",
+    "relationType": { "name": "isRelatedTo" }
+  }
+
+An external relation can also include ``relatedDatasetType`` with a ``displayName``:
+
+.. code-block:: json
+
+  {
+    "externalIdentifier": "https://example.org/resource/1",
+    "identifierScheme": "URL",
+    "relatedDatasetType": { "displayName": "Document" },
+    "relationType": { "name": "isRelatedTo" }
+  }
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+Add a Dataset Relation
+^^^^^^^^^^^^^^^^^^^^^^
+
+Add a dataset relation. By default this operation affects the latest version, creating a draft when necessary. A superuser can supply the optional ``version`` query parameter to modify a specified published version.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/AAAAAA
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type: application/json" \
+    -X POST "$SERVER_URL/api/datasets/:persistentId/relations?persistentId=$PERSISTENT_IDENTIFIER" \
+    -d '{"relatedDatasetPid":"doi:10.5072/FK2/BBBBBB","relationType":{"name":"isRelatedTo"}}'
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" \
+    -X POST "https://demo.dataverse.org/api/datasets/:persistentId/relations?persistentId=doi:10.5072/FK2/AAAAAA" \
+    -d '{"relatedDatasetPid":"doi:10.5072/FK2/BBBBBB","relationType":{"name":"isRelatedTo"}}'
+
+Replace Dataset Relations
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Bulk replace all relations defined on the selected version with the sent JSON array (including an empty array to remove all relations). By default this operation affects the latest version, creating a draft when necessary. A superuser can supply the optional ``version`` query parameter to modify a specified published version.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/AAAAAA
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type: application/json" \
+    -X PUT "$SERVER_URL/api/datasets/:persistentId/relations?persistentId=$PERSISTENT_IDENTIFIER" \
+    --data-binary @relations.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" \
+    -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/relations?persistentId=doi:10.5072/FK2/AAAAAA" \
+    --data-binary @relations.json
+
+List Dataset Relations
+^^^^^^^^^^^^^^^^^^^^^^
+
+List the relations for the latest accessible version (unless the optional ``version`` parameter is supplied). The response is paginated (``limit`` defaults to 10 and ``offset`` defaults to 0). Set ``type``, ``datasetType``, or ``source`` query parameters to filter on one or more relation type names, related dataset type names, or relation sources. Set ``includeMetadataBlocks=true`` to include metadata from related internal datasets. Set ``showFacets=true`` to include relation type and dataset type facets.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/AAAAAA
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key: $API_TOKEN" \
+    "$SERVER_URL/api/datasets/:persistentId/relations?persistentId=$PERSISTENT_IDENTIFIER&version=:draft&type=isRelatedTo&limit=10&offset=0&showFacets=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
+    "https://demo.dataverse.org/api/datasets/:persistentId/relations?persistentId=doi:10.5072/FK2/AAAAAA&version=:draft&type=isRelatedTo&limit=10&offset=0&showFacets=true"
+
+When requested, facets are returned with the paginated items and total count. The relation type facet applies active dataset type and source filters; the dataset type facet applies active relation type and source filters.
+
+.. code-block:: json
+
+  {
+    "status": "OK",
+    "totalCount": 3,
+    "data": {
+      "items": [],
+      "facets": {
+        "relationType": [
+          {"name": "isRelatedTo", "displayName": "Is related to", "count": 2}
+        ],
+        "datasetType": [
+          {"name": "dataset", "displayName": "Dataset", "count": 3}
+        ]
+      }
+    }
+  }
+
+Get a Dataset Relation
+^^^^^^^^^^^^^^^^^^^^^^
+
+Returns a relation by its database id. It accepts ``includeMetadataBlocks=true``.
+
+.. code-block:: bash
+
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/AAAAAA
+  export SERVER_URL=https://demo.dataverse.org
+  export RELATION_ID=42
+
+  curl "$SERVER_URL/api/datasets/:persistentId/relations/$RELATION_ID?persistentId=$PERSISTENT_IDENTIFIER"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/:persistentId/relations/42?persistentId=doi:10.5072/FK2/AAAAAA"
+
+Delete a Dataset Relation
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Delete a dataset relation by its database id. Deleting a relation requires permission to edit the dataset on which the relation was originally defined.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/AAAAAA
+  export SERVER_URL=https://demo.dataverse.org
+  export RELATION_ID=42
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE \
+    "$SERVER_URL/api/datasets/:persistentId/relations/$RELATION_ID?persistentId=$PERSISTENT_IDENTIFIER"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE \
+    "https://demo.dataverse.org/api/datasets/:persistentId/relations/42?persistentId=doi:10.5072/FK2/AAAAAA"
+
+Dataset Relation Types
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. _api-list-dataset-relation-types:
+
+List Dataset Relation Types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Show which dataset relation types are available.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasets/relationTypes"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/relationTypes"
+
+.. _api-list-dataset-relation-type:
+
+Get Dataset Relation Type
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Show a dataset relation type by passing either its database id (e.g. "2") or its name (e.g. "isRelatedTo").
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE=isRelatedTo
+
+  curl $SERVER_URL/api/datasets/relationTypes/$TYPE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/relationTypes/isRelatedTo"
+
+.. _api-add-dataset-relation-type:
+
+Add Dataset Relation Type
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Only superusers can add dataset relation types.
+
+Here's an example of all available fields when creating a dataset type:
+
+.. literalinclude:: ../../../../scripts/api/data/relationTypes/relationTypeAllFields.json
+   :language: json
+
+Here's a description of each field:
+
+- ``name`` (required): Machine-readable name.
+- ``displayName`` (required): Human-readable name.
+- ``description``: A description.
+
+The following fields may optionally also be given to add an inverse relationship type:
+
+- ``inverse.name`` (required): Machine-readable name of the inverse relation type. Can be identical to ``name``` if the relation type is the inverse of itself.
+- ``inverse.displayName`` (required): Human-readable name of the inverse relation type.
+- ``inverse.description``: A description of the inverse relation type.
+
+Download the :download:`relationTypeAllFields.json <../../../../scripts/api/data/relationTypes/relationTypeAllFields.json>` file show above, edit it to suit your needs, and use it in the following command.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/relationTypes" -X POST --upload-file relationTypeAllFields.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/relationTypes" -X POST --upload-file relationTypeAllFields.json
+
+.. _api-delete-dataset-relation-type:
+
+Delete Dataset Relation Type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Superuser only. Note that if a dataset relation of this type exists, you will be unable to delete the type until you first use the API to delete that relation.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE_ID=3
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/relationTypes/$TYPE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/relationTypes/3"
+
 Files
 -----
 
@@ -5884,7 +6147,7 @@ Updating File Metadata
 
 Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-An optional parameter, ``sourceLastUpdateTime``, can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential inconsistencies. In the intended API workflow this will be the time stamp in ``lastUpdateTime`` from the last ``GET /api/files/<id>`` API call. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept. 
+An optional parameter, ``sourceLastUpdateTime``, can be used to verify that the file metadata being edited has not been changed since you last retrieved it, thereby avoiding potential inconsistencies. In the intended API workflow this will be the time stamp in ``lastUpdateTime`` from the last ``GET /api/files/<id>`` API call. Dataverse APIs will always report these time stamps in UTC, ISO 8601-formatted (``yyyy-MM-dd'T'HH:mm:ss'Z'``; for example: ``2026-04-22T14:30:00Z``), regardless of the actual time zone used by the server. This is the only format this API will accept.
 
 
 A curl example using an ``ID``

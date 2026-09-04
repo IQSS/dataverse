@@ -18,8 +18,11 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.DatasetType;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.*;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationType;
+import edu.harvard.iq.dataverse.datasetrelation.ExternalDatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.InternalDatasetRelation;
 import edu.harvard.iq.dataverse.datasetversionsummaries.*;
 import edu.harvard.iq.dataverse.datavariable.*;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
@@ -308,12 +311,12 @@ public class JsonPrinter {
 
         return bld;
     }
-    
+
     public static JsonObjectBuilder json(Dataverse dv, boolean minimal) {
         if (!minimal){
             return json(dv, false, false, false, null);
         } else {
-            return json(dv, false, false, true, null);        
+            return json(dv, false, false, true, null);
         }
     }
 
@@ -327,7 +330,7 @@ public class JsonPrinter {
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName());
-        //minimal refers to only returning the id alias and name for 
+        //minimal refers to only returning the id alias and name for
         //used in selecting collections available for linking
         if (minimal) {
             return bld;
@@ -653,22 +656,25 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, includeFiles, false, true, false, false);
+        return json(dsv, null, includeFiles, true, false, true, false, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles, boolean includeMetadataBlocks) {
-        return json(dsv, null, includeFiles, false, includeMetadataBlocks, false, false);
+        return json(dsv, null, includeFiles, true, false, includeMetadataBlocks, false, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
                                          boolean includeFiles, boolean returnOwners) {
-        return  json(dsv, anonymizedFieldTypeNamesList, includeFiles, returnOwners, true, false, false);
+        return  json(dsv, anonymizedFieldTypeNamesList, includeFiles, true, returnOwners, true, false, false);
+    }
+    public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles, boolean includeMetadataBlocks, boolean includeRelations) {
+        return json(dsv, null, includeFiles, includeRelations, false, includeMetadataBlocks, false, false);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
         boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks) {
-        return json(dsv,  anonymizedFieldTypeNamesList, includeFiles,  returnOwners, includeMetadataBlocks, false, false);
+        return json(dsv,  anonymizedFieldTypeNamesList, includeFiles, true, returnOwners, includeMetadataBlocks, false, false);
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
-        boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean forExportDataProvider, boolean ignoreSettingExcludeEmailFromExport) {
+        boolean includeFiles, boolean includeRelations, boolean returnOwners, boolean includeMetadataBlocks, boolean forExportDataProvider, boolean ignoreSettingExcludeEmailFromExport) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
@@ -729,6 +735,9 @@ public class JsonPrinter {
         if (includeFiles) {
             bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas(), forExportDataProvider));
         }
+        if (includeRelations) {
+            bld.add("relations", json(dsv.getRelations(), dsv.getDataset(), false));
+        }
 
         return bld;
     }
@@ -755,19 +764,19 @@ public class JsonPrinter {
     public static JsonObjectBuilder datasetAsJsonForDTO(DatasetVersion dsv) {
         return datasetAsJsonForDTO(dsv, true);
     }
-    
+
     /**
      * Same as above, but gives an option to skip the file-level info
      * @param dsv
      * @param includeFiles
-     * @return 
+     * @return
      */
     public static JsonObjectBuilder datasetAsJsonForDTO(DatasetVersion dsv, boolean includeFiles) {
         JsonObjectBuilder jsonForDTO = JsonPrinter.json(dsv.getDataset());
         jsonForDTO.add("datasetVersion", versionAsJsonForDTO(dsv, includeFiles));
         return jsonForDTO;
     }
-    
+
     /**
      * Export formats such as DDI require the citation to be included. See
      * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
@@ -777,7 +786,7 @@ public class JsonPrinter {
      * Unit tests for that method could not be found.
      */
     private static JsonObjectBuilder versionAsJsonForDTO(DatasetVersion dsv, boolean includeFiles) {
-        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, null, includeFiles, false, true, true, false);
+        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, null, includeFiles, true, false, true, true, false);
         dsvWithCitation.add("citation", dsv.getCitation());
         return dsvWithCitation;
     }
@@ -785,7 +794,7 @@ public class JsonPrinter {
     public static JsonArrayBuilder jsonFileMetadatas(Collection<FileMetadata> fmds) {
         return jsonFileMetadatas(fmds, false);
     }
-    
+
     public static JsonArrayBuilder jsonFileMetadatas(Collection<FileMetadata> fmds, boolean forExportDataProvider) {
         JsonArrayBuilder filesArr = JsonUtil.createArrayBuilder();
         for (FileMetadata fmd : fmds) {
@@ -1014,7 +1023,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(FileMetadata fmd, boolean returnOwners, boolean printDatasetVersion) {
         return json(fmd, returnOwners, printDatasetVersion, false);
     }
-    
+
     public static JsonObjectBuilder json(FileMetadata fmd, boolean returnOwners, boolean printDatasetVersion, boolean forExportDataProvider) {
         NullSafeJsonBuilder builder = jsonObjectBuilder();
 
@@ -1068,7 +1077,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder jsonDatafileWithDatatableForExport(DataFile df, FileMetadata fileMetadata) {
         return json(df, fileMetadata, true, false, true);
     }
-    
+
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, boolean returnOwners, boolean includeVariables) {
         String fileName = null;
 
@@ -1150,6 +1159,86 @@ public class JsonPrinter {
             builder.add("isPartOf", getOwnersFromDvObject(df, fileMetadata.getDatasetVersion()));
         }
         return builder;
+    }
+
+    public static JsonObjectBuilder json(DatasetRelationType drt, boolean includeInverse) {
+        JsonObjectBuilder result = new NullSafeJsonBuilder();
+        result.add("name", drt.getName())
+                .add("displayName", drt.getDisplayName())
+                .add("description", drt.getDescription())
+                .add("default", drt.isDefault());
+        if (includeInverse && drt.getInverse() != null) {
+            result.add("inverse", json(drt.getInverse(), false));
+        }
+        return result;
+    }
+
+    public static JsonObjectBuilder json(DatasetRelationType drt) {
+        return json(drt, true);
+    }
+
+    public static JsonObjectBuilder json(DatasetRelation rel, boolean invertRelation, boolean includeMetadataBlocks) {
+        JsonObjectBuilder result = new NullSafeJsonBuilder();
+
+        result.add("id", rel.getId())
+              .add("definitionPointPid", rel.getDefinitionPoint().getDataset().getGlobalId().toString());
+
+        if (rel instanceof InternalDatasetRelation) {
+            InternalDatasetRelation irel = (InternalDatasetRelation) rel;
+            Dataset dataset = invertRelation ? irel.getRelatedDataset() : irel.getDataset();
+            Dataset relatedDataset = invertRelation ? irel.getDataset() : irel.getRelatedDataset();
+
+            result.add("datasetPid", dataset.getGlobalId().toString())
+                  .add("relatedDatasetPid", relatedDataset.getGlobalId().toString())
+                  .add("relatedDatasetType",
+                          JsonUtil.createObjectBuilder()
+                                  .add("name", relatedDataset.getDatasetType().getName())
+                                  .add("displayName", relatedDataset.getDatasetType().getDisplayName()));
+
+            if (includeMetadataBlocks) {
+                DatasetVersion releasedVersion = relatedDataset.getReleasedVersion();
+                if (releasedVersion != null) {
+                    result.add("relatedDataset",
+                            JsonUtil.createObjectBuilder().add("metadataBlocks", jsonByBlocks(releasedVersion.getDatasetFields()))
+                    );
+                }
+            }
+        } else if (rel instanceof ExternalDatasetRelation) {
+            ExternalDatasetRelation erel = (ExternalDatasetRelation) rel;
+            result.add("datasetPid", erel.getDataset().getGlobalId().toString())
+                  .add("externalIdentifier", erel.getExternalIdentifier())
+                  .add("identifierScheme", erel.getIdentifierScheme());
+
+            if (erel.getDatasetType() != null) {
+                  result.add("relatedDatasetType",
+                        JsonUtil.createObjectBuilder().add("displayName", erel.getDatasetType()));
+            }
+        }
+
+        if (rel.getRelationType() != null) {
+            DatasetRelationType relType = invertRelation ? rel.getRelationType().getInverse() : rel.getRelationType();
+            if (relType != null) {
+                result.add("relationType", json(relType));
+            }
+        }
+
+        return result;
+    }
+
+    public static JsonObjectBuilder json(DatasetRelation rel, Dataset forDataset, boolean includeMetadataBlocks) {
+        boolean invertRelation = false;
+        if (rel instanceof InternalDatasetRelation) {
+            InternalDatasetRelation internalRel = (InternalDatasetRelation) rel;
+            invertRelation = !internalRel.getDataset().equals(forDataset) && internalRel.getRelatedDataset().equals(forDataset);
+        }
+        return json(rel, invertRelation, includeMetadataBlocks);
+    }
+
+    public static JsonArrayBuilder json(List<DatasetRelation> rel, Dataset forDataset, boolean includeMetadataBlocks) {
+        if (rel == null) {
+            return null;
+        }
+        return rel.stream().map(r -> json(r, forDataset, includeMetadataBlocks)).collect(toJsonArray());
     }
 
     //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a
@@ -1904,7 +1993,7 @@ public class JsonPrinter {
 
         return notificationsArray;
     }
-    
+
     public static JsonObjectBuilder jsonLanguage(String locale, String title) {
         // returns a single metadata language entry
         return jsonObjectBuilder().add("locale", locale).add("title", title);
@@ -1914,7 +2003,7 @@ public class JsonPrinter {
         // returns an array of metadatalanguages
         return JsonUtil.createArrayBuilder(langMap.entrySet().stream().map(entry -> jsonLanguage(entry.getKey(), entry.getValue())).toList());
     }
-    
+
     public static JsonArrayBuilder jsonDatasetVersionSummaries(List<DatasetVersionSummary> summaries) {
         JsonArrayBuilder arrayBuilder = JsonUtil.createArrayBuilder();
         summaries.stream()
