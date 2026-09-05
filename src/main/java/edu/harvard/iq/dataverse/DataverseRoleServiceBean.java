@@ -54,6 +54,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     @EJB
     SolrIndexServiceBean solrIndexService;
     @EJB
+    PermissionServiceBean permissionService;
+    @EJB
     IndexAsync indexAsync;
 
     public DataverseRole save(DataverseRole aRole) {
@@ -87,11 +89,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         } else {
             assignment = em.merge(assignment);
         }
-        
+
         if (createIndex) {
             indexAsync.indexRole(assignment);
         }
-        
+
         // Check if ROLE_ASSIGNMENT_HISTORY feature flag is enabled
         if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
             RoleAssignmentHistory entry = new RoleAssignmentHistory(assignment, req, RoleAssignmentHistory.ActionType.ASSIGN);
@@ -100,11 +102,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
         return assignment;
     }
-    
+
 
     /**
      * Saves a RoleAssignmentHistory entry to the database.
-     * 
+     *
      * @param entry The RoleAssignmentHistory object to be saved
      * @return The persisted RoleAssignmentHistory object
      */
@@ -181,42 +183,42 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         if (!em.contains(ra)) {
             ra = em.merge(ra);
         }
-        
+
         // Create history entry if feature flag is set
         if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
             RoleAssignmentHistory entry = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
             saveHistoryEntry(entry);
         }
-        
+
         em.remove(ra);
         /**
          * @todo update permissionModificationTime here.
          */
         indexAsync.indexRole(ra);
     }
-    
+
     // "nuclear" remove-all roles for a user or group: 
     // (Note that all the "definition points" - i.e., the dvObjects
     // on which the roles were assigned - need to be reindexed for permissions
     // once the role assignments are removed!
     public void revokeAll(RoleAssignee assignee, DataverseRequest req) {
         Set<DvObject> reindexSet = new HashSet<>();
-    
+
         for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
             if (!em.contains(ra)) {
                 ra = em.merge(ra);
             }
-            
+
             // Create history entry if feature flag is set
             if (FeatureFlags.ROLE_ASSIGNMENT_HISTORY.enabled()) {
                 RoleAssignmentHistory entry = new RoleAssignmentHistory(ra, req, RoleAssignmentHistory.ActionType.REVOKE);
                 saveHistoryEntry(entry);
             }
-            
+
             em.remove(ra);
             reindexSet.add(ra.getDefinitionPoint());
         }
-    
+
         indexAsync.indexRoles(reindexSet);
     }
 
@@ -337,12 +339,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
 
     /**
-     * Get all the available roles in a given dataverse, mapped by the dataverse
-     * that defines them. Map entries are ordered by reversed hierarchy (root is
-     * always last).
+     * Get all the available roles in a given dataverse.
      *
      * @param dvId The id of dataverse whose available roles we query
-     * @return map of available roles.
+     * @return Set of available roles
      */
     public Set<DataverseRole> availableRoles(Long dvId) {
         Dataverse dv = em.find(Dataverse.class, dvId);
@@ -353,6 +353,61 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             dv = dv.getOwner();
             roles.addAll(dv.getRoles());
         }
+
+        return roles;
+    }
+
+    /**
+     * Get all the available roles for a given Dataset, DataFile or Dataverse.
+     * This excludes roles that are not relevant to the given DvObject type (e.g. for Datasets, this excludes roles that
+     * only have Dataverse-level permissions).
+     * Currently, the available roles for Datasets and DataFiles are gotten from the collection they are in.
+     *
+     * @param dvo The Dataset, DataFile or Dataverse whose available roles we query
+     * @return Set of available roles
+     */
+    public Set<DataverseRole> availableRoles(DvObject dvo) {
+        Set<DataverseRole> roles = new HashSet<>();
+
+        // Get roles available for given DvObject
+        if (dvo instanceof Dataverse) {
+            roles = availableRoles(dvo.getId());
+
+        } else if (dvo instanceof Dataset) {
+            roles = availableRoles(dvo.getOwner().getId()).stream()
+                    .filter(role -> role.permissions().stream()
+                            .anyMatch(p -> p.appliesTo(Dataset.class)
+                                    || p.appliesTo(DataFile.class)))
+                    .collect(Collectors.toSet());
+
+        } else if (dvo instanceof DataFile) {
+            roles = availableRoles(dvo.getOwner().getOwner().getId()).stream()
+                    .filter(role -> role.permissions().stream()
+                            .anyMatch(p -> p.appliesTo(DataFile.class)))
+                    .collect(Collectors.toSet());
+        }
+
+        return roles;
+    }
+
+    /**
+     * Get all the available roles for a given Dataset, DataFile or Dataverse that can be assigned by a given User.
+     * This excludes roles that are not relevant to the given DvObject type (e.g. for Datasets, this excludes roles that
+     * only have Dataverse-level permissions).
+     * Currently, the available roles for Datasets and DataFiles are gotten from the collection they are in.
+     *
+     * @param dvo The Dataset, DataFile or Dataverse whose available roles we query
+     * @param user The user whose available roles we query
+     * @return Set of available roles
+     */
+    public Set<DataverseRole> availableRoles(DvObject dvo, User user) {
+        Set<DataverseRole> roles = availableRoles(dvo);
+
+        // Filter roles assignable by given user
+        Set<Permission> granted = permissionService.permissionsFor(user, dvo);
+        roles = roles.stream()
+                 .filter(role -> granted.containsAll(role.permissions()))
+                 .collect(Collectors.toSet());
 
         return roles;
     }
@@ -372,10 +427,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         }
         return retVal;
     }
-    
+
     /**
      * Retrieves role assignment history for a specific definition point
-     * 
+     *
      * @param definitionPointId The ID of the definition point
      * @return List of role assignment history entries
      */
@@ -383,13 +438,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         List<RoleAssignmentHistory> entries = em.createNamedQuery("RoleAssignmentHistory.findByDefinitionPointId", RoleAssignmentHistory.class)
                 .setParameter("definitionPointId", definitionPointId)
                 .getResultList();
-        
+
         return processRoleAssignmentEntries(entries, false);
     }
 
     /**
      * Retrieves role assignment history for all files in a dataset
-     * 
+     *
      * @param datasetId The ID of the dataset
      * @return List of role assignment history entries
      */
@@ -397,13 +452,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         List<RoleAssignmentHistory> entries = em.createNamedQuery("RoleAssignmentHistory.findByOwnerId", RoleAssignmentHistory.class)
                 .setParameter("datasetId", datasetId)
                 .getResultList();
-        
+
         return processRoleAssignmentEntries(entries, true);
     }
-    
+
     /**
      * Common method to process role assignment history entries and create consolidated history entries
-     * 
+     *
      * @param entries List of role assignment history records
      * @param combineEntries Whether to combine entries for different files
      * @return List of role assignment history entries
@@ -430,7 +485,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                 consolidatedEntry.setRevokedAt(entry.getActionTimestamp());
             }
         }
-        
+
         // Second pass: Combine entries with matching criteria if requested
         if (combineEntries) {
             Map<String, RoleAssignmentHistoryConsolidatedEntry> finalHistoryMap = new HashMap<>();
@@ -470,62 +525,62 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         private String revokedBy;
         private Date revokedAt;
         private List<Long> definitionPointIds;
-    
+
         public RoleAssignmentHistoryConsolidatedEntry(String assigneeIdentifier, String roleName, Long definitionPointId) {
             this.roleName = roleName;
             this.assigneeIdentifier = assigneeIdentifier;
             this.definitionPointIds = new ArrayList<Long>();
             definitionPointIds.add(definitionPointId);
         }
-    
+
         public void setRevokedAt(Date actionTimestamp) {
             revokedAt = actionTimestamp;
         }
-    
+
         public void setRevokedBy(String actionByIdentifier) {
             revokedBy = actionByIdentifier;
         }
-    
+
         public void setAssignedAt(Date actionTimestamp) {
             assignedAt = actionTimestamp;
         }
-    
+
         public void setAssignedBy(String actionByIdentifier) {
             assignedBy = actionByIdentifier;
         }
-    
+
         public String getRoleName() {
             return roleName;
         }
-    
+
         public String getAssigneeIdentifier() {
             return assigneeIdentifier;
         }
-    
+
         public String getAssignedBy() {
             return assignedBy;
         }
-    
+
         public Date getAssignedAt() {
             return assignedAt;
         }
-    
+
         public String getRevokedBy() {
             return revokedBy;
         }
-    
+
         public Date getRevokedAt() {
             return revokedAt;
         }
-    
+
         public List<Long> getDefinitionPointIds() {
             return definitionPointIds;
         }
-    
+
         public void addDefinitionPointId(Long definitionPointId) {
             definitionPointIds.add(definitionPointId);
         }
-        
+
         public String getDefinitionPointIdsAsString() {
             return definitionPointIds.stream()
                     .map(Object::toString)
