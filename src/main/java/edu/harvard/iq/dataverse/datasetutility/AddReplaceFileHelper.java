@@ -2046,7 +2046,7 @@ public class AddReplaceFileHelper{
     public Response addFiles(String jsonData, Dataset dataset, User authUser, boolean trustSuppliedFileSizes) {
         msgt("(addFilesToDataset) jsonData: " + jsonData.toString());
 
-        JsonArrayBuilder jarr = Json.createArrayBuilder();
+        JsonArrayBuilder jarr = JsonUtil.createArrayBuilder();
 
         JsonArray filesJson = null;
 
@@ -2104,7 +2104,7 @@ public class AddReplaceFileHelper{
                             runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier, null,
                                     optionalFileParams, true);
                             if (hasError()) {
-                                JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
                                         .add("errorMessage", getHttpErrorCode().toString() +":"+ getErrorMessagesAsString("\n"))
                                         .add("fileDetails", fileJson);
@@ -2114,13 +2114,13 @@ public class AddReplaceFileHelper{
                                 String duplicateWarning = getDuplicateFileWarning();
 
                                 if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
-                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                    JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                             .add("storageIdentifier", newStorageIdentifier)
                                             .add("warningMessage", getDuplicateFileWarning())
                                             .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
                                     jarr.add(fileoutput);
                                 } else {
-                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                    JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                             .add("storageIdentifier", newStorageIdentifier)
                                             .add("successMessage", "Added successfully to the dataset")
                                             .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
@@ -2129,7 +2129,7 @@ public class AddReplaceFileHelper{
                             successNumberofFiles = successNumberofFiles + 1;
                             }
                         } else {
-                            JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                            JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                     .add("errorMessage", "You must provide a storageidentifier, filename, and mimetype.")
                                     .add("fileDetails", fileJson);
 
@@ -2138,7 +2138,7 @@ public class AddReplaceFileHelper{
 
                     } catch (DataFileTagException ex) {
                         logger.log(Level.SEVERE, null, ex);
-                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                        JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", ex.getMessage())
                                 .add("fileDetails", fileJson);
@@ -2147,7 +2147,7 @@ public class AddReplaceFileHelper{
                     }
                     catch (NoFilesException ex) {
                         logger.log(Level.SEVERE, null, ex);
-                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                        JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
                                 .add("fileDetails", fileJson);
@@ -2188,14 +2188,14 @@ public class AddReplaceFileHelper{
             return error(BAD_REQUEST, e.getMessage());
         }
 
-        JsonObjectBuilder result = Json.createObjectBuilder()
+        JsonObjectBuilder result = JsonUtil.createObjectBuilder()
                 .add(ApiConstants.API_ADD_FILES_COUNT_PROCESSED, totalNumberofFiles)
                 .add(ApiConstants.API_ADD_FILES_COUNT_SUCCESSFUL, successNumberofFiles);
 
 
-        return Response.ok().entity(Json.createObjectBuilder()
+        return Response.ok().entity(JsonUtil.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
-                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+                .add("data", JsonUtil.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
     }
     
     public Response addFiles(String jsonData, Dataset dataset, User authUser) {
@@ -2216,7 +2216,7 @@ public class AddReplaceFileHelper{
         msgt("(replaceFilesInDataset) jsonData: " + jsonData.toString());
 
         this.dataset = ds;
-        JsonArrayBuilder jarr = Json.createArrayBuilder();
+        JsonArrayBuilder jarr = JsonUtil.createArrayBuilder();
 
         JsonArray filesJson = null;
 
@@ -2276,7 +2276,7 @@ public class AddReplaceFileHelper{
                                         null, dataset, optionalFileParams, true);
                             }
                             if (hasError()) {
-                                JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
                                         .add("errorMessage", getHttpErrorCode().toString() +":"+ getErrorMessagesAsString("\n"))
                                         .add("fileDetails", fileJson);
@@ -2286,13 +2286,13 @@ public class AddReplaceFileHelper{
                                 String duplicateWarning = getDuplicateFileWarning();
 
                                 if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
-                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                    JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                             .add("storageIdentifier", newStorageIdentifier)
                                             .add("warningMessage", getDuplicateFileWarning())
                                             .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
                                     jarr.add(fileoutput);
                                 } else {
-                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                    JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                             .add("storageIdentifier", newStorageIdentifier)
                                             .add("successMessage", "Replaced successfully in the dataset")
                                             .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
@@ -2301,7 +2301,7 @@ public class AddReplaceFileHelper{
                             successNumberofFiles = successNumberofFiles + 1;
                             }
                         } else {
-                            JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                            JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                     .add("errorMessage", "You must provide a fileToReplaceId, storageidentifier, filename, and mimetype.")
                                     .add("fileDetails", fileJson);
 
@@ -2310,7 +2310,7 @@ public class AddReplaceFileHelper{
 
                     } catch (DataFileTagException ex) {
                         logger.log(Level.SEVERE, null, ex);
-                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                        JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", ex.getMessage())
                                 .add("fileDetails", fileJson);
@@ -2319,7 +2319,7 @@ public class AddReplaceFileHelper{
                     }
                     catch (NoFilesException ex) {
                         logger.log(Level.SEVERE, null, ex);
-                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                        JsonObjectBuilder fileoutput = JsonUtil.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
                                 .add("fileDetails", fileJson);
@@ -2361,13 +2361,13 @@ public class AddReplaceFileHelper{
             return error(BAD_REQUEST, e.getMessage());
         }
 
-        JsonObjectBuilder result = Json.createObjectBuilder()
+        JsonObjectBuilder result = JsonUtil.createObjectBuilder()
                 .add("Total number of files", totalNumberofFiles)
                 .add("Number of files successfully replaced", successNumberofFiles);
 
-        return Response.ok().entity(Json.createObjectBuilder()
+        return Response.ok().entity(JsonUtil.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
-                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+                .add("data", JsonUtil.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
     }
 
     protected static Response error(Response.Status sts, String msg ) {

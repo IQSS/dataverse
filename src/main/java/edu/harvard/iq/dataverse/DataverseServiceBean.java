@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.validation.JSONDataValidation;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -551,28 +552,30 @@ public class DataverseServiceBean implements java.io.Serializable {
         return dataverseList;
     }
 
-    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo) {
+    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo, boolean removeAlreadyLinked) {
         List<Dataverse> dataverseList = new ArrayList<>();
         Dataset linkedDataset = null;
         Dataverse linkedDataverse = null;
-        List<Object> alreadyLinkeddv_ids;
-
-        if ((dvo instanceof Dataset)) {
-            linkedDataset = (Dataset) dvo;
-            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
-        } else {
-            linkedDataverse = (Dataverse) dvo;
-            alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
-        }
 
         List<Dataverse> remove = new ArrayList<>();
 
-        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
-            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
-                remove.add(removeIt);
-            });
+        if (removeAlreadyLinked) {
+            List<Object> alreadyLinkeddv_ids;
+
+            if ((dvo instanceof Dataset)) {
+                linkedDataset = (Dataset) dvo;
+                alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + linkedDataset.getId()).getResultList();
+            } else {
+                linkedDataverse = (Dataverse) dvo;
+                alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM dataverselinkingdataverse WHERE dataverse_id = " + linkedDataverse.getId()).getResultList();
+            }
+
+            if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+                alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
+                    remove.add(removeIt);
+                });
+            }
         }
-        
 
         if (dvo instanceof Dataverse dataverse) {
             remove.add(dataverse);
@@ -596,8 +599,11 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return dataverseList;
     }
-    
-  
+
+    public List<Dataverse> removeUnlinkableDataverses(List<Dataverse> allWithPerms, DvObject dvo) {
+        return removeUnlinkableDataverses(allWithPerms, dvo, true);
+    }
+
     public List<Dataverse> filterDataversesForUnLinking(String query, DataverseRequest req, Dataset dataset) {
         List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
         List<Dataverse> dataverseList = new ArrayList<>();
@@ -874,11 +880,11 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         // Set up to track the set of users/groups that get assigned a role and those
         // that don't
-        JsonArrayBuilder usedNames = Json.createArrayBuilder();
-        JsonArrayBuilder unusedNames = Json.createArrayBuilder();
+        JsonArrayBuilder usedNames = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder unusedNames = JsonUtil.createArrayBuilder();
         // Set up to track the list of dataverses, by id and alias, that are traversed.
-        JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
-        JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
+        JsonArrayBuilder dataverseIds = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder dataverseAliases = JsonUtil.createArrayBuilder();
         // Get the Dataverses for the returned ids
 
         List<Dataverse> children = new ArrayList<Dataverse>();
@@ -983,7 +989,7 @@ public class DataverseServiceBean implements java.io.Serializable {
          * entities that had an admin role on the specified dataverse which were not
          * handled. Add this to the log and the API return message.
          */
-        String result = Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
+        String result = JsonUtil.createObjectBuilder().add("Dataverses Updated", dataverseIds)
                 .add("Updated Dataverse Aliases", dataverseAliases).add("Assignments added for", usedNames)
                 .add("Assignments not added for", unusedNames).build().toString();
         logger.info(result);

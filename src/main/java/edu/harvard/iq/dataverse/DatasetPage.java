@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportException;
@@ -163,7 +164,6 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -2138,9 +2138,15 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
-            // Check permisisons
-            if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
-                return permissionsWrapper.notAuthorized();
+            // Check permissions
+            boolean releasedAndCanView = workingVersion.isReleased() && (!dataset.isLocallyFAIR() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataset));
+            if (!(releasedAndCanView || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
+                if (dataset.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
 
             if (retrieveDatasetVersionResponse != null && !retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
@@ -3006,7 +3012,7 @@ public class DatasetPage implements java.io.Serializable {
                     String status = updateVersion.getArchivalCopyLocationStatus();
                     if((status==null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE) || (JvmSettings.BAGIT_ARCHIVE_ON_VERSION_UPDATE.lookupOptional(Boolean.class).orElse(false) && archiveCommand.canDelete())){
                         // Delete the record of any existing copy since it is now out of date/incorrect
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                         updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                         //Persist to db now
@@ -5991,9 +5997,13 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
-    public boolean isShowPreviewButton(DataFile dataFile) {
-        List<ExternalTool> previewTools = getPreviewToolsForDataFile(dataFile);
-        return previewTools.size() > 0;
+    public boolean isShowPreviewButton(FileMetadata fmd) {
+        DataFile dataFile = fmd.getDataFile();
+        List<ExternalTool> previewTools = getPreviewToolsForDataFile(dataFile, fileDownloadHelper.canDownloadFile(fmd));
+        if (previewTools.isEmpty()) {
+            return false;
+        }
+        return true;
     }
     
     public boolean isShowQueryButton(DataFile dataFile) { 
@@ -6005,27 +6015,37 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
-        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(dataFile);
+        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(dataFile, true);
         return fileQueryTools.size() > 0;
     }
 
     public List<ExternalTool> getPreviewToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW, null);
+    }
+    
+    public List<ExternalTool> getPreviewToolsForDataFile(DataFile dataFile, Boolean canDownload) {
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW, canDownload);
     }
 
     public List<ExternalTool> getQueryToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY, null);
     }
     
+    public List<ExternalTool> getQueryToolsForDataFile(DataFile dataFile, Boolean canDownload) {
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY, canDownload);
+    }
+    
+    //ToDo: currently only shown if the user can Edit the dataset which means they can view files
     public List<ExternalTool> getConfigureToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.CONFIGURE);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.CONFIGURE, true);
     }
 
+    //ToDo: currently only shown if the user can Edit the dataset which means they can view files
     public List<ExternalTool> getExploreToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.EXPLORE);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.EXPLORE, true);
     }
 
-    public List<ExternalTool> getCachedToolsForDataFile(DataFile dataFile, ExternalTool.Type type) {
+    public List<ExternalTool> getCachedToolsForDataFile(DataFile dataFile, ExternalTool.Type type, Boolean canDownload) {
         Long fileId = dataFile.getId();
         Map<Long, List<ExternalTool>> cachedToolsByFileId = new HashMap<>();
         List<ExternalTool> externalTools = new ArrayList<>();
@@ -6053,7 +6073,12 @@ public class DatasetPage implements java.io.Serializable {
         if (cachedTools != null) { //if already queried before and added to list
             return cachedTools;
         }
-        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
+        if(canDownload == null) {
+            logger.warning("Call to getCachedToolsForDataFile with null canDownload parameter and no cached results");
+            //Return the set available to non-downloader in this case (versus an empty list)
+            canDownload = false;
+        }
+        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile, canDownload);
         cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
         return cachedTools;
     }
@@ -6117,7 +6142,7 @@ public class DatasetPage implements java.io.Serializable {
                     reviewsJsonObj = commandEngine.submit(new GetDatasetReviewsCommand(dvRequestService.getDataverseRequest(), dataset));
                     JsonObjectBuilder reviews = CroissantExportUtil.getReviews(reviewsJsonObj);
                     JsonObject croissantJson = JsonUtil.getJsonObject(croissant);
-                    String updatedContent = Json.createObjectBuilder(croissantJson)
+                    String updatedContent = JsonUtil.createObjectBuilder(croissantJson)
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                     return updatedContent;
                 } catch (CommandException e) {
@@ -6197,7 +6222,7 @@ public class DatasetPage implements java.io.Serializable {
                     if (status == null || (force && cmd.canDelete())) {
 
                         // Set initial pending status
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                         dv.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                         //Persist now

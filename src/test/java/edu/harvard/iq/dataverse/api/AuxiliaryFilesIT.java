@@ -258,9 +258,8 @@ public class AuxiliaryFilesIT {
         // Download Markdown aux file.
         Response downloadAuxFileMd = UtilIT.downloadAuxFile(fileId, formatTagMd, formatVersionMd, apiToken);
         downloadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
-        // No file extenstion here because Tika's getDefaultMimeTypes doesn't include "text/markdown".
-        // Note: browsers seem to add ".bin" ("myfile.bin") rather than no extension ("myfile").
-        assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
+        // Tika's getDefaultMimeTypes includes "text/markdown" so ".md" is appended.
+        assertEquals("attachment; filename=\"data.tab.README_0.1.md\"", downloadAuxFileMd.header("Content-disposition"));
 
         // Download Markdown aux file with no MIME type given
         Response downloadAuxFileNoMime1 = UtilIT.downloadAuxFile(fileId, formatTagNoMimeType1, formatVersionNoMimeType1, apiToken);

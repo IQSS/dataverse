@@ -96,6 +96,7 @@ The task at or near release time is to collect these snippets into a single file
 - Create a branch, add a .md file for the release (ex. 6.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure to copy the number from the filename of the snippet into the final release note.
 - Delete (``git rm``) the release note snippets as the content is added to the main release notes file.
 - Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure. These instructions are required for the next steps (deploying to various environments) so try to prioritize them over finding just the right words in release highlights (which you can do later).
+- We usually include a "Security Updates" section due to dependencies we've updated. Under that section, give credit to any security researchers who have reported vulnerabilities. In the `6.11 release notes <https://github.com/IQSS/dataverse/releases/tag/v6.11>`_, for example, we wrote "We would like to thank [person1], [person2], and [person3] for notifying us about vulnerabilities that were fixed in this release." See :ref:`security-researcher-credit` and :ref:`reporting-security-issues`.
 - Make a pull request. Here's an example: https://github.com/IQSS/dataverse/pull/11613
 - Note that we won't merge the release notes until after we have confirmed that the upgrade instructions are valid by performing a couple upgrades.
 
@@ -135,7 +136,7 @@ Conduct Performance Testing
 
 |dedicated|
 
-See :doc:`/qa/performance-tests` for details.
+See :ref:`locust` and <https://github.com/IQSS/dataverse/issues/12284>, for example.
 
 Conduct Regression Testing
 ---------------------------
@@ -143,8 +144,6 @@ Conduct Regression Testing
 |dedicated|
 
 Regression testing should be conducted on production data.
-See :doc:`/qa/testing-approach` for details.
-Refer to the provided regression checklist for the list of items to verify during the testing process: `Regression Checklist <https://docs.google.com/document/d/1OsGJV0sMLDSmfkU9-ee8h_ozbQcUDJ1EOwNPm4dC63Q/edit?usp=sharing>`_.
 
 Build the Guides for the Release Candidate
 ------------------------------------------
@@ -224,7 +223,14 @@ Merge "develop" into "master" (non-hotfix only)
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: https://github.com/IQSS/dataverse/compare/master...develop
 
-Allow time for important tests (compile, unit tests, etc.) to pass. Don't worry about style tests failing such as for shell scripts. It's ok to skip code review.
+Allow time for important tests pass:
+
+- Unit tests: Maven Tests
+- API tests: Container Integration Tests Workflow
+
+Don't worry about style tests failing such as for shell scripts.
+
+It's ok to skip code review.
 
 When merging the pull request, be sure to choose "create a merge commit" and not "squash and merge" or "rebase and merge". We suspect that choosing squash or rebase may have led to `lots of merge conflicts <https://github.com/IQSS/dataverse/pull/11647#issuecomment-3085289132>`_ when we tried to perform this "merge develop to master" step, forcing us to `re-do <https://docs.google.com/document/d/1oit6LLDUWpNpV_uWveOMvdwDsaUey-74ehvzCZp1f3k/edit?usp=sharing>`_ the previous release before we could proceed with the current release.
 
@@ -243,17 +249,6 @@ Add Milestone to Pull Requests and Issues
 Often someone is making sure that the proper milestone (e.g. 6.10.1) is being applied to pull requests and issues, but sometimes this falls between the cracks.
 
 Check for merged pull requests that have no milestone by going to https://github.com/IQSS/dataverse/pulls and entering `is:pr is:merged no:milestone <https://github.com/IQSS/dataverse/pulls?q=is%3Apr+is%3Amerged+no%3Amilestone>`_ as a query. If you find any, first check if those pull requests are against open pull requests. If so, do nothing. Otherwise, add the milestone to the pull request and any issues it closes. This includes the "merge develop into master" pull request above.
-
-(Optional) Test Docker Images
------------------------------
-
-After the "master" branch has been updated and the GitHub Action to build and push Docker images has run (see `PR #9776 <https://github.com/IQSS/dataverse/pull/9776>`_), go to https://hub.docker.com/u/gdcc and make sure the "latest" tag for the following images has been updated:
-
-- https://hub.docker.com/r/gdcc/base
-- https://hub.docker.com/r/gdcc/dataverse
-- https://hub.docker.com/r/gdcc/configbaker
-
-TODO: Get https://github.com/gdcc/api-test-runner working.
 
 .. _build-guides:
 
@@ -277,7 +272,7 @@ As described below, we'll soon point the "latest" symlink to that new directory.
 Run a Build to Create the War File
 ----------------------------------
 
-Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". For a regular release, change the branch to "master". For a hotfix release, use whatever branch name is used for the hotfix. Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file.
+Go to https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml click "run workflow". For a regular release, change the branch to "master". For a hotfix release, use whatever branch name is used for the hotfix. Leave the custom label blank and click "run workflow". This will create an action that should result in a zip file. Inside that zip is another zip that contains the war file. Download it.
 
 The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"6.10.1","build":"master-300d5b5"}``).
 
@@ -286,12 +281,17 @@ Build Installer (dvinstall.zip)
 
 In a git checkout of the source, switch to the master branch and pull the latest.
 
-Copy the war file from the previous step (shown in ``/tmp`` in the example below ) to the ``target`` directory in the root of the repo (create the ``target`` directory, if necessary):
+Unzip the zip file from the previous step.
+
+Copy the war file to the ``target`` directory in the root of the repo (create the ``target`` directory, if necessary):
 
 .. code-block:: bash
 
-  mkdir target
-  cp /tmp/dataverse-6.10.1.war target
+  cp ~/Downloads/built-app.zip .
+  unzip built-app.zip
+  rm built-app.zip
+  mkdir -p target
+  mv dataverse-*.war target
 
 Then, create the installer:
 
@@ -338,6 +338,27 @@ ssh into the guides server and update the symlink to point to the latest release
 
 This step could be done before publishing the release if you'd like to double check that links in the release notes work.
 
+Test Docker Images
+------------------
+
+Publishing the release should have trigged the "Container Images Scheduled Maintenance" GitHub Action. Allow it to finish and then go to https://hub.docker.com/u/gdcc and navigate to "gdcc/dataverse".
+
+Click on "tags" and look at the "latest" tag. Was it just updated? Good! If not, we plan to address this is https://github.com/IQSS/dataverse/issues/12514 but for now, as a workaround, run the action again. Go to https://github.com/IQSS/dataverse/actions/workflows/container_maintenance.yml and click the "run workflow" dropdown. Make sure the branch is set to "develop" and click "run workflow" button.
+
+Wait for the action to finish and then check again that the "latest" tag has been updated.
+
+Locally, delete old images and spin up the "latest" tag.
+
+.. code-block:: bash
+
+  docker rmi gdcc/dataverse:latest
+  docker rmi gdcc/configbaker:latest
+  cd docker/compose/demo
+  rm -rf data
+  docker compose up
+
+Wait for the bootstrapping process to complete. Then, look at http://localhost:8080/api/info/version to make sure "version" shows the version that you just released. Note that it's normal for "build" to be null for our Docker images.
+
 Close Milestone on GitHub and Create a New One
 ----------------------------------------------
 
@@ -360,7 +381,17 @@ Create a new branch (any name is fine but ``prepare-next-iteration`` is suggeste
 
 - modules/dataverse-parent/pom.xml -> ``<profiles>`` -> profile "ct" -> ``<properties>`` -> Set ``<base.image.version>`` to ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``
 
-Create a pull request and put it through code review, like usual. Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should be the first PR merged of the next release.
+Create a pull request.
+
+Wait for checks to complete. It's ok (even expected) for the following check to fail:
+
+- main-integration-tests-workflow from container_integration_tests.yml
+
+  - If you see an error like ``Error:  DOCKER> Unable to pull 'gdcc/base:6.12-noble-p7.2026.2-j21' : {"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404) [{"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404)]`` it's telling you that the Docker image can't be spun up for API testing because it doesn't exist yet. (The error above was just after the 6.11 release.) The image will exist once the pull request is approved and merged.
+
+Put the pull request through code review, like usual, but make sure reviewers know it's ok to ignore the check above.
+
+Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should be the first PR merged of the next release.
 
 For more background, see :ref:`base-image-supported-tags`. For an example, see https://github.com/IQSS/dataverse/pull/10896
 

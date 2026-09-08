@@ -21,6 +21,8 @@ public class TemplateServiceBean {
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -55,5 +57,21 @@ public class TemplateServiceBean {
         toUpdate.setUsageCount(usage);
         em.merge(toUpdate);
 
+    }
+
+    public boolean isTemplateValid(Dataverse dataverse, Template template) {
+        if (template != null) {
+            List<Template> dataverseTemplates = dataverse.getTemplates();
+            if (dataverseTemplates != null && dataverseTemplates.contains(template)) {
+                return true;
+            }
+            if (!dataverse.isTemplateRoot() && dataverse.getOwner() != null) {
+                List<Template> ownerTemplates = dataverseService.find(dataverse.getOwner().getId()).getParentTemplates();
+                if (ownerTemplates != null && ownerTemplates.contains(template)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

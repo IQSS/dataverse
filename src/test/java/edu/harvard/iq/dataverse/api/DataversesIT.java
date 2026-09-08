@@ -1,23 +1,18 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
-
-import static io.restassured.RestAssured.given;
-import static io.restassured.path.json.JsonPath.with;
-
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import edu.harvard.iq.dataverse.Dataverse;
-
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -27,11 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
-
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,21 +35,19 @@ import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.api.parallel.ResourceAccessMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
 
-import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItemInArray;
-import static org.hamcrest.Matchers.hasKey;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.nio.file.Files;
 
-import io.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import static org.hamcrest.Matchers.greaterThan;
+import static io.restassured.RestAssured.given;
+import static io.restassured.path.json.JsonPath.with;
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ResourceLock(value = "MetadataLanguages", mode = ResourceAccessMode.READ_WRITE)
 @Isolated
@@ -157,13 +150,11 @@ public class DataversesIT {
     }
 
     @Test
-    public void testMinimalDataverse() throws FileNotFoundException {
+    public void testMinimalDataverse() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        JsonObject dvJson;
-        FileReader reader = new FileReader("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
-        dvJson = Json.createReader(reader).readObject();
+        JsonObject dvJson = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataverse-minimal.json");
         Response create = UtilIT.createDataverse(dvJson, apiToken);
         create.prettyPrint();
         create.then().assertThat()
@@ -265,7 +256,7 @@ public class DataversesIT {
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response createFail = UtilIT.createDataverse(Json.createObjectBuilder().add("name", "notEnough").add("alias", "notEnough").build(), apiToken);
+        Response createFail = UtilIT.createDataverse(JsonUtil.createObjectBuilder().add("name", "notEnough").add("alias", "notEnough").build(), apiToken);
         createFail.prettyPrint();
         createFail.then().assertThat()
                 /**
@@ -289,11 +280,11 @@ public class DataversesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String dataverseAlias = UtilIT.getRandomDvAlias();
         String emailAddressOfFirstDataverseContact = dataverseAlias + "@mailinator.com";
-        JsonObjectBuilder jsonToCreateDataverse = Json.createObjectBuilder()
+        JsonObjectBuilder jsonToCreateDataverse = JsonUtil.createObjectBuilder()
                 .add("name", dataverseAlias)
                 .add("alias", dataverseAlias)
-                .add("dataverseContacts", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("contactEmail", emailAddressOfFirstDataverseContact)
                         )
                 );
@@ -995,25 +986,25 @@ public class DataversesIT {
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
 
-        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
-                .add("datasetVersion", Json.createObjectBuilder()
-                        .add("license", Json.createObjectBuilder()
+        JsonObjectBuilder datasetJson = JsonUtil.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("license", JsonUtil.createObjectBuilder()
                                 .add("name", "CC0 1.0")
                         )
-                        .add("metadataBlocks", Json.createObjectBuilder()
-                                .add("citation", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "title")
                                                         .add("value", "Test Dataset")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Simpson, Homer")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1024,11 +1015,11 @@ public class DataversesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "author")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("datasetContactEmail",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "hsimpson@mailinator.com")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1039,11 +1030,11 @@ public class DataversesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "datasetContact")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("dsDescriptionValue",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "This a test dataset.")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1054,8 +1045,8 @@ public class DataversesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "dsDescription")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add("Other")
                                                         )
                                                         .add("typeClass", "controlledVocabulary")
@@ -1176,7 +1167,7 @@ public class DataversesIT {
         Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "name", newCollectionName, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Change the description of the collection:
 
@@ -1184,7 +1175,7 @@ public class DataversesIT {
         changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "description", newDescription, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Change the affiliation of the collection:
 
@@ -1192,7 +1183,7 @@ public class DataversesIT {
         changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "affiliation", newAffiliation, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Cannot update filePIDsEnabled from a regular user:
 
@@ -1205,7 +1196,7 @@ public class DataversesIT {
         changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("message.message", equalTo("Update successful"));
+                .body("message", equalTo("Update successful"));
 
         // Check on the collection, under the new alias:
 
@@ -1256,7 +1247,7 @@ public class DataversesIT {
                 .body("data[0].fields.size()", is(10)) // 28 - 18 child duplicates
                 .body("data[0].fields.author.childFields.size()", is(4));
 
-        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.prettyPrint();
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -1341,7 +1332,7 @@ public class DataversesIT {
 
         // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(15));
 
         listMetadataBlocksResponse = UtilIT.getMetadataBlock("geospatial");
         String actualGeospatialMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data.fields['geographicCoverage'].name"));
@@ -1766,7 +1757,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1776,7 +1767,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 newFacetIds, null, apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1877,6 +1868,7 @@ public class DataversesIT {
 
         // Update the dataverse without setting metadata blocks, facets, or input levels
         // Do NOT ignore the missing data so the metadata blocks, facets, and input levels are deleted and inherited from the parent
+        // Also testing Guestbook Root
         updateDataverseResponse = UtilIT.updateDataverse(
                 newAlias,
                 newAlias,
@@ -1888,9 +1880,10 @@ public class DataversesIT {
                 null,
                 null,
                 apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, Boolean.TRUE
         );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        updateDataverseResponse.then().assertThat().body("data.guestbookRoot", equalTo(true));
 
         // Assert that the metadata blocks are inherited from the parent
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
@@ -1959,6 +1952,47 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 newFacetIds, newMetadataBlockNames, apiToken);
+    }
+
+    @Test
+    public void testCreateDataverseWithGuestbookRoot() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // guestbookRoot not specified on creation should default to false
+        String defaultAlias = UtilIT.getRandomDvAlias();
+        JsonObjectBuilder jsonWithoutGuestbookRoot = JsonUtil.createObjectBuilder()
+                .add("name", defaultAlias)
+                .add("alias", defaultAlias)
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("contactEmail", defaultAlias + "@mailinator.com")
+                        )
+                );
+        Response createDefaultResponse = UtilIT.createDataverse(jsonWithoutGuestbookRoot.build(), apiToken);
+        createDefaultResponse.prettyPrint();
+        createDefaultResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(defaultAlias))
+                .body("data.guestbookRoot", equalTo(false));
+
+        // guestbookRoot explicitly set to true on creation
+        String guestbookRootAlias = UtilIT.getRandomDvAlias();
+        JsonObjectBuilder jsonWithGuestbookRoot = JsonUtil.createObjectBuilder()
+                .add("name", guestbookRootAlias)
+                .add("alias", guestbookRootAlias)
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("contactEmail", guestbookRootAlias + "@mailinator.com")
+                        )
+                )
+                .add("guestbookRoot", true);
+        Response createGuestbookRootResponse = UtilIT.createDataverse(jsonWithGuestbookRoot.build(), apiToken);
+        createGuestbookRootResponse.prettyPrint();
+        createGuestbookRootResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(guestbookRootAlias))
+                .body("data.guestbookRoot", equalTo(true));
     }
 
     @Test
@@ -2183,6 +2217,17 @@ public class DataversesIT {
                 .body("data[2].displayOrder", equalTo(2))
                 .body("data[2].type", equalTo("custom"))
                 .statusCode(OK.getStatusCode());
+
+        // Verify that the unpublished image can be downloaded by its creator and not by a user without ViewUnpublishedDataverse permissions
+        JsonPath path = JsonPath.from(listDataverseFeaturedItemsResponse.body().asString());
+        String imageUrl = path.getString("data[2].imageFileUrl");
+        Response downloadResponse = given().get(imageUrl + "?key=" + apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createUserResponse2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUserResponse2);
+        Response downloadResponse2 = given().get(imageUrl + "?key=" + apiToken2);
+        downloadResponse2.then().assertThat().statusCode(NO_CONTENT.getStatusCode());
 
         // Should return not found error when dataverse does not exist
 
@@ -2546,7 +2591,7 @@ public class DataversesIT {
         // Configure metadata blocks - disable inherit from root and set specific blocks
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
                 dataverseAlias, 
-                Json.createArrayBuilder().add("socialscience"), 
+                JsonUtil.createArrayBuilder().add("socialscience"), 
                 apiToken);
         setMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -2587,7 +2632,7 @@ public class DataversesIT {
         // Configure metadata blocks - disable inherit from root and set specific blocks
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(
                 dataverseAlias, 
-                Json.createArrayBuilder().add("citation"), 
+                JsonUtil.createArrayBuilder().add("citation"), 
                 apiToken);
         setMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -2664,7 +2709,7 @@ public class DataversesIT {
     }
 
     @Test
-    public void testCreateAndGetTemplates() throws JsonParseException  {
+    public void testCreateAndGetTemplates() {
         /*
           Also Delete...and get single template
         */
@@ -2677,7 +2722,11 @@ public class DataversesIT {
         String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
         String secondUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
-        
+        Response createSuperUserResponse = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUserResponse);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperUserResponse);
+        UtilIT.setSuperuserStatus(superuserUsername, true);
+
         /*
         We need to make this a non-inherited metadatablocks so the get template will only get templates from current dv
          */
@@ -2702,7 +2751,7 @@ public class DataversesIT {
                 dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
                 newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null);
+                Boolean.FALSE, Boolean.FALSE, null, null);
 
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -2768,7 +2817,10 @@ public class DataversesIT {
 
         Long templateId = createTemplateResponse.body().jsonPath().getLong("data.id");
 
-
+        // Create a separate template on "root"
+        createTemplateResponse = UtilIT.createTemplate("root", jsonString, superuserApiToken);
+        createTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Long templateId2 = createTemplateResponse.body().jsonPath().getLong("data.id");
         
         //Check for failure due unauthorized user.
         Response setDefaultResp = UtilIT.setDefaultTemplate(dataverseAlias, templateId, secondApiToken);
@@ -2817,7 +2869,33 @@ public class DataversesIT {
             getTemplateResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
 
-        
+        // Create Dataset with template
+        String datasetJson = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1-nolicense.json");
+        // Insert Bad "templateId" to the Dataset json
+        String datasetJsonWithTemplate = "{\"templateId\":0," + datasetJson.substring(1);
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Insert "templateId" from another dataverse to the Dataset json
+        datasetJsonWithTemplate = "{\"templateId\":" + templateId2 + "," + datasetJson.substring(1);
+        createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Insert Good "templateId" to the Dataset json
+        datasetJsonWithTemplate = "{\"templateId\":" + templateId + "," + datasetJson.substring(1);
+        createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJsonWithTemplate, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        // Verify that the templateId is returned in the Dataset json
+        Response getDatasetResponse = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetResponse.prettyPrint();
+        getDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.templateId", equalTo(templateId.intValue()));
+        // Delete dataset
+        UtilIT.setSuperuserStatus(username, true);
+        Response deleteDatasetResponse = UtilIT.destroyDataset(datasetPersistentId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
         //set to super to update role 
         UtilIT.setSuperuserStatus(username, true);
 
@@ -2931,7 +3009,7 @@ public class DataversesIT {
                 dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
                 newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null);
+                Boolean.FALSE, Boolean.FALSE, null, null);
 
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());

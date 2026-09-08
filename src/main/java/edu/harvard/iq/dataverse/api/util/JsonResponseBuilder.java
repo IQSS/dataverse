@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.util;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 
 public class JsonResponseBuilder {
     
-    private JsonObjectBuilder entityBuilder = Json.createObjectBuilder();
+    private JsonObjectBuilder entityBuilder = JsonUtil.createObjectBuilder();
     private Response.ResponseBuilder jerseyResponseBuilder;
     private boolean alreadyLogged = false;
     
@@ -121,7 +122,7 @@ public class JsonResponseBuilder {
      */
     public JsonResponseBuilder requestContentType(HttpServletRequest request) {
         String type = request.getContentType();
-        this.entityBuilder.add("requestContentType", ((type==null) ? JsonValue.NULL : Json.createValue(type)));
+        this.entityBuilder.add("requestContentType", ((type==null) ? JsonValue.NULL : JsonUtil.createValue(type)));
         return this;
     }
     
@@ -220,7 +221,7 @@ public class JsonResponseBuilder {
         // This is necessary because we need to build in two places: logging and response creation.
         // Without cloning the object builder, we'd end up with an empty entity in the response when logging before that.
         JsonObject entity = this.entityBuilder.build();
-        this.entityBuilder = Json.createObjectBuilder(entity);
+        this.entityBuilder = JsonUtil.createObjectBuilder(entity);
         
         StringBuilder metadata = new StringBuilder();
         entity.forEach((k,v) -> metadata.append("_").append(k).append("=").append(v.toString()).append(";"));

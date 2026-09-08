@@ -30,7 +30,11 @@ The steps for creating a Dataverse collection are:
 - Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
 - Execute a curl command or equivalent.
 
-Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is the following:
+Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs.
+The fields ``name``, ``alias``, and ``dataverseContacts`` are required.
+The optional field ``datasetFileCountLimit`` can be used to set the maximum number of files a dataset can have.
+The optional field ``guestbookRoot``, when set to true, will allow datasets in this collection to be assigned a Guestbook from a parent collection.
+The controlled vocabulary for ``dataverseType`` is the following:
 
 - ``DEPARTMENT``
 - ``JOURNALS``
@@ -935,6 +939,123 @@ In particular, the user permissions that this API call checks, returned as boole
   export ID=root
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/userPermissions"
+
+.. _locally-fair-list-role-assignees:
+
+List Locally FAIR Role Assignees for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lists the Locally FAIR role assignee identifiers configured for a Dataverse collection identified by ``id``.
+For more about the concept, see :ref:`locally-fair` in the User Guide.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees"
+
+The response is a JSON array of role assignee identifiers. For example:
+
+.. code-block:: json
+
+  [
+    "@TestUser",
+    "&maildomain/harvard.edu"
+  ]
+
+.. _locally-fair-set-role-assignee:
+
+Set Locally FAIR Role Assignees for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Replaces the full set locally FAIR role assignee identifiers for a Dataverse collection identified by ``id``.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export JSON='["@TestUser","&maildomain/harvard.edu"]'
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -H "Content-Type: application/json" "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees" -d "$JSON"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT -H "Content-Type: application/json" "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees" -d '["@TestUser","&maildomain/harvard.edu"]'
+
+Pass an empty array to clear all locally FAIR role assignees from the collection:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -H "Content-Type: application/json" "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees" -d '[]'
+
+All supplied identifiers must be valid existing role assignee identifiers. Invalid identifiers will result in ``400 Bad Request``.
+
+.. _locally-fair-add-role-assignee:
+
+Add a Locally FAIR Role Assignee to a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Adds a single locally FAIR role assignee identifier to a Dataverse collection identified by ``id``.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export ROLE_ASSIGNEE=&shib/1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees/$ROLE_ASSIGNEE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees/&shib/1"
+
+The response includes the updated set of locally FAIR role assignee identifiers.
+
+.. _locally-fair-delete-role-assignee:
+
+Delete a Locally FAIR Role Assignee from a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Removes a single locally FAIR role assignee identifier from a Dataverse collection identified by ``id``.
+
+This API is superuser-only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export ROLE_ASSIGNEE=:authenticated-users
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$ID/locallyFairRoleAssignees/$ROLE_ASSIGNEE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/locallyFairRoleAssignees/:authenticated-users"
+
+The response includes the updated set of locally FAIR role assignee identifiers. Removing an identifier that is blank or not currently assigned will result in ``400 Bad Request``.
 
 .. _create-dataset-command:
 
@@ -3402,6 +3523,8 @@ In order to update the number of files allowed for a Dataset, without causing a 
 
 To delete the existing limit:
 
+.. code-block:: bash
+
   curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$ID/files/uploadlimit"
 
 The fully expanded example above (without environment variables) looks like this:
@@ -3411,6 +3534,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/files/uploadlimit/500"
 
 To delete the existing limit:
+
+.. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/files/uploadlimit"
 
@@ -3624,6 +3749,66 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/link/test"
+
+Unlink a Dataset
+~~~~~~~~~~~~~~~~
+
+Removes a link between a dataset and a Dataverse collection (see :ref:`dataset-linking` section of Dataverse Collection Management in the User Guide for more information):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export DATASET_ID=24
+  export DATAVERSE_ID=test
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$DATASET_ID/deleteLink/$DATAVERSE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/deleteLink/test"
+
+Link a Dataverse collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creates a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export LINKED_DATAVERSE_ID=linked-collection
+  export LINKING_DATAVERSE_ID=linking-collection
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/link/$LINKING_DATAVERSE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/linked-collection/link/linking-collection"
+
+Unlink a Dataverse collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Removes a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export LINKED_DATAVERSE_ID=linked-collection
+  export LINKING_DATAVERSE_ID=linking-collection
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/deleteLink/$LINKING_DATAVERSE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/linked-collection/deleteLink/linking-collection"
 
 Dataset Locks
 ~~~~~~~~~~~~~
@@ -8958,10 +9143,10 @@ Signed URLs were developed to support External Tools but may be useful in other 
 This API call allows a Dataverse superUser to generate a signed URL for such scenarios.
 The JSON input parameter required is an object with the following keys:
 
-- ``url`` - the exact URL to sign, including api version number and all query parameters
+- ``url`` - the exact URL to sign, including api version number and all query parameters. Provide it in its URL-decoded form (for example ``persistentId=doi:10.5072/FK2/ABC``): the signature is computed over the URL exactly as provided, and a URL signed in decoded form validates both when used as received and when parts of it get percent-encoded in flight. The URL must not already contain any of the reserved query parameters ``until``, ``user``, ``method``, ``token`` (these are appended by the signing), ``key`` or ``signed``; such a URL will be rejected with a 400 (Bad Request) response.
 - ``timeOut`` - how long in minutes the signature should be valid for, default is 10 minutes
 - ``httpMethod`` - which HTTP method is required, default is GET
-- ``user`` - the user identifier for the account associated with this signature, the default is the superuser making the call. The API call will succeed/fail based on whether the specified user has the required permissions. 
+- ``user`` - the user identifier for the account associated with this signature; if omitted, the URL is signed for the superuser making the call. A ``user`` that does not exist will be rejected with a 400 (Bad Request). The API call will succeed/fail based on whether the specified user has the required permissions.
 
 A curl example using allowing access to a dataset's metadata
 
@@ -8973,8 +9158,14 @@ A curl example using allowing access to a dataset's metadata
 
   curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/requestSignedUrl"
 
-Please see :ref:`dataverse.api.signing-secret` for the configuration option to add a shared secret, enabling extra
-security.
+Use the returned ``signedUrl`` as received, treating it as an opaque string: do not parse and rebuild it or add query
+parameters, as reordering or inserting anything invalidates the signature. If you need a percent-encoded form (for
+example a search term containing spaces), append the returned signature parameters to the URL exactly as you
+originally constructed it.
+
+The key used to sign the URL is created from the user's API token plus a server-side signing secret that is generated
+automatically at startup; see :ref:`dataverse.api.signing-secret` for details, including how to configure a persistent
+secret (required for signed URLs to survive server restarts and for multi-server installations).
 
 .. _send-feedback-admin:
 

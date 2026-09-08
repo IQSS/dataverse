@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -122,7 +124,7 @@ public class SolrQueryResponse {
         if (countMap == null){
             return null;
         }
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder();
         
         for (Map.Entry<String, Long>  entry : countMap.entrySet()) {
             jsonData.add(entry.getKey(), entry.getValue());

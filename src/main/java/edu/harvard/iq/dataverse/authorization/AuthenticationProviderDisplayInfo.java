@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 /**
  * Display information for an {@link AuthenticationProvider}.
  * 
  * @author michael
  */
+@Schema(description = "Public display metadata for an authentication provider, including its identifier, title, and subtitle.")
 public class AuthenticationProviderDisplayInfo {
    
     private String title;

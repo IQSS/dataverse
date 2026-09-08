@@ -43,15 +43,15 @@ public class MetricsUtil {
     private MetricsUtil() {}
 
     public static JsonObjectBuilder countToJson(long count) {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add(COUNT, count);
         return job;
     }
 
     public static JsonArrayBuilder dataversesByCategoryToJson(List<Object[]> listOfObjectArrays) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         for (Object[] arrayOfObjects : listOfObjectArrays) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             String categoryNameUppercase = (String) arrayOfObjects[0];
             Dataverse dataverse = new Dataverse();
             dataverse.setDataverseType(Dataverse.DataverseType.valueOf(categoryNameUppercase));
@@ -65,9 +65,9 @@ public class MetricsUtil {
     }
 
     public static JsonArrayBuilder dataversesBySubjectToJson(List<Object[]> listOfObjectArrays) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         for (Object[] objectArray : listOfObjectArrays) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             String subject = (String) objectArray[0];
             long count = (long) objectArray[1];
             job.add(SUBJECT, subject);
@@ -78,9 +78,9 @@ public class MetricsUtil {
     }
 
     public static JsonArrayBuilder datasetsBySubjectToJson(List<Object[]> listOfObjectArrays) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         for (Object[] objectArray : listOfObjectArrays) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             String subject = (String) objectArray[0];
             long count = (long) objectArray[1];
             job.add(SUBJECT, subject);
@@ -95,7 +95,7 @@ public class MetricsUtil {
     }
     
     public static JsonArray timeSeriesToJson(List<Object[]> results, boolean isBigDecimal) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         long total = 0;
         String curDate = (String) results.get(0)[0];
         // Get a list of all the monthly dates from the start until now
@@ -103,7 +103,7 @@ public class MetricsUtil {
         int i = 0;
         // Create an entry for each date
         for (String date : dates) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             
             // If there's a result for this date, add it's count to the total
             // and find the date of the next entry
@@ -136,7 +136,7 @@ public class MetricsUtil {
     }
     
     public static JsonArray timeSeriesByTypeToJson(List<Object[]> results) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         Map<String, Long> totals = new HashMap<>();
         Map<String, Long> sizes =  new HashMap<>();
         String curDate = (String) results.get(0)[0];
@@ -159,7 +159,7 @@ public class MetricsUtil {
             }
             // Then add the aggregate count and size for all types
             for(String type: totals.keySet()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(CONTENTTYPE, type);
                 job.add(COUNT, totals.get(type));
@@ -171,7 +171,7 @@ public class MetricsUtil {
     }
     
     public static JsonArray timeSeriesByPIDToJson(List<Object[]> results) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         Map<String, Long> totals = new HashMap<>();
         String curDate = (String) results.get(0)[0];
         // Get a list of all the monthly dates from the start until now
@@ -191,7 +191,7 @@ public class MetricsUtil {
             }
             // Then add the aggregate count and size for all types
             for(String type: totals.keySet()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(PID, type);
                 job.add(COUNT, totals.get(type));
@@ -202,7 +202,7 @@ public class MetricsUtil {
     }
     
     public static JsonArray timeSeriesByIDAndPIDToJson(List<Object[]> results) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         Map<Integer, Long> totals = new HashMap<>();
         Map<Integer, String> pids = new HashMap<>();
         String curDate = (String) results.get(0)[0];
@@ -225,7 +225,7 @@ public class MetricsUtil {
             }
             // Then add the aggregate count and size for all types
             for(Integer id: totals.keySet()) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(ID, id);
                 if(pids.get(id)!=null) {

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.get;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,5 +43,11 @@ public class SignedUrlAuthMechanismIT {
         String invalidSignedUrlPath = String.format("/api/v1/datasets/:persistentId/?persistentId=%s&until=2999-01-01T23:59:29.855&user=dataverseAdmin&method=GET&token=invalidToken", datasetPersistentId);
         Response invalidSignedUrlResponse = get(invalidSignedUrlPath);
         assertEquals(UNAUTHORIZED.getStatusCode(), invalidSignedUrlResponse.getStatusCode());
+
+        // A URL that already contains a reserved signing parameter is rejected with a 400 instead of
+        // being silently rewritten (through 6.10 the parameter was quietly stripped before signing).
+        String reservedParamPath = String.format("/api/v1/datasets/:persistentId/?persistentId=%s&token=abc", datasetPersistentId);
+        Response reservedParamResponse = UtilIT.createSignedUrl(apiToken, reservedParamPath, username);
+        assertEquals(BAD_REQUEST.getStatusCode(), reservedParamResponse.getStatusCode());
     }
 }

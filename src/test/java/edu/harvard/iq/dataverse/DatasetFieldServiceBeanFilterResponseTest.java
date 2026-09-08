@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
@@ -9,8 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -279,9 +278,8 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         return null; // Return null if no match is found
     }
 
-    private JsonObject readObject(String pathname) throws FileNotFoundException {
-        var reader = new FileReader(pathname);
-        return Json.createReader(reader).readObject();
+    private JsonObject readObject(String pathname) throws IOException {
+        return JsonUtil.getJsonObjectFromFile(pathname);
     }
 
     private @NotNull JsonObject callFilterResponse(JsonObject cvocEntry, JsonObject readObject, String termURI) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

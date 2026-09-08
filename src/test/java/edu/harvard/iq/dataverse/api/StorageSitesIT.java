@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.locality.StorageSite;
@@ -31,7 +32,7 @@ public class StorageSitesIT {
 
     @Test
     public void testAddSite() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.PRIMARY_STORAGE, true);

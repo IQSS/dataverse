@@ -45,10 +45,6 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
 
     @Override
     public DataverseLinkingDataverse execute(CommandContext ctxt) throws CommandException {
-        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), linkingDataverse))) {
-            throw new PermissionException("Link Dataverse can only be called by superusers or power users.",
-                    this, Collections.singleton(Permission.LinkDataverse), linkingDataverse);
-        }
         if (linkedDataverse.equals(linkingDataverse)) {
             throw new IllegalCommandException("Can't link a dataverse to itself", this);
         }

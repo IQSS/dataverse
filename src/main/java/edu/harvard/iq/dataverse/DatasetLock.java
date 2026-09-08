@@ -38,6 +38,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
@@ -64,6 +65,7 @@ import jakarta.persistence.NamedQuery;
 )
 public class DatasetLock implements Serializable {
     
+    @Schema(description = "Dataset lock reason indicating why dataset editing or publication is blocked.")
     public enum Reason {
         /** Data being ingested *//** Data being ingested */
         Ingest,

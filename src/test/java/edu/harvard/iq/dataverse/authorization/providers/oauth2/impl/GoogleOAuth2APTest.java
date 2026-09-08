@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ public class GoogleOAuth2APTest extends GoogleOAuth2AP {
     @Test
     public void testParseUserResponse() {
         AbstractOAuth2AuthenticationProvider.ParsedUserResponse result
-                = parseUserResponse(Json.createObjectBuilder()
+                = parseUserResponse(JsonUtil.createObjectBuilder()
                         .add("id", "123456")
                         .add("given_name", "Jane")
                         .add("family_name", "Doe")

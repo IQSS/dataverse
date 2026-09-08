@@ -14,7 +14,7 @@ public class StorageSiteUtilTest {
 
     @Test
     public void testParse() throws Exception {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, true);
@@ -27,7 +27,7 @@ public class StorageSiteUtilTest {
 
     @Test
     void testMissingHostname() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, true);
         job.add(StorageSite.TRANSFER_PROTOCOLS, "rsync");
@@ -37,7 +37,7 @@ public class StorageSiteUtilTest {
 
     @Test
     void testBadProtocol() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, true);
@@ -48,7 +48,7 @@ public class StorageSiteUtilTest {
 
     @Test
     void testNonBoolean() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, "not a boolean");

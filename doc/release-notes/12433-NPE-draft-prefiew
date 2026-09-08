@@ -1,0 +1,1 @@
+This release fixes a null pointer exception when previewing a draft file with a retention period.

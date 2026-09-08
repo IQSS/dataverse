@@ -414,7 +414,7 @@ public class PidUtilTest {
         Dataset dataset1 = new Dataset();
         Dataverse dataverse1 = new Dataverse();
         dataset1.setOwner(dataverse1);
-        String pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
+        String pidGeneratorSpecs = JsonUtil.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
         //Set a PID generator on the parent
         dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
         assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());
@@ -440,7 +440,7 @@ public class PidUtilTest {
         //Now test failure case
         dataverse1.setPidGenerator(null);
         dataset1.setPidGenerator(null);
-        pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.9999").add("shoulder", "FK2").build().toString();
+        pidGeneratorSpecs = JsonUtil.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.9999").add("shoulder", "FK2").build().toString();
         //Set a PID generator on the parent
         dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
         assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());

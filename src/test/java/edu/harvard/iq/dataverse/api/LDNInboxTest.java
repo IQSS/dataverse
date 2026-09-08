@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.json.Json;
@@ -250,20 +251,20 @@ public class LDNInboxTest {
     }
 
     static String createRelationshipAnnouncementMessage(String sourceId, String targetId, String relationship) {
-        JsonArray context = Json.createArrayBuilder().add("https://www.w3.org/ns/activitystreams")
+        JsonArray context = JsonUtil.createArrayBuilder().add("https://www.w3.org/ns/activitystreams")
                 .add("https://coar-notify.net").build();
 
-        JsonArray type = Json.createArrayBuilder().add("Announce").add("coar-notify:RelationshipAction").build();
+        JsonArray type = JsonUtil.createArrayBuilder().add("Announce").add("coar-notify:RelationshipAction").build();
 
-        JsonObject message = Json.createObjectBuilder().add("@context", context)
+        JsonObject message = JsonUtil.createObjectBuilder().add("@context", context)
                 .add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type", type)
-                .add("origin", Json.createObjectBuilder().add("id", "https://some-service.com").add("type", "Service"))
-                .add("target", Json.createObjectBuilder().add("id", "https://dataverse.org").add("type", "Service"))
+                .add("origin", JsonUtil.createObjectBuilder().add("id", "https://some-service.com").add("type", "Service"))
+                .add("target", JsonUtil.createObjectBuilder().add("id", "https://dataverse.org").add("type", "Service"))
                 .add("object",
-                        Json.createObjectBuilder().add("id", "urn:uuid:" + UUID.randomUUID().toString())
+                        JsonUtil.createObjectBuilder().add("id", "urn:uuid:" + UUID.randomUUID().toString())
                                 .add("type", "Relationship").add("as:relationship", relationship)
                                 .add("as:subject", sourceId).add("as:object", targetId))
-                .add("actor", Json.createObjectBuilder().add("id", "https://some-service.com").add("type", "Service")
+                .add("actor", JsonUtil.createObjectBuilder().add("id", "https://some-service.com").add("type", "Service")
                         .add("name", "Some Service"))
                 .build();
         return message.toString();

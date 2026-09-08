@@ -22,12 +22,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
@@ -56,6 +56,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(ManageFilePermissionsPage.class.getCanonicalName());
 
+    @EJB
+    transient ApiSigningSecretServiceBean signingSecretService;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -640,9 +642,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     key = apiToken.getTokenString();
                 }
             }
-            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-            if(key.length() >= 36) {
-                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", key);
+            if (key != null) {
+                return UrlSignerUtil.signUrl(fullApiPath, 10, userId, "GET", signingSecretService.getSigningKey(key));
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error generating signed URL for permissions history CSV: " + e.getMessage(), e);

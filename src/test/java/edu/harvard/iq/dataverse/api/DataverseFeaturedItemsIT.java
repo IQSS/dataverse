@@ -89,7 +89,7 @@ public class DataverseFeaturedItemsIT {
     }
 
     @Test
-    public void testCreateFeaturedItemWithBadDvOdbjectIds() {
+    public void testCreateFeaturedItemWithBadDvObjectIds() {
         // Set up a new published dataverse and dataset
         String apiToken = createUserAndGetApiToken();
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
@@ -100,7 +100,7 @@ public class DataverseFeaturedItemsIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
         String datasetPersistentIdBad = datasetPersistentId + "BAD";
         String dataverseAliasBad = dataverseAlias + "BAD";
-        String fieldIdBad = "999";
+        String fieldIdBad = String.valueOf(Integer.MAX_VALUE);
 
         // Test with bad Dataset id should return bad request with not found message
         Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetPersistentIdBad);

@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -317,7 +319,7 @@ public class MyDataFilterParams {
      */
     public JsonArrayBuilder getListofSelectedPublicationStatuses(){
         
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
         
         for (String pubStatus : this.publicationStatuses){
             jsonArray.add(pubStatus);            
@@ -337,7 +339,7 @@ public class MyDataFilterParams {
             return null;
         }
 
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
 
         for (Boolean valid : this.datasetValidities){
             jsonArray.add(valid);
@@ -348,20 +350,20 @@ public class MyDataFilterParams {
     
     public JsonObjectBuilder getDvObjectTypesAsJSON(){
         
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
 
-        jsonArray.add(Json.createObjectBuilder().add("value", DvObject.DType.Dataverse.getDType())
+        jsonArray.add(JsonUtil.createObjectBuilder().add("value", DvObject.DType.Dataverse.getDType())
                             .add("label", SearchConstants.UI_DATAVERSES)
                             .add("selected", this.areDataversesIncluded()))
-                .add(Json.createObjectBuilder().add("value", DvObject.DType.Dataset.getDType())
+                .add(JsonUtil.createObjectBuilder().add("value", DvObject.DType.Dataset.getDType())
                             .add("label", SearchConstants.UI_DATASETS)
                             .add("selected", this.areDatasetsIncluded()))
-                .add(Json.createObjectBuilder().add("value", DvObject.DType.DataFile.getDType())
+                .add(JsonUtil.createObjectBuilder().add("value", DvObject.DType.DataFile.getDType())
                             .add("label", SearchConstants.UI_FILES)
                             .add("selected", this.areFilesIncluded())
                 );
         
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder();
         jsonData.add(SearchFields.TYPE, jsonArray);
         
         return jsonData;

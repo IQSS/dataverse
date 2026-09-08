@@ -1,20 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -105,56 +101,82 @@ public class LinkIT {
 
     @Test
     public void testCreateDeleteDataverseLink() {
-        Response createUser = UtilIT.createRandomUser();
+        // Create user #1 who owns Dataverse collection #1
+        Response createUser1 = UtilIT.createRandomUser();
+        createUser1.prettyPrint();
+        String apiToken1 = UtilIT.getApiTokenFromResponse(createUser1);
+        String username1 = UtilIT.getUsernameFromResponse(createUser1);
 
-        createUser.prettyPrint();
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken1);
+        createDataverse1Response.prettyPrint();
+        String dataverse1Alias = UtilIT.getAliasFromResponse(createDataverse1Response);
+        Integer dataverse1Id = UtilIT.getDataverseIdFromResponse(createDataverse1Response);
 
-        Response superuserResponse = UtilIT.makeSuperUser(username);
+        // Create user #2 who owns Dataverse collection #2
+        Response createUser2 = UtilIT.createRandomUser();
+        createUser2.prettyPrint();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
 
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.prettyPrint();
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken2);
+        createDataverse2Response.prettyPrint();
+        String dataverse2Alias = UtilIT.getAliasFromResponse(createDataverse2Response);
+        Integer dataverse2Id = UtilIT.getDataverseIdFromResponse(createDataverse2Response);
 
-        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse2.prettyPrint();
-        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-        Integer dataverseId2 = UtilIT.getDataverseIdFromResponse(createDataverseResponse2);
+        // Let user #1 try to link their collection #1 into collection #2
+        // This should fail, because user #1 has not been granted permission to link into collection #2
+        Response createDataverseLinkWithoutPermissionResponse = UtilIT.createDataverseLink(dataverse1Alias, dataverse2Alias, apiToken1);
+        createDataverseLinkWithoutPermissionResponse.prettyPrint();
+        createDataverseLinkWithoutPermissionResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
-        Response createLinkingDataverseResponse = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
-        createLinkingDataverseResponse.prettyPrint();
-        createLinkingDataverseResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Dataverse " + dataverseAlias + " linked successfully to " + dataverseAlias2));
+        // Let user #2 grant user #1 admin access for collection #2
+        // (The admin role is the only preconfigured role which includes the "Link Dataverse" permission)
+        Response grantUser2AccessOnDataverse1 = UtilIT.grantRoleOnDataverse(dataverse2Alias, "admin", "@" + username1, apiToken2);
+        grantUser2AccessOnDataverse1.prettyPrint();
+        grantUser2AccessOnDataverse1.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-        Response tryLinkingAgain = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        // Let user #1 try again
+        // Now that they have access, this should succeed
+        Response tryLinkingAgain = UtilIT.createDataverseLink(dataverse1Alias, dataverse2Alias, apiToken1);
         tryLinkingAgain.prettyPrint();
         tryLinkingAgain.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Dataverse " + dataverse1Alias + " linked successfully to " + dataverse2Alias));
+
+        // And again, to see if the creation of duplicate links is correctly rejected
+        Response tryLinkingAgainAndAgain = UtilIT.createDataverseLink(dataverse1Alias, dataverse2Alias, apiToken1);
+        tryLinkingAgainAndAgain.prettyPrint();
+        tryLinkingAgainAndAgain.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo(dataverseAlias + " has already been linked to " + dataverseAlias2 + "."));
+                .body("message", equalTo(dataverse1Alias + " has already been linked to " + dataverse2Alias + "."));
 
-        Response getLinksResponse = UtilIT.getDataverseLinks(dataverseAlias, apiToken);
+        // Make user #1 superuser because it's required to list a collection's links
+        UtilIT.setSuperuserStatus(username1, true);
+
+        Response getLinksResponse = UtilIT.getDataverseLinks(dataverse1Alias, apiToken1);
         getLinksResponse.prettyPrint();
         getLinksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.dataversesLinkingToThis[0].id", equalTo(dataverseId2))
-                .body("data.dataversesLinkingToThis[0].alias", equalTo(dataverseAlias2))
-                .body("data.dataversesLinkingToThis[0].displayName", equalTo(dataverseAlias2));
-        getLinksResponse = UtilIT.getDataverseLinks(dataverseAlias2, apiToken);
+                .body("data.dataversesLinkingToThis[0].id", equalTo(dataverse2Id))
+                .body("data.dataversesLinkingToThis[0].alias", equalTo(dataverse2Alias))
+                .body("data.dataversesLinkingToThis[0].displayName", equalTo(dataverse2Alias));
+        getLinksResponse = UtilIT.getDataverseLinks(dataverse2Alias, apiToken1);
         getLinksResponse.prettyPrint();
         getLinksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.linkedDataverses[0].id", equalTo(dataverseId))
-                .body("data.linkedDataverses[0].alias", equalTo(dataverseAlias))
-                .body("data.linkedDataverses[0].displayName", equalTo(dataverseAlias));
+                .body("data.linkedDataverses[0].id", equalTo(dataverse1Id))
+                .body("data.linkedDataverses[0].alias", equalTo(dataverse1Alias))
+                .body("data.linkedDataverses[0].displayName", equalTo(dataverse1Alias));
 
-        Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        // Undo superuser status to test that it's not required for deleting a link
+        UtilIT.setSuperuserStatus(username1, false);
+
+        Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverse1Alias, dataverse2Alias, apiToken1);
         deleteLinkingDataverseResponse.prettyPrint();
         deleteLinkingDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"));
+                .body("data.message", equalTo("Link from Dataverse " + dataverse2Alias + " to linked Dataverse " + dataverse1Alias + " deleted"));
     }
 
     @Test
@@ -285,7 +307,7 @@ public class LinkIT {
         linkDatasetsResponse.prettyPrint();
         linkDatasetsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets = Json.createReader(new StringReader(linkDatasetsResponse.asString())).readObject();
+        JsonObject linkDatasets = JsonUtil.getJsonObject(linkDatasetsResponse.asString());
         JsonArray linksList = linkDatasets.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(0, linksList.size());
 
@@ -294,7 +316,7 @@ public class LinkIT {
         linkDatasetsResponse2.prettyPrint();
         linkDatasetsResponse2.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets2 = Json.createReader(new StringReader(linkDatasetsResponse2.asString())).readObject();
+        JsonObject linkDatasets2 = JsonUtil.getJsonObject(linkDatasetsResponse2.asString());
         JsonArray linksList2 = linkDatasets2.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(1, linksList2.size());
         assertEquals(dataverse2Id, linksList2.getJsonObject(0).getInt("id"));
@@ -307,7 +329,7 @@ public class LinkIT {
         linkDatasetsResponse3.prettyPrint();
         linkDatasetsResponse3.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets3 = Json.createReader(new StringReader(linkDatasetsResponse3.asString())).readObject();
+        JsonObject linkDatasets3 = JsonUtil.getJsonObject(linkDatasetsResponse3.asString());
         JsonArray linksList3 = linkDatasets3.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(1, linksList3.size());
         assertEquals(dataverse2Id, linksList3.getJsonObject(0).getInt("id"));
@@ -344,7 +366,7 @@ public class LinkIT {
         linkDatasetsResponse5.prettyPrint();
         linkDatasetsResponse5.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets5 = Json.createReader(new StringReader(linkDatasetsResponse5.asString())).readObject();
+        JsonObject linkDatasets5 = JsonUtil.getJsonObject(linkDatasetsResponse5.asString());
         JsonArray linksList5 = linkDatasets5.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(0, linksList5.size());
 
@@ -365,7 +387,7 @@ public class LinkIT {
         linkDatasetsResponse7.prettyPrint();
         linkDatasetsResponse7.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        JsonObject linkDatasets7 = Json.createReader(new StringReader(linkDatasetsResponse7.asString())).readObject();
+        JsonObject linkDatasets7 = JsonUtil.getJsonObject(linkDatasetsResponse7.asString());
         JsonArray linksList7 = linkDatasets7.getJsonObject("data").getJsonArray("linked-dataverses");
         assertEquals(0, linksList7.size());
 

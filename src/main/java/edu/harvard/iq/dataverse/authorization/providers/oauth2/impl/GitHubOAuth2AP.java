@@ -7,11 +7,10 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.StringReader;
 import java.util.Collections;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 
 /**
  * IDP adaptor for GitHub.com
@@ -36,11 +35,8 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
     @Override
     protected ParsedUserResponse parseUserResponse( String responseBody ) {
-        
-        try ( StringReader rdr = new StringReader(responseBody);
-              JsonReader jrdr = Json.createReader(rdr) )  {
-            JsonObject response = jrdr.readObject();
-            // Github has no concept of a family name
+        JsonObject response = JsonUtil.getJsonObject(responseBody);
+        // Github has no concept of a family name
             ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(null, null, response.getString("name",""));
             AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
                     shibUserNameFields.getFirstName(),
@@ -57,7 +53,5 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
                     username,
                     displayInfo.getEmailAddress().length()>0 ? Collections.singletonList(displayInfo.getEmailAddress())
                                                              : Collections.emptyList() );
-        }
-        
     }
 }

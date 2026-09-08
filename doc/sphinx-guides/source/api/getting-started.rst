@@ -178,7 +178,9 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/openapi?format=json"
 
-We are aware that our OpenAPI document is not perfect. You can find more information about validating the document under :ref:`openapi-dev` in the Developer Guide.
+If you have feedback about the our OpenAPI document, please contact us through the usual channels under :ref:`getting-help-with-apis`.
+
+You can find more information about validating the document under :ref:`openapi-dev` in the Developer Guide.
 
 Beyond "Getting Started" Tasks
 ------------------------------
