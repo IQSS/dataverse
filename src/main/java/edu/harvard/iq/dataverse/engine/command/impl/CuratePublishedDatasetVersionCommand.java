@@ -53,7 +53,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), getDataset())) {
+        if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), getDataset())) {
             throw new IllegalCommandException("Only superusers or those with scopedPowerAdmin permission on the dataset can curate published dataset versions", this);
         }
         Dataset savedDataset = null;

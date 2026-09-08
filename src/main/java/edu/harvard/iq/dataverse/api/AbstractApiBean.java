@@ -796,7 +796,7 @@ public abstract class AbstractApiBean {
      */
     protected Response getRoleAssignmentHistoryResponse(DvObject dvObject, AuthenticatedUser authenticatedUser, boolean forFiles, HttpHeaders headers) {
         // Check if the user has permission to manage permissions for this object
-        if (!(permissionSvc.isPowerUser(authenticatedUser, dvObject) || permissionSvc.userOn(authenticatedUser, dvObject).has(Permission.ManageDatasetPermissions))) {
+        if (!(permissionSvc.isPowerUserOn(authenticatedUser, dvObject) || permissionSvc.userOn(authenticatedUser, dvObject).has(Permission.ManageDatasetPermissions))) {
             return error(Status.FORBIDDEN, "You do not have permission to view the role assignment history for this " + dvObject.getClass().getSimpleName().toLowerCase());
         }
 

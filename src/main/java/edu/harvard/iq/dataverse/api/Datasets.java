@@ -341,7 +341,7 @@ public class Datasets extends AbstractApiBean {
             boolean destroy = false;
 
             if (doomed.getVersions().size() == 1) {
-                if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUser((AuthenticatedUser) u, doomed))) {
+                if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) u, doomed))) {
                     throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser")));
                 }
                 destroy = true;
@@ -382,7 +382,7 @@ public class Datasets extends AbstractApiBean {
             // first check if dataset is released, and if so, if user is a poweruser
             Dataset doomed = findDatasetOrDie(id);
 
-            if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUser((AuthenticatedUser) u, doomed))) {
+            if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) u, doomed))) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser")));
             }
 
@@ -1380,7 +1380,7 @@ public class Datasets extends AbstractApiBean {
                     isMinor = false;
                     break;
                 case "updatecurrent":
-                    if (permissionSvc.isPowerUser(user, ds)) {
+                    if (permissionSvc.isPowerUserOn(user, ds)) {
                         updateCurrent = true;
                     } else {
                         return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
@@ -1508,7 +1508,7 @@ public class Datasets extends AbstractApiBean {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             Dataset ds = findDatasetOrDie(id);
-            if (!permissionSvc.isPowerUser(user, ds)) {
+            if (!permissionSvc.isPowerUserOn(user, ds)) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
             try {
@@ -1662,7 +1662,7 @@ public class Datasets extends AbstractApiBean {
          * check later.
          */
 
-        if ((!permissionSvc.isPowerUser(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!permissionSvc.isPowerUserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopeedPowerUser permission, or user does not have EditDataset permissions");
         }
 
@@ -1740,7 +1740,7 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(filesToEmbargo)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isPowerUser(authenticatedUser, dataset);
+            boolean isPowerUser = permissionSvc.isPowerUserOn(authenticatedUser, dataset);
             for (DataFile datafile : filesToEmbargo) {
                 // power users can overrule an existing embargo, even on released files
                 if (datafile.isReleased() && !isPowerUser) {
@@ -1778,7 +1778,7 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             //If poweruser, report changes to any released files
-            if (permissionSvc.isPowerUser(authenticatedUser, dataset)) {
+            if (permissionSvc.isPowerUserOn(authenticatedUser, dataset)) {
                 String releasedFiles = filesToEmbargo.stream().filter(d -> d.isReleased())
                         .map(d -> d.getId().toString()).collect(Collectors.joining(","));
                 if (!releasedFiles.isBlank()) {
@@ -1824,7 +1824,7 @@ public class Datasets extends AbstractApiBean {
 
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
-        if ((!permissionSvc.isPowerUser(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!permissionSvc.isPowerUserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerAdmin permission, or user does not have EditDataset permissions");
         }
 
@@ -1866,7 +1866,7 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(embargoFilesToUnset)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isPowerUser(authenticatedUser, dataset);
+            boolean isPowerUser = permissionSvc.isPowerUserOn(authenticatedUser, dataset);
             for (DataFile datafile : embargoFilesToUnset) {
                 // power users can overrule an existing embargo, even on released files
                 if (datafile.getEmbargo()==null || ((datafile.isReleased() && datafile.getEmbargo() != null) && !isPowerUser)) {
@@ -1945,7 +1945,7 @@ public class Datasets extends AbstractApiBean {
 
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
-        if ((!permissionSvc.isPowerUser(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!permissionSvc.isPowerUserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerAdmin permission, or user does not have EditDataset permissions");
         }
 
@@ -2043,7 +2043,7 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(filesToRetention)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isPowerUser(authenticatedUser, dataset);
+            boolean isPowerUser = permissionSvc.isPowerUserOn(authenticatedUser, dataset);
             for (DataFile datafile : filesToRetention) {
                 // power users can overrule an existing retention, even on released files
                 if (datafile.isReleased() && !isPowerUser) {
@@ -2126,7 +2126,7 @@ public class Datasets extends AbstractApiBean {
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
-        if ((!permissionSvc.isPowerUser(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!permissionSvc.isPowerUserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser/power user or user does not have EditDataset permissions");
         }
 
@@ -2179,7 +2179,7 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(retentionFilesToUnset)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isPowerUser(authenticatedUser, dataset);
+            boolean isPowerUser = permissionSvc.isPowerUserOn(authenticatedUser, dataset);
             for (DataFile datafile : retentionFilesToUnset) {
                 // superuser/power user can overrule an existing retention, even on released files
                 if (datafile.getRetention()==null || ((datafile.isReleased() && datafile.getRetention() != null) && !isPowerUser)) {
@@ -2249,7 +2249,7 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (!permissionSvc.isPowerUser(authenticatedUser, dataset)) {
+        if (!permissionSvc.isPowerUserOn(authenticatedUser, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -2280,7 +2280,7 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (!permissionSvc.isPowerUser(authenticatedUser, dataset)) {
+        if (!permissionSvc.isPowerUserOn(authenticatedUser, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -2734,7 +2734,7 @@ public class Datasets extends AbstractApiBean {
         String statusMessageFromDcm = jsonFromDcm.getString("status");
         try {
             Dataset dataset = findDatasetOrDie(id);
-            if (!permissionSvc.isPowerUser(authenticatedUser, dataset)) {
+            if (!permissionSvc.isPowerUserOn(authenticatedUser, dataset)) {
                 return error(Response.Status.FORBIDDEN, "Superusers or power users only.");
             }
             if ("validation passed".equals(statusMessageFromDcm)) {
@@ -3031,7 +3031,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND,
                         "Direct upload not supported for files in this dataset: " + dataset.getId());
             }
-            if (!(user instanceof AuthenticatedUser) || !permissionSvc.isPowerUser((AuthenticatedUser) user, dataset)) {
+            if (!(user instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) user, dataset)) {
                 Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
                 boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
                 if (hasFileCountLimit) {
@@ -3650,7 +3650,7 @@ public class Datasets extends AbstractApiBean {
             try {
                 AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 Dataset dataset = findDatasetOrDie(id);
-                if (!permissionSvc.isPowerUser(user, dataset)) {
+                if (!permissionSvc.isPowerUserOn(user, dataset)) {
                     return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
                 }
 
@@ -3702,7 +3702,7 @@ public class Datasets extends AbstractApiBean {
             try {
                 AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 Dataset dataset = findDatasetOrDie(id);
-                if (!permissionSvc.isPowerUser(user, dataset)) {
+                if (!permissionSvc.isPowerUserOn(user, dataset)) {
                     return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
                 }
                 DatasetLock lock = dataset.getLockFor(lockType);
@@ -4041,7 +4041,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -4079,7 +4079,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -4101,7 +4101,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             DataverseRequest req = createDataverseRequest(user);
             dataset = findDatasetUserCanSeeOrDie(dvIdtf, req,false);
-            if (!permissionSvc.isPowerUser(user, dataset)) {
+            if (!permissionSvc.isPowerUserOn(user, dataset)) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         } catch (WrappedResponse ex) {
@@ -4135,7 +4135,7 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
         if (SystemConfig.CURATIONLABELSDISABLED.equals(curationLabelSet) || SystemConfig.DEFAULTCURATIONLABELSET.equals(curationLabelSet)) {
@@ -4177,7 +4177,7 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -5394,7 +5394,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             DataverseRequest req = createDataverseRequest(au);
             Dataset ds = findDatasetUserCanSeeOrDie(datasetId, req, false);
-            if (!permissionSvc.isPowerUser(au, ds)) {
+            if (!permissionSvc.isPowerUserOn(au, ds)) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, ds, uriInfo,
@@ -5429,7 +5429,7 @@ public class Datasets extends AbstractApiBean {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             Dataset dataset = findDatasetOrDie(datasetId);
-            if (!permissionSvc.isPowerUser(au, dataset)) {
+            if (!permissionSvc.isPowerUserOn(au, dataset)) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
 
@@ -5487,7 +5487,7 @@ public class Datasets extends AbstractApiBean {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             Dataset ds = findDatasetOrDie(datasetId);
-            if (!permissionSvc.isPowerUser(au, ds)) {
+            if (!permissionSvc.isPowerUserOn(au, ds)) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
             DataverseRequest req = createDataverseRequest(au);
@@ -5941,7 +5941,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
         Optional<Boolean> gbAtRequestOpt = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
@@ -5976,7 +5976,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -6044,7 +6044,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
         return response(req -> {
@@ -6108,7 +6108,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
         if (PidUtil.getManagedProviderIds().contains(generatorId)) {
@@ -6143,7 +6143,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
 
-        if (!permissionSvc.isPowerUser(user, dataset)) {
+        if (!permissionSvc.isPowerUserOn(user, dataset)) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -6622,7 +6622,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             try {
                 AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 Dataset ds = findDatasetOrDie(datasetId);
-                if (!permissionSvc.isPowerUser(user, ds)) {
+                if (!permissionSvc.isPowerUserOn(user, ds)) {
                     return forbidden(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
                 }
                 return response(req -> {
@@ -6661,7 +6661,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         if (!DS_VERSION_DRAFT.equals(versionId)) {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             Dataset ds = findDatasetOrDie(datasetId);
-            if (!permissionSvc.isPowerUser(user, ds)) {
+            if (!permissionSvc.isPowerUserOn(user, ds)) {
                 return forbidden(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         }

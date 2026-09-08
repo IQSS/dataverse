@@ -42,7 +42,6 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +60,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -768,7 +766,7 @@ public class Files extends AbstractApiBean {
         try {
             u = getRequestAuthenticatedUserOrDie(crc);
             DataFile dataFile = findDataFileOrDie(id);
-            if (!permissionSvc.isPowerUser(u, dataFile)) {
+            if (!permissionSvc.isPowerUserOn(u, dataFile)) {
                 return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         } catch (WrappedResponse wr) {
@@ -868,7 +866,7 @@ public class Files extends AbstractApiBean {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             DataFile dataFileIn = findDataFileOrDie(id);
-            if (!permissionSvc.isPowerUser(au, dataFileIn)) {
+            if (!permissionSvc.isPowerUserOn(au, dataFileIn)) {
                 return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
             java.nio.file.Path tempLocationPath = null;

@@ -105,7 +105,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
      * @throws PermissionException if the user doesn't have permission to modify this attribute.
      */
     private void setBooleanAttribute(CommandContext ctxt, boolean adminOnly) throws CommandException {
-        if (adminOnly && !(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dataverse))) {
+        if (adminOnly && !(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataverse))) {
             throw new PermissionException("You must be a superuser or power user to change this setting",
                     this, Collections.singleton(Permission.EditDataset), dataverse);
         }
@@ -129,7 +129,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
     }
 
     private void setAllowedDatasetTypes(CommandContext ctxt, Object allowedDatasetTypesIn) throws CommandException {
-        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dataverse))) {
+        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataverse))) {
             throw new PermissionException("You must be a superuser or power user to change this setting",
                     this, null, dataverse);
         }

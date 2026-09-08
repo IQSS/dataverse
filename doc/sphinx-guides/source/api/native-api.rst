@@ -510,7 +510,7 @@ The fully expanded example above (without environment variables) looks like this
 
 For ``roles.json`` see :ref:`json-representation-of-a-role`
 
-.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
+.. note:: Only a Dataverse installation account with superuser permissions or a power user is allowed to create roles in a Dataverse Collection.
 
 .. _list-role-assignments-on-a-dataverse-api:
 
@@ -948,7 +948,7 @@ List Locally FAIR Role Assignees for a Dataverse Collection
 Lists the Locally FAIR role assignee identifiers configured for a Dataverse collection identified by ``id``.
 For more about the concept, see :ref:`locally-fair` in the User Guide.
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
 
 .. code-block:: bash
 
@@ -980,7 +980,7 @@ Set Locally FAIR Role Assignees for a Dataverse Collection
 
 Replaces the full set locally FAIR role assignee identifiers for a Dataverse collection identified by ``id``.
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
 
 .. code-block:: bash
 
@@ -1012,7 +1012,7 @@ Add a Locally FAIR Role Assignee to a Dataverse Collection
 
 Adds a single locally FAIR role assignee identifier to a Dataverse collection identified by ``id``.
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
 
 .. code-block:: bash
 
@@ -1038,7 +1038,7 @@ Delete a Locally FAIR Role Assignee from a Dataverse Collection
 
 Removes a single locally FAIR role assignee identifier from a Dataverse collection identified by ``id``.
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
 
 .. code-block:: bash
 
@@ -1180,7 +1180,7 @@ See also :ref:`dataset-types`.
 Import a Dataset into a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: This action requires a Dataverse installation account with super-user permissions.
+.. note:: This action requires a Dataverse installation account with superuser or power user permissions.
 
 To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse installation's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to the Dataverse installation, and then releases it:
 
@@ -1233,7 +1233,7 @@ See also :ref:`dataset-types`.
 Import a Dataset into a Dataverse Installation with a DDI file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: This action requires a Dataverse installation account with super-user permissions.
+.. note:: This action requires a Dataverse installation account with superuser or power user permissions.
 
 To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to the Dataverse installation, and then releases it:
 
@@ -1482,9 +1482,9 @@ The following attributes are supported:
 * ``name`` Name
 * ``description`` Description
 * ``affiliation`` Affiliation
-* ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
-* ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by superusers. Defines if Dataset version needs files in order to be published or submitted for review.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superusers will not be blocked.
-* ``allowedDatasetTypes`` Restricted to use by superusers. By default "dataset" is implied. Pass a comma-separated list of dataset types (e.g. "dataset,software"). You cannot unset this attribute so if you want to delete a dataset type, set ``allowedDatasetTypes`` to a dataset type you won't be deleting. See also :ref:`dataset-types`.
+* ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers or power users and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+* ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by superusers or power users. Defines if Dataset version needs files in order to be published or submitted for review.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superuser or power user will not be blocked.
+* ``allowedDatasetTypes`` Restricted to use by superusers or power users. By default "dataset" is implied. Pass a comma-separated list of dataset types (e.g. "dataset,software"). You cannot unset this attribute so if you want to delete a dataset type, set ``allowedDatasetTypes`` to a dataset type you won't be deleting. See also :ref:`dataset-types`.
 
 See also :ref:`update-dataverse-api`.
 
@@ -1565,7 +1565,7 @@ To set or change the storage allocation quota for a collection:
 
   curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
   
 
 To delete a storage quota configured for a collection:
@@ -1574,7 +1574,7 @@ To delete a storage quota configured for a collection:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
 
 Storage Quotas on Individual Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1598,7 +1598,7 @@ To set or change the storage allocation quota for a dataset:
 
   curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/datasets/$ID/storage/quota"
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
   
 
 To delete a storage quota configured for a dataset:
@@ -1607,7 +1607,7 @@ To delete a storage quota configured for a dataset:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
 
-This API is superuser-only.
+This API is only accessible to superusers or power users.
 
 The following convenience API shows the dynamic values of the *remaining* storage size and/or file number quotas on the dataset, if present. For example:
 

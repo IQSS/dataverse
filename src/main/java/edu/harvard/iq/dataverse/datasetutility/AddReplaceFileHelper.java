@@ -46,9 +46,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJBException;
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
@@ -1594,7 +1592,7 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? permissionService.isPowerUser(dvRequest.getAuthenticatedUser(), workingVersion.getDataset()) : false;
+        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? permissionService.isPowerUserOn(dvRequest.getAuthenticatedUser(), workingVersion.getDataset()) : false;
         finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest, ignoreUploadFileLimits);
 
         if (nFiles != finalFileList.size()) {
@@ -2065,7 +2063,7 @@ public class AddReplaceFileHelper{
                 workingVersion = dataset.getOrCreateEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
 
-                if (!(authUser instanceof AuthenticatedUser) || !permissionService.isPowerUser((AuthenticatedUser) authUser, dataset)) {
+                if (!(authUser instanceof AuthenticatedUser) || !permissionService.isPowerUserOn((AuthenticatedUser) authUser, dataset)) {
                     Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
                     boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
                     if (hasFileCountLimit) {

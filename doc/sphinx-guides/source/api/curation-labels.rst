@@ -2,7 +2,7 @@ Dataset Curation Status API
 ===========================
 
 When the :ref:`:AllowedCurationLabels <:AllowedCurationLabels>` setting has been used to define Curation Labels, this API can be used to set these labels on draft datasets. 
-Superusers can define which set of labels are allowed for a given datasets in a collection/an individual dataset using the api described in the :doc:`/admin/dataverses-datasets` section.
+Superusers and power users can define which set of labels are allowed for a given datasets in a collection/an individual dataset using the api described in the :doc:`/admin/dataverses-datasets` section.
 The API here can be used by curators/those who have permission to publish the dataset to get/set/change/delete the label currently assigned to a draft dataset.
 If the :ref:`dataverse.ui.show-curation-status-to-all` flag is enabled, users who can see the draft dataset version can use the get API call.
 

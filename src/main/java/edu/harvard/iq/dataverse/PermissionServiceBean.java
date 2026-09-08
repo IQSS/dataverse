@@ -334,7 +334,7 @@ public class PermissionServiceBean {
         User user = req.getUser();
         
         // quick cases
-        if (user instanceof AuthenticatedUser && isPowerUser((AuthenticatedUser) user, dvo)) {
+        if (user instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) user, dvo)) {
             return children; // it's good to be king/power user
             
         } else if (!user.isAuthenticated()) {
@@ -398,7 +398,7 @@ public class PermissionServiceBean {
 
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
         User user = req.getUser();
-        if (user instanceof AuthenticatedUser && isPowerUser((AuthenticatedUser) user, dvo)) {
+        if (user instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) user, dvo)) {
             return true;
         } else if (!user.isAuthenticated()) {
             Set<Permission> requiredCopy = EnumSet.copyOf(required);
@@ -415,7 +415,7 @@ public class PermissionServiceBean {
 
     public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
         if (ra instanceof AuthenticatedUser au) {
-            if (isPowerUser(au, dvo)) {
+            if (isPowerUserOn(au, dvo)) {
                 return true;
             }
         } else if (ra instanceof User user) {
@@ -453,7 +453,7 @@ public class PermissionServiceBean {
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
     public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
-        if (req.getUser() instanceof AuthenticatedUser && isPowerUser((AuthenticatedUser) req.getUser(), dvo)) {
+        if (req.getUser() instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) req.getUser(), dvo)) {
             return EnumSet.allOf(Permission.class);
         }
 
@@ -480,7 +480,7 @@ public class PermissionServiceBean {
      * @return the set of permissions {@code ra} has over {@code dvo}.
      */
     public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
-        if (ra instanceof AuthenticatedUser && isPowerUser((AuthenticatedUser) ra, dvo)) {
+        if (ra instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) ra, dvo)) {
             return EnumSet.allOf(Permission.class);
         }
 
@@ -496,7 +496,7 @@ public class PermissionServiceBean {
         return permissions;
     }
 
-    public boolean isPowerUser(AuthenticatedUser user, DvObject dvo) {
+    public boolean isPowerUserOn(AuthenticatedUser user, DvObject dvo) {
         if (user == null) {
             return false;
         }
@@ -509,6 +509,39 @@ public class PermissionServiceBean {
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(user, dvo));
         ras.add(user);
         return hasGroupPermissionsFor(ras, dvo, EnumSet.of(Permission.ScopedPowerAdmin));
+    }
+
+    public boolean isPowerUserOnSomeDvObject(AuthenticatedUser user) {
+        if (user == null) {
+            return false;
+        }
+        if (user.isSuperuser()) {
+            return true;
+        }
+
+        // Get all groups the user belongs to (persistent ones)
+        Set<edu.harvard.iq.dataverse.authorization.groups.Group> groups = groupService.groupsFor(user);
+        Set<String> identifiers = groups.stream()
+                .map(edu.harvard.iq.dataverse.authorization.groups.Group::getIdentifier)
+                .collect(Collectors.toSet());
+        identifiers.add(user.getIdentifier());
+
+        // Get all roles that have ScopedPowerAdmin permission
+        List<DataverseRole> powerRoles = roleService.findAllWithPermission(Permission.ScopedPowerAdmin);
+        if (powerRoles.isEmpty()) {
+            return false;
+        }
+        List<Long> roleIds = powerRoles.stream()
+                .map(DataverseRole::getId)
+                .collect(Collectors.toList());
+
+        // Check if any role assignment exists for these identifiers and roles
+        Long count = em.createQuery("SELECT COUNT(ra) FROM RoleAssignment ra WHERE ra.assigneeIdentifier IN :identifiers AND ra.role.id IN :roleIds", Long.class)
+                .setParameter("identifiers", identifiers)
+                .setParameter("roleIds", roleIds)
+                .getSingleResult();
+
+        return count > 0;
     }
     
     private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
@@ -1100,7 +1133,7 @@ public class PermissionServiceBean {
         Set<RoleAssignee> userAndGroups = new HashSet<>(groupService.groupsFor(req));
         User user = req.getUser();
         if (user instanceof AuthenticatedUser authUser) {
-            if (isPowerUser(authUser, dvObject)) {
+            if (isPowerUserOn(authUser, dvObject)) {
                 return true;
             }
             userAndGroups.add(authUser);

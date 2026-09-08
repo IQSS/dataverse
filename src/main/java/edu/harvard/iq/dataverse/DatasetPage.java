@@ -105,7 +105,6 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.OptimisticLockException;
@@ -1518,7 +1517,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        return permissionService.isPowerUser((AuthenticatedUser) session.getUser(), dataset);
+        return permissionService.isPowerUserOn((AuthenticatedUser) session.getUser(), dataset);
     }
     /**
      * Check Dataset related permissions

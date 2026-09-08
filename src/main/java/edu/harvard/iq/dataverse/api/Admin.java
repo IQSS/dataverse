@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.SettingsValidationException;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
@@ -1794,7 +1793,7 @@ public class Admin extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataset ds = findDatasetOrDie(id);
             
-            if (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUser((AuthenticatedUser) u, ds)) {
+            if (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) u, ds)) {
                 logger.info("Bad Request Unauthor " );
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
@@ -1835,8 +1834,11 @@ public class Admin extends AbstractApiBean {
 
         try {
             User u = getRequestUser(crc);
-            DataverseRequest r = createDataverseRequest(u);
             DataFile df = findDataFileOrDie(id);
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, df))) {
+                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            }
+            DataverseRequest r = createDataverseRequest(u);
             if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
                 return forbidden("PIDs are not enabled for this file's collection.");
             }
@@ -1948,7 +1950,7 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUser user;
         try {
             user = getRequestAuthenticatedUserOrDie(crc);
-            if (!permissionSvc.isPowerUser(user, collection)) {
+            if (!permissionSvc.isPowerUserOn(user, collection)) {
                 return error(Response.Status.FORBIDDEN, "Superusers or power users only.");
             }
         } catch (WrappedResponse wr) {
@@ -2148,7 +2150,7 @@ public class Admin extends AbstractApiBean {
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
             DataFile fileToUpdate = findDataFileOrDie(fileId);
-            if (!permissionSvc.isPowerUser((AuthenticatedUser) u, fileToUpdate)) {
+            if (!permissionSvc.isPowerUserOn((AuthenticatedUser) u, fileToUpdate)) {
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         } catch (WrappedResponse e1) {
@@ -2215,7 +2217,7 @@ public class Admin extends AbstractApiBean {
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
             DataFile fileToValidate = findDataFileOrDie(fileId);
-            if (!permissionSvc.isPowerUser((AuthenticatedUser) u, fileToValidate)) {
+            if (!permissionSvc.isPowerUserOn((AuthenticatedUser) u, fileToValidate)) {
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         } catch (WrappedResponse e1) {
@@ -2481,7 +2483,7 @@ public class Admin extends AbstractApiBean {
         AuthenticatedUser user = null;
         try {
             user = getRequestAuthenticatedUserOrDie(crc);
-            if (!permissionSvc.isPowerUser(user, owner)) {
+            if (!permissionSvc.isPowerUserOn(user, owner)) {
                 return error(Response.Status.FORBIDDEN, "Superusers or power users only.");
             }
         } catch (WrappedResponse wr) {
@@ -2514,7 +2516,7 @@ public class Admin extends AbstractApiBean {
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!permissionSvc.isPowerUser(user, dataverse)) {
+            if (!permissionSvc.isPowerUserOn(user, dataverse)) {
                 return error(Response.Status.FORBIDDEN, "Superusers or power users only.");
             }
         } catch (WrappedResponse wr) {
@@ -2542,7 +2544,7 @@ public class Admin extends AbstractApiBean {
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!permissionSvc.isPowerUser(user, dataverse)) {
+            if (!permissionSvc.isPowerUserOn(user, dataverse)) {
                 return error(Response.Status.FORBIDDEN, "Superusers or power users only.");
             }
         } catch (WrappedResponse wr) {
@@ -2577,7 +2579,7 @@ public class Admin extends AbstractApiBean {
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!permissionSvc.isPowerUser(user, dataverse)) {
+            if (!permissionSvc.isPowerUserOn(user, dataverse)) {
                 return error(Response.Status.FORBIDDEN, "Superusers or power users only.");
             }
         } catch (WrappedResponse wr) {

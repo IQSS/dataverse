@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,11 +65,9 @@ import jakarta.inject.Named;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArray;
-import jakarta.json.JsonReader;
 import org.apache.commons.io.IOUtils;
 import java.util.Arrays;
 import java.util.Collection;
@@ -560,7 +557,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return systemConfig.isStorageQuotasEnforced() && uploadSessionQuota != null && uploadSessionQuota.getRemainingQuotaInBytes() == 0;
     }
     public boolean isFileUploadCountExceeded() {
-        boolean ignoreLimit = permissionService.isPowerUser((AuthenticatedUser) session.getUser(), dataset);
+        boolean ignoreLimit = permissionService.isPowerUserOn((AuthenticatedUser) session.getUser(), dataset);
         return !ignoreLimit && !isFileReplaceOperation() && fileUploadsAvailable != null && fileUploadsAvailable == 0;
     }
 
@@ -1124,7 +1121,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
             }
-            boolean ignoreUploadFileLimits = (this.session.getUser() != null && this.session.getUser().isAuthenticated()) ? permissionService.isPowerUser((AuthenticatedUser) session.getUser(), dataset) : false;
+            boolean ignoreUploadFileLimits = (this.session.getUser() != null && this.session.getUser().isAuthenticated()) ? permissionService.isPowerUserOn((AuthenticatedUser) session.getUser(), dataset) : false;
             // Try to save the NEW files permanently: 
             List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true, ignoreUploadFileLimits);
             if (filesAdded.size() < nNewFiles) {

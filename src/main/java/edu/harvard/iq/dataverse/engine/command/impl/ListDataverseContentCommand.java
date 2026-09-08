@@ -33,7 +33,7 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
 
     @Override
     public List<DvObject> execute(CommandContext ctxt) throws CommandException {
-        if (getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dvToList)) {
+        if (getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dvToList)) {
             return ctxt.dvObjects().findByOwnerId(dvToList.getId());
         } else {
             return ctxt.permissions().whichChildrenHasPermissionsForOrReleased(getRequest(), dvToList, EnumSet.of(Permission.ViewUnpublishedDataverse, Permission.ViewUnpublishedDataset));

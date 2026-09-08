@@ -55,7 +55,7 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
 
     @Override
     protected Dataverse innerExecute(CommandContext ctxt) throws IllegalCommandException {
-        boolean isPowerUser = getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dataverse);
+        boolean isPowerUser = getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataverse);
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled:

@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -46,7 +46,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled: 
-            if (!(ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), dataverse) && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+            if (!(ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataverse) && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
                 String executable = ctxt.systemConfig().getDataverseValidationExecutable();
                 boolean result = validateDataverseMetadataExternally(dataverse, executable, getRequest());
             
