@@ -344,38 +344,32 @@ public class HarvestingClients extends AbstractApiBean {
         // harvested content associated with it). So instead of calling the command
         // directly, we will be calling an async. service bean method. 
 
-        
-        try {
-            User u = getRequestUser(crc);
-            HarvestingClient harvestingClient = harvestingClientService.findByNickname(nickName);
-            if (harvestingClient == null) {
-                return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
-            }
-            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUser((AuthenticatedUser) u, harvestingClient.getDataverse()))) {
-                return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can delete harvesting clients.");
-            }
-            
-            // Check if the client is in a state where it can be safely deleted: 
-            if (harvestingClient.isDeleteInProgress()) {
-                return error( Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " is already being deleted (in progress)");
-            }
-            
-            if (harvestingClient.isHarvestingNow()) {
-                return error( Response.Status.BAD_REQUEST, "It is not safe to delete client " + nickName + " while a harvesting job is in progress");
-            }
-            
-            // Finally, delete it (asynchronously): 
-            try {
-                harvestingClientService.deleteClient(harvestingClient.getId());
-            } catch (Exception ex) {
-                return error( Response.Status.BAD_REQUEST, "Internal error: failed to delete harvesting client " + nickName);
-            }
-            
-            return ok("Harvesting Client " + nickName + ": delete in progress");
-            
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
+        User u = getRequestUser(crc);
+        HarvestingClient harvestingClient = harvestingClientService.findByNickname(nickName);
+        if (harvestingClient == null) {
+            return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
+        if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUser((AuthenticatedUser) u, harvestingClient.getDataverse()))) {
+            return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can delete harvesting clients.");
+        }
+
+        // Check if the client is in a state where it can be safely deleted:
+        if (harvestingClient.isDeleteInProgress()) {
+            return error(Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " is already being deleted (in progress)");
+        }
+
+        if (harvestingClient.isHarvestingNow()) {
+            return error(Response.Status.BAD_REQUEST, "It is not safe to delete client " + nickName + " while a harvesting job is in progress");
+        }
+
+        // Finally, delete it (asynchronously):
+        try {
+            harvestingClientService.deleteClient(harvestingClient.getId());
+        } catch (Exception ex) {
+            return error(Response.Status.BAD_REQUEST, "Internal error: failed to delete harvesting client " + nickName);
+        }
+
+        return ok("Harvesting Client " + nickName + ": delete in progress");
     }
     
     

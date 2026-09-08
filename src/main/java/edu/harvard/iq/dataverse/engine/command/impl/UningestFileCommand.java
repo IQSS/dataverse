@@ -48,7 +48,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
-        // first check if user is a superuser
+        // first check if user is a power user
         if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), uningest)) {
             throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"), this,
                     Collections.singleton(Permission.EditDataset), uningest);

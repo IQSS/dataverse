@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author landreev
  *
- * A superuser-only command:
+ * A power user-only command:
  */
 @RequiredPermissions({})
 public class DeleteCollectionQuotaCommand  extends AbstractVoidCommand {
@@ -33,7 +33,7 @@ public class DeleteCollectionQuotaCommand  extends AbstractVoidCommand {
         
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
-        // first check if  user is a superuser
+        // first check if user is a power user
         if ( (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUser((AuthenticatedUser) getUser(), targetDataverse) ) ) {      
             throw new PermissionException(BundleUtil.getStringFromBundle("dataverse.storage.quota.powerusersonly"),
                 this,  null, targetDataverse);                

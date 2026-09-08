@@ -701,7 +701,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/uningest")
     @Operation(summary = "Uningests a data file",
-            description = "Converts an ingested tabular data file back to a regular file when the requester is a superuser.")
+            description = "Converts an ingested tabular data file back to a regular file when there was a failure or the requester is a power user.")
     public Response uningestDatafile(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         DataFile dataFile;
@@ -761,7 +761,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/reingest")
     @Operation(summary = "Reingests a data file",
-            description = "Starts ingest processing for a data file when the requester is a superuser.")
+            description = "Starts ingest processing for a data file when the requester is a power user.")
     public Response reingest(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         AuthenticatedUser u;
@@ -863,7 +863,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/extractNcml")
     @Operation(summary = "Extracts NcML metadata",
-            description = "Extracts NcML metadata from a data file when the requester is a superuser.")
+            description = "Extracts NcML metadata from a data file when the requester is a power user.")
     public Response extractNcml(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);

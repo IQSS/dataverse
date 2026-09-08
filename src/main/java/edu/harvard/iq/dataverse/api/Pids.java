@@ -58,7 +58,7 @@ public class Pids extends AbstractApiBean {
             @Parameter(description = "Persistent identifier to query.")
             @QueryParam("persistentId") String persistentId) {
         User user = getRequestUser(crc);
-        if (!user.isAuthenticated() || permissionSvc.isPowerUser((AuthenticatedUser) user,)) {
+        if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
 

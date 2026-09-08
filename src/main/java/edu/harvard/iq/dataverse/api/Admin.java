@@ -2506,7 +2506,7 @@ public class Admin extends AbstractApiBean {
     @AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
     @Operation(summary = "Returns a dataverse curation label set",
-            description = "Returns the curation label set configured on a dataverse when the requester is a superuser.")
+            description = "Returns the curation label set configured on a dataverse when the requester is a power user.")
     public Response getCurationLabelSet(@Context ContainerRequestContext crc, @Parameter(description = "Dataverse alias.") @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {

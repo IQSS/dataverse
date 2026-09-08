@@ -379,7 +379,7 @@ public class Datasets extends AbstractApiBean {
 
         User u = getRequestUser(crc);
         return response(req -> {
-            // first check if dataset is released, and if so, if user is a superuser
+            // first check if dataset is released, and if so, if user is a poweruser
             Dataset doomed = findDatasetOrDie(id);
 
             if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUser((AuthenticatedUser) u, doomed))) {
@@ -1500,7 +1500,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
     @Operation(summary = "Publishes a migrated dataset",
-            description = "Publishes a migrated dataset using supplied JSON-LD publication metadata when the requester is a superuser.")
+            description = "Publishes a migrated dataset using supplied JSON-LD publication metadata when the requester is a poweruser.")
     @RequestBody(description = "JSON-LD metadata containing the migrated dataset publication date.")
     public Response publishMigratedDataset(@Context ContainerRequestContext crc,
             @RequestBody(description = "JSON-LD metadata containing the migrated dataset publication date.")
@@ -1742,7 +1742,7 @@ public class Datasets extends AbstractApiBean {
             boolean badFiles = false;
             boolean isPowerUser = permissionSvc.isPowerUser(authenticatedUser, dataset);
             for (DataFile datafile : filesToEmbargo) {
-                // superuser can overrule an existing embargo, even on released files
+                // power users can overrule an existing embargo, even on released files
                 if (datafile.isReleased() && !isPowerUser) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
@@ -1777,7 +1777,7 @@ public class Datasets extends AbstractApiBean {
                     embargoService.deleteById(emb.getId(), authenticatedUser.getIdentifier());
                 }
             }
-            //If superuser, report changes to any released files
+            //If poweruser, report changes to any released files
             if (permissionSvc.isPowerUser(authenticatedUser, dataset)) {
                 String releasedFiles = filesToEmbargo.stream().filter(d -> d.isReleased())
                         .map(d -> d.getId().toString()).collect(Collectors.joining(","));
@@ -1868,7 +1868,7 @@ public class Datasets extends AbstractApiBean {
             boolean badFiles = false;
             boolean isPowerUser = permissionSvc.isPowerUser(authenticatedUser, dataset);
             for (DataFile datafile : embargoFilesToUnset) {
-                // superuser can overrule an existing embargo, even on released files
+                // power users can overrule an existing embargo, even on released files
                 if (datafile.getEmbargo()==null || ((datafile.isReleased() && datafile.getEmbargo() != null) && !isPowerUser)) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
@@ -2045,7 +2045,7 @@ public class Datasets extends AbstractApiBean {
             boolean badFiles = false;
             boolean isPowerUser = permissionSvc.isPowerUser(authenticatedUser, dataset);
             for (DataFile datafile : filesToRetention) {
-                // superuser can overrule an existing retention, even on released files
+                // power users can overrule an existing retention, even on released files
                 if (datafile.isReleased() && !isPowerUser) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
@@ -2080,7 +2080,7 @@ public class Datasets extends AbstractApiBean {
                     retentionService.delete(ret, authenticatedUser.getIdentifier());
                 }
             }
-            //If superuser, report changes to any released files
+            //If power user, report changes to any released files
             if (isPowerUser) {
                 String releasedFiles = filesToRetention.stream().filter(d -> d.isReleased())
                         .map(d -> d.getId().toString()).collect(Collectors.joining(","));
@@ -2229,7 +2229,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/files/uploadlimit/{limit}")
     @Operation(summary = "Sets dataset file upload limit",
-            description = "Sets the file count upload limit for a dataset when the requester is a superuser.")
+            description = "Sets the file count upload limit for a dataset when the requester is a poweruser.")
     public Response updateDatasetFilesLimits(@Context ContainerRequestContext crc,
                                                 @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
                                                 @Parameter(description = "Maximum number of results or configured limit value.") @PathParam("limit") int datasetFileCountLimit) {
@@ -2262,7 +2262,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/files/uploadlimit")
     @Operation(summary = "Clears dataset file upload limit",
-            description = "Removes the file count upload limit from a dataset when the requester is a superuser.")
+            description = "Removes the file count upload limit from a dataset when the requester is a power user.")
     public Response deleteDatasetFilesLimits(@Context ContainerRequestContext crc,
                                              @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         // user is authenticated
@@ -4020,7 +4020,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/storageDriver")
     @Operation(summary = "Sets the dataset storage driver",
-            description = "Sets a dataset-specific storage driver by label when the requester is a superuser.")
+            description = "Sets a dataset-specific storage driver by label when the requester is a power user.")
     @RequestBody(description = "Storage driver label to assign to the dataset.")
     public Response setFileStore(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @RequestBody(description = "Storage driver label to assign to the dataset.")
@@ -4092,7 +4092,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/curationLabelSet")
     @Operation(summary = "Returns the dataset curation label set",
-            description = "Returns the effective curation label set name for a dataset when the requester is a superuser.")
+            description = "Returns the effective curation label set name for a dataset when the requester is a power user.")
     public Response getCurationLabelSet(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
@@ -4114,7 +4114,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/curationLabelSet")
     @Operation(summary = "Sets the dataset curation label set",
-            description = "Sets the curation label set for a dataset when the requester is a superuser.")
+            description = "Sets the curation label set for a dataset when the requester is a power user.")
     public Response setCurationLabelSet(@Context ContainerRequestContext crc,
                                         @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
                                         @Parameter(description = "Curation label set name.") @QueryParam("name") String curationLabelSet,
@@ -5383,7 +5383,7 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Returns archival status for a dataset version",
-            description = "Returns stored archival status information for a dataset version when the requester is a superuser.")
+            description = "Returns stored archival status information for a dataset version when the requester is a power user.")
     public Response getDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                     @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                                     @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
@@ -5415,7 +5415,7 @@ public class Datasets extends AbstractApiBean {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Sets dataset version archival status",
-            description = "Sets the archival status payload for a dataset version when the requester is a superuser.")
+            description = "Sets the archival status payload for a dataset version when the requester is a power user.")
     @RequestBody(description = "JSON archival status payload to store for the dataset version.")
     public Response setDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                     @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
@@ -5477,7 +5477,7 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Deletes archival status for a dataset version",
-            description = "Removes stored archival status information from a dataset version when the requester is a superuser.")
+            description = "Removes stored archival status information from a dataset version when the requester is a power user.")
     public Response deleteDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                        @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                                        @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
@@ -5920,7 +5920,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/guestbookEntryAtRequest")
     @Operation(summary = "Sets the dataset guestbook-entry policy",
-            description = "Sets whether a dataset requires guestbook entry at request time when the requester is a superuser.")
+            description = "Sets whether a dataset requires guestbook entry at request time when the requester is a power user.")
     @RequestBody(description = "Boolean guestbook-entry-at-request value to store for the dataset.")
     public Response setguestbookEntryAtRequest(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
                                                @RequestBody(description = "Boolean guestbook-entry-at-request value to store for the dataset.")
@@ -6030,7 +6030,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/pidReconcile")
     @Operation(summary = "Reconciles a dataset persistent identifier",
-            description = "Reconciles a dataset persistent identifier with its effective PID provider when the requester is a superuser.")
+            description = "Reconciles a dataset persistent identifier with its effective PID provider when the requester is a power user.")
     public Response reconcilePid(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String datasetId) throws WrappedResponse {
         AuthenticatedUser user;
         try {
@@ -6088,7 +6088,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/pidGenerator")
     @Operation(summary = "Sets the dataset PID generator",
-            description = "Sets a managed PID generator for a dataset when the requester is a superuser.")
+            description = "Sets a managed PID generator for a dataset when the requester is a power user.")
     @RequestBody(description = "Managed PID generator id to assign to the dataset.")
     public Response setPidGenerator(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String datasetId,
             @RequestBody(description = "Managed PID generator id to assign to the dataset.")
@@ -6606,7 +6606,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     @Operation(summary = "Store a dataset version note",
-            description = "Adds or replaces the note on a draft or superuser-selected published dataset version.")
+            description = "Adds or replaces the note on a draft or power-user-selected published dataset version.")
     public Response addVersionNote(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String datasetId,
@@ -6648,7 +6648,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     @Operation(summary = "Clear a dataset version note",
-            description = "Deletes the note from a draft or superuser-selected published dataset version.")
+            description = "Deletes the note from a draft or power-user-selected published dataset version.")
     public Response deleteVersionNote(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String datasetId,

@@ -123,6 +123,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
     public String init() {
         if (!isSessionUserAuthenticated()) {
             return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
+        } else if (!isSuperUser()) {
+            return navigationWrapper.notAuthorized();
         }
         
         configuredHarvestingSets = oaiSetService.findAll();
