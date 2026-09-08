@@ -450,7 +450,7 @@ public class UtilIT {
                                     String apiToken) {
 
         return updateDataverse(alias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
-                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null, null);
+                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null, null, null);
     }
 
     static Response updateDataverse(String alias,
@@ -465,7 +465,8 @@ public class UtilIT {
                                     String apiToken,
                                     Boolean inheritMetadataBlocksFromParent,
                                     Boolean inheritFacetsFromParent,
-                                    Integer datasetFileCountLimit) {
+                                    Integer datasetFileCountLimit,
+                                    Boolean guestbookRoot) {
         JsonArrayBuilder contactArrayBuilder = JsonUtil.createArrayBuilder();
         for(String contactEmail : newContactEmails) {
             contactArrayBuilder.add(JsonUtil.createObjectBuilder().add("contactEmail", contactEmail));
@@ -480,6 +481,9 @@ public class UtilIT {
                 ;
         if (datasetFileCountLimit != null) {
             jsonBuilder.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
+        if (guestbookRoot != null) {
+            jsonBuilder.add("guestbookRoot", guestbookRoot);
         }
 
         updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
@@ -505,7 +509,8 @@ public class UtilIT {
                 apiToken,
                 null,
                 null,
-                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1);
+                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1,
+                null);
     }
 
     private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
