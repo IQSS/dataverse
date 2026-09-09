@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,9 +42,9 @@ import java.util.Set;
  * that every export is subjected to the same staleness validation, prerequisite resolution,
  * and error-wrapping logic.
  * <p>
- * Field injection is used for the {@link ExportCache} dependency because EJB mandates a
- * no-args constructor; this is expected to be replaced with constructor injection when the
- * codebase transitions to CDI-only dependency management.
+ * Field injection is used for the {@link ExportCache} dependency because EJB mandates a no-args constructor.
+ * This is expected to be replaced with constructor injection if the codebase ever transitions to CDI-only
+ * dependency management.
  *
  * @see ExporterRegistryBean
  * @see ExportCache
@@ -56,7 +57,7 @@ class ExportPipelineBean {
     @EJB
     ExporterRegistryBean registry;
     
-    // We must use (frowned upon) field injection here, as EJB requires a no-args constructor.
+    // We must use (usually frowned upon) field injection here, as EJB requires a no-args constructor.
     // When the codebase transitions to use CDI only, this shall be changed to constructor injection.
     @SuppressWarnings("java:S6813")
     @Inject
@@ -64,13 +65,30 @@ class ExportPipelineBean {
     
     /**
      * A collection of {@link ExportCacheInvalidator} instances.
+     */
+    final List<ExportCacheInvalidator> invalidators;
+    
+    /**
+     * Required by EJB to create the stateless instances of this bean.
+     * <p>
+     * Creating a composition of invalidators here for real usage.
      * This list is intended to centralize all invalidation mechanisms for export cache entries.
-     * Any new implementations must be added here in addition to the "permits" on the interface seal.
+     * Any new implementations must be added here.
      * <p>
      * Note: Once we allow plugins to provide their own invalidation logic, we must load them.
-     * This static, non-CDI list shall then be replaced by a registry pattern following implementation.
+     * This statically composed, non-CDI list shall then be replaced by a registry pattern following implementation.
      */
-    static final List<ExportCacheInvalidator> invalidators = List.of(new FileEmbargoExpiryInvalidator());
+    public ExportPipelineBean() {
+        this.invalidators = List.of(new FileEmbargoExpiryInvalidator());
+    }
+    
+    /**
+     * This constructor is intended for testing purposes only, allowing explicit constructor-injection of dependencies.
+     * @param invalidators a list of {@link ExportCacheInvalidator} instances (usually mocks for testing)
+     */
+    ExportPipelineBean(List<ExportCacheInvalidator> invalidators) {
+        this.invalidators = List.copyOf(Objects.requireNonNull(invalidators));
+    }
     
     /**
      * Attempts to read a cached export for the given dataset version and cache key, verifying freshness through
