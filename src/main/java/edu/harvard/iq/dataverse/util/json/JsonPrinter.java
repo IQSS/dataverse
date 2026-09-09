@@ -1224,7 +1224,7 @@ public class JsonPrinter {
         return varArr;
     }
     
-        /**
+    /**
      * Export formats such as DDI require the citation to be included. See
      * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
      *
