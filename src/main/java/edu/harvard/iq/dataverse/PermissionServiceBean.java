@@ -368,7 +368,7 @@ public class PermissionServiceBean {
         childrenAssignments.forEach( assignment -> {
             DvObject definitionPoint = assignment.getDefinitionPoint();
             if (!roleMap.containsKey(definitionPoint)){
-                roleMap.put(definitionPoint, assignment.getRole().permissions());
+                roleMap.put(definitionPoint, new HashSet<>(assignment.getRole().permissions()));
             } else {
                 roleMap.get(definitionPoint).addAll(assignment.getRole().permissions());
             }
@@ -378,7 +378,8 @@ public class PermissionServiceBean {
         return children.stream().filter( child -> 
                 ((includeReleased && child.isReleased()) 
                         || ((roleMap.containsKey(child)) &&
-                            (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
+                            (roleMap.get(child).contains(Permission.ScopedPowerUser) ||
+                             roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
         ).collect( toList() );
         
     }
