@@ -970,6 +970,20 @@ public class PermissionServiceBean {
         return null;
     }
 
+    /**
+     * At most {@code limit} of the collections the user has the permission on, in no particular
+     * order. Callers that only need to know whether such a collection exists must use this instead
+     * of {@link #findPermittedCollections(DataverseRequest, AuthenticatedUser, Permission)}, which
+     * materializes an entity per row and, for a superuser, returns the whole dataverse table.
+     */
+    public List<Dataverse> findSomePermittedCollections(DataverseRequest request, AuthenticatedUser user, Permission permission, int limit) {
+        if (user == null || limit < 1) {
+            return new ArrayList<>();
+        }
+        var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, 1 << permission.ordinal()) + " LIMIT " + limit;
+        return em.createNativeQuery(sqlCode, Dataverse.class).getResultList();
+    }
+
     public boolean hasMultiplePermittedCollections(DataverseRequest request, AuthenticatedUser user, int permissionBit) {
         if (user != null) {
             var sqlCode = getBaseQueryForAllPermittedDataverses(request, user, permissionBit) + " LIMIT 2";

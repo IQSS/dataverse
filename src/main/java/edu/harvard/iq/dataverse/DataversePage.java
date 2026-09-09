@@ -144,6 +144,9 @@ public class DataversePage implements java.io.Serializable {
     private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
     private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
     private List<Dataverse> dataversesForLinking;
+    // Depends only on the user's role assignments and on which collection this view is showing, so
+    // it is computed once per view; setDataverse clears it.
+    private Boolean showLinkingPopup;
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
@@ -214,7 +217,20 @@ public class DataversePage implements java.io.Serializable {
         this.linkMode = linkMode;
     }
     
+    /**
+     * Rendered from the page (twice), so it is evaluated repeatedly per request: the answer is
+     * cached for the view, and the underlying lookups are bounded. Both matter - computing this
+     * from the full list of permitted collections meant a scan of the dataverse table, and an
+     * entity per row, on every evaluation.
+     */
     public boolean showLinkingPopup() {
+        if (showLinkingPopup == null) {
+            showLinkingPopup = computeShowLinkingPopup();
+        }
+        return showLinkingPopup;
+    }
+
+    private boolean computeShowLinkingPopup() {
         // Must be logged in
         AuthenticatedUser au = getAuthenticatedUser();
         if (au == null) {
@@ -223,23 +239,26 @@ public class DataversePage implements java.io.Serializable {
         if (dataverse == null) {
             return false;
         }
+        var request = dvRequestService.getDataverseRequest();
 
         // If there is an active search query, that's all that matters (plus having permission on ANY collection)
         if (query != null && !query.isEmpty()) {
-            List<Dataverse> permitted = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), au, Permission.LinkDataverse);
-            return permitted != null && !permitted.isEmpty();
+            return !permissionService.findSomePermittedCollections(request, au, Permission.LinkDataverse, 1).isEmpty();
         }
 
         // Otherwise (no active search), check if there is at least one OTHER eligible collection
         // Eligible means: not the current collection and not in the parent tree
         // Technically, eligible also means "not already linked", but in that case, we show the Link button anyway and have the Link dialog display a message about all eligible collections already being linked
-        List<Dataverse> dvsWithLinkPermission = permissionService.findPermittedCollections(dvRequestService.getDataverseRequest(), au, Permission.LinkDataverse);
-        if (dvsWithLinkPermission != null && !dvsWithLinkPermission.isEmpty()) {
-            List<Dataverse> eligibleDataverses = dataverseService.removeUnlinkableDataverses(dvsWithLinkPermission, dataverse, false);
-            return !eligibleDataverses.isEmpty();
+        // The current collection and its parent tree are the only collections removeUnlinkableDataverses
+        // can drop here, so one candidate more than that tree is enough to tell whether any eligible
+        // collection exists: if every candidate were dropped, the whole tree would be accounted for and
+        // the extra one could not have been.
+        int candidatesNeeded = 2; // the current collection, plus the one that would make the answer yes
+        for (DvObject owner = dataverse.getOwner(); owner != null; owner = owner.getOwner()) {
+            candidatesNeeded++;
         }
-
-        return false;
+        List<Dataverse> candidates = permissionService.findSomePermittedCollections(request, au, Permission.LinkDataverse, candidatesNeeded);
+        return !dataverseService.removeUnlinkableDataverses(candidates, dataverse, false).isEmpty();
     }
     
     public void setupLinkingPopup (String popupSetting){
@@ -288,6 +307,7 @@ public class DataversePage implements java.io.Serializable {
 
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
+        this.showLinkingPopup = null;
     }
     
     public Long getId() { return this.id; }
