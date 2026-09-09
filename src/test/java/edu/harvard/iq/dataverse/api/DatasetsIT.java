@@ -7632,7 +7632,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response assignReturnedRoleResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, returnedRole, "@" + username3, apiToken2);
         assertEquals(200, assignReturnedRoleResponse.getStatusCode());
 
-        // Now, we'll test user-assignable roles coming from roles assigned at the collection level
+        // Now, we'll test user-assignable roles coming from roles assigned at the collection level instead of
+        // at the dataset level
         // Create a second collection (under root)
         Response createDataverse2Response = UtilIT.createRandomDataverse(apiToken);
         String dvAlias2 = UtilIT.getAliasFromResponse(createDataverse2Response);
@@ -7677,6 +7678,48 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[2].alias", equalTo(DataverseRole.CURATOR))
                 .body("data[3].alias", equalTo(DataverseRole.MEMBER));
 
+        // Now, we'll test user-assignable roles coming from roles assigned based on IP group
+        // Create a third collection (under root)
+        Response createDataverse3Response = UtilIT.createRandomDataverse(apiToken);
+        String dvAlias3 = UtilIT.getAliasFromResponse(createDataverse3Response);
+
+        // Create dataset in that collection
+        Response createDataset3Response = UtilIT.createRandomDatasetViaNativeApi(dvAlias3, apiToken);
+        Integer datasetId3 = UtilIT.getDatasetIdFromResponse(createDataset3Response);
+        String dataset3PersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset3Response);
+
+        // Before IP-group based assignment is created, no roles should be user-assignable
+        UtilIT.getUserAssignableRolesForDataset(Integer.valueOf(datasetId3), apiToken2)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(0));
+
+        // Assign curator role on dataset based on IP group
+        String ipGroupAlias = "assignableRolesIpGroup" + UtilIT.getRandomIdentifier();
+        JsonObjectBuilder ipGroupJson = JsonUtil.createObjectBuilder()
+                .add("alias", ipGroupAlias)
+                .add("name", "IP group for assignable roles integration test")
+                .add("ranges", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createArrayBuilder().add("0.0.0.0").add("255.255.255.255")));
+        Response createIpGroupResponse = UtilIT.createIpGroup(ipGroupJson.build());
+        assertEquals(CREATED.getStatusCode(), createIpGroupResponse.getStatusCode());
+
+        String ipGroupIdentifier = "&ip/" + ipGroupAlias;
+        Response grantRoleBasedOnIpGroupResponse = UtilIT.grantRoleOnDataset(
+                dataset3PersistentId, DataverseRole.CURATOR, ipGroupIdentifier, apiToken);
+        assertEquals(OK.getStatusCode(), grantRoleBasedOnIpGroupResponse.getStatusCode());
+
+        // A number of roles should now be assignable
+        Response listUser2AssignableRolesResponseWithIpGroupPermission = UtilIT.getUserAssignableRolesForDataset(
+                Integer.valueOf(datasetId3), apiToken2);
+        listUser2AssignableRolesResponseWithIpGroupPermission.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(4))
+                .body("data[0].alias", equalTo(DataverseRole.FILE_DOWNLOADER))
+                .body("data[1].alias", equalTo(DataverseRole.EDITOR))
+                .body("data[2].alias", equalTo(DataverseRole.CURATOR))
+                .body("data[3].alias", equalTo(DataverseRole.MEMBER));
+
         // Clean up
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
@@ -7684,11 +7727,17 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response destroyDataset2Response = UtilIT.destroyDataset(datasetId2, apiToken);
         assertEquals(200, destroyDataset2Response.getStatusCode());
 
+        Response destroyDataset3Response = UtilIT.destroyDataset(datasetId3, apiToken);
+        assertEquals(200, destroyDataset3Response.getStatusCode());
+
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dvAlias, apiToken);
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteDataverse2Response = UtilIT.deleteDataverse(dvAlias2, apiToken);
         assertEquals(200, deleteDataverse2Response.getStatusCode());
+
+        Response deleteDataverse3Response = UtilIT.deleteDataverse(dvAlias3, apiToken);
+        assertEquals(200, deleteDataverse3Response.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
@@ -7698,6 +7747,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         Response deleteUser3Response = UtilIT.deleteUser(username3);
         assertEquals(200, deleteUser3Response.getStatusCode());
+
+        Response deleteIpGroupResponse = UtilIT.deleteIpGroup(ipGroupAlias);
+        assertEquals(200, deleteIpGroupResponse.getStatusCode());
     }
 
     private String getSuperuserToken() {

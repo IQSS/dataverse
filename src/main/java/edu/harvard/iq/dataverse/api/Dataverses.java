@@ -1583,7 +1583,7 @@ public class Dataverses extends AbstractApiBean {
             description = "List of user-assignable roles",
             content = @Content(mediaType = "application/json"))
     public Response getAssignableRoles(@Context ContainerRequestContext crc, @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true) @PathParam("identifier") String dvIdtf) {
-        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDataverseOrDie(dvIdtf), req.getUser())))), getRequestUser(crc));
+        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDataverseOrDie(dvIdtf), req)))), getRequestUser(crc));
     }
 
     @POST

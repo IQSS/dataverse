@@ -2470,7 +2470,7 @@ public class Datasets extends AbstractApiBean {
             description = "List of user-assignable roles",
             content = @Content(mediaType = "application/json"))
     public Response getAssignableRoles(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id) {
-        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDatasetOrDie(id), req.getUser())))), getRequestUser(crc));
+        return response(req -> ok(jsonDataverseRoles(new ArrayList<>(dataverseRoleService.availableRoles(findDatasetOrDie(id), req)))), getRequestUser(crc));
     }
 
     @GET

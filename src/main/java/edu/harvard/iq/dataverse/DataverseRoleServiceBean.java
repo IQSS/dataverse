@@ -397,11 +397,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * Currently, the available roles for Datasets and DataFiles are gotten from the collection they are in.
      *
      * @param dvo The Dataset, DataFile or Dataverse whose available roles we query
-     * @param user The user whose available roles we query
+     * @param request The request whose user and context are used to query available roles
      * @return Set of available roles
      */
-    public Set<DataverseRole> availableRoles(DvObject dvo, User user) {
-        Set<Permission> granted = permissionService.permissionsFor(user, dvo);
+    public Set<DataverseRole> availableRoles(DvObject dvo, DataverseRequest request) {
+        Set<Permission> granted = permissionService.permissionsFor(request, dvo);
 
         Permission managePermission = dvo instanceof Dataverse
                 ? Permission.ManageDataversePermissions
