@@ -1757,7 +1757,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1767,7 +1767,7 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 newFacetIds, null, apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, null
         );
         updateDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
@@ -1868,6 +1868,7 @@ public class DataversesIT {
 
         // Update the dataverse without setting metadata blocks, facets, or input levels
         // Do NOT ignore the missing data so the metadata blocks, facets, and input levels are deleted and inherited from the parent
+        // Also testing Guestbook Root
         updateDataverseResponse = UtilIT.updateDataverse(
                 newAlias,
                 newAlias,
@@ -1879,9 +1880,10 @@ public class DataversesIT {
                 null,
                 null,
                 apiToken,
-                Boolean.TRUE, Boolean.TRUE, null
+                Boolean.TRUE, Boolean.TRUE, null, Boolean.TRUE
         );
         updateDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        updateDataverseResponse.then().assertThat().body("data.guestbookRoot", equalTo(true));
 
         // Assert that the metadata blocks are inherited from the parent
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(newAlias, false, false, apiToken);
@@ -1950,6 +1952,47 @@ public class DataversesIT {
         updateDataverseResponse = UtilIT.updateDataverse(
                 testDataverseAlias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails, newInputLevelNames,
                 newFacetIds, newMetadataBlockNames, apiToken);
+    }
+
+    @Test
+    public void testCreateDataverseWithGuestbookRoot() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        // guestbookRoot not specified on creation should default to false
+        String defaultAlias = UtilIT.getRandomDvAlias();
+        JsonObjectBuilder jsonWithoutGuestbookRoot = JsonUtil.createObjectBuilder()
+                .add("name", defaultAlias)
+                .add("alias", defaultAlias)
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("contactEmail", defaultAlias + "@mailinator.com")
+                        )
+                );
+        Response createDefaultResponse = UtilIT.createDataverse(jsonWithoutGuestbookRoot.build(), apiToken);
+        createDefaultResponse.prettyPrint();
+        createDefaultResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(defaultAlias))
+                .body("data.guestbookRoot", equalTo(false));
+
+        // guestbookRoot explicitly set to true on creation
+        String guestbookRootAlias = UtilIT.getRandomDvAlias();
+        JsonObjectBuilder jsonWithGuestbookRoot = JsonUtil.createObjectBuilder()
+                .add("name", guestbookRootAlias)
+                .add("alias", guestbookRootAlias)
+                .add("dataverseContacts", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("contactEmail", guestbookRootAlias + "@mailinator.com")
+                        )
+                )
+                .add("guestbookRoot", true);
+        Response createGuestbookRootResponse = UtilIT.createDataverse(jsonWithGuestbookRoot.build(), apiToken);
+        createGuestbookRootResponse.prettyPrint();
+        createGuestbookRootResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.alias", equalTo(guestbookRootAlias))
+                .body("data.guestbookRoot", equalTo(true));
     }
 
     @Test
@@ -2708,7 +2751,7 @@ public class DataversesIT {
                 dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
                 newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null);
+                Boolean.FALSE, Boolean.FALSE, null, null);
 
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -2966,7 +3009,7 @@ public class DataversesIT {
                 dataverseAlias, dataverseAlias, newName, newAffiliation, newDataverseType, newContactEmails,
                 newInputLevelNames,
                 null, newMetadataBlockNames, apiToken,
-                Boolean.FALSE, Boolean.FALSE, null);
+                Boolean.FALSE, Boolean.FALSE, null, null);
 
         updateDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
