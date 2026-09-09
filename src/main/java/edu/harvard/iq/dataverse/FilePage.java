@@ -30,6 +30,7 @@ import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.RequirementStatus;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
@@ -378,10 +379,12 @@ public class FilePage implements java.io.Serializable {
 
     // findPreviewTools would be a better name
     private List<ExternalTool> sortExternalTools(){
+        boolean canDownload = fileDownloadHelper.canDownloadFile(fileMetadata);
         List<ExternalTool> retList = new ArrayList<>();
         List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         for (ExternalTool previewTool : previewTools) {
-            if (externalToolService.meetsRequirements(previewTool, file)) {
+            RequirementStatus status = externalToolService.meetsRequirements(previewTool, file, canDownload);
+            if (RequirementStatus.MET == status) {
                 retList.add(previewTool);
             }
         }
