@@ -574,6 +574,8 @@ When you access a dataset's permissions page, you will see two sections:
 
 **Users/Groups:** Here you can assign roles to specific users or groups, determining which actions they are permitted to take on your dataset. You can also reference a list of all users who have roles assigned to them for your dataset and remove their roles if you please. Some of the users listed may have roles assigned at the Dataverse collection level, in which case those roles can only be removed from the Dataverse collection permissions page.
 
+A special "Power User" role is also available at the dataset level, which grants a user administrative privileges over the dataset. Users with this role can perform tasks that are typically restricted to global superusers, such as moving the dataset or managing its PIDs, but only for the specific dataset where they have been assigned this role. For more information, see the :doc:`/admin/dashboard` section of the Admin Guide.
+
 **Roles:** Here you can reference a full list of roles that can be assigned to users of your dataset. Each role lists the permissions that it offers.
 
 File-Level
