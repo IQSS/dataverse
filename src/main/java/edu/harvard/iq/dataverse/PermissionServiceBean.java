@@ -508,7 +508,7 @@ public class PermissionServiceBean {
         }
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(user, dvo));
         ras.add(user);
-        return hasGroupPermissionsFor(ras, dvo, EnumSet.of(Permission.ScopedPowerAdmin));
+        return hasGroupPermissionsFor(ras, dvo, EnumSet.of(Permission.ScopedPowerUser));
     }
 
     public boolean isPowerUserOnSomeDvObject(AuthenticatedUser user) {
@@ -526,8 +526,8 @@ public class PermissionServiceBean {
                 .collect(Collectors.toSet());
         identifiers.add(user.getIdentifier());
 
-        // Get all roles that have ScopedPowerAdmin permission
-        List<DataverseRole> powerRoles = roleService.findAllWithPermission(Permission.ScopedPowerAdmin);
+        // Get all roles that have ScopedPowerUser permission
+        List<DataverseRole> powerRoles = roleService.findAllWithPermission(Permission.ScopedPowerUser);
         if (powerRoles.isEmpty()) {
             return false;
         }

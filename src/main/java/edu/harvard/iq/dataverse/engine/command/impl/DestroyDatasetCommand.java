@@ -71,7 +71,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
 
         // first check if dataset is released, and if so, if user is a power user
         if ( doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), doomed) ) ) {
-            throw new PermissionException("Destroy can only be called by superusers or users with ScopedPowerAdmin permission on the dataset.",
+            throw new PermissionException("Destroy can only be called by superusers or users with ScopedPowerUser permission on the dataset.",
                 this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
         Dataset managedDoomed = ctxt.em().merge(doomed);

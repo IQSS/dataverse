@@ -1825,7 +1825,7 @@ public class Datasets extends AbstractApiBean {
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
         if ((!permissionSvc.isPowerUserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
-            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerAdmin permission, or user does not have EditDataset permissions");
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerUser permission, or user does not have EditDataset permissions");
         }
 
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
@@ -1946,7 +1946,7 @@ public class Datasets extends AbstractApiBean {
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
         if ((!permissionSvc.isPowerUserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
-            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerAdmin permission, or user does not have EditDataset permissions");
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerUser permission, or user does not have EditDataset permissions");
         }
 
         // check if retentions are allowed(:MinRetentionDurationInMonths), gets the :MinRetentionDurationInMonths setting variable, if 0 or not set(null) return 400

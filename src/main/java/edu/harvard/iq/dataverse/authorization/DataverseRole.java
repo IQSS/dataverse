@@ -71,7 +71,7 @@ public class DataverseRole implements Serializable  {
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
     public static final String MEMBER = "member";
-    public static final String POWER_ADMIN = "powerAdmin";
+    public static final String POWER_USER = "powerUser";
     
     public static final String NONE = "none";
     
