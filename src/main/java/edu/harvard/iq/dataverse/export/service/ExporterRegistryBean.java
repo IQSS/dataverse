@@ -109,6 +109,20 @@ public class ExporterRegistryBean {
     private URLClassLoader exporterClassLoader;
     
     /**
+     * Required by the EJB container to create the singleton instance.
+     */
+    public ExporterRegistryBean() {
+    }
+    
+    /**
+     * Intended for testing purposes only: bypass JAR discovery and {@link ServiceLoader} and populate the registry
+     * directly from the given exporters (integrity is still verified!).
+     */
+    ExporterRegistryBean(Map<String, Exporter> exporters) {
+        populate(exporters);
+    }
+    
+    /**
      * Retrieves an exporter associated with the specified format name.
      *
      * @param formatName the name of the format for which to retrieve the exporter
@@ -312,6 +326,18 @@ public class ExporterRegistryBean {
                 });
         });
         
+        // Populate the registry (extracted to separate method for testability)
+        populate(loadedExporters);
+    }
+    
+    /**
+     * Populates the registry with the provided exporters and establishes the dependency relationships among them,
+     * ensuring the integrity of the registry's state. Used by both service-loader-based initialization and
+     * constructor-based registration during tests.
+     *
+     * @param loadedExporters A map associating format names with their corresponding {@link Exporter} instances.
+     */
+    private void populate(Map<String, Exporter> loadedExporters) {
         // Step 4 - Create prerequisite dependency graph and verify integrity
         verifyRequirements(loadedExporters);
         
@@ -320,7 +346,7 @@ public class ExporterRegistryBean {
         var comparator = buildTopologicalComparator(dependents);
         
         // All good, (more or less) atomic updates now.
-        this.exporters = loadedExporters;
+        this.exporters = Map.copyOf(loadedExporters);
         this.transitiveDependents = dependents;
         this.topologicalComparator = comparator;
     }
