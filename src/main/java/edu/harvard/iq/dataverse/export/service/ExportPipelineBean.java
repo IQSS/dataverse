@@ -45,6 +45,8 @@ import java.util.Set;
  * Field injection is used for the {@link ExportCache} dependency because EJB mandates a no-args constructor.
  * This is expected to be replaced with constructor injection if the codebase ever transitions to CDI-only
  * dependency management.
+ * Although the class is only meant to be used within the package (which would warrant package-private visibility),
+ * yet EJB spec requires it to have public visibility.
  *
  * @see ExporterRegistryBean
  * @see ExportCache
@@ -52,7 +54,7 @@ import java.util.Set;
  * @see ExportServiceBean
  */
 @Stateless
-class ExportPipelineBean {
+public class ExportPipelineBean {
     
     @EJB
     ExporterRegistryBean registry;
