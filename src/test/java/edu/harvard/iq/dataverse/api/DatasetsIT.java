@@ -7549,7 +7549,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String updateJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
 
-        // 1. Create a dataset and update it with known metadata from a file
+        // Create a dataset and update it with known metadata from a file
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
         createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
@@ -7562,15 +7562,15 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
                 .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
-        // 2. Call API with identical metadata (Published case)
+        // Call API with identical metadata (Published case)
         UtilIT.updateDatasetMetadataViaNative(datasetPid, updateJsonFile, apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
 
-        // 3. Verify no draft was created
+        // Verify no draft was created
         UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
                 .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
-        // 4. Test the scenario where a draft ALREADY exists
+        // Test the scenario where a draft ALREADY exists
         String currentMetadata = UtilIT.getDatasetJson(updateJsonFile);
         String draftJson = currentMetadata.replace("\"newTitle\"", "\"Updated Title\"");
 
@@ -7585,7 +7585,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         draftResponse.then().assertThat().statusCode(OK.getStatusCode());
         String lastUpdateTimeBefore = draftResponse.jsonPath().getString("data.lastUpdateTime");
 
-        // 5. Call API with identical metadata to the current draft
+        // Call API with identical metadata to the current draft
         given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(draftJson)
@@ -7593,11 +7593,93 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
                 .then().assertThat().statusCode(OK.getStatusCode());
 
-        // 6. Verify it was a no-op (lastUpdateTime should NOT have changed)
+        // Verify it was a no-op (lastUpdateTime should NOT have changed)
         Response draftResponseAfter = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         String lastUpdateTimeAfter = draftResponseAfter.jsonPath().getString("data.lastUpdateTime");
 
         assertEquals(lastUpdateTimeBefore, lastUpdateTimeAfter, "Last update time should not change for no-op metadata update on draft");
+
+        // Now let's test a couple of metadata changes that should NOT be treated as a no-op
+
+        // Changing only the dataset contact email must not be treated as a no-op
+        String draftJsonWithChangedContactEmail = draftJson.replace("spruce@mailinator.com", "spruce1@mailinator.com");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(draftJsonWithChangedContactEmail)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the changed contact email was persisted in the draft
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'datasetContact' }.value[0].datasetContactEmail.value", equalTo("spruce1@mailinator.com"));
+
+        // Different textbox values that sanitize to the same value must not be treated as a no-op
+        String textboxValueWithFormatting = draftJsonWithChangedContactEmail.replace("\"value\": \"test\"", "\"value\": \"<b>test</b>\"");
+        String textboxValueWithRemovedScript = textboxValueWithFormatting.replace("</b>\"", "</b><script>alert('hi')</script>\"");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textboxValueWithFormatting)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textboxValueWithRemovedScript)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the changed textbox value was persisted
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'dsDescription' }.value[0].dsDescriptionValue.value", equalTo("<b>test</b><script>alert('hi')</script>"));
+
+        // Different text values that strip to the same value must not be treated as a no-op
+        String textValueWithBoldTag = textboxValueWithFormatting.replace("\"value\": \"Updated Title\"", "\"value\": \"First <b>Title</b>\"");
+        String textValueWithItalicTag = textValueWithBoldTag.replace("<b>Title</b>", "<i>Title</i>");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textValueWithBoldTag)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textValueWithItalicTag)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the changed text value was persisted
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'title' }.value", equalTo("First <i>Title</i>"));
+
+        // Case-only changes to primitive text values must not be treated as a no-op
+        String titleWithChangedCase = textValueWithItalicTag.replace("First <i>Title</i>", "first <i>title</i>");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(titleWithChangedCase)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the case-only title change was persisted
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'title' }.value", equalTo("first <i>title</i>"));
     }
 
     private String getSuperuserToken() {
