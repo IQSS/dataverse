@@ -401,15 +401,21 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @return Set of available roles
      */
     public Set<DataverseRole> availableRoles(DvObject dvo, User user) {
-        Set<DataverseRole> roles = availableRoles(dvo);
+        Set<Permission> granted = permissionService.permissionsFor(user, dvo);
+
+        Permission managePermission = dvo instanceof Dataverse
+                ? Permission.ManageDataversePermissions
+                : dvo instanceof Dataset
+                        ? Permission.ManageDatasetPermissions
+                        : Permission.ManageFilePermissions;
+        if (!granted.contains(managePermission)) {
+            return Set.of();
+        }
 
         // Filter roles assignable by given user
-        Set<Permission> granted = permissionService.permissionsFor(user, dvo);
-        roles = roles.stream()
-                 .filter(role -> granted.containsAll(role.permissions()))
-                 .collect(Collectors.toSet());
-
-        return roles;
+        return availableRoles(dvo).stream()
+                .filter(role -> granted.containsAll(role.permissions()))
+                .collect(Collectors.toSet());
     }
 
     public List<DataverseRole> getDataverseRolesByPermission(Permission permissionIn, Long ownerId) {
