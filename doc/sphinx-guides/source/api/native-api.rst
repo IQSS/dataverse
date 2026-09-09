@@ -6566,6 +6566,8 @@ The JSON representation of a role (``roles.json``) looks like this::
     ]
   }
 
+The ``permissions`` field is a list of permission strings. As a shortcut, you can use the string ``"all"`` (case-insensitive) as the only element in the list to grant all standard permissions at once. Note that using ``"all"`` does not include the ``ScopedPowerUser`` permission, which must be granted explicitly.
+
 .. note:: alias is constrained to a length of 16 characters
 
 Create Role
