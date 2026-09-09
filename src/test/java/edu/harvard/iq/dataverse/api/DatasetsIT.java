@@ -7644,7 +7644,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, deleteUserResponse.getStatusCode());
 
         Response deleteUser2Response = UtilIT.deleteUser(username2);
-        assertEquals(200, deleteUserResponse.getStatusCode());
+        assertEquals(200, deleteUser2Response.getStatusCode());
     }
 
     private String getSuperuserToken() {
