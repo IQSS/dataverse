@@ -3363,7 +3363,7 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.api.signing-secret
 ++++++++++++++++++++++++++++++
 
-Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
+Context: Dataverse has the ability to create "Signed URLs" for its API calls. Using a signed URLs is more secure than
 providing API tokens, which are long-lived and give the holder all of the permissions of the user. In contrast, signed URLs
 are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
 :ref:`api-native-signed-url` for more details.
