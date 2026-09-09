@@ -2147,22 +2147,23 @@ public class Admin extends AbstractApiBean {
             @Parameter(description = "Checksum algorithm to calculate.", required = true)
             @PathParam("alg") String alg) {
 
+        AuthenticatedUser u;
         try {
-            User u = getRequestAuthenticatedUserOrDie(crc);
-            DataFile fileToUpdate = findDataFileOrDie(fileId);
-            if (!permissionSvc.isPowerUserOn((AuthenticatedUser) u, fileToUpdate)) {
-                return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
-            }
+            u = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
         }
 
-        DataFile fileToUpdate = null;
+        DataFile fileToUpdate;
         try {
             fileToUpdate = findDataFileOrDie(fileId);
         } catch (WrappedResponse r) {
             logger.info("Could not find file with the id: " + fileId);
             return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+
+        if (!permissionSvc.isPowerUserOn(u, fileToUpdate)) {
+            return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
         if (fileToUpdate.isHarvested()) {
@@ -2214,22 +2215,23 @@ public class Admin extends AbstractApiBean {
             @Parameter(description = "Data file id or persistent identifier.", required = true)
             @PathParam("fileId") String fileId) {
 
+        AuthenticatedUser u;
         try {
-            User u = getRequestAuthenticatedUserOrDie(crc);
-            DataFile fileToValidate = findDataFileOrDie(fileId);
-            if (!permissionSvc.isPowerUserOn((AuthenticatedUser) u, fileToValidate)) {
-                return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
-            }
+            u = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
         }
 
-        DataFile fileToValidate = null;
+        DataFile fileToValidate;
         try {
             fileToValidate = findDataFileOrDie(fileId);
         } catch (WrappedResponse r) {
             logger.info("Could not find file with the id: " + fileId);
             return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+
+        if (!permissionSvc.isPowerUserOn(u, fileToValidate)) {
+            return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
         if (fileToValidate.isHarvested()) {

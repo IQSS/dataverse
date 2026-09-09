@@ -761,23 +761,22 @@ public class Files extends AbstractApiBean {
     @Operation(summary = "Reingests a data file",
             description = "Starts ingest processing for a data file when the requester is a power user.")
     public Response reingest(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
-
         AuthenticatedUser u;
         try {
             u = getRequestAuthenticatedUserOrDie(crc);
-            DataFile dataFile = findDataFileOrDie(id);
-            if (!permissionSvc.isPowerUserOn(u, dataFile)) {
-                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
-            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
+
         DataFile dataFile;
         try {
             dataFile = findDataFileOrDie(id);
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+
+        if (!permissionSvc.isPowerUserOn(u, dataFile)) {
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
         Dataset dataset = dataFile.getOwner();
