@@ -5,17 +5,14 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 /**
  * Represents an abstraction for determining whether a cached export needs to be invalidated and regenerated.
  * <p>
- * This sealed interface is intended to enforce a controlled hierarchy of classes that implement the cache
- * invalidation logic, ensuring behavior consistency across different implementations. If necessary, the contract
- * may be altered to allow more dynamic discovery of invalidators.
- * <p>
- * If at a later point we want to enable export plugins to provide their own invalidation logic,
- * this interface shall be unsealed and moved into the Exporter SPI codebase.
+ * If at a later point export plugins are to be enabled to provide their own invalidation logic,
+ * this interface may be moved into the Exporter SPI codebase.
  */
-public sealed interface ExportCacheInvalidator permits FileEmbargoExpiryInvalidator {
+public interface ExportCacheInvalidator {
     /**
      * Should a cached export for this key be discarded and regenerated?
-     *
+     * @implNote Keep in mind that (in its current form) implementations will not actually retrieve the cached content.
+     *           The contract will need to be adjusted if this is deemed necessary!
      * @param datasetVersion the dataset version for which the export is being generated
      * @param key the cache key associated with the export
      * @throws IllegalArgumentException if any parameters are null or implementation expectations are not met
