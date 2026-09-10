@@ -18,20 +18,12 @@ public final class ApiConstants {
 
     // Authentication
     public static final String CONTAINER_REQUEST_CONTEXT_USER = "user";
-    // Set on the request by CompoundAuthMechanism only for session-cookie
-    // authentication — the one mechanism downstream code (AuthFilter's CSRF
-    // hardening, the token bootstrap endpoint) needs to distinguish. Absent
-    // for every other mechanism.
-    public static final String CONTAINER_REQUEST_CONTEXT_AUTH_MECHANISM = "authMechanism";
-    public static final String AUTH_MECHANISM_SESSION_COOKIE = "sessionCookie";
-    public static final String CSRF_TOKEN_HEADER = "X-Dataverse-CSRF-Token";
-    public static final String CSRF_TOKEN_ENDPOINT_PATH = ":csrf-token";
-    public static final String ORIGIN_HEADER = "Origin";
-    public static final String REFERER_HEADER = "Referer";
     public static final String ALIAS_KEY=":alias";
     public static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
     public static final String RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED = "Only authenticated users can perform the requested operation";
+    public static final String ORIGIN_HEADER = "Origin";
+    public static final String REFERER_HEADER = "Referer";
 
     // Dataset
     public static final String PERSISTENT_ID_KEY=":persistentId";

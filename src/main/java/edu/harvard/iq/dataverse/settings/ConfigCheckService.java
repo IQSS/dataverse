@@ -49,26 +49,15 @@ public class ConfigCheckService {
         if (!checkSystemDirectories() || !checkPidProviders()) {
             throw new ConfigurationError("Not all configuration checks passed successfully. See logs above.");
         }
-
+        
         // Only checks resulting in warnings, nothing critical that needs to stop deployment
         checkSystemMailSetup();
         checkSessionAuthHardening();
     }
 
+
     /**
-     * Startup diagnostics for session-cookie API auth hardening. Two silent
-     * misconfigurations are called out:
-     * <ul>
-     *   <li>Hardening enabled without {@code api-session-auth}: requests are never
-     *       tagged as session-cookie-authenticated, so the hardening checks never
-     *       run — the operator believes CSRF protections are active while getting
-     *       none. (The reverse combination — session auth without hardening — is
-     *       warned about in the feature-flag documentation.)</li>
-     *   <li>Hardening enabled with a missing/unparseable site URL: {@code AuthFilter}
-     *       cannot establish the allowed origin, so every session-cookie request that
-     *       carries an {@code Origin} or {@code Referer} header is rejected with 403
-     *       (header-less requests are still decided by the CSRF token).</li>
-     * </ul>
+     * Startup diagnostics for session-cookie API authentication hardening.
      */
     void checkSessionAuthHardening() {
         if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
@@ -77,18 +66,17 @@ public class ConfigCheckService {
         if (!FeatureFlags.API_SESSION_AUTH.enabled()) {
             logger.log(Level.WARNING, () -> "Feature flag " + FeatureFlags.API_SESSION_AUTH_HARDENING.name()
                     + " is enabled, but " + FeatureFlags.API_SESSION_AUTH.name()
-                    + " is not. Session-cookie API authentication is off, so the hardening checks never run"
-                    + " and the flag has no effect. Enable dataverse.feature.api-session-auth as well.");
+                    + " is not. Only the Access API authenticates by session cookie in that case, so the"
+                    + " hardening covers nothing else. Enable dataverse.feature.api-session-auth as well.");
         }
         String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
         if (UrlOriginUtil.toOrigin(siteUrl) == null) {
             logger.log(Level.SEVERE, () -> "Feature flag " + FeatureFlags.API_SESSION_AUTH_HARDENING.name()
-                    + " is enabled, but the configured dataverse site URL (" + siteUrl
-                    + ") is missing or unparseable. Session-cookie API requests carrying an Origin or Referer"
-                    + " header will be rejected with 403 until this is fixed.");
+                    + " is enabled, but the configured Dataverse site URL (" + siteUrl
+                    + ") is missing or unparseable. Session-cookie API requests carrying an Origin or"
+                    + " Referer header will be rejected with 403 until this is fixed.");
         }
     }
-
     /**
      * In this method, we check the existence and write-ability of all important directories we use during
      * normal operations. It does not include checks for the storage system. If directories are not available,

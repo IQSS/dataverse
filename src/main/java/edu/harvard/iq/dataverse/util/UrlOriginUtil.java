@@ -5,11 +5,8 @@ import java.net.URI;
 import java.util.Locale;
 
 /**
- * Normalizes URLs to their web-origin form for same-origin comparisons.
- * Lives in the util layer because it is shared by request-time checks
- * ({@code AuthFilter}'s session-cookie CSRF hardening) and startup
- * configuration validation ({@code ConfigCheckService}) — neither of which
- * should depend on the other.
+ * Normalizes URLs to their web origin form for same-origin comparisons. Shared by
+ * {@code SessionCookieAuthMechanism} and {@code ConfigCheckService}.
  */
 public final class UrlOriginUtil {
 
@@ -17,10 +14,9 @@ public final class UrlOriginUtil {
     }
 
     /**
-     * Normalizes {@code url} to its origin form ({@code scheme://host[:port]}),
-     * lowercasing scheme and host and omitting the scheme's default port.
-     * Returns {@code null} if the input is missing scheme or host, or is
-     * unparseable.
+     * Normalizes {@code url} to its origin form ({@code scheme://host[:port]}), lowercasing
+     * scheme and host and omitting the scheme's default port. Returns {@code null} if the
+     * input is missing a scheme or host, or is unparseable.
      */
     public static String toOrigin(String url) {
         if (url == null || url.isBlank()) {
@@ -44,10 +40,8 @@ public final class UrlOriginUtil {
     }
 
     /**
-     * The scheme's default port per the JDK's protocol handlers (80 for http,
-     * 443 for https, ...), or -1 when the JDK has no handler for the scheme —
-     * in which case no port is ever considered "default" and an explicit port
-     * always stays part of the origin.
+     * The scheme's default port per the JDK's protocol handlers, or -1 when the JDK has no
+     * handler for the scheme, in which case an explicit port always stays part of the origin.
      */
     private static int defaultPort(URI uri) {
         try {
