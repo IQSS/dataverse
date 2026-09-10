@@ -654,11 +654,6 @@ public abstract class StorageIO<T extends DvObject> {
     public abstract List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException;
 
     /**
-     * Whether an object last modified at {@code lastModified} is old enough to remove.
-     * An unknown timestamp is treated as too recent, so that a storage backend which
-     * cannot report one never causes a deletion.
-     */
-    /**
      * The stored objects that {@code filter} selects and that are old enough to
      * remove. Shared by the storage backends so the selection rule has one
      * definition.
@@ -673,6 +668,11 @@ public abstract class StorageIO<T extends DvObject> {
                 .toList();
     }
 
+    /**
+     * Whether an object last modified at {@code lastModified} is old enough to remove.
+     * An unknown timestamp is treated as too recent, so that a storage backend which
+     * cannot report one never causes a deletion.
+     */
     protected static boolean isOlderThan(Instant lastModified, Duration minimumAge) {
         if (lastModified == null) {
             return false;
