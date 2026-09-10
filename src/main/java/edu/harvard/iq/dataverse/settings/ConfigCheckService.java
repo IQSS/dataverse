@@ -62,8 +62,8 @@ public class ConfigCheckService {
      * render, but every API call they make runs as :guest — the uploader
      * fails outright and the tree view shows only what an anonymous user
      * would see. That dependency is documented but easy to miss, so warn
-     * loudly at startup. Same for a reusable-components base URL that the
-     * render-time safety check would silently replace with the default.
+     * loudly at startup. Same for a missing or unusable base URL, without
+     * which there is no bundle to load at all.
      */
     public void checkReusableComponentsSetup() {
         boolean reactComponentEnabled = FeatureFlags.REACT_UPLOADER.enabled() || FeatureFlags.REACT_TREE_VIEW.enabled();
@@ -74,12 +74,22 @@ public class ConfigCheckService {
                     FeatureFlags.REACT_UPLOADER.flag, FeatureFlags.REACT_TREE_VIEW.flag,
                     FeatureFlags.API_SESSION_AUTH.flag, FeatureFlags.API_SESSION_AUTH.flag));
         }
+        if (!reactComponentEnabled) {
+            return;
+        }
         Optional<String> configuredBaseUrl = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional();
-        if (reactComponentEnabled && configuredBaseUrl.isPresent()
-                && !SystemConfig.isSafeReusableComponentsBaseUrl(configuredBaseUrl.get())) {
+        if (configuredBaseUrl.isEmpty()) {
+            logger.warning(() -> String.format(
+                    "Feature flag %s and/or %s is enabled, but %s is not set. The component bundles are not shipped "
+                            + "in the WAR, so there is nothing to load and the React components will not be rendered. "
+                            + "Build them from dataverse-frontend, serve them as static content, and point the setting "
+                            + "at that location.",
+                    FeatureFlags.REACT_UPLOADER.flag, FeatureFlags.REACT_TREE_VIEW.flag,
+                    JvmSettings.REUSABLE_COMPONENTS_BASE_URL.getScopedKey()));
+        } else if (!SystemConfig.isSafeReusableComponentsBaseUrl(configuredBaseUrl.get())) {
             logger.warning(() -> String.format(
                     "Configured %s value \"%s\" is not a same-origin path or an absolute http(s) URL. "
-                            + "It will be ignored and the default /reusable-components used instead.",
+                            + "It will be ignored and the React components will not be rendered.",
                     JvmSettings.REUSABLE_COMPONENTS_BASE_URL.getScopedKey(), configuredBaseUrl.get()));
         }
     }

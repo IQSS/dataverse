@@ -654,10 +654,9 @@
         <!--
             React-based reusable file tree component. Replaces the
             PrimeFaces p:tree below when dataverse.feature.react-tree-view
-            is enabled. The bundle is loaded from
-            #{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js
-            (default `/reusable-components/...`); operators can override via
-            dataverse.reusable-components.base-url.
+            is enabled. The bundle is not shipped in the WAR: operators host
+            it themselves and point dataverse.reusable-components.base-url
+            at it. Without that setting the flag does nothing.
 
             Authentication is via the user's JSESSIONID. The
             dataverse.feature.api-session-auth flag must be enabled.
@@ -674,12 +673,13 @@
                 datasetPid: #{systemConfig.jsString(DatasetPage.dataset.globalId.asString())},
                 datasetVersionId: #{systemConfig.jsString(DatasetPage.workingVersion.friendlyVersionNumber)},
                 locale: #{systemConfig.jsString(dataverseSession.localeCode)},
+                localesPath: #{systemConfig.jsString(systemConfig.reusableComponentsLocalesPath)},
                 rootElementId: 'dv-tree-view',
                 fileMetadataPath: '/file.xhtml'
             };
             //]]>
         </script>
-        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js?version=#{systemConfig.reusableComponentsVersion}"></script>
+        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js"></script>
     </ui:fragment>
 
     <p:tree id="filesTree" style="width:100%;"

@@ -249,11 +249,11 @@ public class SystemConfig {
     }
 
     public boolean isReactUploaderEnabled() {
-        return FeatureFlags.REACT_UPLOADER.enabled();
+        return FeatureFlags.REACT_UPLOADER.enabled() && getReusableComponentsBaseUrl() != null;
     }
 
     public boolean isReactTreeViewEnabled() {
-        return FeatureFlags.REACT_TREE_VIEW.enabled();
+        return FeatureFlags.REACT_TREE_VIEW.enabled() && getReusableComponentsBaseUrl() != null;
     }
 
     /**
@@ -274,40 +274,42 @@ public class SystemConfig {
     }
 
     /**
-     * Returns the base URL from which the Dataverse reusable React component
-     * bundles (e.g. {@code dv-uploader.js}) are loaded. The default value
-     * {@code /reusable-components} serves the pre-built bundle that ships
-     * inside the Dataverse WAR (under
-     * {@code webapp/reusable-components/}), same-origin.
+     * Base URL the reusable React component bundles are loaded from, or
+     * {@code null} when {@code dataverse.reusable-components.base-url} is
+     * unset or unusable.
      *
-     * <p>Operators can override this with the JVM setting
-     * {@code dataverse.reusable-components.base-url} to point at any URL
-     * where they have re-hosted the bundle files (separate static-file
-     * server, CDN, etc.).
+     * <p>The bundles are not shipped in the WAR. Operators build them from
+     * {@code dataverse-frontend}, serve the result as static content, and
+     * point this setting at it. Until they do, the React components are not
+     * rendered at all.
      *
-     * <p>Trailing slashes are trimmed so the resulting JSF script source is
-     * well-formed regardless of the operator's input.
-     *
-     * @return The reusable-components base URL, without a trailing slash.
+     * @return The base URL without a trailing slash, or {@code null}.
      */
     public String getReusableComponentsBaseUrl() {
-        String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional()
-                .orElse("/reusable-components");
-        // Defensive sanity check: an operator-supplied URL is rendered
-        // verbatim into a JSF <script src=> attribute, so anything
-        // containing whitespace or quote characters could break the
-        // page out of the attribute. Allow only a same-origin path
-        // (starts with "/") or an absolute http(s) URL. Anything else
-        // falls back to the default; logged at FINE so misconfigurations
-        // surface during admin debugging without spamming the log.
+        String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional().orElse(null);
+        if (configured == null) {
+            return null;
+        }
+        // The value is rendered verbatim into a script src attribute, so
+        // reject anything that could break out of it. Allow a same-origin
+        // path or an absolute http(s) URL, nothing else.
         if (!isSafeReusableComponentsBaseUrl(configured)) {
-            logger.fine("REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured
-                    + " — falling back to /reusable-components");
-            configured = "/reusable-components";
+            logger.warning("REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured);
+            return null;
         }
         return configured.endsWith("/")
                 ? configured.substring(0, configured.length() - 1)
                 : configured;
+    }
+
+    /**
+     * Where the components fetch their translations from. The bundles default
+     * to a path under the site URL, which is wrong whenever the bundle is
+     * served from somewhere else, so the pages pass this explicitly.
+     */
+    public String getReusableComponentsLocalesPath() {
+        String base = getReusableComponentsBaseUrl();
+        return base == null ? null : base + "/locales/{{lng}}/{{ns}}.json";
     }
 
     // Thread-safe and immutable per commons-validator docs, so shared.
@@ -367,67 +369,6 @@ public class SystemConfig {
         return json.replace("</", "<\\/");
     }
 
-    /**
-     * Cache-busting token for the reusable-components bundle URLs.
-     *
-     * Returns Dataverse's app version concatenated with the modification
-     * timestamp of the entry-point bundle on disk, when that file is
-     * available (the WAR's bundled copy under
-     * {@code webapp/reusable-components/dv-tree-view.js}).
-     * Falls back to the plain app version when the file can't be
-     * located — avoids breaking pages on installs that override
-     * {@code REUSABLE_COMPONENTS_BASE_URL} to point at a CDN.
-     *
-     * Why not just {@link #getVersion()}: that string is pinned per
-     * release (e.g. {@code "6.10.1"}) and never changes between local
-     * dev rebuilds, so browsers happily serve the cached bundle for
-     * the lifetime of the deployment. Cache invalidation needs a token
-     * that changes whenever the bundle does — file mtime is the
-     * cheapest such signal that does not require a build-time hook.
-     *
-     * The successful answer is cached for a short TTL rather than per
-     * deployment or per render: per render would stat the file on every
-     * page view for an answer that almost never changes, while pinning it
-     * forever would miss an operator hot-copying a patched bundle into the
-     * exploded WAR without redeploying (a redeploy resets the cache via the
-     * classloader anyway, but a hot copy does not). Failures — no
-     * FacesContext, unresolvable path, missing file — are never cached, so
-     * a transient hiccup on the first render can't pin the weaker
-     * version-only token for the deployment's lifetime.
-     */
-    public String getReusableComponentsVersion() {
-        long now = System.currentTimeMillis();
-        String cached = reusableComponentsVersionToken;
-        if (cached != null && now - reusableComponentsVersionTokenAtMs < REUSABLE_COMPONENTS_VERSION_TTL_MS) {
-            return cached;
-        }
-        String base = getVersion();
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            if (fc == null) {
-                return base;
-            }
-            String real = fc.getExternalContext()
-                    .getRealPath("/reusable-components/dv-tree-view.js");
-            if (real != null) {
-                File bundle = new File(real);
-                if (bundle.isFile()) {
-                    String token = base + "-" + bundle.lastModified();
-                    reusableComponentsVersionToken = token;
-                    reusableComponentsVersionTokenAtMs = now;
-                    return token;
-                }
-            }
-        } catch (Exception ignore) {
-            // Defensive: any hiccup falls back to the version-only token.
-        }
-        return base;
-    }
-
-    // Benign race: concurrent renders compute the same value.
-    private static volatile String reusableComponentsVersionToken = null;
-    private static volatile long reusableComponentsVersionTokenAtMs = 0;
-    private static final long REUSABLE_COMPONENTS_VERSION_TTL_MS = 60_000;
 
     /**
      * Lookup (or construct) the designated URL of this instance from configuration.

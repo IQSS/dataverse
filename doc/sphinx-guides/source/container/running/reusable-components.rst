@@ -20,8 +20,8 @@ by :ref:`dataverse.feature.react-tree-view` and tracked in
 `#6691 <https://github.com/IQSS/dataverse/issues/6691>`_. Both bundles are
 emitted by the same frontend build and share React, i18n, and vendor chunks.
 
-For the frontend-side contract — the config interface, build pipeline, CSS
-isolation, and how to make a new SPA component reusable — see
+For the frontend-side contract (the config interface, build pipeline, CSS
+isolation, and how to make a new SPA component reusable) see
 ``docs/reusable-components.md`` in the
 `dataverse-frontend <https://github.com/IQSS/dataverse-frontend>`_ repo.
 
@@ -54,32 +54,42 @@ the security notice next to ``dataverse.feature.api-session-auth``).
 Hosting the Bundle
 ------------------
 
-The pre-built bundle ships inside the Dataverse WAR at
-``webapp/reusable-components/`` and is served same-origin via the default
-:ref:`dataverse.reusable-components.base-url` of ``/reusable-components``.
-Out of the box no extra setup is required to enable the feature flags
-above.
+The bundles are not shipped in the Dataverse WAR. Build them from
+`dataverse-frontend <https://github.com/IQSS/dataverse-frontend>`_, serve the
+build output as static content, and point
+:ref:`dataverse.reusable-components.base-url` at it. Until that setting is in
+place the feature flags above do nothing and the components are not rendered.
 
-Operators who prefer to host the bundle off the WAR — for example behind
-a separate static-file server, an existing nginx, or a CDN — can copy the
-contents of ``webapp/reusable-components/`` to that location and override
-:ref:`dataverse.reusable-components.base-url` to point at it. There is no
-published artifact (npm package, Docker image, etc.) for the bundle
-today; rehosting it is the operator's responsibility.
+Serving the files from the same origin as Dataverse, for example as a path on
+the web server already in front of it, keeps the setup simple and avoids
+cross-origin questions for the static assets. It is not required for
+authentication: the components call the API from the Dataverse page, so those
+requests carry the page's origin no matter where the bundle itself came from.
+
+The build output must keep its internal layout. The entry points
+``dv-uploader.js`` and ``dv-tree-view.js`` sit at the root of the served
+location, with ``chunks/`` and ``locales/`` beside them. Translations are
+fetched at runtime from ``<base-url>/locales/<lang>/<namespace>.json``.
+
+Cache headers are the operator's responsibility. Dataverse does not add a
+version parameter to the script URLs, so a deployment that replaces the
+bundle in place should serve the entry points with a short max-age, or set a
+new base URL per build. The hashed files under ``chunks/`` can be cached
+indefinitely.
 
 Configuration
 -------------
 
 The relevant settings are documented in the Installation Guide:
 
-- :ref:`dataverse.feature.react-uploader` — turn on the React uploader for
+- :ref:`dataverse.feature.react-uploader` - turn on the React uploader for
   the JSF dataset edit page.
-- :ref:`dataverse.feature.react-tree-view` — turn on the React tree view
+- :ref:`dataverse.feature.react-tree-view` - turn on the React tree view
   on the JSF dataset Files tab.
-- :ref:`dataverse.feature.api-session-auth` — required so the bundle can
+- :ref:`dataverse.feature.api-session-auth` - required so the bundle can
   call the API using the user's session cookie.
-- :ref:`dataverse.reusable-components.base-url` — where the JSF page should
-  load the bundle from.
+- :ref:`dataverse.reusable-components.base-url` - where the bundles are
+  hosted. Required; the flags above are inert without it.
 
 Cross-references
 ----------------

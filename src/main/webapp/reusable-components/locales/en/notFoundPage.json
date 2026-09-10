@@ -1,5 +1,0 @@
-{
-  "statusNumberNotFound": "404",
-  "message": "We can't find the <1>{{type}}</1> you're looking for.\n Sorry for the inconvenience.",
-  "backToHomepage": "Back to {{brandName}} Homepage"
-}

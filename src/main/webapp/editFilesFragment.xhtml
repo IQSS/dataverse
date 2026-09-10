@@ -91,6 +91,7 @@
                             siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
                             datasetPid: #{systemConfig.jsString(dataset.globalId.asString())},
                             locale: #{systemConfig.jsString(dataverseSession.localeCode)},
+                            localesPath: #{systemConfig.jsString(systemConfig.reusableComponentsLocalesPath)},
                             rootElementId: 'dv-uploader'
                         };
                         // Fallback when the bundle script fails to load (CDN
@@ -115,7 +116,7 @@
                         }
                         //]]>
                     </script>
-                    <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-uploader.js?version=#{systemConfig.reusableComponentsVersion}" onerror="dvReactUploaderLoadFailed()"></script>
+                    <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-uploader.js" onerror="dvReactUploaderLoadFailed()"></script>
                 </ui:fragment>
 
                 <!-- Upload -->

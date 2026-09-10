@@ -2718,11 +2718,11 @@ protocol, host, and port number and should not include a trailing slash.
 dataverse.reusable-components.base-url
 ++++++++++++++++++++++++++++++++++++++
 
-Base URL from which the Dataverse :doc:`reusable React component bundles </container/running/reusable-components>` (e.g. ``dv-uploader.js``) are loaded by JSF pages. Trailing slashes are trimmed automatically.
+Base URL from which the :doc:`reusable React component bundles </container/running/reusable-components>` (``dv-uploader.js``, ``dv-tree-view.js``) are loaded by JSF pages. Accepts a same-origin path such as ``/reusable-components`` or an absolute ``http(s)`` URL. Trailing slashes are trimmed automatically.
 
-The default value, ``/reusable-components``, serves the pre-built bundle that ships inside the Dataverse WAR (under ``webapp/reusable-components/``), same-origin. Out of the box no further configuration is required.
+There is no default. The bundles are not shipped in the Dataverse WAR: build them from `dataverse-frontend <https://github.com/IQSS/dataverse-frontend>`_, serve the build output as static content, and set this to where it is served. Until it is set, :ref:`dataverse.feature.react-uploader` and :ref:`dataverse.feature.react-tree-view` have no effect and the components are not rendered. A value that is neither a path nor an absolute http(s) URL is rejected and treated the same way.
 
-Operators who want to host the bundle off the WAR — for example behind a separate static-file server, a CDN, or any other URL of their choosing — can copy the contents of ``webapp/reusable-components/`` to that location and set ``dataverse.reusable-components.base-url`` to the URL where the files are served. There is no published artifact (npm package, Docker image, etc.) today; rehosting is the operator's responsibility.
+Translations are fetched at runtime from ``<base-url>/locales/<lang>/<namespace>.json``, so the build output's directory layout has to be preserved when it is copied into place.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_REUSABLE_COMPONENTS_BASE_URL``.
 

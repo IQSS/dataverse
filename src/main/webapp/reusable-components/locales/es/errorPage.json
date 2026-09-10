@@ -1,8 +1,0 @@
-{
-  "message": {
-    "heading": "Ups,",
-    "errorText": "algo salió mal..."
-  },
-  "brandName": "Dataverse",
-  "backToHomepage": "Volver a la página de inicio de {{brandName}}"
-}
