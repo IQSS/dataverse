@@ -13,4 +13,4 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_filemetadata_tree
     ON filemetadata (datasetversion_id, directorylabel text_pattern_ops, lower(label), datafile_id);
 ```
 
-Use that definition exactly. The migration is a no-op if the index already exists, and `V6.10.1.3` rebuilds one that was created without `text_pattern_ops`.
+Use that definition exactly. `IF NOT EXISTS` matches by name only, so an index created with a different definition would be kept as is. The migration is a no-op when the index is already there.
