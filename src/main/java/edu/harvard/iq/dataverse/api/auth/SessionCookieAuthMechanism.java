@@ -14,9 +14,6 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
     @Inject
     DataverseSession session;
 
-    @Inject
-    SystemConfig systemConfig;
-
     public static final String ACCESS_PATH_PREFIX = "access/";
 
     public static final String RESPONSE_MESSAGE_ORIGIN_VALIDATION_FAILED = "Request origin validation failed for session-cookie authentication.";
@@ -41,7 +38,7 @@ public class SessionCookieAuthMechanism implements AuthMechanism {
         if (isBlank(originHeader) && isBlank(refererHeader)) {
             return null;
         }
-        String siteOrigin = UrlOriginUtil.toOrigin(systemConfig.getDataverseSiteUrl());
+        String siteOrigin = UrlOriginUtil.toOrigin(SystemConfig.getDataverseSiteUrlStatic());
         if (siteOrigin == null || !isSiteOrigin(originHeader, siteOrigin) || !isSiteOrigin(refererHeader, siteOrigin)) {
             throw new WrappedForbiddenAuthErrorResponse(RESPONSE_MESSAGE_ORIGIN_VALIDATION_FAILED);
         }

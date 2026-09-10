@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -80,6 +79,7 @@ class SessionCookieAuthMechanismTest {
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = SITE_URL)
     void testFindUserFromRequest_HardeningEnabled_MatchingOrigin() throws WrappedAuthErrorResponse {
         User testAuthenticatedUser = givenSessionUser(new AuthenticatedUser());
 
@@ -91,6 +91,7 @@ class SessionCookieAuthMechanismTest {
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = SITE_URL)
     void testFindUserFromRequest_HardeningEnabled_MatchingReferer() throws WrappedAuthErrorResponse {
         User testAuthenticatedUser = givenSessionUser(new AuthenticatedUser());
 
@@ -102,6 +103,7 @@ class SessionCookieAuthMechanismTest {
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = SITE_URL)
     void testFindUserFromRequest_HardeningEnabled_ForeignOriginRejected() {
         givenSessionUser(new AuthenticatedUser());
 
@@ -112,6 +114,7 @@ class SessionCookieAuthMechanismTest {
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = SITE_URL)
     void testFindUserFromRequest_HardeningEnabled_ForeignRefererRejected() {
         givenSessionUser(new AuthenticatedUser());
 
@@ -122,6 +125,7 @@ class SessionCookieAuthMechanismTest {
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = SITE_URL)
     void testFindUserFromRequest_HardeningEnabled_NoHeadersDeclinesSession() throws WrappedAuthErrorResponse {
         givenSessionUser(new AuthenticatedUser());
 
@@ -133,6 +137,7 @@ class SessionCookieAuthMechanismTest {
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth")
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = SITE_URL)
     void testFindUserFromRequest_HardeningEnabled_GuestExempt() throws WrappedAuthErrorResponse {
         givenSessionUser(GuestUser.get());
 
@@ -145,9 +150,6 @@ class SessionCookieAuthMechanismTest {
         DataverseSession dataverseSessionStub = Mockito.mock(DataverseSession.class);
         Mockito.when(dataverseSessionStub.getUser()).thenReturn(user);
         sut.session = dataverseSessionStub;
-        SystemConfig systemConfigStub = Mockito.mock(SystemConfig.class);
-        Mockito.when(systemConfigStub.getDataverseSiteUrl()).thenReturn(SITE_URL);
-        sut.systemConfig = systemConfigStub;
         return user;
     }
 
