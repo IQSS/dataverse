@@ -35,7 +35,10 @@ public class ExportServiceBean {
     @Inject
     ExportCache cache;
     
-    @EJB
+    // We must use (frowned upon) field injection here, as EJB requires a no-args constructor.
+    // When the codebase transitions to use CDI only, this shall be changed to constructor injection.
+    @SuppressWarnings("java:S6813")
+    @Inject
     ExportPipelineBean pipeline;
     
     // ++++ ++++ ++++ METHODS TO RETRIEVE EXPORTED DATA ++++ ++++ ++++

@@ -4,8 +4,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.util.SecureTempFiles;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 
 import java.io.BufferedOutputStream;
@@ -22,7 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Stateless EJB that orchestrates the end-to-end export pipeline for dataset versions.
+ * CDI bean without mutable state that orchestrates the end-to-end export pipeline for dataset versions.
  * <p>
  * This bean acts as the central coordinator between the export cache, the exporter registry,
  * and the individual format-specific exporters. Its responsibilities include:
@@ -42,37 +41,30 @@ import java.util.Set;
  * that every export is subjected to the same staleness validation, prerequisite resolution,
  * and error-wrapping logic.
  * <p>
- * Field injection is used for the {@link ExportCache} dependency because EJB mandates a no-args constructor.
- * This is expected to be replaced with constructor injection if the codebase ever transitions to CDI-only
- * dependency management.
- * Although the class is only meant to be used within the package (which would warrant package-private visibility),
- * yet EJB spec requires it to have public visibility.
+ * This is a CDI bean rather than an EJB, as we want no one outside the package to directly interact with it.
+ * Marking as {@code @Dependent} ensures every {@code ExportServiceBean} instance gets its own instance of this bean.
+ * <p>
+ * Being a plain CDI bean, it does not demarcate transactions of its own: it simply runs within whatever JTA
+ * transaction the calling EJB (usually {@link ExportServiceBean}) has active on the current thread, and it
+ * will not mark that transaction for rollback when it throws. Do not add JPA writes here without reconsidering this.
  *
  * @see ExporterRegistryBean
  * @see ExportCache
  * @see ExportCacheInvalidator
  * @see ExportServiceBean
  */
-@Stateless
-public class ExportPipelineBean {
+@Dependent
+class ExportPipelineBean {
     
-    @EJB
-    ExporterRegistryBean registry;
-    
-    // We must use (usually frowned upon) field injection here, as EJB requires a no-args constructor.
-    // When the codebase transitions to use CDI only, this shall be changed to constructor injection.
-    @SuppressWarnings("java:S6813")
-    @Inject
-    ExportCache cache;
+    private final ExporterRegistryBean registry;
+    private final ExportCache cache;
     
     /**
      * A collection of {@link ExportCacheInvalidator} instances.
      */
-    final List<ExportCacheInvalidator> invalidators;
+    private final List<ExportCacheInvalidator> invalidators;
     
     /**
-     * Required by EJB to create the stateless instances of this bean.
-     * <p>
      * Creating a composition of invalidators here for real usage.
      * This list is intended to centralize all invalidation mechanisms for export cache entries.
      * Any new implementations must be added here.
@@ -80,15 +72,18 @@ public class ExportPipelineBean {
      * Note: Once we allow plugins to provide their own invalidation logic, we must load them.
      * This statically composed, non-CDI list shall then be replaced by a registry pattern following implementation.
      */
-    public ExportPipelineBean() {
-        this.invalidators = List.of(new FileEmbargoExpiryInvalidator());
+    @Inject
+    ExportPipelineBean(ExporterRegistryBean registry, ExportCache cache) {
+        this(registry, cache, List.of(new FileEmbargoExpiryInvalidator()));
     }
     
     /**
      * This constructor is intended for testing purposes only, allowing explicit constructor-injection of dependencies.
      * @param invalidators a list of {@link ExportCacheInvalidator} instances (usually mocks for testing)
      */
-    ExportPipelineBean(List<ExportCacheInvalidator> invalidators) {
+    ExportPipelineBean(ExporterRegistryBean registry, ExportCache cache, List<ExportCacheInvalidator> invalidators) {
+        this.registry = Objects.requireNonNull(registry);
+        this.cache = Objects.requireNonNull(cache);
         this.invalidators = List.copyOf(Objects.requireNonNull(invalidators));
     }
     

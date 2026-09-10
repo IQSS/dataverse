@@ -75,10 +75,7 @@ class ExportPipelineBeanTest {
     
     /** Mirrors container wiring: constructor for the invalidators, field injection for the EJB/CDI collaborators. */
     private ExportPipelineBean pipelineWith(ExportCacheInvalidator... invalidators) {
-        ExportPipelineBean bean = new ExportPipelineBean(List.of(invalidators));
-        bean.registry = registry;
-        bean.cache = cache;
-        return bean;
+        return new ExportPipelineBean(registry, cache, List.of(invalidators));
     }
     
     /** Shared source for the null-argument checks of both (version, key) entry points. */
