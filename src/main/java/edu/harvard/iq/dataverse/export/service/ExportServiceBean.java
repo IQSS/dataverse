@@ -170,9 +170,16 @@ public class ExportServiceBean {
      * @throws ExportException if the dataset version is null or any format name is invalid
      */
     public void clearCachedFormats(DatasetVersion datasetVersion, List<String> formatNames) throws ExportException {
-        if (datasetVersion == null) {
-            throw new ExportException("Dataset version may not be null");
+        if (datasetVersion == null || datasetVersion.getDataset() == null) {
+            throw new ExportException("Dataset version or it's containing dataset may not be null");
         }
+        
+        // Do not proceed if this version is not cacheable by policy (drafts)
+        // Keep in mind: if the policy changes, this fast exit may have unintended side effects!
+        if (!isCacheable(datasetVersion)) {
+            return;
+        }
+        
         try {
             // Will also enforce a non-null list
             registry.requireAllExist(formatNames);
@@ -366,6 +373,7 @@ public class ExportServiceBean {
     /**
      * Cache policy: drafts are mutable and therefore never cached; released versions are cacheable.
      * Extend here (not at call sites) when caching of further version states (e.g. deaccessioned) needs an explicit decision.
+     * Keep in mind: if the policy changes, this may have unintended side effects! Make sure to verify!
      */
     static boolean isCacheable(DatasetVersion version) {
         return !version.isDraft();
