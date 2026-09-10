@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -66,6 +67,11 @@ public class TaskMonitoringServiceBean {
             this.scheduler.scheduleWithFixedDelay(this::checkOngoingDownloadTasks,
                     0, pollingInterval,
                     TimeUnit.SECONDS);
+            
+            // The purpose of having 2 separate scheduling queues is to avoid
+            // potentially expensive/long-running processing of upload tasks 
+            // slowing down the handling of completed download transfers that 
+            // are always cheap. 
 
         } else {
             logger.info("Skipping Globus task monitor initialization");
@@ -82,28 +88,8 @@ public class TaskMonitoringServiceBean {
     public void checkOngoingUploadTasks() {
         logger.fine("Performing a scheduled external Globus UPLOAD task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.UPLOAD);
-
-        tasks.forEach(t -> {
-            GlobusTaskState retrieved = checkTaskState(t); 
-
-            if (GlobusUtil.isTaskCompleted(retrieved)) {
-                FileHandler taskLogHandler = getTaskLogHandler(t);
-                Logger taskLogger = getTaskLogger(t, taskLogHandler);
-
-                // Do our thing, finalize adding the files to the dataset
-                globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), true, taskLogger);
-                // Whether it finished successfully, or failed in the process, 
-                // there's no need to keep monitoring this task, so we can 
-                // delete it.
-                //globusService.deleteExternalUploadRecords(t.getTaskId());
-                globusService.deleteTask(t);
-
-                if (taskLogHandler != null) {
-                    taskLogHandler.close();
-                }
-            }
-
-        });
+        
+        processTasksQueue(tasks);
     }
     
     /**
@@ -115,10 +101,17 @@ public class TaskMonitoringServiceBean {
         logger.fine("Performing a scheduled external Globus DOWNLOAD task check");
         List<GlobusTaskInProgress> tasks = globusService.findAllOngoingTasks(GlobusTaskInProgress.TaskType.DOWNLOAD);
 
-        // Unlike with uploads, it is now possible for a user to run several 
-        // download transfers on the same dataset - with several download 
-        // tasks using the same access rule on the corresponding Globus
-        // pseudofolder. This means that we'll need to be careful not to 
+        processTasksQueue(tasks);
+    }
+    
+    /**
+     * The workhorse method that checks on Globus transfer tasks in the active 
+     * queue. 
+     */
+    private void processTasksQueue(List<GlobusTaskInProgress> tasks) {
+        // It is now possible for a user to run several transfer tasks
+        // using the same access rule on the corresponding Globus
+        // pseudofolder. That means that we need to be careful not to 
         // delete any rule, without checking if there are still other 
         // active tasks using it: 
         Map <String, Long> rulesInUse = new HashMap<>(); 
@@ -134,27 +127,58 @@ public class TaskMonitoringServiceBean {
             }
         });
         
-        tasks.forEach(t -> {
+        Long lastProcessedUploadDatasetId = null; 
+        
+        for (GlobusTaskInProgress t : tasks) {     
 
-            GlobusTaskState retrieved = checkTaskState(t); 
+            GlobusTaskState retrieved = checkTaskState(t);
+            String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
 
             if (GlobusUtil.isTaskCompleted(retrieved)) {
                 FileHandler taskLogHandler = getTaskLogHandler(t);
                 Logger taskLogger = getTaskLogger(t, taskLogHandler);
                 
-                String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
                 taskLogger.info("Processing completed task " + t.getTaskId() + ", status: " + taskStatus);
                 
                 boolean deleteRule = true;
                 
                 if (t.getRuleId() == null || rulesInUse.get(t.getRuleId()) > 1) {
-                    taskLogger.info("Access rule " + t.getRuleId() + " is still in use by other tasks.");
+                    taskLogger.fine("Access rule " + t.getRuleId() + " is still in use by other tasks.");
                     deleteRule = false;
                     rulesInUse.put(t.getRuleId(), rulesInUse.get(t.getRuleId()) - 1);
                 } else {
-                    taskLogger.info("Access rule " + t.getRuleId() + " is no longer in use by other tasks; will delete.");
+                    taskLogger.fine("Access rule " + t.getRuleId() + " is no longer in use by other tasks; will delete.");
                 }
 
+                // At HDV we have seen cases where the processing queue would get 
+                // stuck (for reasons that are still unknown). This is not a fatal 
+                // condition, since the state of every transfer is stored in the database, 
+                // and therefore all the tasks will still get properly processed 
+                // next time the application is restarted or redeployed. In particular,
+                // successfully completed Globus transfers will get finalized and the 
+                // corresponding DataFile objects etc. will be added to the datasets. 
+                // However, one potential issue has been encountered: you may end 
+                // up with several upload tasks on the same dataset waiting to be 
+                // finalized one immediately after another, with the resulting 
+                // addFiles calls encountering OptimisticLockExceptions. With this 
+                // in mind, we'll just sleep for 10 sec. between such calls on 
+                // the same dataset, to make sure all the indexing etc. tasks have
+                // been properly finalized. 
+                
+                if (GlobusTaskInProgress.TaskType.UPLOAD.equals(t.getTaskType()) &&
+                        GlobusUtil.isTaskSucceeded(retrieved)) {
+                    if (t.getDataset() != null) {
+                        if (lastProcessedUploadDatasetId != null && lastProcessedUploadDatasetId.equals(t.getDataset().getId())) {
+                            try {
+                                Thread.sleep(10000L);
+                            } catch (InterruptedException iex) {
+                                logger.warning("Failed to sleep for 10 sec. between finalizing globus uploads on the same dataset ("+lastProcessedUploadDatasetId+")");
+                            }
+                        }
+                        lastProcessedUploadDatasetId = t.getDataset().getId();
+                    }                    
+                }
+                
                 globusService.processCompletedTask(t, retrieved, GlobusUtil.isTaskSucceeded(retrieved), GlobusUtil.getCompletedTaskStatus(retrieved), deleteRule, taskLogger);
                 
                 // Whether it finished successfully or failed, the entry for the 
@@ -165,11 +189,9 @@ public class TaskMonitoringServiceBean {
                     taskLogHandler.close();
                 }
             } else {
-                String taskStatus = retrieved == null ? "N/A" : retrieved.getStatus();
                 logger.fine("task "+t.getTaskId()+" is still running; " + ", status: " + taskStatus);
             }
-            
-        });
+        }
     }
     
     private GlobusTaskState checkTaskState(GlobusTaskInProgress task) {
@@ -184,7 +206,10 @@ public class TaskMonitoringServiceBean {
             try {
                 retrieved = globusService.getTask(globusClientToken, task.getTaskId(), null);
             } catch (ExpiredTokenException ete) {
+                logger.info("token expired; renewing");
                 globusClientToken = getClientTokenForStorageDriver(task.getDataset(), true);
+            } catch (Exception ex) {
+                logger.warning("Unknown exception attempting to look up task " + task.getTaskId() + ": " + ex);
             }
             attempts--;
         }
