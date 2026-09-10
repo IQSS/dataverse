@@ -19,13 +19,11 @@ import org.passay.CharacterRule;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
@@ -257,14 +255,9 @@ public class SystemConfig {
     }
 
     /**
-     * Installation-level availability of the React file uploader for a
-     * dataset's store: feature flag raised, store supports direct upload,
-     * and HTTP is an enabled upload method. This is the shared core of the
-     * gate — dataset.xhtml's create tab consumes it directly (the
-     * EditDatafilesPage bean is uninitialized there), and
-     * {@code EditDatafilesPage#isReactUploaderActive} layers the page-state
-     * terms (edit mode, package files, file replace) on top. Keeping the
-     * core here prevents the two pages' gates from drifting.
+     * Shared core of the uploader gate, used directly by dataset.xhtml's create
+     * tab and layered with page state by EditDatafilesPage#isReactUploaderActive,
+     * so the two pages cannot drift apart.
      */
     public boolean isReactUploaderAvailable(Dataset dataset) {
         return isReactUploaderEnabled()
@@ -274,27 +267,20 @@ public class SystemConfig {
     }
 
     /**
-     * Base URL the reusable React component bundles are loaded from, or
-     * {@code null} when {@code dataverse.reusable-components.base-url} is
-     * unset or unusable.
-     *
-     * <p>The bundles are not shipped in the WAR. Operators build them from
-     * {@code dataverse-frontend}, serve the result as static content, and
-     * point this setting at it. Until they do, the React components are not
-     * rendered at all.
-     *
-     * @return The base URL without a trailing slash, or {@code null}.
+     * Base URL the component bundles are loaded from, without a trailing slash,
+     * or {@code null} when unset or unusable. The bundles are not shipped in the
+     * WAR, so until an operator hosts them and sets this, the components are not
+     * rendered.
      */
     public String getReusableComponentsBaseUrl() {
         String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional().orElse(null);
         if (configured == null) {
             return null;
         }
-        // The value is rendered verbatim into a script src attribute, so
-        // reject anything that could break out of it. Allow a same-origin
-        // path or an absolute http(s) URL, nothing else.
+        // Rendered verbatim into a script src attribute, so reject anything that
+        // could break out of it.
         if (!isSafeReusableComponentsBaseUrl(configured)) {
-            logger.warning("REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured);
+            logger.warning(() -> "REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured);
             return null;
         }
         return configured.endsWith("/")
@@ -303,9 +289,9 @@ public class SystemConfig {
     }
 
     /**
-     * Where the components fetch their translations from. The bundles default
-     * to a path under the site URL, which is wrong whenever the bundle is
-     * served from somewhere else, so the pages pass this explicitly.
+     * Where the components fetch translations. Passed explicitly because the
+     * bundles otherwise guess a path under the site URL, which is wrong for any
+     * bundle hosted elsewhere.
      */
     public String getReusableComponentsLocalesPath() {
         String base = getReusableComponentsBaseUrl();
@@ -313,13 +299,9 @@ public class SystemConfig {
     }
 
     // Thread-safe and immutable per commons-validator docs, so shared.
-    // ALLOW_LOCAL_URLS keeps single-label and intranet hosts working —
-    // pointing the base URL at http://localhost:5173 (a Vite dev server, as
-    // the frontend-dev container guide describes) or an internal CDN host
-    // is a first-class use of this setting. It still demands an authority,
-    // so opaque URIs like "http:evil" (which java.net.URI parses with
-    // scheme "http" and no host, and browsers resolve against host "evil")
-    // stay rejected.
+    // ALLOW_LOCAL_URLS is deliberate: pointing the base URL at a Vite dev server
+    // or an internal host is a first-class use. An authority is still required,
+    // so "http:evil" stays rejected.
     private static final org.apache.commons.validator.routines.UrlValidator BASE_URL_VALIDATOR =
             new org.apache.commons.validator.routines.UrlValidator(
                     new String[]{"http", "https"},
@@ -340,31 +322,15 @@ public class SystemConfig {
     }
 
     /**
-     * JSON-encode a single string value (with surrounding quotes), suitable
-     * for inlining into a JavaScript object literal in a JSF page. Use:
-     *
-     * <pre>{@code
-     *   window.dvTreeViewConfig = {
-     *     siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
-     *     ...
-     *   };
-     * }</pre>
-     *
-     * Wraps {@link Json#createValue(String)} which escapes everything that
-     * would otherwise let a hostile (or just unusual) string break out of
-     * the JS literal — backslashes, double quotes, control characters, and
-     * the {@code </} sequence that would prematurely close a {@code <script>}
-     * tag are all handled in one place. Cheaper than passing the values
-     * through a backing bean, and keeps the surface inside {@link SystemConfig}
-     * so the same helper can be reused by other JSF/React mount points.
+     * JSON-encode a string, quotes included, for inlining into a JavaScript
+     * object literal in a JSF page. Escapes backslashes, quotes and control
+     * characters, plus {@code </} so a stray {@code </script>} in user input
+     * cannot close the tag early.
      */
     public String jsString(String raw) {
         if (raw == null) {
             return "null";
         }
-        // The default JSON serialiser handles backslash/quote/control-char
-        // escaping. We additionally rewrite "</" to "<\\/" so the JS literal
-        // can't be terminated early by a stray `</script>` in user input.
         String json = JsonUtil.createValue(raw).toString();
         return json.replace("</", "<\\/");
     }

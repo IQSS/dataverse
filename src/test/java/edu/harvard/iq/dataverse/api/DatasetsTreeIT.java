@@ -36,13 +36,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * helper {@code listDatasetTreeNode}. These tests exercise the contract from
  * the perspective of an HTTP client.
  */
-public class DatasetsTreeIT {
+class DatasetsTreeIT {
 
     private static final String DRAFT_VERSION = ":draft";
     private static final String LATEST = ":latest";
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
@@ -105,7 +105,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void rootListingReturnsImmediateChildrenFoldersFirst() {
+    void rootListingReturnsImmediateChildrenFoldersFirst() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -141,7 +141,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void folderListingReturnsOnlyImmediateChildren() {
+    void folderListingReturnsOnlyImmediateChildren() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -161,7 +161,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void pathNormalisationStripsRedundantSlashes() {
+    void pathNormalisationStripsRedundantSlashes() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -175,7 +175,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void cursorPaginationReturnsStableSliceAndExhausts() {
+    void cursorPaginationReturnsStableSliceAndExhausts() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -196,7 +196,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void invalidCursorReturns400() {
+    void invalidCursorReturns400() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -206,7 +206,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void invalidOrderReturns400() {
+    void invalidOrderReturns400() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -216,7 +216,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void includeFilterReturnsOnlyMatchingType() {
+    void includeFilterReturnsOnlyMatchingType() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -236,7 +236,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void descendingOrderReversesNameSort() {
+    void descendingOrderReversesNameSort() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -252,7 +252,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void originalsTogglesDownloadUrlFormat() {
+    void originalsTogglesDownloadUrlFormat() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -274,7 +274,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void ingestedTabularFileOmitsChecksumUnlessOriginalsRequested() {
+    void ingestedTabularFileOmitsChecksumUnlessOriginalsRequested() {
         // `df.checksumvalue` is computed at upload time from the bytes the
         // user submitted. For tabular files that go through ingest, the bytes
         // served by the default `downloadUrl` are the converted TSV — a
@@ -343,7 +343,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void nonTabularFileExposesChecksumInBothForms() {
+    void nonTabularFileExposesChecksumInBothForms() {
         // Sanity check that the CASE expression doesn't NULL the checksum for
         // files without a `datatable` row — i.e. anything that didn't go
         // through tabular ingest. For these the bytes served by the default
@@ -367,7 +367,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void unauthenticatedUserCannotReadDraftVersion() {
+    void unauthenticatedUserCannotReadDraftVersion() {
         String ownerToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(ownerToken);
 
@@ -382,7 +382,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void otherAuthenticatedUserCannotReadOwnersDraft() {
+    void otherAuthenticatedUserCannotReadOwnersDraft() {
         String ownerToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(ownerToken);
 
@@ -399,7 +399,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void locallyFairDatasetIsHiddenFromNonAssignees() {
+    void locallyFairDatasetIsHiddenFromNonAssignees() {
         // The tree endpoint must apply the same LocallyFAIR visibility
         // gate as every other dataset GET endpoint (it resolves the
         // dataset via findDatasetUserCanSeeOrDie). Without the gate, a
@@ -444,7 +444,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void emptyDatasetReturnsEmptyItems() {
+    void emptyDatasetReturnsEmptyItems() {
         String apiToken = UtilIT.createRandomUserGetToken();
         Response createDataverse = UtilIT.createRandomDataverse(apiToken);
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
@@ -461,7 +461,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void draftVersionDoesNotEmitCacheableEtag() {
+    void draftVersionDoesNotEmitCacheableEtag() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
 
@@ -474,7 +474,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void publishedVersionEmitsEtagAndHonoursIfNoneMatch() {
+    void publishedVersionEmitsEtagAndHonoursIfNoneMatch() {
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createUser));
@@ -523,7 +523,7 @@ public class DatasetsTreeIT {
     }
 
     @Test
-    public void publishedDatasetIsReadableViaLatest() {
+    void publishedDatasetIsReadableViaLatest() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);

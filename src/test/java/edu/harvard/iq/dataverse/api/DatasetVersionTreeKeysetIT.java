@@ -46,17 +46,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * page-for-page. This is the SQL keyset-paginator's regression net for
  * {@code DatasetVersionTreeService}.
  */
-public class DatasetVersionTreeKeysetIT {
+class DatasetVersionTreeKeysetIT {
 
     private static final String DRAFT = ":draft";
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         // The fixture enables embargoes installation-wide; put the
         // default back so suites running after this class see a stock
         // configuration.
@@ -282,7 +282,7 @@ public class DatasetVersionTreeKeysetIT {
     // ---- Tests -----------------------------------------------------------
 
     @Test
-    public void rootListingIsKeysetStableAcrossPageSizes() {
+    void rootListingIsKeysetStableAcrossPageSizes() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -305,7 +305,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void nestedFolderListingIsKeysetStableAcrossPageSizes() {
+    void nestedFolderListingIsKeysetStableAcrossPageSizes() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -323,7 +323,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void deeplyNestedFolderListingIsKeysetStable() {
+    void deeplyNestedFolderListingIsKeysetStable() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -343,7 +343,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void descendingOrderIsKeysetStable() {
+    void descendingOrderIsKeysetStable() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -359,7 +359,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void filesOnlyIncludeIsKeysetStable() {
+    void filesOnlyIncludeIsKeysetStable() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -379,7 +379,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void foldersOnlyIncludeIsKeysetStable() {
+    void foldersOnlyIncludeIsKeysetStable() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -399,7 +399,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void caseInsensitiveOrderingIsStable() {
+    void caseInsensitiveOrderingIsStable() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -426,7 +426,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void accessMarkersReflectRestrictedAndEmbargoedSentinels() {
+    void accessMarkersReflectRestrictedAndEmbargoedSentinels() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -446,7 +446,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void folderCountsReflectRecursiveFilesAndDirectSubfolders() {
+    void folderCountsReflectRecursiveFilesAndDirectSubfolders() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 
@@ -473,7 +473,7 @@ public class DatasetVersionTreeKeysetIT {
     }
 
     @Test
-    public void cursorRoundtripIsStableAndOpaque() {
+    void cursorRoundtripIsStableAndOpaque() {
         String token = UtilIT.createRandomUserGetToken();
         int datasetId = createKeysetFixture(token);
 

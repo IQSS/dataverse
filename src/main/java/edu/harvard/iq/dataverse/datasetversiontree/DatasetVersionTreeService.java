@@ -25,29 +25,15 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Computes a single page of folders+files inside a folder of a dataset version.
+ * Computes a single page of folders and files inside a folder of a dataset
+ * version, using two native queries against {@code filemetadata}: a
+ * {@code GROUP BY} on the prefix-stripped {@code directorylabel} for folders,
+ * and a keyset-ordered scan for files. Both rely on the covering index
+ * {@code ix_filemetadata_tree} added in Flyway migration {@code V6.10.1.2}.
  *
- * Uses two native SQL queries against the {@code filemetadata} table — a
- * {@code GROUP BY} on the prefix-stripped {@code directorylabel} for the
- * folder rows and a keyset-ordered scan of the rows whose
- * {@code directorylabel} matches the requested path for the file rows.
- * Both queries are driven by the same covering index
- * {@code ix_filemetadata_tree(datasetversion_id, directorylabel,
- * lower(label), datafile_id)} added in Flyway migration {@code V6.10.1.2}.
- *
- * Wire format and cursor *behaviour* are stable across the in-memory and
- * SQL implementations: {@code nextCursor} stays opaque to clients (clients
- * echo it back), and {@code Order} / {@code Include} keep the same wire
- * values.
- *
- * Folders come first (ascending or descending by name), then files (same
- * ordering with a stable {@code datafile_id} tie-break).
- *
- * Per-file {@code access} is one of {@code retentionExpired},
- * {@code restricted}, {@code embargoed}, {@code public} — precedence and
- * date-boundary semantics are defined once, in
- * {@link #ACCESS_CLASSIFIER_SQL}, shared by the file listing and the
- * folder rollup counts.
+ * Folders sort before files. {@code nextCursor} is opaque; clients echo it back.
+ * Per-file {@code access} precedence is defined once in
+ * {@link #ACCESS_CLASSIFIER_SQL} and shared with the folder rollup counts.
  */
 @Stateless
 public class DatasetVersionTreeService {
@@ -212,20 +198,13 @@ public class DatasetVersionTreeService {
     // ---------- Cursor ---------------------------------------------------
 
     /**
-     * Opaque keyset cursor. Encoded as Base64-URL'd JSON; clients echo
-     * back the raw string. The {@code phase} marker tells the server
-     * whether the next page continues mid-folder-list or has crossed into
-     * the file list; {@code keys} carries either the last folder name or
-     * the {@code (label, datafile_id)} pair from the previous page. Keys
-     * hold the <em>raw</em> name/label, never a lowercased copy: the SQL
-     * applies its own {@code lower()} to both sides of the keyset
-     * comparison, so ordering always follows the database's collation
-     * rules rather than Java's (which disagree on non-ASCII input under
-     * e.g. a C-collation database). {@code approximateCount} snapshots the
-     * folder+file counts computed on the first page so later pages don't
-     * re-aggregate a value that is constant across the walk; every minted
-     * cursor carries it, and decoding rejects cursors without it (this
-     * format has never shipped, so there is no legacy form to accept).
+     * Opaque keyset cursor, Base64-URL'd JSON that clients echo back.
+     * {@code phase} says whether the next page continues the folder list or has
+     * crossed into the files. Keys hold the raw name or label, never a
+     * lowercased copy: the SQL applies its own {@code lower()} to both sides, so
+     * ordering follows the database collation rather than Java's, which disagree
+     * on non-ASCII input. {@code approximateCount} is snapshotted on the first
+     * page and carried through the walk.
      */
     record TreeCursor(Phase phase, String lastFolderName, String lastFileLabel, Long lastFileId,
                       int approximateCount) {
@@ -348,26 +327,15 @@ public class DatasetVersionTreeService {
     static final String ACCESS_PUBLIC = "public";
 
     /**
-     * Row-wise access classification, shared by the folder rollup (which
-     * aggregates it into the per-bucket counts) and the file listing (which
-     * selects it as the per-file {@code access} marker) — the single
-     * encoding of the precedence contract: retention-expired wins (the file
-     * cannot be served at all), then restricted, then actively embargoed,
-     * else public. The buckets are therefore mutually exclusive by
-     * construction and {@code public = files - restricted - embargoed -
-     * retentionExpired} holds for every folder.
+     * Row-wise access classification, shared by the folder rollup and the file
+     * listing so the precedence contract is encoded once: retention-expired
+     * wins, then restricted, then actively embargoed, else public. The buckets
+     * are mutually exclusive, so {@code public = files - restricted - embargoed
+     * - retentionExpired} holds for every folder.
      *
-     * Joined as {@code CROSS JOIN LATERAL} after the {@code embargo} and
-     * {@code retention} LEFT JOINs it references. The date predicates
-     * mirror the actual download enforcement in {@code FileUtil}
-     * ({@code isRetentionExpired}: {@code dateunavailable < current_date};
-     * {@code isActivelyEmbargoed}: {@code dateavailable > current_date}).
-     * {@code /files}' access-status <em>filter</em> uses {@code >=} for the
-     * embargo — an off-by-one against enforcement the tree deliberately
-     * does not copy. NULL dates (no embargo/retention row behind the LEFT
-     * JOIN) make their WHEN false and fall through — no IS NOT NULL guards
-     * needed. NULL never reaches the output: the ELSE arm catches
-     * everything.
+     * The date predicates mirror download enforcement in {@code FileUtil}, not
+     * the {@code /files} access-status filter, which uses {@code >=} for the
+     * embargo and is therefore a day out at the boundary.
      */
     private static final String ACCESS_CLASSIFIER_SQL =
             "CROSS JOIN LATERAL (SELECT CASE "

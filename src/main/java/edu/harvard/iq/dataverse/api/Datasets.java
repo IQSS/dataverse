@@ -802,8 +802,7 @@ public class Datasets extends AbstractApiBean {
             ob.add("type", item.type);
             ob.add("name", item.name);
             ob.add("path", item.path);
-            if (item instanceof FolderItem) {
-                FolderItem folder = (FolderItem) item;
+            if (item instanceof FolderItem folder) {
                 ob.add("counts", JsonUtil.createObjectBuilder()
                         .add("files", folder.fileCount)
                         .add("folders", folder.folderCount)
@@ -811,8 +810,7 @@ public class Datasets extends AbstractApiBean {
                         .add("restricted", folder.restrictedCount)
                         .add("embargoed", folder.embargoedCount)
                         .add("retentionExpired", folder.retentionExpiredCount));
-            } else if (item instanceof FileItem) {
-                FileItem file = (FileItem) item;
+            } else if (item instanceof FileItem file) {
                 ob.add("id", file.id);
                 ob.add("size", file.size);
                 if (file.contentType != null) ob.add("contentType", file.contentType);
