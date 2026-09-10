@@ -4036,6 +4036,8 @@ dataverse.feature.api-session-auth-hardening
 
 Enables CSRF hardening for API requests authenticated via session cookie (JSESSIONID). This flag has little effect unless ``dataverse.feature.api-session-auth`` is also enabled, since only the Access API authenticates by session cookie otherwise.
 
+With this flag enabled, session-cookie authentication works only for pages served by the Dataverse installation itself, on the same origin (scheme, host and port) as ``dataverse.siteUrl``. A page hosted anywhere else cannot use the session cookie to call the API, including a page on another subdomain of the same organization or on the same host over a different scheme or port, since each of those is a separate origin. Such clients must use bearer-token or API-token authentication instead.
+
 When enabled, an API request authenticated by session cookie on behalf of a fully authenticated user is checked as follows:
 
 - If it carries an ``Origin`` or ``Referer`` header that does not match ``dataverse.siteUrl``, it is rejected with 403.
@@ -4045,7 +4047,7 @@ Browsers set ``Origin`` on every cross-site ``fetch``, ``XMLHttpRequest`` and fo
 
 Guest sessions and private-URL preview sessions (``PrivateUrlUser``) are exempt: a guest holds no privileges worth forging, and a preview session is read-only with no cross-origin-readable response.
 
-Because every check is made against ``dataverse.siteUrl``, an installation reachable under more than one hostname should confirm that setting matches the origin browsers actually use before enabling this flag. Clients that are not same-origin should use bearer-token or API-token authentication instead.
+Because every check is made against ``dataverse.siteUrl``, an installation reachable under more than one hostname should confirm that setting matches the origin browsers actually use before enabling this flag.
 
 .. _dataverse.feature.api-bearer-auth:
 
