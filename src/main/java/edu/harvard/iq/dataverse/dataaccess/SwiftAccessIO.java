@@ -93,8 +93,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
 	private Account account = null;
     private StoredObject swiftFileObject = null;
-    // Package-private so the cleanup tests can supply a container.
-    Container swiftContainer = null;
+    private Container swiftContainer = null;
     private boolean isPublicContainer = true;
     private String swiftFolderPathSeparator = "_";
     private String swiftDefaultEndpoint = null;
