@@ -13,7 +13,7 @@ import java.util.Optional;
  * Implementations own all knowledge about where and under which names cached exports live.
  * The export pipeline only ever deals in {@link ExportCacheKey}s, datasets, and streams.
  */
-public sealed interface ExportCache permits StorageIOCache {
+public interface ExportCache {
     
     /**
      * Looks up a cached export.
