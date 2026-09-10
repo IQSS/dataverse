@@ -2958,8 +2958,9 @@ public class Admin extends AbstractApiBean {
             try {
                 Predicate<String> filter = s -> true;
                 StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
-                // Auditing lists everything, so no minimum age applies here.
-                final List<String> result = datasetIO.cleanUp(filter, Duration.ZERO, true);
+                // Auditing lists everything, so no minimum age applies here. The
+                // listing is not used; the call is kept for its existence checks.
+                datasetIO.cleanUp(filter, Duration.ZERO, true);
                 // add files that are in dataset files but not in cleanup result or DataFiles with missing FileMetadata
                 dataset.getFiles().forEach(df -> {
                     try {

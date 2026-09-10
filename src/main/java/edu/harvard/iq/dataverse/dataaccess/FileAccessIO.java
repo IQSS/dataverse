@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
@@ -728,10 +727,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException {
-        List<String> toDelete = this.listAllFiles().entrySet().stream()
-                .filter(e -> filter.test(e.getKey()) && isOlderThan(e.getValue(), minimumAge))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        List<String> toDelete = selectForCleanUp(this.listAllFiles(), filter, minimumAge);
         if (dryRun) {
             return toDelete;
         }

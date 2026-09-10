@@ -658,6 +658,21 @@ public abstract class StorageIO<T extends DvObject> {
      * An unknown timestamp is treated as too recent, so that a storage backend which
      * cannot report one never causes a deletion.
      */
+    /**
+     * The stored objects that {@code filter} selects and that are old enough to
+     * remove. Shared by the storage backends so the selection rule has one
+     * definition.
+     *
+     * @param stored object names mapped to their last modification time
+     */
+    protected static List<String> selectForCleanUp(Map<String, Instant> stored, Predicate<String> filter,
+                                                   Duration minimumAge) {
+        return stored.entrySet().stream()
+                .filter(e -> filter.test(e.getKey()) && isOlderThan(e.getValue(), minimumAge))
+                .map(Map.Entry::getKey)
+                .toList();
+    }
+
     protected static boolean isOlderThan(Instant lastModified, Duration minimumAge) {
         if (lastModified == null) {
             return false;
