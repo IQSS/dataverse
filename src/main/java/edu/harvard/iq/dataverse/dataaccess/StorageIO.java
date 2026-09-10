@@ -36,6 +36,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -641,7 +643,27 @@ public abstract class StorageIO<T extends DvObject> {
         return m.find();
     }
 
-    public abstract List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException;
+    /**
+     * Deletes stored objects that {@code filter} selects and that have not been modified
+     * for at least {@code minimumAge}.
+     *
+     * @param filter selects objects by name, typically those no longer referenced by the dataset
+     * @param minimumAge how long an object must have been untouched before it can be removed
+     * @param dryRun when true, report what would be removed without removing anything
+     */
+    public abstract List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException;
+
+    /**
+     * Whether an object last modified at {@code lastModified} is old enough to remove.
+     * An unknown timestamp is treated as too recent, so that a storage backend which
+     * cannot report one never causes a deletion.
+     */
+    protected static boolean isOlderThan(Instant lastModified, Duration minimumAge) {
+        if (lastModified == null) {
+            return false;
+        }
+        return lastModified.isBefore(Instant.now().minus(minimumAge));
+    }
 
     /**
      * A storage-type-specific mechanism for retrieving the size of a file. Intended

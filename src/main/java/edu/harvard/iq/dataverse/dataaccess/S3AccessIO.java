@@ -56,6 +56,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -1517,7 +1519,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return true;
     }
 
-    private List<String> listAllFiles() throws IOException {
+    private Map<String, Instant> listAllFiles() throws IOException {
         if (!this.canWrite()) {
             open();
         }
@@ -1527,7 +1529,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
 
-        List<String> ret = new ArrayList<>();
+        Map<String, Instant> ret = new HashMap<>();
         ListObjectsV2Request listObjectsReqManual = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix)
                 .build();
 
@@ -1571,7 +1573,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         for (S3Object item : storedFilesSummary) {
             String fileName = item.key().substring(prefix.length());
-            ret.add(fileName);
+            ret.put(fileName, item.lastModified());
         }
         return ret;
     }
@@ -1623,8 +1625,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
-        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+    public List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().entrySet().stream()
+                .filter(e -> filter.test(e.getKey()) && isOlderThan(e.getValue(), minimumAge))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
         if (dryRun) {
             return toDelete;
         }

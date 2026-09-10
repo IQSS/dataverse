@@ -3462,8 +3462,14 @@ Cleanup Storage of a Dataset
 
 This is an experimental feature and should be tested on your system before using it in production.
 Also, make sure that your backups are up-to-date before using this on production servers.
-It is advised to first call this method with the ``dryrun`` parameter set to ``true`` before actually deleting the files.
-This will allow you to manually inspect the files that would be deleted if that parameter is set to ``false`` or is omitted (a list of the files that would be deleted is provided in the response).
+This call only reports what it would remove unless ``dryrun`` is explicitly set to ``false``. Omitting the parameter is
+the same as setting it to ``true``, so inspecting the reported list is always the default (a list of the files that would
+be deleted is provided in the response).
+
+Storage objects that were modified more recently than ``dataverse.files.clean-storage-min-age-days`` (7 by default) are
+never removed. An upload writes its object to the dataset's storage location before Dataverse registers it as a file, so
+without that grace period a completed upload waiting to be saved would look the same as an abandoned one. Raise the
+setting if your workflows leave uploads unregistered for longer than a week.
 
 If your Dataverse installation has been configured to support direct uploads, or in some other situations,
 you could end up with some files in the storage of a dataset that are not linked to that dataset directly. Most commonly, this could
@@ -3479,13 +3485,13 @@ All the files stored in the Dataset storage location that are not in the file li
   export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
   export DRYRUN=true
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/datasets/:persistentId/cleanStorage?persistentId=$PERSISTENT_ID&dryrun=$DRYRUN"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/cleanStorage?persistentId=$PERSISTENT_ID&dryrun=$DRYRUN"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/datasets/:persistentId/cleanStorage?persistentId=doi:10.5072/FK2/J8SJZB&dryrun=true"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/:persistentId/cleanStorage?persistentId=doi:10.5072/FK2/J8SJZB&dryrun=true"
 
 Adding Files To a Dataset via Other Tools
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

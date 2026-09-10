@@ -19,6 +19,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Properties;
@@ -912,7 +916,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         return toHexString(mac.doFinal(data.getBytes()));
     }
 
-    private List<String> listAllFiles() throws IOException {
+    private Map<String, Instant> listAllFiles() throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
@@ -924,12 +928,19 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         
         Collection<StoredObject> items; 
         String lastItemName = null; 
-        List<String> ret = new ArrayList<>();
+        Map<String, Instant> ret = new HashMap<>();
 
         while ((items = this.swiftContainer.list(prefix, lastItemName, LIST_PAGE_LIMIT)) != null && items.size() > 0) {
             for (StoredObject item : items) {
                 lastItemName = item.getName().substring(prefix.length());
-                ret.add(lastItemName);
+                Instant lastModified;
+                try {
+                    lastModified = item.getLastModifiedAsDate().toInstant();
+                } catch (RuntimeException ex) {
+                    // Unknown age is treated as too recent to remove.
+                    lastModified = null;
+                }
+                ret.put(lastItemName, lastModified);
             }
         }
 
@@ -956,8 +967,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
-        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+    public List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().entrySet().stream()
+                .filter(e -> filter.test(e.getKey()) && isOlderThan(e.getValue(), minimumAge))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
         if (dryRun) {
             return toDelete;
         }
