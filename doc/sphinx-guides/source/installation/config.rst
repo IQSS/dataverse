@@ -2723,11 +2723,11 @@ protocol, host, and port number and should not include a trailing slash.
 dataverse.reusable-components.base-url
 ++++++++++++++++++++++++++++++++++++++
 
-Base URL from which the :doc:`reusable React component bundles </container/running/reusable-components>` (``dv-uploader.js``, ``dv-tree-view.js``) are loaded by JSF pages. Accepts a same-origin path such as ``/reusable-components`` or an absolute ``http(s)`` URL. Trailing slashes are trimmed automatically.
+Base URL from which the :doc:`reusable React component bundles </installation/reusable-components>` (``dv-uploader.js``, ``dv-tree-view.js``) are loaded by JSF pages. Use a same-origin path such as ``/reusable-components``, so that the bundles, their translations, and the API calls they make all share one origin. Trailing slashes are trimmed automatically.
 
-There is no default. The bundles are not shipped in the Dataverse WAR: build them from `dataverse-frontend <https://github.com/IQSS/dataverse-frontend>`_, serve the build output as static content, and set this to where it is served. Until it is set, :ref:`dataverse.feature.react-uploader` and :ref:`dataverse.feature.react-tree-view` have no effect and the components are not rendered. A value that is neither a path nor an absolute http(s) URL is rejected and treated the same way.
+There is no default. The bundles are not shipped in the Dataverse WAR: build them from `dataverse-frontend <https://github.com/IQSS/dataverse-frontend>`_, deploy them behind your web server or as a WAR alongside Dataverse, and set this to the path they are served at. Until it is set, :ref:`dataverse.feature.react-uploader` and :ref:`dataverse.feature.react-tree-view` have no effect and the components are not rendered. A malformed value is rejected and treated the same way.
 
-Translations are fetched at runtime from ``<base-url>/locales/<lang>/<namespace>.json``, so the build output's directory layout has to be preserved when it is copied into place.
+The bundles locate their chunks and translations relative to themselves, so the build output's directory layout has to be preserved when it is copied into place.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_REUSABLE_COMPONENTS_BASE_URL``.
 
@@ -4047,7 +4047,7 @@ Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling 
 dataverse.feature.react-uploader
 ++++++++++++++++++++++++++++++++
 
-Replaces the classic PrimeFaces file upload widget on the JSF dataset edit page with the React file uploader (DVWebloader v2). Requires :ref:`dataverse.feature.api-session-auth` to be enabled and the JSF page to be able to reach the reusable component bundle (see :ref:`dataverse.reusable-components.base-url` and the :doc:`/container/running/reusable-components` guide).
+Replaces the classic PrimeFaces file upload widget on the JSF dataset edit page with the React file uploader (DVWebloader v2). Requires :ref:`dataverse.feature.api-session-auth` to be enabled and the JSF page to be able to reach the reusable component bundle (see :ref:`dataverse.reusable-components.base-url` and the :doc:`/installation/reusable-components` guide).
 
 This flag has no effect on the file replace flow, which continues to use the classic JSF upload widget.
 
@@ -4060,7 +4060,7 @@ dataverse.feature.react-tree-view
 
 Replaces the classic PrimeFaces tree component on the dataset Files tab (when the user selects "Tree" in the Table/Tree toggle) with the React lazy file tree. The same component the SPA uses is mounted directly into the JSF page.
 
-Requires :ref:`dataverse.feature.api-session-auth` and the React bundle to be reachable from the browser (see :ref:`dataverse.reusable-components.base-url` and :doc:`/container/running/reusable-components`).
+Requires :ref:`dataverse.feature.api-session-auth` and the React bundle to be reachable from the browser (see :ref:`dataverse.reusable-components.base-url` and :doc:`/installation/reusable-components`).
 
 This flag has no effect on the table view of the Files tab, which continues to use the classic PrimeFaces datatable.
 
