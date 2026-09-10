@@ -185,14 +185,7 @@ public class ExportServiceBean {
             formatNames = registry.getDetails().stream().map(ExporterRegistryBean.Details::formatName).toList();
         // If not empty, make sure to add transitive dependents to the evict list
         } else {
-            formatNames = Stream
-                .concat(
-                    formatNames.stream(),
-                    formatNames.stream()
-                        .map(format -> registry.getTransitiveDependents(format))
-                        .flatMap(Set::stream))
-                .distinct()
-                .toList();
+            formatNames = withTransitiveDependents(formatNames);
         }
         
         // Iterate over the list of format names and evict the cache for each format.
@@ -313,16 +306,7 @@ public class ExportServiceBean {
             formatNames = registry.getDetails().stream().map(ExporterRegistryBean.Details::formatName).toList();
         // Otherwise, make sure to add all formats relying on the requested ones, as they need to be regenerated, too.
         } else {
-            formatNames = formatNames.stream()
-                              // The flatMap replaces any stream element with the concatenated elements,
-                              // thus re-adding the format itself to the list keeps it around.
-                              .flatMap(format -> Stream.concat(
-                                  Stream.of(format),
-                                  registry.getTransitiveDependents(format).stream())
-                              )
-                              // Filter for duplicates (multiple formats may have the same dependents)
-                              .distinct()
-                              .toList();
+            formatNames = withTransitiveDependents(formatNames);
         }
         
         // Retrieve the exporters for all formats, then order the list topologically, ensuring dependencies get done first
@@ -356,6 +340,27 @@ public class ExportServiceBean {
         if (!allSucceeded) {
             throw new ExportException("One or more exports failed, for details see logs");
         }
+    }
+    
+    /**
+     * Enrich a list of formats names with all of their transitive dependents (those formats that depend on them).
+     * @param formatNames The list of formats to expand
+     * @return Unmodifiable list containing both original format names and their transitive dependents
+     */
+    List<String> withTransitiveDependents(List<String> formatNames) {
+        if (formatNames == null || formatNames.isEmpty()) {
+            return List.of();
+        }
+        return formatNames.stream()
+            // The flatMap replaces any stream element with the concatenated elements,
+            // thus re-adding the format itself to the list keeps it around.
+            .flatMap(format -> Stream.concat(
+                Stream.of(format),
+                registry.getTransitiveDependents(format).stream())
+            )
+            // Filter for duplicates (multiple formats may have the same dependents)
+            .distinct()
+            .toList();
     }
     
     /**
