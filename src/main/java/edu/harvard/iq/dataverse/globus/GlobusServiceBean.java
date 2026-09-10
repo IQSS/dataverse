@@ -71,6 +71,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -85,6 +86,8 @@ public class GlobusServiceBean implements java.io.Serializable {
     protected DatasetServiceBean datasetSvc;
     @EJB
     protected SettingsServiceBean settingsSvc;
+    @EJB
+    protected transient ApiSigningSecretServiceBean signingSecretSvc;
     @Inject
     DataverseSession session;
     @Inject
@@ -771,13 +774,12 @@ public class GlobusServiceBean implements java.io.Serializable {
                     + "/globusDownloadParameters?locale=" + localeCode + "&downloadId=" + downloadId;
 
         }
-        if (apiToken != null) {
-            callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                    HttpMethod.GET,
-                    JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
-        } else {
+        if (apiToken == null) {
             // Shouldn't happen
             logger.warning("Unable to get api token for user: " + user.getIdentifier());
+        } else {
+            callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                    HttpMethod.GET, signingSecretSvc.getSigningKey(apiToken.getTokenString()));
         }
         appUrl = appUrl + "&callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
 
