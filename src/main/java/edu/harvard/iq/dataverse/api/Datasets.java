@@ -850,9 +850,10 @@ public class Datasets extends AbstractApiBean {
             }
 
             DatasetVersion latestVersion = ds.getLatestVersion();
-            if (isDatasetVersionNoOp(incomingVersion, latestVersion)) {
-                return ok(json(latestVersion, true));
-            }
+            // TODO Implement no-op detection
+//            if (isDatasetVersionNoOp(incomingVersion, latestVersion)) {
+//                return ok(json(latestVersion, true));
+//            }
 
             boolean updateDraft = latestVersion.isDraft();
 
