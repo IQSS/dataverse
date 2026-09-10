@@ -19,11 +19,6 @@ services:
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
       DATAVERSE_FEATURE_INDEX_HARVESTED_METADATA_SOURCE: "1"
       DATAVERSE_FEATURE_API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS: "1"
-      DATAVERSE_FEATURE_REACT_TREE_VIEW: "1"
-      DATAVERSE_FEATURE_REACT_UPLOADER: "1"
-      # The component bundles are not in the WAR. This points at the Vite dev
-      # server from dataverse-frontend, so run that alongside this stack.
-      DATAVERSE_REUSABLE_COMPONENTS_BASE_URL: "http://localhost:5173"
       DATAVERSE_FEATURE_API_SESSION_AUTH: "1"
       DATAVERSE_MAIL_SYSTEM_EMAIL: "dataverse@localhost"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
