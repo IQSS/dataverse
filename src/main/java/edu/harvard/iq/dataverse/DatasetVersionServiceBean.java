@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -1159,7 +1161,7 @@ w
     }
 
     public JsonObjectBuilder fixMissingUnf(String datasetVersionId, boolean forceRecalculate) {
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
         if (datasetVersionId == null || datasetVersionId.isEmpty()) {
             info.add("message", "datasetVersionId was null or empty!");
             return info;
@@ -1279,8 +1281,7 @@ w
     /**
      * Execute a query to return DatasetVersion
      * 
-     * @param queryString
-     * @return 
+     * @return
      */
     public List<DatasetVersion> getUnarchivedDatasetVersions(){
         
@@ -1368,4 +1369,5 @@ w
             logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
         }
     }
+
 }

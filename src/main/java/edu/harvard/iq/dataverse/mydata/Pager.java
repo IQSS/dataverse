@@ -15,6 +15,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -371,7 +373,7 @@ public class Pager {
     
     private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms){
         
-        JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
+        JsonObjectBuilder jsonPageInfo = JsonUtil.createObjectBuilder();
                 
        
         jsonPageInfo.add("isNecessary", this.isPagerNecessary())
@@ -405,7 +407,7 @@ public class Pager {
         // --------------------
         // pageNumberList
         // --------------------
-        JsonArrayBuilder jsonPageNumberArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder jsonPageNumberArrayBuilder = JsonUtil.createArrayBuilder();
         if (this.pageNumberList != null) {
             for (int pg : this.pageNumberList) {
                 jsonPageNumberArrayBuilder.add(pg);

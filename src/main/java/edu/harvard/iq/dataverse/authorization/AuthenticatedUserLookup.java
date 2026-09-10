@@ -13,6 +13,7 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * A somewhat glorified key-value pair, persisted in the database.
@@ -37,6 +38,7 @@ import jakarta.persistence.UniqueConstraint;
                  query="SELECT au FROM AuthenticatedUserLookup au WHERE au.authenticatedUser=:authUser")
 })
 @Entity
+@Schema(description = "Lookup record linking an external authentication provider identity to a Dataverse authenticated user.")
 public class AuthenticatedUserLookup implements Serializable {
 
     @Id

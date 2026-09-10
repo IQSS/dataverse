@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -39,6 +40,9 @@ import jakarta.ws.rs.core.Context;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.ws.rs.core.Response;
 import org.json.JSONObject;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  *
@@ -50,6 +54,7 @@ import org.json.JSONObject;
  * 
  */
 @Path("mydata")
+@Tag(name = "Users", description = "User-specific data discovery and collection access operations.")
 public class DataRetrieverAPI extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(DataRetrieverAPI.class.getCanonicalName());
@@ -111,7 +116,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (optionalLoggerMsg != null){
             logger.severe(optionalLoggerMsg);
         }
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder();
 
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
         jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, jsonMsg);
@@ -146,21 +151,23 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @AuthRequired
     @Path(retrieveDataPartialAPIPath)
     @Produces({"application/json"})
+    @Operation(summary = "Retrieves My Data results",
+            description = "Returns datasets, files, and collections visible to the requester with filters for object type, publication state, role, validity, search text, and pagination.")
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
-            @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
-            @QueryParam("published_states") List<String> published_states,
-            @QueryParam("metadata_fields") List<String> metadataFields,
-            @QueryParam("selected_page") Integer selectedPage, 
-            @QueryParam("mydata_search_term") String searchTerm,             
-            @QueryParam("role_ids") List<Long> roleIds, 
-            @QueryParam("userIdentifier") String userIdentifier,
-            @QueryParam("filter_validities") Boolean filterValidities,
-            @QueryParam("dataset_valid") List<Boolean> datasetValidities,
-            @QueryParam("show_collections") boolean showCollections,
-            @QueryParam("sort") String sortField,
-            @QueryParam("order") String sortOrder,
-            @QueryParam("fq") final List<String> filterQueries) {
+            @Parameter(description = "Dataverse object type filters.") @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
+            @Parameter(description = "Publication state filters.") @QueryParam("published_states") List<String> published_states,
+            @Parameter(description = "Metadata fields to include.") @QueryParam("metadata_fields") List<String> metadataFields,
+            @Parameter(description = "Selected results page.") @QueryParam("selected_page") Integer selectedPage, 
+            @Parameter(description = "Search term for My Data results.") @QueryParam("mydata_search_term") String searchTerm,             
+            @Parameter(description = "Role id filters.") @QueryParam("role_ids") List<Long> roleIds, 
+            @Parameter(description = "User identifier filter.") @QueryParam("userIdentifier") String userIdentifier,
+            @Parameter(description = "Validity filters for My Data results.") @QueryParam("filter_validities") Boolean filterValidities,
+            @Parameter(description = "Dataset validity filter.") @QueryParam("dataset_valid") List<Boolean> datasetValidities,
+            @Parameter(description = "Whether collection results are included.") @QueryParam("show_collections") boolean showCollections,
+            @Parameter(description = "Sort field.") @QueryParam("sort") String sortField,
+            @Parameter(description = "Sort order.") @QueryParam("order") String sortOrder,
+            @Parameter(description = "Filter query.") @QueryParam("fq") final List<String> filterQueries) {
         boolean otherUser;
 
         String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
@@ -305,12 +312,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
     }
 
     private JsonObjectBuilder myDataAsJson(String message, Pager pager, RoleTagRetriever roleTagRetriever, List<String> metadataFields) {
-        JsonObjectBuilder jsonData = Json.createObjectBuilder().add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true);
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder().add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true);
         if (message != null) {
             jsonData.add(DataRetrieverAPI.JSON_MSG_FIELD_NAME, message);
         }
         jsonData.add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,
-                Json.createObjectBuilder()
+                JsonUtil.createObjectBuilder()
                         .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
                         .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever, metadataFields))
                         .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
@@ -327,7 +334,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @AuthRequired
     @Path(retrieveDataPartialAPIPath + "/collectionList")
     @Produces("application/json")
-    public Response retrieveMyCollectionList(@Context ContainerRequestContext crc, @QueryParam("userIdentifier") String userIdentifier) {
+    @Operation(summary = "Lists collections for My Data",
+            description = "Returns collections where the requester or selected user may add datasets.")
+    public Response retrieveMyCollectionList(@Context ContainerRequestContext crc, @Parameter(description = "User identifier filter.") @QueryParam("userIdentifier") String userIdentifier) {
         try {
             verifyAuth(crc, userIdentifier);
             List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), searchUser, Permission.AddDataset.name()));
@@ -371,7 +380,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  roleTagRetriever should not be null");     
         }
 
-        JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder jsonSolrDocsArrayBuilder = JsonUtil.createArrayBuilder();
 
         JsonObjectBuilder myDataCardInfo;
         JsonArrayBuilder rolesForCard;

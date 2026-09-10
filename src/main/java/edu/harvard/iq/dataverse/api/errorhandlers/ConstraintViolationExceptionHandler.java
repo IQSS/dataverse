@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -34,7 +35,7 @@ public class ConstraintViolationExceptionHandler implements ExceptionMapper<Cons
             .collect(Collectors.toList());
         
         return Response.status(Response.Status.BAD_REQUEST)
-                       .entity( Json.createObjectBuilder()
+                       .entity( JsonUtil.createObjectBuilder()
                            .add("status", "ERROR")
                            .add("code", Response.Status.BAD_REQUEST.getStatusCode())
                            .add("message", "JPA validation constraints failed persistence. See list of violations for details.")
@@ -51,10 +52,10 @@ public class ConstraintViolationExceptionHandler implements ExceptionMapper<Cons
     }
     
     private JsonArray toJsonArray(List<ValidationError> list) {
-        JsonArrayBuilder builder = Json.createArrayBuilder();
+        JsonArrayBuilder builder = JsonUtil.createArrayBuilder();
         list.stream()
             .forEach(error -> builder.add(
-                Json.createObjectBuilder()
+                JsonUtil.createObjectBuilder()
                     .add("path", error.getPath())
                     .add("message", error.getMessage())));
         return builder.build();

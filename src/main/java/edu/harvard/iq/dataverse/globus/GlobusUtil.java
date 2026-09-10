@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -13,7 +14,7 @@ import jakarta.json.JsonObjectBuilder;
 public class GlobusUtil {
 
     public static JsonObject getFilesMap(List<DataFile> dataFiles, Dataset d) {
-        JsonObjectBuilder filesBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder filesBuilder = JsonUtil.createObjectBuilder();
         for (DataFile df : dataFiles) {
             String storageId = df.getStorageIdentifier();
             String[] parts = DataAccess

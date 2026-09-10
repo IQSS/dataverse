@@ -60,7 +60,7 @@ class HugeDatasetExportPerformanceIT {
     
     @Test
     void shouldExportLargeDataset() {
-        Long datasetVersionId = regularFilesDataset.getId();
+        Long datasetVersionId = regularFilesDataset.getVersions().get(0).getId();
         
         QueryCountHolder.clear();
         Instant start = Instant.now();

@@ -27,7 +27,7 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 	private final JsonObjectBuilder delegate;
 	
 	public NullSafeJsonBuilder() {
-		delegate = Json.createObjectBuilder();
+		delegate = JsonUtil.createObjectBuilder();
 	}
 
 	@Override

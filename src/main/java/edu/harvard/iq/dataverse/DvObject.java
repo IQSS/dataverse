@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import jakarta.persistence.*;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * Base of the object hierarchy for "anything that can be inside a dataverse".
@@ -58,6 +59,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     private static final Logger logger = Logger.getLogger(DvObject.class.getCanonicalName());
     
+    @Schema(description = "Dataverse object type discriminator for dataverses, datasets, and data files.")
     public enum DType {
         Dataverse("Dataverse"), Dataset("Dataset"),DataFile("DataFile");
        

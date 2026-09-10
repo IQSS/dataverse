@@ -74,7 +74,7 @@ public class DatasetTypesIT {
         }
         System.out.println("The " + datasetType + "type wasn't found. Create it.");
         String displayName = capitalize(datasetType);
-        String jsonIn = Json.createObjectBuilder()
+        String jsonIn = JsonUtil.createObjectBuilder()
                         .add("name", datasetType)
                         .add("displayName", displayName)
                         .add("description", description)
@@ -304,7 +304,7 @@ public class DatasetTypesIT {
         badJson.prettyPrint();
         badJson.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
-        String numbersOnlyIn = Json.createObjectBuilder().add("name", "12345").build().toString();
+        String numbersOnlyIn = JsonUtil.createObjectBuilder().add("name", "12345").build().toString();
         Response numbersOnly = UtilIT.addDatasetType(numbersOnlyIn, apiToken);
         numbersOnly.prettyPrint();
         numbersOnly.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
@@ -312,7 +312,7 @@ public class DatasetTypesIT {
         //Avoid all-numeric names (which are not allowed)
         String randomName = "A" + UUID.randomUUID().toString().substring(0, 8);
         String displayName = capitalize(randomName);
-        String jsonIn = Json.createObjectBuilder()
+        String jsonIn = JsonUtil.createObjectBuilder()
                         .add("name", randomName)
                         .add("displayName", displayName)
                         .build().toString();
@@ -355,11 +355,11 @@ public class DatasetTypesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("name", "testDatasetType");
         job.add("displayName", "testDatasetType");
-        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
-        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
+        job.add("linkedMetadataBlocks", JsonUtil.createArrayBuilder().add("geospatial"));
+        job.add("availableLicenses", JsonUtil.createArrayBuilder().add("CC0 1.0"));
 
         Response typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
         typeAdded.prettyPrint();
@@ -379,10 +379,10 @@ public class DatasetTypesIT {
         typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
         
         //bad metadatablock name 
-        job = Json.createObjectBuilder();
+        job = JsonUtil.createObjectBuilder();
         job.add("name", "testDatasetType");
-        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatialXXX"));
-        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
+        job.add("linkedMetadataBlocks", JsonUtil.createArrayBuilder().add("geospatialXXX"));
+        job.add("availableLicenses", JsonUtil.createArrayBuilder().add("CC0 1.0"));
         
         typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
         typeAdded.prettyPrint();
@@ -391,10 +391,10 @@ public class DatasetTypesIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", containsString("Metadata block not found:"));
         
-        job = Json.createObjectBuilder();
+        job = JsonUtil.createObjectBuilder();
         job.add("name", "testDatasetType");
-        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
-        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 12.0"));
+        job.add("linkedMetadataBlocks", JsonUtil.createArrayBuilder().add("geospatial"));
+        job.add("availableLicenses", JsonUtil.createArrayBuilder().add("CC0 12.0"));
 
         typeAdded = UtilIT.addDatasetType(job.build(), apiToken); 
         typeAdded.prettyPrint();
@@ -413,7 +413,7 @@ public class DatasetTypesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("name", "testDatasetType");
         job.add("displayName", "testDatasetType");
 
@@ -485,7 +485,7 @@ public class DatasetTypesIT {
         //Avoid all-numeric names (which are not allowed)
         String randomName = "zzz" + UUID.randomUUID().toString().substring(0, 8);
         String displayName = capitalize(randomName);
-        String jsonIn = Json.createObjectBuilder()
+        String jsonIn = JsonUtil.createObjectBuilder()
                         .add("name", randomName)
                         .add("displayName", displayName)
                         .build().toString();
@@ -721,11 +721,11 @@ public class DatasetTypesIT {
        
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
    
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("name", "testDatasetType");
         job.add("displayName", "testDatasetType");
-        job.add("linkedMetadataBlocks", Json.createArrayBuilder().add("geospatial"));
-        job.add("availableLicenses", Json.createArrayBuilder().add("CC0 1.0"));
+        job.add("linkedMetadataBlocks", JsonUtil.createArrayBuilder().add("geospatial"));
+        job.add("availableLicenses", JsonUtil.createArrayBuilder().add("CC0 1.0"));
         
         Response typeAdded = UtilIT.addDatasetType(job.build(), apiToken);
         typeAdded.prettyPrint();
@@ -911,31 +911,31 @@ public class DatasetTypesIT {
          * See also discussion at
          * https://dataverse.zulipchat.com/#narrow/channel/379673-dev/topic/Improved.20.22Related.20datasets.22/near/534969036
          */
-        JsonObjectBuilder jsonForCreatingReview = Json.createObjectBuilder()
+        JsonObjectBuilder jsonForCreatingReview = JsonUtil.createObjectBuilder()
                 /**
                  * See above where this type is added to the installation and
                  * therefore available for use.
                  */
                 .add("datasetType", DatasetType.DATASET_TYPE_REVIEW)
-                .add("datasetVersion", Json.createObjectBuilder()
-                        .add("license", Json.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("license", JsonUtil.createObjectBuilder()
                                 .add("name", "CC0 1.0")
                                 .add("uri", "http://creativecommons.org/publicdomain/zero/1.0")
                         )
-                        .add("metadataBlocks", Json.createObjectBuilder()
-                                .add("citation", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "title")
                                                         .add("value", "Review of " + datasetTitle)
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Simpson, Homer")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -946,11 +946,11 @@ public class DatasetTypesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "author")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("datasetContactEmail",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "hsimpson@mailinator.com")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -961,11 +961,11 @@ public class DatasetTypesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "datasetContact")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("dsDescriptionValue",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "This is a review of a dataset.")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -976,16 +976,16 @@ public class DatasetTypesIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "dsDescription")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add("Other")
                                                         )
                                                         .add("typeClass", "controlledVocabulary")
                                                         .add("multiple", true)
                                                         .add("typeName", "subject")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add(datasetCitationHtml)
                                                         )
                                                         .add("typeClass", "primitive")

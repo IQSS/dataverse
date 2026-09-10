@@ -18,10 +18,14 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 
 @Stateless
 @Path("admin/batch")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class BatchJobResource extends AbstractApiBean {
 
     private static String EMPTY_JSON_LIST = "[]";
@@ -31,6 +35,8 @@ public class BatchJobResource extends AbstractApiBean {
     @GET
     @Path("/jobs")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Lists batch jobs",
+            description = "Returns JSON containing the execution records for all known batch job instances.")
     public Response listBatchJobs() {
         try {
             final List<JobExecutionEntity> executionEntities = new ArrayList<>();
@@ -55,7 +61,11 @@ public class BatchJobResource extends AbstractApiBean {
     @GET
     @Path("/jobs/name/{jobName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listBatchJobsByName( @PathParam("jobName") String jobName) {
+    @Operation(summary = "Lists batch jobs by name",
+            description = "Returns JSON containing execution records for batch job instances with the specified job name.")
+    public Response listBatchJobsByName(
+            @Parameter(description = "Batch job name used to select job instances.", required = true)
+            @PathParam("jobName") String jobName) {
         try {
             final List<JobExecutionEntity> executionEntities = new ArrayList<>();
             final JobOperator jobOperator = BatchRuntime.getJobOperator();
@@ -77,7 +87,11 @@ public class BatchJobResource extends AbstractApiBean {
     @GET
     @Path("/jobs/{jobId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listBatchJobById(@PathParam("jobId") String jobId) {
+    @Operation(summary = "Returns a batch job execution",
+            description = "Returns the execution record for the specified batch job execution id as JSON.")
+    public Response listBatchJobById(
+            @Parameter(description = "Numeric batch job execution id.", required = true)
+            @PathParam("jobId") String jobId) {
         try {
             JobExecution execution = BatchRuntime.getJobOperator().getJobExecution(Long.valueOf(jobId));
             return Response.ok(mapper.writeValueAsString(JobExecutionEntity.create(execution))).build();

@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Schedule;
 import jakarta.ejb.Stateless;
@@ -151,9 +152,9 @@ public class SavedSearchServiceBean {
     }
 
     public JsonObjectBuilder makeLinksForAllSavedSearches(boolean debugFlag) throws SearchException, CommandException {
-        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
         List<SavedSearch> allSavedSearches = findAll();
-        JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder savedSearchArrayBuilder = JsonUtil.createArrayBuilder();
         for (SavedSearch savedSearch : allSavedSearches) {
             DataverseRequest dataverseRequest = new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest());
             JsonObjectBuilder perSavedSearchResponse = makeLinksForSingleSavedSearch(dataverseRequest, savedSearch, debugFlag);
@@ -181,9 +182,9 @@ public class SavedSearchServiceBean {
     public JsonObjectBuilder makeLinksForSingleSavedSearch(DataverseRequest dvReq, SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
         logger.info("SAVED SEARCH (" + savedSearch.getId() + ") START search and link process");
         Date start = new Date();
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
-        JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
+        JsonObjectBuilder response = JsonUtil.createObjectBuilder();
+        JsonArrayBuilder savedSearchArrayBuilder = JsonUtil.createArrayBuilder();
+        JsonArrayBuilder infoPerHit = JsonUtil.createArrayBuilder();
         SolrQueryResponse queryResponse = findHits(savedSearch);
 
         List skipList = new ArrayList(); // a list for the definition point itself and already linked objects
@@ -199,7 +200,7 @@ public class SavedSearchServiceBean {
            
         for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
 
-            JsonObjectBuilder hitInfo = Json.createObjectBuilder();
+            JsonObjectBuilder hitInfo = JsonUtil.createObjectBuilder();
             hitInfo.add("name", solrSearchResult.getNameSort());
             hitInfo.add("dvObjectId", solrSearchResult.getEntityId());
             
@@ -325,7 +326,7 @@ public class SavedSearchServiceBean {
     }
 
     private JsonObjectBuilder getInfo(SavedSearch savedSearch, JsonArrayBuilder infoPerHit) {
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
         info.add("definitionPointAlias", savedSearch.getDefinitionPoint().getAlias());
         info.add("savedSearchId", savedSearch.getId());
         info.add("hitInfo", infoPerHit);
@@ -333,7 +334,7 @@ public class SavedSearchServiceBean {
     }
 
     private JsonObjectBuilder getDebugInfo(SavedSearch savedSearch) {
-        JsonObjectBuilder debug = Json.createObjectBuilder();
+        JsonObjectBuilder debug = JsonUtil.createObjectBuilder();
         debug.add("creatorId", savedSearch.getCreator().getId());
         debug.add("query", savedSearch.getQuery());
         debug.add("filterQueries", getFilterQueries(savedSearch));
@@ -341,7 +342,7 @@ public class SavedSearchServiceBean {
     }
 
     private JsonArrayBuilder getFilterQueries(SavedSearch savedSearch) {
-        JsonArrayBuilder filterQueriesArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder filterQueriesArrayBuilder = JsonUtil.createArrayBuilder();
         for (String filterQueryToAdd : savedSearch.getFilterQueriesAsStrings()) {
             filterQueriesArrayBuilder.add(filterQueryToAdd);
         }

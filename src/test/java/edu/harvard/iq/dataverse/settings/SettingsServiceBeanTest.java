@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -118,21 +119,21 @@ class SettingsServiceBeanTest {
         static List<Arguments> validateKeysTestParameters() {
             return List.of(
                 Arguments.of(
-                    Json.createObjectBuilder()
+                    JsonUtil.createObjectBuilder()
                         .add(":ApplicationTermsOfUse", "validValue1")
                         .add(":ApplicationTermsOfUse/lang/en", "validValue2")
                         .build(),
                     List.of()
                 ),
                 Arguments.of(
-                    Json.createObjectBuilder()
+                    JsonUtil.createObjectBuilder()
                         .add(":Invalid:Key", "value1")
                         .add(":NonExistentKey/lang/fr", "value2")
                         .build(),
                     List.of(":Invalid:Key", ":NonExistentKey/lang/fr")
                 ),
                 Arguments.of(
-                    Json.createObjectBuilder()
+                    JsonUtil.createObjectBuilder()
                         .add(":ApplicationTermsOfUse", "value3")
                         .add("NoColonKey", "value4")
                         .build(),
@@ -200,7 +201,7 @@ class SettingsServiceBeanTest {
         @Test
         void testListAllAsJson_jsonObjectSetting() {
             // Given
-            JsonObject expected = Json.createObjectBuilder()
+            JsonObject expected = JsonUtil.createObjectBuilder()
                 .add("default", "2147483648")
                 .add("fileOne", "4000000000")
                 .add("s3", "8000000000")
@@ -222,7 +223,7 @@ class SettingsServiceBeanTest {
         @Test
         void testListAllAsJson_jsonArraySetting() {
             // Given
-            JsonArray expected = Json.createArrayBuilder()
+            JsonArray expected = JsonUtil.createArrayBuilder()
                 .add(2147483648L)
                 .add("4000000000")
                 .add("8000000000")
@@ -268,7 +269,7 @@ class SettingsServiceBeanTest {
         @Test
         void testConvertJsonToSettings_simpleKeyValues() {
             // Given
-            JsonObject input = Json.createObjectBuilder()
+            JsonObject input = JsonUtil.createObjectBuilder()
                 .add(":Key1", "Value1")
                 .add(":Key2", "123456")
                 // The REST API endpoint presents a JsonObject, which may have number literals in it.
@@ -296,7 +297,7 @@ class SettingsServiceBeanTest {
         @Test
         void testConvertJsonToSettings_localizedKeysWithSimpleValues() {
             // Given
-            JsonObject input = Json.createObjectBuilder()
+            JsonObject input = JsonUtil.createObjectBuilder()
                 .add(":LocalizedKey/lang/en", "EnglishValue")
                 .add(":LocalizedKey/lang/fr", "FrenchValue")
                 .build();
@@ -315,7 +316,7 @@ class SettingsServiceBeanTest {
         @Test
         void testConvertJsonToSettings_emptyJson() {
             // Given
-            JsonObject input = Json.createObjectBuilder().build();
+            JsonObject input = JsonUtil.createObjectBuilder().build();
             
             // When
             Set<Setting> result = SettingsServiceBean.convertJsonToSettings(input);
@@ -327,10 +328,10 @@ class SettingsServiceBeanTest {
         @Test
         void testConvertJsonToSettings_complexJsonValue() {
             // Given
-            JsonObject input = Json.createObjectBuilder()
+            JsonObject input = JsonUtil.createObjectBuilder()
                 .add(
                     ":MaxFileUploadSizeInBytes",
-                    Json.createObjectBuilder()
+                    JsonUtil.createObjectBuilder()
                         .add("default", "2147483648")
                         .add("fileOne", "4000000000")
                         .add("s3", "8000000000")

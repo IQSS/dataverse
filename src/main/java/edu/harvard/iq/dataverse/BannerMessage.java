@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 
 /**
@@ -18,6 +19,7 @@ import jakarta.persistence.OneToMany;
  * @author skraffmi
  */
 @Entity
+@Schema(description = "Site banner message configuration, including active state, dismissibility, and localized message text.")
 public class BannerMessage implements Serializable {
 
     @Id

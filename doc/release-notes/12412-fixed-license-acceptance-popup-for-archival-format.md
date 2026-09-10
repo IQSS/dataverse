@@ -1,0 +1,1 @@
+Fixed an issue where, in some cases, the license acceptance pop-up for the archival format option did not display correctly when downloading a complete dataset.

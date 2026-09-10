@@ -193,7 +193,7 @@ class MetricsUtilTest {
         void testStringToJsonObjectBuilder() {
             System.out.println("testStringToJsonObjectBuilder");
 
-            JsonObject jsonObjBefore = Json.createObjectBuilder().add("Test", "result").build();
+            JsonObject jsonObjBefore = JsonUtil.createObjectBuilder().add("Test", "result").build();
             System.out.println(JsonUtil.prettyPrint(jsonObjBefore));
 
             JsonObject jsonObjAfter = MetricsUtil.stringToJsonObject(jsonObjBefore.toString());

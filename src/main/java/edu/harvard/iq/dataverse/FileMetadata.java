@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.Column;
@@ -333,7 +335,7 @@ public class FileMetadata implements Serializable {
     
     public JsonArrayBuilder getCategoryNamesAsJsonArrayBuilder() {
 
-        JsonArrayBuilder builder = Json.createArrayBuilder();
+        JsonArrayBuilder builder = JsonUtil.createArrayBuilder();
 
         if (fileCategories == null) {
             return builder;
