@@ -37,7 +37,7 @@ public enum FeatureFlags {
      * carrying neither header falls back to guest access.
      *
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth-hardening"
-     * @since Dataverse 6.11
+     * @since Dataverse 6.12
      */
     API_SESSION_AUTH_HARDENING("api-session-auth-hardening"),
     /**
