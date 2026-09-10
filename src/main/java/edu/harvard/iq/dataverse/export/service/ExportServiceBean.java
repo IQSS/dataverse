@@ -116,6 +116,7 @@ public class ExportServiceBean {
     }
     
     // TODO: Add a service method to "purge" all cache entries for a dataset, also cleaning up any dangling data
+    //       (for example in case a dataset is deaccessioned)
     
     /**
      * Clears all cached export formats for the given dataset.
@@ -142,7 +143,7 @@ public class ExportServiceBean {
      * Delegates to the version-specific overload by resolving the default version of the dataset.
      *
      * @param dataset the dataset for which cached formats should be cleared; must not be null
-     * @param formatNames the list of format names to clear; may be null to clear all formats
+     * @param formatNames the list of format names to clear; may not be null, use an empty list to clear all formats
      * @throws ExportException if the dataset is null
      */
     public void clearCachedFormats(Dataset dataset, List<String> formatNames) throws ExportException {
