@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -71,7 +73,10 @@ public class ExportServiceBean {
      * @param dataset the dataset whose latest released version is to be exported; must not be null
      * @param formatName the name of the export format to use; must not be null and registered
      * @return the latest published dataset content as a UTF-8 encoded String,
-     *         or null if the dataset is null, no released version exists, or an I/O error occurs
+     *         or null if the dataset is null, no released version exists, or an I/O error occurs.
+     * @apiNote TODO: While returning null is frowned upon in modern Java, it is necessary for backward compatibility.
+     *                This method and any callers should be refactored to follow the "never return null on public API"
+     *                principle going forward.
      * @throws ExportException if an error occurs during a non-cached, on-the-fly export
      * @throws IllegalArgumentException if the formatName is null or not registered
      */
@@ -111,6 +116,8 @@ public class ExportServiceBean {
         return cache.usedStorage(dataset);
     }
     
+    // TODO: Add a service method to "purge" all cache entries for a dataset, also cleaning up any dangling data
+    
     /**
      * Clears all cached export formats for the given dataset.
      * Because all formats are removed, the dataset's * "last exported" timestamp is also set to null,
@@ -123,13 +130,12 @@ public class ExportServiceBean {
      *       Not sure where else we may rely on this timestamp being on the dataset.
      *
      * @param dataset the dataset whose cached exports should all be cleared
-     * @throws IOException if an I/O error occurs while clearing the cached format entries
+     * @throws ExportException if an I/O error occurs while clearing the cached format entries
      */
-    public void clearAllCachedFormats(Dataset dataset) throws IOException {
+    public void clearAllCachedFormats(Dataset dataset) throws ExportException {
+        // NOTE: Depending on the definition of "all", one may also use ExportCache.evictAll(),
+        //       having the benefit of cleaning up leftover cache entries for which no exporter exists anymore.
         clearCachedFormats(dataset, List.of());
-        // Only if we clear *all* formats, reset the "last exported" time stamp.
-        // (Otherwise some formats still may exist in the cache.)
-        dataset.setLastExportTime(null);
     }
     
     /**
@@ -147,6 +153,11 @@ public class ExportServiceBean {
         // Let clearCachedFormats(DatasetVersion, List<String>) handle verifying the formatNames
         
         clearCachedFormats(defaultVersion(dataset), formatNames);
+        // Only if we clear *all* formats, reset the "last exported" time stamp.
+        // (Otherwise some formats still may exist in the cache.)
+        // Keep in mind that this date will be crucial to determine results of cache staleness checks!
+        if (formatNames.isEmpty())
+            dataset.setLastExportTime(null);
     }
     
     /**
@@ -154,36 +165,50 @@ public class ExportServiceBean {
      * Validates that the dataset version is not null and that all provided format names exist in
      * the registry before clearing each cached format.
      *
-     * @param datasetVersion the dataset version whose cached formats should be cleared; must not be null
+     * @param datasetVersion the dataset version whose cached formats should be cleared; must not be null; empty means all formats
      * @param formatNames the list of format names to clear from the cache
      * @throws ExportException if the dataset version is null or any format name is invalid
      */
-    public void clearCachedFormats(DatasetVersion datasetVersion, List<String> formatNames) {
+    public void clearCachedFormats(DatasetVersion datasetVersion, List<String> formatNames) throws ExportException {
         if (datasetVersion == null) {
             throw new ExportException("Dataset version may not be null");
         }
         try {
+            // Will also enforce a non-null list
             registry.requireAllExist(formatNames);
         } catch (IllegalArgumentException ex) {
             throw new ExportException("Invalid format names: " + ex.getMessage());
         }
         
-        formatNames.forEach(formatName -> clearCachedFormat(datasetVersion, formatName));
-    }
-    
-    void clearCachedFormat(DatasetVersion datasetVersion, String formatName) throws ExportException {
-        // Note: If this is ever changed to a "public" method, it will require parameter validation!
-        //       (Which may duplicate checks when coming from other methods)
+        // If the list of format names is empty, retrieve all format names from the registry and evict all.
+        if (formatNames.isEmpty()) {
+            formatNames = registry.getDetails().stream().map(ExporterRegistryBean.Details::formatName).toList();
+        // If not empty, make sure to add transitive dependents to the evict list
+        } else {
+            formatNames = Stream
+                .concat(
+                    formatNames.stream(),
+                    formatNames.stream()
+                        .map(format -> registry.getTransitiveDependents(format))
+                        .flatMap(Set::stream))
+                .distinct()
+                .toList();
+        }
         
-        // Build the cache key and evict it from the cache.
-        // NOTE: If the given version wasn't cacheable in the first place (as per isCacheable()),
-        //       eviction should just succeed instead of failing (nothing was ever there, but this
-        //       was the service's choice, not the cache's!).
-        ExportCacheKey key = new ExportCacheKey(datasetVersion, formatName);
-        try {
-            cache.evict(key);
-        } catch (IOException ex) {
-            throw new ExportException("Failed to clear cached format: " + ex.getMessage());
+        // Iterate over the list of format names and evict the cache for each format.
+        // In case of errors, keep going but eventually fail by throwing an exception.
+        AtomicBoolean evictionFailed = new AtomicBoolean(false);
+        formatNames.forEach(format -> {
+            ExportCacheKey key = new ExportCacheKey(datasetVersion, format);
+            try {
+                cache.evict(datasetVersion.getDataset(), key);
+            } catch (IOException e) {
+                logger.log(Level.WARNING, e, () -> "Failed to evict cache of dataset version id=" + datasetVersion.getId() + " and format=" + format);
+                evictionFailed.set(true);
+            }
+        });
+        if (evictionFailed.get()) {
+            throw new ExportException("Failed to evict cache for some formats, see logs for details");
         }
     }
     
@@ -245,6 +270,7 @@ public class ExportServiceBean {
         
         // All exports done successfully, update last export time on the dataset
         // TODO: Is it correct to update the last export time even if only some formats were exported?
+        //       Keep in mind that this date will be crucial to determine results of cache staleness checks!
         dataset.setLastExportTime(Date.from(Instant.now()));
     }
     
