@@ -220,7 +220,7 @@ public class ExportServiceBean {
     // ++++ ++++ ++++ METHODS TO TRIGGER DIFFERENT EXPORTS ++++ ++++ ++++
     
     /**
-     * Exports the given dataset in all available supported formats.
+     * Exports the given dataset in all available supported formats and caches in dataset auxiliary storage.
      * <p>
      * This is a convenience wrapper that delegates to {@link #exportFormats(Dataset, List)} with an empty list,
      * causing every registered exporter to be invoked.
@@ -236,7 +236,7 @@ public class ExportServiceBean {
     }
     
     /**
-     * Exports the given dataset in a single specified format.
+     * Exports the given dataset in a single specified format and caches in dataset auxiliary storage.
      * Delegate to the multi-format export method with a very short list.
      * Be aware that this may cause multiple exporters to be invoked in case the format is a prerequisite for others.
      *
@@ -253,9 +253,9 @@ public class ExportServiceBean {
     }
     
     /**
-     * Exports the given dataset selectively in the specified formats by resolving the dataset's {@link #defaultVersion}
-     * and delegating to the version-specific export method. Upon successful completion of all exports, the dataset's
-     * last export time is updated to the current timestamp.
+     * Exports the given dataset selectively in the specified formats and caches in dataset auxiliary storage.
+     * It resolves the dataset's {@link #defaultVersion} and delegates to the version-specific export method.
+     * Upon successful completion of all exports, the dataset's last export time is updated to the current timestamp.
      * <p>
      * Be aware that this may cause more exporters to be invoked in case any format is a prerequisite for others.
      * If the list is empty, this method will export all available formats.
@@ -281,7 +281,7 @@ public class ExportServiceBean {
      * Clears the cached exports for the specified formats (or all registered formats if the list is empty),
      * resolves all transitive dependent formats, orders the required exporters topologically to guarantee
      * that prerequisite formats are regenerated before their dependents, and then sequentially produces
-     * and caches the requested exports.
+     * and caches all the requested exported metadata formats.
      * <p>
      * If any of the requested formats has transitive dependents in the registry, those dependents are
      * automatically included in the export process so that they are regenerated with fresh prerequisite
