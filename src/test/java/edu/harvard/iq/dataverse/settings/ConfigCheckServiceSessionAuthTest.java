@@ -31,16 +31,18 @@ class ConfigCheckServiceSessionAuthTest {
         sut = new ConfigCheckService();
         captureHandler = new Handler() {
             @Override
-            public void publish(LogRecord record) {
-                logRecords.add(record);
+            public void publish(LogRecord logRecord) {
+                logRecords.add(logRecord);
             }
 
             @Override
             public void flush() {
+                // Records go straight into the list, nothing is buffered.
             }
 
             @Override
             public void close() {
+                // Nothing to release; tearDown detaches the handler.
             }
         };
         logger.addHandler(captureHandler);
