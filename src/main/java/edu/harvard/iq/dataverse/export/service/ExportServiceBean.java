@@ -13,11 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -177,7 +176,7 @@ public class ExportServiceBean {
             // Will also enforce a non-null list
             registry.requireAllExist(formatNames);
         } catch (IllegalArgumentException ex) {
-            throw new ExportException("Invalid format names: " + ex.getMessage());
+            throw new ExportException("Invalid format names: " + ex.getMessage(), ex);
         }
         
         // If the list of format names is empty, retrieve all format names from the registry and evict all.
@@ -190,18 +189,18 @@ public class ExportServiceBean {
         
         // Iterate over the list of format names and evict the cache for each format.
         // In case of errors, keep going but eventually fail by throwing an exception.
-        AtomicBoolean evictionFailed = new AtomicBoolean(false);
+        List<String> failedFormats = new ArrayList<>();
         formatNames.forEach(format -> {
             ExportCacheKey key = new ExportCacheKey(datasetVersion, format);
             try {
                 cache.evict(datasetVersion.getDataset(), key);
             } catch (IOException e) {
                 logger.log(Level.WARNING, e, () -> "Failed to evict cache of dataset version id=" + datasetVersion.getId() + " and format=" + format);
-                evictionFailed.set(true);
+                failedFormats.add(format);
             }
         });
-        if (evictionFailed.get()) {
-            throw new ExportException("Failed to evict cache for some formats, see logs for details");
+        if (!failedFormats.isEmpty()) {
+            throw new ExportException("Failed to evict cache for formats=" + String.join(", ", failedFormats) + ", see logs for details");
         }
     }
     
