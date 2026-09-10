@@ -2190,6 +2190,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                     Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
+
+                    // Direct upload has already stored the file in S3.
+                    // Remove it if Dataverse rejects the upload.
+                    try {
+                        sio.delete();
+                    } catch (IOException deleteEx) {
+                        logger.log(
+                            Level.WARNING,
+                            "Failed to delete rejected direct upload {0}: {1}",
+                            new Object[]{fileName, deleteEx.getMessage()}
+                        );
+                    }
+
+                    // Show the actual command error to the user.
+                    errorMessages.add(ex.getMessage());
+                    return;
                 }
 
                 if (datafiles == null) {
