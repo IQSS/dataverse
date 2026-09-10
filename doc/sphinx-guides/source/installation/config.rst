@@ -4027,7 +4027,9 @@ To check the status of feature flags via API, see :ref:`list-all-feature-flags` 
 dataverse.feature.api-session-auth
 ++++++++++++++++++++++++++++++++++
 
-Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future. To reduce the CSRF exposure, also enable :ref:`dataverse.feature.api-session-auth-hardening`.
+Enables API authentication via session cookie (JSESSIONID). This lets front-end code served by the installation itself, such as React components mounted inside the JSF pages, call the API as the logged-in user without handling a separate credential. See `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_ for background.
+
+**Caution: Enabling this feature flag on its own exposes the installation to CSRF risks!** Enable :ref:`dataverse.feature.api-session-auth-hardening` alongside it.
 
 .. _dataverse.feature.api-session-auth-hardening:
 
@@ -4046,6 +4048,10 @@ When enabled, an API request authenticated by session cookie on behalf of a full
 Browsers set ``Origin`` on every cross-site ``fetch``, ``XMLHttpRequest`` and form submission, and send ``Referer`` on cross-site image loads and link navigations under the default referrer policy. Neither header can be set by page scripts, so cross-site forged requests are blocked while same-origin traffic from the JSF UI is unaffected.
 
 Guest sessions and private-URL preview sessions (``PrivateUrlUser``) are exempt: a guest holds no privileges worth forging, and a preview session is read-only with no cross-origin-readable response.
+
+One gap remains by design. A request that carries neither header falls back to guest access, but the Access API reads the session directly afterwards, so a cross-site page that suppresses the referrer and navigates the browser to a file download URL can still trigger that download. The response is not readable by the attacking page, so the effect is a download the user was already entitled to, plus its download count. Closing it would mean rejecting header-less requests, which would also break bookmarked and shared download links, since the two are indistinguishable.
+
+How this compares to the alternatives: the JSF UI protects its own POST forms with an unguessable ``jakarta.faces.ViewState`` value but does not enable ``<protected-views>``, so its GET requests carry no equivalent check; the origin check above applies to every HTTP method. Bearer-token authentication is not exposed to CSRF at all, because browsers never send a bearer token automatically, but the token has to be stored where page scripts can read it, so one cross-site scripting flaw yields a credential that can be replayed from anywhere. A session cookie marked ``HttpOnly`` cannot be read by page scripts or replayed off the user's browser. Neither model is strictly stronger, and bearer tokens remain the right choice for any client that is not same-origin.
 
 Because every check is made against ``dataverse.siteUrl``, an installation reachable under more than one hostname should confirm that setting matches the origin browsers actually use before enabling this flag.
 
