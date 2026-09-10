@@ -292,7 +292,7 @@ public class ExporterRegistryBean {
                     jarUrls.add(new URL("jar:" + path.toUri().toURL() + "!/"));
                 }
             } catch (IOException e) {
-                logger.warning("Problem accessing external Exporters: " + e.getLocalizedMessage());
+                logger.log(Level.WARNING, e, () -> "Problem accessing external exporter JARs: " + e.getLocalizedMessage());
             }
         }
         this.exporterClassLoader = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
