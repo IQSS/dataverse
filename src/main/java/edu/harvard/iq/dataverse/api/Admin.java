@@ -68,6 +68,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import java.time.Duration;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -2957,7 +2958,8 @@ public class Admin extends AbstractApiBean {
             try {
                 Predicate<String> filter = s -> true;
                 StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
-                final List<String> result = datasetIO.cleanUp(filter, true);
+                // Auditing lists everything, so no minimum age applies here.
+                final List<String> result = datasetIO.cleanUp(filter, Duration.ZERO, true);
                 // add files that are in dataset files but not in cleanup result or DataFiles with missing FileMetadata
                 dataset.getFiles().forEach(df -> {
                     try {
