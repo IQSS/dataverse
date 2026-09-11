@@ -27,7 +27,7 @@
                     <o:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverse)}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
                     <f:viewParam name="alias" value="#{SearchIncludeFragment.dataverseAlias}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
@@ -518,8 +518,7 @@
                                     <!-- Edit/Publish Button Group -->
                                     <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated and
                                                              (permissionsWrapper.canIssueUpdateDataverseCommand(dataverse)
-                                                             or permissionsWrapper.canIssuePublishDataverseCommand(dataverse)
-                                                             or DataversePage.showLinkingPopup())}">
+                                                             or permissionsWrapper.canIssuePublishDataverseCommand(dataverse))}">
                                             <!-- Publish Button -->
                                             <ui:fragment rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(dataverse)}">
                                                 <button type="button" class="btn btn-default btn-access" onclick="PF('confirmation').show()"
@@ -860,7 +859,7 @@
                                     </div>
                                 </div>
                                 <div class="button-block">
-                                    <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}"/>
+                                    <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" onclick="PF('linkDataverseForm').hide()" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
                                     <button class="btn btn-link" onclick="PF('linkDataverseForm').hide();" type="button">                              
                                     #{bundle.cancel}
                                     </button>
@@ -868,7 +867,7 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
                                 <p class="text-danger">
-                                    <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.link.no.linkable.remaining']}
+                                    <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.link.no.linkable']}
                                 </p>
                                 <div class="button-block">
                                     <button class="btn btn-default" onclick="PF('linkDataverseForm').hide();" type="button">                              
