@@ -181,6 +181,113 @@ public class SchemaDotOrgExporterTest {
         assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
         assertFalse(json2.getJsonArray("distribution").getJsonObject(0).containsKey("contentUrl"));
     }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    @JvmSetting(key = JvmSettings.EXPORTS_SCHEMA_DOT_ORG_MAX_FILES_FOR_DOWNLOAD_ENTRIES, value = "2")
+    public void testExportDistributionAtThreshold() throws JsonParseException {
+        DatasetVersion version = createDatasetVersionWithFiles(2);
+        JsonObject json = getExport(version);
+
+        assertTrue(json.containsKey("distribution"));
+        assertEquals(2, json.getJsonArray("distribution").size());
+        assertFalse(json.containsKey("potentialAction"));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    @JvmSetting(key = JvmSettings.EXPORTS_SCHEMA_DOT_ORG_MAX_FILES_FOR_DOWNLOAD_ENTRIES, value = "2")
+    public void testExportWithPotentialAction() throws JsonParseException {
+        DatasetVersion version = createDatasetVersionWithFiles(3);
+        JsonObject json = getExport(version);
+
+        assertFalse(json.containsKey("distribution"));
+        assertTrue(json.containsKey("potentialAction"));
+
+        JsonObject potentialAction = json.getJsonObject("potentialAction");
+        assertEquals("SearchAction", potentialAction.getString("@type"));
+        JsonObject target = potentialAction.getJsonObject("target");
+        assertEquals("EntryPoint", target.getString("@type"));
+        assertEquals("https://librascholar.org/api/access/datafile/{fileId}", target.getString("urlTemplate"));
+
+        JsonObject queryInput = potentialAction.getJsonArray("query-input").getJsonObject(0);
+        assertEquals("PropertyValueSpecification", queryInput.getString("@type"));
+        assertEquals("fileId", queryInput.getString("valueName"));
+        // IDs are 1, 2, 3 from createDatasetVersionWithFiles
+        assertEquals("(1|2|3)", queryInput.getString("valuePattern"));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    @JvmSetting(key = JvmSettings.EXPORTS_SCHEMA_DOT_ORG_MAX_FILES_FOR_DOWNLOAD_ENTRIES, value = "2")
+    @JvmSetting(key = JvmSettings.HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, value = "true")
+    public void testExportWithPotentialActionHidden() throws JsonParseException {
+        DatasetVersion version = createDatasetVersionWithFiles(3);
+        JsonObject json = getExport(version);
+
+        assertFalse(json.containsKey("distribution"));
+        assertFalse(json.containsKey("potentialAction"));
+    }
+    
+    private JsonObject getExport(DatasetVersion version) throws JsonParseException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            ExportDataProvider provider = new InternalExportDataProvider(version);
+            schemaDotOrgExporter.exportDataset(provider, byteArrayOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return JsonUtil.getJsonObject(byteArrayOutputStream.toString());
+    }
+
+    private DatasetVersion createDatasetVersionWithFiles(int fileCount) {
+        DatasetVersion version = new DatasetVersion();
+        version.setVersionState(DatasetVersion.VersionState.RELEASED);
+        version.setVersionNumber(1L);
+        version.setMinorVersionNumber(0L);
+        version.setReleaseTime(new Date());
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        version.setDataset(dataset);
+        dataset.setVersions(Arrays.asList(version));
+
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        for (int i = 0; i < fileCount; i++) {
+            FileMetadata fmd = new FileMetadata();
+            DataFile dataFile = new DataFile();
+            dataFile.setId((long) (i + 1));
+            dataFile.setFilesize(1000L + i);
+            dataFile.setContentType("text/plain");
+            dataFile.setProtocol("doi");
+            dataFile.setAuthority("10.5072/FK2");
+            dataFile.setIdentifier("FILE" + i);
+            fmd.setDatasetVersion(version);
+            fmd.setDataFile(dataFile);
+            fmd.setLabel("file" + i + ".txt");
+            fmd.setDescription("File " + i + " description");
+            fileMetadatas.add(fmd);
+            dataFile.setFileMetadatas(Arrays.asList(fmd));
+            dataFile.setOwner(dataset);
+        }
+        version.setFileMetadatas(fileMetadatas);
+
+        // Mocking TermsOfUseAndAccess to avoid NPE if needed
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        License license = new License();
+        license.setName("CC0");
+        license.setUri(URI.create("http://creativecommons.org/publicdomain/zero/1.0/"));
+        terms.setLicense(license);
+        version.setTermsOfUseAndAccess(terms);
+
+        return version;
+    }
     
     private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
