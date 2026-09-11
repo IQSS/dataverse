@@ -65,7 +65,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
@@ -428,8 +427,8 @@ public class Dataverses extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
             }
             
-            if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
-                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
+            if (!ds.getFiles().isEmpty() && !(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, owner))){
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.powerUserFiles"));
             }
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
@@ -553,10 +552,10 @@ public class Dataverses extends AbstractApiBean {
             @QueryParam("release") String releaseParam) {
         try {
             User u = getRequestUser(crc);
-            if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
-            }
             Dataverse owner = findDataverseOrDie(parentIdtf);
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, owner))) {
+                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            }
             Dataset ds = parseDataset(jsonBody, owner);
 
             if (ds.getVersions().isEmpty()) {
@@ -643,10 +642,10 @@ public class Dataverses extends AbstractApiBean {
             @QueryParam("release") String releaseParam) {
         try {
             User u = getRequestUser(crc);
-            if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
-            }
             Dataverse owner = findDataverseOrDie(parentIdtf);
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, owner))) {
+                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            }
             Dataset ds;
             try {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml), owner);
@@ -724,11 +723,11 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("identifier") String parentIdtf) {
         try {
             User u = getRequestUser(crc);
-            if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
-            }
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, owner))) {
+                return error(Status.FORBIDDEN, "Not a superuser or power user");
+            }
+
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
@@ -1935,8 +1934,8 @@ public class Dataverses extends AbstractApiBean {
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
             Dataverse dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
-            if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
+            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, dv))) {
+                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
 
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
@@ -2641,8 +2640,8 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            if (!permissionSvc.isPowerUserOn(user, dataverse)) {
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2669,8 +2668,8 @@ public class Dataverses extends AbstractApiBean {
         Dataverse dataverse = findDataverseOrDie(id);
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            if (!permissionSvc.isPowerUserOn(user, dataverse)) {
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2716,11 +2715,10 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("identifier") String dvIdtf) {
         try {
             User user = getRequestUser(crc);
-            if (!user.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
-            }
-
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if (!(user instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) user, dataverse))) {
+                return error(Status.FORBIDDEN, "Not a superuser or power user");
+            }
             JsonArrayBuilder assignees = JsonUtil.createArrayBuilder();
             dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
                     .sorted()
@@ -2746,11 +2744,10 @@ public class Dataverses extends AbstractApiBean {
                                                 List<String> roleAssigneeIdentifiers) {
         try {
             User user = getRequestUser(crc);
-            if (!user.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
-            }
-
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if (!(user instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) user, dataverse))) {
+                return error(Status.FORBIDDEN, "Not a superuser or power user");
+            }
             Set<String> validatedIdentifiers = validateLocallyFairRoleAssigneeIdentifiers(roleAssigneeIdentifiers);
             dataverse.setLocallyFAIRRoleAssigneeIdentifiers(validatedIdentifiers);
             dataverseService.save(dataverse);
@@ -2775,11 +2772,10 @@ public class Dataverses extends AbstractApiBean {
                                                @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         try {
             User user = getRequestUser(crc);
-            if (!user.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
-            }
-
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if (!(user instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) user, dataverse))) {
+                return error(Status.FORBIDDEN, "Not a superuser or power user");
+            }
             if (findAssignee(roleAssigneeIdentifier) == null) {
                 return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
             }
@@ -2807,11 +2803,10 @@ public class Dataverses extends AbstractApiBean {
                                                   @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         try {
             User user = getRequestUser(crc);
-            if (!user.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
-            }
-
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if (!(user instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) user, dataverse))) {
+                return error(Status.FORBIDDEN, "Not a superuser or power user");
+            }
             if(StringUtils.isBlank(roleAssigneeIdentifier) || !dataverse.getLocallyFAIRRoleAssigneeIdentifiers().contains(roleAssigneeIdentifier)) {
                 return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
             }

@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
@@ -31,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
-import jakarta.ejb.EJB;
 import jakarta.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
@@ -321,8 +319,8 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     }
 
     // To block Publishing dataset or Submitting dataset for review
-    protected boolean getEffectiveRequiresFilesToPublishDataset() {
-        if (getUser().isSuperuser()) {
+    protected boolean getRequiresFilesToPublishOrReviewDataset(CommandContext ctxt) {
+        if (getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), getDataset())) {
             return false;
         } else {
             Dataverse dv = getDataset().getOwner();

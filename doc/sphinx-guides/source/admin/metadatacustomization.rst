@@ -514,7 +514,7 @@ controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
 Enabling a Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the UI (see :ref:`general-information` section of Dataverse Collection Management in the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root Dataverse collection:
+Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the UI (see :ref:`general-information` section of Dataverse Collection Management in the User Guide) or by running a curl command like the one below using a superuser or power user API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root Dataverse collection:
 
 ``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
 

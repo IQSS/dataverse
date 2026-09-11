@@ -64,13 +64,9 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         boolean removeGuestbook = false, removeLinkDs = false;
-        if (!(getUser() instanceof AuthenticatedUser)) {
-            /**
-             * This English wasn't moved to the bundle because it is impossible
-             * to exercise it via both API and UI. See also the note in in the
-             * PermissionException catch in AbstractApiBean.
-             */
-            throw new PermissionException("Move Dataset can only be called by authenticated users.", this, Collections.singleton(Permission.DeleteDatasetDraft), moved);
+        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), moved))) {
+            throw new PermissionException(BundleUtil.getStringFromBundle("command.exception.only.powerusers", Arrays.asList(this.toString())),
+                    this, Collections.singleton(Permission.DeleteDatasetDraft), moved);
         }
 
         // validate the move makes sense
