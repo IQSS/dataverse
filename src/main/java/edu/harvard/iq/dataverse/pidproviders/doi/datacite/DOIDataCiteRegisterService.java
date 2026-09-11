@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.DoiMetadata;
 import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
+import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate.DatafileInfoMode;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -58,8 +60,13 @@ public class DOIDataCiteRegisterService {
      * https://support.datacite.org/docs/mds-api-guide#doi-states
      */
     public String reserveIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        return reserveIdentifier(identifier, metadata, dvObject, getConfiguredDatafileInfoMode());
+    }
+
+    public String reserveIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject,
+            DatafileInfoMode datafileInfoMode) throws IOException {
         String retString = "";
-        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject, datafileInfoMode);
 
         retString = client.postMetadata(xmlMetadata);
         
@@ -67,8 +74,13 @@ public class DOIDataCiteRegisterService {
     }
 
     public String registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        return registerIdentifier(identifier, metadata, dvObject, getConfiguredDatafileInfoMode());
+    }
+
+    public String registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject,
+            DatafileInfoMode datafileInfoMode) throws IOException {
         String retString = "";
-        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject, datafileInfoMode);
         String target = metadata.get("_target");
         
         retString = client.postMetadata(xmlMetadata);
@@ -79,10 +91,15 @@ public class DOIDataCiteRegisterService {
     
     
     public String reRegisterIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        return reRegisterIdentifier(identifier, metadata, dvObject, getConfiguredDatafileInfoMode());
+    }
+
+    public String reRegisterIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject,
+            DatafileInfoMode datafileInfoMode) throws IOException {
         String retString = "";
         // "bare identifier" is the canonical pid with the "doi:" prefix stripped
         String bareIdentifier = identifier.substring(identifier.indexOf(":") + 1);
-        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject, datafileInfoMode);
         String target = metadata.get("_target");
         String currentMetadata = null;
         boolean hasDifferences = false;
@@ -131,8 +148,20 @@ public class DOIDataCiteRegisterService {
 
         return retString;
     }
-    
-        public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
+
+    /**
+     * Backward-compatibility fallback for callers that still use no-arg overloads.
+     */
+    private static DatafileInfoMode getConfiguredDatafileInfoMode() {
+        return DatafileInfoMode.from(JvmSettings.DATACITE_XML_DATAFILE_INFO.lookupOptional().orElse("expanded"));
+    }
+     
+    public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
+        return getMetadataFromDvObject(identifier, metadata, dvObject, getConfiguredDatafileInfoMode());
+    }
+
+    public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject,
+            DatafileInfoMode datafileInfoMode) {
 
         Dataset dataset = null;
 
@@ -182,7 +211,7 @@ public class DOIDataCiteRegisterService {
         doiMetadata.setPublisher(producerString);
         doiMetadata.setPublisherYear(metadata.get("datacite.publicationyear"));
 
-        String xmlMetadata = new XmlMetadataTemplate(doiMetadata).generateXML(dvObject);
+        String xmlMetadata = new XmlMetadataTemplate(doiMetadata, datafileInfoMode).generateXML(dvObject);
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
@@ -196,10 +225,8 @@ public class DOIDataCiteRegisterService {
 
         doiMetadata.setDescription(AbstractPidProvider.UNAVAILABLE);
 
-        String title =metadata.get("datacite.title");
-        
-        System.out.print("Map metadata title: "+ metadata.get("datacite.title"));
-        
+        String title = metadata.get("datacite.title");
+
         doiMetadata.setAuthors(null);
         
         doiMetadata.setTitle(title);
@@ -215,8 +242,13 @@ public class DOIDataCiteRegisterService {
 
     public String modifyIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject)
             throws IOException {
+        return modifyIdentifier(identifier, metadata, dvObject, getConfiguredDatafileInfoMode());
+    }
 
-        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+    public String modifyIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject,
+            DatafileInfoMode datafileInfoMode) throws IOException {
+
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject, datafileInfoMode);
 
         logger.fine("XML to send to DataCite: " + xmlMetadata);
 
