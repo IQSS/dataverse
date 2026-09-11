@@ -12,7 +12,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import jakarta.ws.rs.core.MediaType;
 
 @AutoService(Exporter.class)
 public class OAI_OREExporter implements Exporter {
@@ -57,7 +56,7 @@ public class OAI_OREExporter implements Exporter {
 
     @Override
     public String getMediaType() {
-        return MediaType.APPLICATION_JSON;
+        return "application/ld+json";
     }
 
 }
