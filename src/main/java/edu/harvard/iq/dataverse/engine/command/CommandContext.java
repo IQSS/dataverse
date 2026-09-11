@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchService;
@@ -143,4 +145,8 @@ public interface CommandContext {
     public DatasetFieldsValidator datasetFieldsValidator();
 
     public LicenseServiceBean licenses();
+    
+    public ExportServiceBean exportService();
+    
+    public ExporterRegistryBean exporterRegistry();
 }

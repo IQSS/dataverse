@@ -9,7 +9,7 @@ import io.gdcc.xoai.dataprovider.model.MetadataFormat;
 import io.gdcc.xoai.dataprovider.repository.ItemRepository;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
@@ -40,12 +40,14 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     
     private final OAIRecordServiceBean recordService;
     private final DatasetServiceBean datasetService;
-    private final String serverUrl; 
+    private final String serverUrl;
+    private final ExportServiceBean exportService;
 
-    public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService, String serverUrl) {
+    public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService, ExportServiceBean exportService, String serverUrl) {
         this.recordService = recordService;
         this.datasetService = datasetService;
-        this.serverUrl = serverUrl; 
+        this.serverUrl = serverUrl;
+        this.exportService = exportService;
     }
     
     @Override
@@ -253,7 +255,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             
         } else {
             InputStream pregeneratedMetadataStream;
-            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset.getReleasedVersion(), metadataPrefix);
+            pregeneratedMetadataStream = exportService.getExport(dataset.getReleasedVersion(), metadataPrefix);
 
             metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
         }

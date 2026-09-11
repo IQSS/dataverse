@@ -38,12 +38,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import io.gdcc.spi.export.ExportException;
-import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
@@ -105,7 +104,6 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.OptimisticLockException;
@@ -255,6 +253,10 @@ public class DatasetPage implements java.io.Serializable {
     DvObjectServiceBean dvObjectService;
     @EJB
     CacheFactoryBean cacheFactory;
+    @EJB
+    ExportServiceBean exportService;
+    @EJB
+    ExporterRegistryBean exporterRegistryService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -4898,31 +4900,18 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public List< String[]> getExporters(){
-        List<String[]> retList = new ArrayList<>();
-        String myHostURL = getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
-            String formatName = provider[1];
-            String formatDisplayName = provider[0];
-
-            Exporter exporter = null;
-            try {
-                exporter = ExportService.getInstance().getExporter(formatName);
-            } catch (ExportException ex) {
-                logger.warning("Failed to get : " + formatName);
-                logger.warning(ex.getLocalizedMessage());
-                exporter = null;
-            }
-            if (exporter != null && exporter.isAvailableToUsers()) {
-                // Not all metadata exports should be presented to the web users!
-                // Some are only for harvesting clients.
-
-                String[] temp = new String[2];
-                temp[0] = formatDisplayName;
-                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + dataset.getGlobalId().asString();
-                retList.add(temp);
-            }
-        }
-        return retList;
+        String urlTemplate = getDataverseSiteUrl() + "/api/datasets/export?exporter=%s&persistentId=%s";
+        
+        return exporterRegistryService.getDetails().stream()
+            .filter(ExporterRegistryBean.Details::isAvailableToUsers)
+            .map(details -> new String[]{
+                details.localizedDisplayName(),
+                urlTemplate.formatted(
+                    details.formatName(),
+                    dataset.getGlobalId().asString()
+                )
+            })
+            .toList();
     }
 
 
@@ -6136,8 +6125,7 @@ public class DatasetPage implements java.io.Serializable {
             // The full version is available from the "Export Metadata" dropdown.
             // Both versions are available via API.
             final String CROISSANT_SCHEMA_NAME = "croissantSlim";
-            ExportService instance = ExportService.getInstance();
-            String croissant = instance.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
+            String croissant = exportService.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
             if (FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()) {
                 // Rewrite the export on the fly and insert local reviews until we have a solution for https://github.com/gdcc/dataverse-spi/issues/5
                 JsonObjectBuilder reviewsJsonObj = null;
@@ -6169,8 +6157,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
-            ExportService instance = ExportService.getInstance();
-            String jsonLd = instance.getLatestPublishedAsString(dataset, SchemaDotOrgExporter.NAME);
+            String jsonLd = exportService.getLatestPublishedAsString(dataset, SchemaDotOrgExporter.NAME);
             if (jsonLd != null) {
                 logger.fine("Returning cached schema.org JSON-LD.");
                 return jsonLd;
@@ -7019,7 +7006,7 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
         if (signpostingLinkHeader == null) {
-            SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
+            SignpostingResources sr = new SignpostingResources(systemConfig, exporterRegistryService, workingVersion,
                     JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
                     JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
             signpostingLinkHeader = sr.getLinks();
