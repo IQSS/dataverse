@@ -27,24 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Keyset-stability integration tests for the SQL-backed dataset version tree
- * endpoint. The contract these tests defend:
- *
- * <ol>
- *   <li>For any page size, the concatenation of paged calls equals the
- *       single-shot listing of the same path/order/include — no skips, no
- *       duplicates, identical ordering.</li>
- *   <li>Each item appears exactly once across the paged walk.</li>
- *   <li>Folders precede files; within each block, ordering is by name
- *       (case-insensitive) with a stable id tie-break.</li>
- *   <li>The {@code access} marker on file items reflects the file's
- *       restricted/embargoed state correctly.</li>
- * </ol>
- *
- * The "oracle" in this IT is the single-shot listing (limit large enough to
- * return everything in one page). The paged walks are compared against it
- * page-for-page. This is the SQL keyset-paginator's regression net for
- * {@code DatasetVersionTreeService}.
+ * Keyset stability of the tree endpoint: for any page size, the paged walk
+ * must equal the single-shot listing item for item, with no skips or
+ * duplicates, folders first, names case-insensitive with an id tiebreak.
  */
 class DatasetVersionTreeKeysetIT {
 
@@ -176,12 +161,7 @@ class DatasetVersionTreeKeysetIT {
         return JsonPath.from(response.asString()).getInt("data.files[0].dataFile.id");
     }
 
-    /**
-     * Every fixture file gets unique bytes: the server rejects a second
-     * upload with the same content as an existing file in the dataset
-     * (400, "This file has the same content as ..."), so reusing one
-     * source file for the whole tree stopped working.
-     */
+    /** Unique bytes per file; the server rejects duplicate content within a dataset. */
     private static String uniqueContentFile(String label, String directoryLabel) {
         try {
             java.nio.file.Path tmp = java.nio.file.Files.createTempFile("tree-fixture-", ".txt");
@@ -196,12 +176,7 @@ class DatasetVersionTreeKeysetIT {
 
     // ---- Oracle / paged-walk plumbing -----------------------------------
 
-    /**
-     * Compact representation of a tree item — only the bits we want to assert
-     * stay identical between oracle and paged walks. Hash/equals over the
-     * tuple gives us a clean per-item comparison without dragging the whole
-     * JSON shape through the diff.
-     */
+    /** The fields compared between the oracle and the paged walks. */
     record Item(String type, String name, String path, Long id, String access) {
         @SuppressWarnings("rawtypes")
         static Item from(Map raw) {
@@ -291,11 +266,8 @@ class DatasetVersionTreeKeysetIT {
         assertEquals(8, oracle.size(), "Expected 8 items at root");
         assertFoldersBeforeFiles(oracle);
 
-        // limit=4 makes the folder listing end exactly at the page boundary
-        // (4 folders, page full, files still unseen) — the regression case
-        // where the walk used to stop with nextCursor=null and silently drop
-        // every root file. limit=1 and limit=2 hit the same boundary on a
-        // later page; limit=8 fits everything exactly on one page.
+        // limit=4 ends the folder listing exactly at a page boundary with files
+        // still unseen, the case that once dropped every root file.
         for (int limit : new int[] {1, 2, 3, 4, 5, 7, 8, 10}) {
             List<Item> paged = pagedWalk(datasetId, null, null, null, limit, token);
             assertNoDuplicates(paged);

@@ -26,16 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-/**
- * Integration tests for the paginated dataset version tree endpoint:
- *
- *   GET /api/datasets/{id}/versions/{versionId}/tree
- *
- * The endpoint is the backend half of the tree-view selection-and-download
- * track (#6691) and is consumed by the dataverse-client-javascript SDK
- * helper {@code listDatasetTreeNode}. These tests exercise the contract from
- * the perspective of an HTTP client.
- */
+/** HTTP contract of GET /api/datasets/{id}/versions/{versionId}/tree (#6691). */
 class DatasetsTreeIT {
 
     private static final String DRAFT_VERSION = ":draft";
@@ -86,12 +77,7 @@ class DatasetsTreeIT {
         response.then().assertThat().statusCode(OK.getStatusCode());
     }
 
-    /**
-     * Every fixture file gets unique bytes: the server rejects a second
-     * upload with the same content as an existing file in the dataset
-     * (400, "This file has the same content as ..."), so reusing one
-     * source file for the whole tree stopped working.
-     */
+    /** Unique bytes per file; the server rejects duplicate content within a dataset. */
     private static String uniqueContentFile(String label, String directoryLabel) {
         try {
             java.nio.file.Path tmp = java.nio.file.Files.createTempFile("tree-fixture-", ".txt");
@@ -275,16 +261,8 @@ class DatasetsTreeIT {
 
     @Test
     void ingestedTabularFileOmitsChecksumUnlessOriginalsRequested() {
-        // `df.checksumvalue` is computed at upload time from the bytes the
-        // user submitted. For tabular files that go through ingest, the bytes
-        // served by the default `downloadUrl` are the converted TSV — a
-        // different file with a different (unstored) digest. The tree must
-        // therefore NOT advertise `df.checksumvalue` as the digest of the
-        // default-form download for those files; that would set up clients
-        // (and their users) to chase phantom integrity failures. When the
-        // caller asks for `originals=true`, the URL switches to
-        // `?format=original` whose bytes DO match `df.checksumvalue`, and the
-        // checksum is reported normally.
+        // For ingested tabular files the stored checksum is the original's, not
+        // the converted TSV's, so it is only reported with originals=true.
         String apiToken = UtilIT.createRandomUserGetToken();
         Response createDataverse = UtilIT.createRandomDataverse(apiToken);
         createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -391,20 +369,12 @@ class DatasetsTreeIT {
                 null, null, null, null, null, null, null, otherToken)
                 .then().assertThat()
                 .statusCode(jakarta.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode());
-        // 401 matches what develop's own endpoints return for this case:
-        // /versions/{v}/files answers 401 for an authenticated user who
-        // lacks access to another owner's draft (verified side by side).
-        // The tree endpoint resolves the version through the same
-        // getDatasetVersionOrDie path, so the two stay identical.
+        // 401, same as /versions/{v}/files for a draft the user cannot see.
     }
 
     @Test
     void locallyFairDatasetIsHiddenFromNonAssignees() {
-        // The tree endpoint must apply the same LocallyFAIR visibility
-        // gate as every other dataset GET endpoint (it resolves the
-        // dataset via findDatasetUserCanSeeOrDie). Without the gate, a
-        // published LF dataset would 404 on /versions/{v}/files but leak
-        // its full file listing through /versions/{v}/tree.
+        // Same LocallyFAIR visibility gate as the other dataset GET endpoints.
         Response createAdmin = UtilIT.createRandomUser();
         String adminToken = UtilIT.getApiTokenFromResponse(createAdmin);
         String adminUsername = UtilIT.getUsernameFromResponse(createAdmin);

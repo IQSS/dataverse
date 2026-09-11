@@ -31,24 +31,18 @@ public enum FeatureFlags {
      */
     API_SESSION_AUTH("api-session-auth"),
     /**
-     * Enables the React-based file uploader in the JSF dataset file upload area.
-     * This is an experimental replacement for the classic PrimeFaces upload UI.
-     * Requires {@link #API_SESSION_AUTH} to be enabled, and
-     * <code>dataverse.reusable-components.base-url</code> to point at where
-     * the bundles are hosted. They are not shipped in the WAR, so the flag
-     * does nothing until that setting is in place.
+     * Replaces the PrimeFaces upload widget on the JSF dataset pages with the
+     * React uploader. Needs {@link #API_SESSION_AUTH} and
+     * <code>dataverse.reusable-components.base-url</code>.
      *
      * @apiNote Raise flag by setting "dataverse.feature.react-uploader"
      * @since Dataverse 6.11
      */
     REACT_UPLOADER("react-uploader"),
     /**
-     * Enables the React-based file tree view in the JSF dataset Files tab.
-     * Renders the same lazy, paginated tree component the SPA uses, mounted
-     * directly into the JSF page. Requires {@link #API_SESSION_AUTH} to be
-     * enabled, and <code>dataverse.reusable-components.base-url</code> to
-     * point at where the bundles are hosted. They are not shipped in the WAR,
-     * so the flag does nothing until that setting is in place.
+     * Replaces the PrimeFaces file tree on the JSF dataset Files tab with the
+     * React tree view. Needs {@link #API_SESSION_AUTH} and
+     * <code>dataverse.reusable-components.base-url</code>.
      *
      * @apiNote Raise flag by setting "dataverse.feature.react-tree-view"
      * @since Dataverse 6.11

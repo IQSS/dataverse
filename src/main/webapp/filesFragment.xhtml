@@ -651,23 +651,11 @@
     <ui:param name="useReactTreeView" value="#{systemConfig.reactTreeViewEnabled and DatasetPage.fileDisplayTree}"/>
 
     <ui:fragment rendered="#{useReactTreeView}">
-        <!--
-            React-based reusable file tree component. Replaces the
-            PrimeFaces p:tree below when dataverse.feature.react-tree-view
-            is enabled. The bundle is not shipped in the WAR: operators host
-            it themselves and point dataverse.reusable-components.base-url
-            at it. Without that setting the flag does nothing.
-
-            Authentication is via the user's JSESSIONID. The
-            dataverse.feature.api-session-auth flag must be enabled.
-        -->
+        <!-- React file tree replacing the PrimeFaces p:tree below. Authenticates with the session cookie; needs api-session-auth. -->
         <div id="dv-tree-view"></div>
         <script>
             //<![CDATA[
-            // Each value is JSON-encoded server-side via systemConfig.jsString
-            // so quotes, backslashes, newlines, and stray closing-script
-            // sequences in user input cannot break out of the JS string
-            // literal. See SystemConfig#jsString for the escaping contract.
+            // Values are JSON-encoded by systemConfig.jsString.
             window.dvTreeViewConfig = {
                 siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
                 datasetPid: #{systemConfig.jsString(DatasetPage.dataset.globalId.asString())},

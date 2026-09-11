@@ -1017,23 +1017,7 @@
                             </script>
                         </p:fragment>
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!deaccessioned and (DatasetPage.editMode == 'CREATE')}">
-                            <!-- React uploader is API-driven and needs the dataset to
-                                 exist (PID assigned). On create-dataset the dataset is
-                                 still transient, so we don't render any upload UI here
-                                 when the React uploader is the active one — saving the
-                                 metadata first, then uploading on the persisted
-                                 dataset, matches the SPA's flow and avoids a dual-
-                                 uploader UX (legacy on create, React after). The
-                                 legacy JSF flow remains unchanged on instances that
-                                 haven't enabled the react-uploader feature flag.
-                                 systemConfig.reactUploaderAvailable is the same
-                                 installation-level core (flag + direct upload +
-                                 :UploadMethods HTTP) the edit page's mount predicate
-                                 builds on, so this gate cannot drift from it: when the
-                                 React uploader would never become active after save,
-                                 the create tab keeps its regular upload fragment (e.g.
-                                 a Globus panel) instead of promising a React flow that
-                                 won't appear. -->
+                            <!-- The React uploader needs a persisted dataset, so on create the upload UI waits until after save. -->
                             <ui:fragment rendered="#{systemConfig.isReactUploaderAvailable(DatasetPage.dataset)}">
                                 <p class="help-block">#{bundle['dataset.create.uploadFilesAfterSave']}</p>
                             </ui:fragment>

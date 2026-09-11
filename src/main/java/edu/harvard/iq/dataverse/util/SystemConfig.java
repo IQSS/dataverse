@@ -288,21 +288,15 @@ public class SystemConfig {
                 : configured;
     }
 
-    // Thread-safe and immutable per commons-validator docs, so shared.
-    // ALLOW_LOCAL_URLS is deliberate: pointing the base URL at a Vite dev server
-    // or an internal host is a first-class use. An authority is still required,
-    // so "http:evil" stays rejected.
+    // ALLOW_LOCAL_URLS admits single-label hosts such as a dev server; an authority is still required.
     private static final org.apache.commons.validator.routines.UrlValidator BASE_URL_VALIDATOR =
             new org.apache.commons.validator.routines.UrlValidator(
                     new String[]{"http", "https"},
                     org.apache.commons.validator.routines.UrlValidator.ALLOW_2_SLASHES
                             + org.apache.commons.validator.routines.UrlValidator.ALLOW_LOCAL_URLS);
 
-    // Public so ConfigCheckService can warn at startup about a configured
-    // value that this check would otherwise silently reject at render time.
     public static boolean isSafeReusableComponentsBaseUrl(String value) {
         if (value == null || value.isEmpty()) return false;
-        // No control characters or HTML-attribute-breaking chars.
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
             if (c <= 0x20 || c == '"' || c == '\'' || c == '<' || c == '>') return false;

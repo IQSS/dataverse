@@ -55,15 +55,9 @@ public class ConfigCheckService {
     }
 
     /**
-     * The React reusable-components mount points (feature flags
-     * {@code react-uploader} / {@code react-tree-view}) authenticate their
-     * API calls with the user's JSF session cookie, which only works when
-     * {@code api-session-auth} is also enabled. Without it the bundles
-     * render, but every API call they make runs as :guest — the uploader
-     * fails outright and the tree view shows only what an anonymous user
-     * would see. That dependency is documented but easy to miss, so warn
-     * loudly at startup. Same for a missing or unusable base URL, without
-     * which there is no bundle to load at all.
+     * The React components call the API with the JSF session cookie, so they
+     * need {@code api-session-auth} and a base URL to load from. Both are
+     * easy to miss, so warn at startup.
      */
     public void checkReusableComponentsSetup() {
         boolean reactComponentEnabled = FeatureFlags.REACT_UPLOADER.enabled() || FeatureFlags.REACT_TREE_VIEW.enabled();
