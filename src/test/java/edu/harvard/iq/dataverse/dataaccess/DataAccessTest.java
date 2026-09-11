@@ -79,4 +79,19 @@ public class DataAccessTest {
       assertEquals("s3://18b39722140-50eb7d3c5ece",
               DataAccess.getStorageIdFromLocation("s3://bucketname:10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece"));
   }
+
+  @Test
+  void testGetAccessibleStorageDriverIds() {
+      System.setProperty("dataverse.files.s3.type", "s3");
+      System.setProperty("dataverse.files.s3.label", "S3 Storage");
+
+      System.setProperty("dataverse.files.remote.type", "remote");
+      System.setProperty("dataverse.files.remote.files-not-accessible-by-dataverse", "true");
+
+      java.util.List<String> accessibleDrivers = DataAccess.getIdsForStorageDriversWithReadableFiles();
+
+      assertTrue(accessibleDrivers.contains("file"), "Default 'file' driver should be accessible by default");
+      assertTrue(accessibleDrivers.contains("s3"), "S3 driver should be accessible");
+      assertFalse(accessibleDrivers.contains("remote"), "Remote driver with files-not-accessible-by-dataverse=true should not be accessible");
+  }
 }
