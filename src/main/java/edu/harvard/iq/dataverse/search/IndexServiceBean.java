@@ -1633,6 +1633,10 @@ public class IndexServiceBean {
                             }
                             filenameCompleteFinal = filenameComplete;
                         }
+                        String directoryLabel = fileMetadata.getDirectoryLabel();
+                        if (directoryLabel != null && !directoryLabel.isEmpty()) {
+                            datafileSolrInputDocument.addField(SearchFields.FILE_DIRECTORY_LABEL, directoryLabel);
+                        }
                         for (String tag : fileMetadata.getCategoriesByName()) {
                             datafileSolrInputDocument.addField(SearchFields.FILE_TAG, tag);
                             datafileSolrInputDocument.addField(SearchFields.FILE_TAG_SEARCHABLE, tag);

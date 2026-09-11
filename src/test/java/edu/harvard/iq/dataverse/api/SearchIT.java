@@ -1950,6 +1950,111 @@ public class SearchIT {
     }
 
     @Test
+    public void testFileDirectorySearch() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String dataverseAlias = null;
+        Integer datasetId = null;
+        try {
+            Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+            createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+            dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+            Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+            createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+            datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+            String scope = "&subtree=" + dataverseAlias + "&type=file";
+            String uniqueId = UUID.randomUUID().toString().replace("-", "");
+            String directory = "Figure" + uniqueId;
+            String directoryQuery = "figure" + uniqueId;
+
+            // The search token occurs only in the directory, not other searchable metadata.
+            Response directFile = UtilIT.uploadFileViaNative(datasetId.toString(),
+                    "src/main/webapp/resources/images/dataverseproject.png",
+                    JsonUtil.createObjectBuilder().add("directoryLabel", directory).build(), apiToken);
+            directFile.then().assertThat().statusCode(OK.getStatusCode());
+            Integer directFileId = UtilIT.getDataFileIdFromResponse(directFile);
+            Response nestedFile = UtilIT.uploadFileViaNative(datasetId.toString(),
+                    "src/main/webapp/resources/js/mydata.js",
+                    JsonUtil.createObjectBuilder().add("directoryLabel", "results/" + directory + "/raw").build(), apiToken);
+            nestedFile.then().assertThat().statusCode(OK.getStatusCode());
+
+            assertTrue(UtilIT.sleepForSearch("*", apiToken, scope, 2, UtilIT.GENERAL_LONG_DURATION),
+                    "Uploaded files did not become searchable");
+            UtilIT.search(directoryQuery, apiToken, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(2))
+                    .body("data.items.name", Matchers.containsInAnyOrder("dataverseproject.png", "mydata.js"));
+            UtilIT.search(directoryQuery, null, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(0));
+
+            UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat()
+                    .statusCode(OK.getStatusCode());
+            UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat()
+                    .statusCode(OK.getStatusCode());
+            assertTrue(UtilIT.sleepForSearch(directoryQuery, null, scope, 2, UtilIT.GENERAL_LONG_DURATION),
+                    "Published directories did not become searchable anonymously");
+            UtilIT.search(directoryQuery, null, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(2))
+                    .body("data.items.name", Matchers.containsInAnyOrder("dataverseproject.png", "mydata.js"));
+            UtilIT.search("dataverseproject", null, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(1))
+                    .body("data.items[0].name", is("dataverseproject.png"));
+
+            String renamedDirectory = "Renamed" + uniqueId;
+            UtilIT.updateFileMetadata(directFileId.toString(),
+                    JsonUtil.createObjectBuilder().add("directoryLabel", renamedDirectory).build().toString(), apiToken)
+                    .then().assertThat().statusCode(OK.getStatusCode());
+            assertTrue(UtilIT.sleepForSearch(renamedDirectory, apiToken, scope, 1, UtilIT.GENERAL_LONG_DURATION),
+                    "Draft directory rename was not reindexed");
+            UtilIT.search(renamedDirectory, apiToken, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.items[0].name", is("dataverseproject.png"));
+            // Anonymous search must still use published metadata until the rename is published.
+            UtilIT.search(renamedDirectory, null, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(0));
+            UtilIT.search(directoryQuery, null, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(2));
+
+            UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken).then().assertThat()
+                    .statusCode(OK.getStatusCode());
+            assertTrue(UtilIT.sleepForSearch(renamedDirectory, null, scope, 1, UtilIT.GENERAL_LONG_DURATION),
+                    "Published directory rename was not reindexed");
+            assertTrue(UtilIT.sleepForSearch(directoryQuery, null, scope, 1, UtilIT.GENERAL_LONG_DURATION),
+                    "The old directory still matched the renamed file");
+            UtilIT.search(renamedDirectory, null, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(1))
+                    .body("data.items[0].name", is("dataverseproject.png"));
+            UtilIT.search(directoryQuery, null, scope).then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("data.total_count", is(1))
+                    .body("data.items[0].name", is("mydata.js"));
+        } finally {
+            try {
+                if (datasetId != null) {
+                    UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+                    UtilIT.destroyDataset(datasetId, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+                }
+            } finally {
+                try {
+                    if (dataverseAlias != null) {
+                        UtilIT.deleteDataverse(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+                    }
+                } finally {
+                    UtilIT.deleteUser(username).then().assertThat().statusCode(OK.getStatusCode());
+                }
+            }
+        }
+    }
+
+    @Test
     public void testSearchFilesAndUrlImages() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();

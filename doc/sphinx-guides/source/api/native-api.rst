@@ -2469,7 +2469,7 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?contentType=image/png"
 
-Filtering by search text is also optionally supported. The search will be applied to the labels and descriptions of the dataset files, to return the files that contain the text searched in one of such fields.
+Filtering by search text is also optionally supported. The search matches case-insensitive substrings in the labels, descriptions, and directory paths (``directoryLabel``) of the dataset files. Files matching any of these fields are returned, subject to the other requested filters.
 
 Usage example:
 
@@ -2573,7 +2573,7 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?contentType=image/png"
 
-Filtering by search text is also optionally supported. The search will be applied to the labels and descriptions of the dataset files, to return counts only for files that contain the text searched in one of such fields.
+Filtering by search text is also optionally supported. The search matches case-insensitive substrings in the labels, descriptions, and directory paths (``directoryLabel``) of the dataset files. Only files matching the search and the other requested filters are counted.
 
 Usage example:
 
@@ -3632,7 +3632,7 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?contentType=image/png"
 
-Filtering by search text is also optionally supported. The search will be applied to the labels and descriptions of the dataset files, to return the size of all files available for download that contain the text searched in one of such fields.
+Filtering by search text is also optionally supported. The search matches case-insensitive substrings in the labels, descriptions, and directory paths (``directoryLabel``) of the dataset files. The returned size includes only files available for download that match the search and the other requested filters.
 
 Usage example:
 
