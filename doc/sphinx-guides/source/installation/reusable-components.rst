@@ -93,7 +93,7 @@ one origin and port. There is nothing to configure for cross-origin access.
 Either of the following works. Both start from the build above.
 
 Option 1: Static Files Behind Your Web Server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Copy ``dist-reusable-components/reusable-components/`` to a directory your web
 server serves, and add a location for it alongside the proxy to Dataverse. With
