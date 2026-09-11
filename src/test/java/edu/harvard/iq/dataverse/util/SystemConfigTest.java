@@ -16,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
@@ -309,5 +311,48 @@ class SystemConfigTest {
         assertEquals(2, result.size());
         assertEquals(-1L, (long) result.get(SystemConfig.TABULAR_INGEST_SIZE_LIMITS_DEFAULT_KEY));
         assertEquals(429496729600L, (long) result.get("tsv"));
+    }
+
+    @Test
+    void reusableComponentsBaseUrlIsNullWhenUnset() {
+        assertNull(systemConfig.getReusableComponentsBaseUrl());
+        assertFalse(systemConfig.isReactTreeViewEnabled());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.REUSABLE_COMPONENTS_BASE_URL, value = "/reusable-components/")
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "react-tree-view")
+    void reusableComponentsBaseUrlIsTrimmedAndEnablesTheTree() {
+        assertEquals("/reusable-components", systemConfig.getReusableComponentsBaseUrl());
+        assertTrue(systemConfig.isReactTreeViewEnabled());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.REUSABLE_COMPONENTS_BASE_URL, value = "javascript:alert(1)")
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "react-uploader")
+    void unsafeReusableComponentsBaseUrlDisablesTheComponents() {
+        assertNull(systemConfig.getReusableComponentsBaseUrl());
+        assertFalse(systemConfig.isReactUploaderEnabled());
+    }
+
+    @Test
+    void safeReusableComponentsBaseUrls() {
+        assertTrue(SystemConfig.isSafeReusableComponentsBaseUrl("/reusable-components"));
+        assertTrue(SystemConfig.isSafeReusableComponentsBaseUrl("https://cdn.example.org/dv"));
+        assertTrue(SystemConfig.isSafeReusableComponentsBaseUrl("http://localhost:5173"));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl(null));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl(""));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("http:evil"));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("/a\"b"));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("/a b"));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("ftp://x/y"));
+    }
+
+    @Test
+    void jsStringEscapesForInlineScripts() {
+        assertEquals("null", systemConfig.jsString(null));
+        assertEquals("\"doi:10.5072/FK2/ABC\"", systemConfig.jsString("doi:10.5072/FK2/ABC"));
+        assertEquals("\"a\\\"b\"", systemConfig.jsString("a\"b"));
+        assertEquals("\"<\\/script>\"", systemConfig.jsString("</script>"));
     }
 }

@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
@@ -1108,7 +1109,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    private String generateTemporaryS3UploadUrl(String key, Date expiration) throws IOException {
+    /**
+     * Tag on every direct-uploaded object until Dataverse registers it. The
+     * presigned PUT signature, the {@code tagging} value sent to the client
+     * and the multipart initiation must all use this exact string.
+     */
+    private static final String TEMP_TAG = "dv-state=temp";
+
+    private String generateTemporaryS3UploadUrl(String key, Date expiration, boolean taggingDisabled) throws IOException {
         if (s3ReadClient == null || s3WriteClient == null) {
             throw new IOException("ERROR: s3 not initialised. ");
         }
@@ -1119,10 +1127,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             .signatureDuration(expirationDuration);
 
         // Add tagging if not disabled
-        final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
-                .orElse(false);
         if (!taggingDisabled) {
-            presignRequestBuilder.putObjectRequest(req -> req.tagging("dv-state=temp").bucket(bucketName).key(key));
+            presignRequestBuilder.putObjectRequest(req -> req.tagging(TEMP_TAG).bucket(bucketName).key(key));
         } else {
             presignRequestBuilder.putObjectRequest(req -> req.bucket(bucketName).key(key));
         }
@@ -1162,18 +1168,22 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         key = getMainFileKey();
         Instant expiration = Instant.now().plus(Duration.ofMinutes(getUrlExpirationMinutes()));
 
+        final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId)
+                .orElse(false);
+
         if (fileSize <= minPartSize) {
-            response.add("url", generateTemporaryS3UploadUrl(key, Date.from(expiration)));
+            String url = generateTemporaryS3UploadUrl(key, Date.from(expiration), taggingDisabled);
+            if (url == null) {
+                throw new IOException("Unable to presign an upload URL for " + key + ", see the S3 warning above");
+            }
+            response.add("url", url);
+            // The client sends this as x-amz-tagging on the PUT. An empty string
+            // means the URL was signed without a tag and the header must be
+            // omitted; the SDK treats a missing key as the default tag.
+            response.add("tagging", taggingDisabled ? "" : TEMP_TAG);
         } else {
             JsonObjectBuilder urls = JsonUtil.createObjectBuilder();
-
-            CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = CreateMultipartUploadRequest
-                    .builder().bucket(bucketName).key(key);
-
-            // Use the existing s3 async client for the createMultipartUpload operation
-            CompletableFuture<CreateMultipartUploadResponse> createMultipartUploadFuture = s3WriteClient.createMultipartUpload(createMultipartUploadRequestBuilder.build());
-            CreateMultipartUploadResponse createMultipartUploadResponse = createMultipartUploadFuture.join();
-            String uploadId = createMultipartUploadResponse.uploadId();
+            String uploadId = initiateMultipartUpload(key, taggingDisabled);
 
             for (int i = 1; i <= (fileSize / minPartSize) + (fileSize % minPartSize > 0 ? 1 : 0); i++) {
                 final int partNum = i;
@@ -1199,6 +1209,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         response.add("partSize", minPartSize);
 
         return response;
+    }
+
+    // Parts cannot carry tags, so the multipart object is tagged at initiation.
+    private String initiateMultipartUpload(String key, boolean taggingDisabled) throws IOException {
+        CreateMultipartUploadRequest.Builder builder = CreateMultipartUploadRequest.builder().bucket(bucketName).key(key);
+        if (!taggingDisabled) {
+            builder.tagging(TEMP_TAG);
+        }
+        try {
+            return s3WriteClient.createMultipartUpload(builder.build()).join().uploadId();
+        } catch (CompletionException ce) {
+            String hint = taggingDisabled ? ""
+                    : " (if this store rejects object tagging, set dataverse.files." + this.driverId + ".disable-tagging)";
+            throw new IOException("Cannot initiate multipart upload for " + key + hint, ce);
+        }
     }
 
     int getUrlExpirationMinutes() {

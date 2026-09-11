@@ -1017,17 +1017,23 @@
                             </script>
                         </p:fragment>
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!deaccessioned and (DatasetPage.editMode == 'CREATE')}">
-                            <ui:include src="editFilesFragment.xhtml">
-                                <ui:param name="datasetPage" value="true"/>
-                                <ui:param name="editDatafilesPage" value="false"/>
-                                <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
-                                <ui:param name="globusUploadSupported" value="#{DatasetPage.globusUploadSupported()}"/>
-                                <ui:param name="webloaderUploadSupported" value="#{DatasetPage.webloaderUploadSupported()}"/>
-                                <ui:param name="dataverse" value="#{dataverse}"/>
-                                <ui:param name="dataset" value="#{dataset}"/>
-                                <ui:param name="version" value="#{workingVersion}"/>
-                                <ui:param name="createDataset" value="true"/>
-                            </ui:include>
+                            <!-- The React uploader needs a persisted dataset, so on create the upload UI waits until after save. -->
+                            <ui:fragment rendered="#{systemConfig.isReactUploaderAvailable(DatasetPage.dataset)}">
+                                <p class="help-block">#{bundle['dataset.create.uploadFilesAfterSave']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!systemConfig.isReactUploaderAvailable(DatasetPage.dataset)}">
+                                <ui:include src="editFilesFragment.xhtml">
+                                    <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="editDatafilesPage" value="false"/>
+                                    <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
+                                    <ui:param name="globusUploadSupported" value="#{DatasetPage.globusUploadSupported()}"/>
+                                    <ui:param name="webloaderUploadSupported" value="#{DatasetPage.webloaderUploadSupported()}"/>
+                                    <ui:param name="dataverse" value="#{dataverse}"/>
+                                    <ui:param name="dataset" value="#{dataset}"/>
+                                    <ui:param name="version" value="#{workingVersion}"/>
+                                    <ui:param name="createDataset" value="true"/>
+                                </ui:include>
+                            </ui:fragment>
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">

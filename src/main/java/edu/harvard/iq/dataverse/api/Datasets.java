@@ -28,6 +28,15 @@ import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.datasetversionsummaries.DatasetVersionSummary;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.FileItem;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.FolderItem;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Include;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.InvalidQueryException;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Order;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreeItem;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreePage;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreeQuery;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -64,6 +73,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import org.apache.commons.codec.digest.DigestUtils;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -203,6 +213,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
+    @Inject
+    DatasetVersionTreeService datasetVersionTreeService;
 
     @Inject
     DatasetTypeServiceBean datasetTypeSvc;
@@ -657,6 +670,143 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/tree")
+    public Response getVersionTree(@Context ContainerRequestContext crc,
+                                   @PathParam("id") String datasetId,
+                                   @PathParam("versionId") String versionId,
+                                   @QueryParam("path") String path,
+                                   @QueryParam("limit") Integer limit,
+                                   @QueryParam("cursor") String cursor,
+                                   @QueryParam("include") String includeParam,
+                                   @QueryParam("order") String orderParam,
+                                   @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                   @QueryParam("originals") boolean originals,
+                                   @Context Request jaxrsRequest,
+                                   @Context UriInfo uriInfo,
+                                   @Context HttpHeaders headers) {
+        return response(req -> {
+            TreeQuery query;
+            try {
+                query = new TreeQuery(DatasetVersionTreeService.normalizePath(path), limit, cursor,
+                        Include.fromQuery(includeParam), Order.fromQuery(orderParam), originals);
+            } catch (InvalidQueryException ex) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
+            }
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers, includeDeaccessioned);
+            // Only released versions get a validator. The per-file access
+            // marker still flips on embargo and retention dates, so the ETag
+            // carries the database's current date and Cache-Control asks for
+            // revalidation on every use.
+            EntityTag etag = isCacheableVersion(datasetVersion)
+                    ? new EntityTag(computeTreeEtag(datasetVersion, query, includeDeaccessioned, datasetVersionTreeService.currentDbDate()))
+                    : null;
+            if (etag != null) {
+                Response.ResponseBuilder precondition = jaxrsRequest.evaluatePreconditions(etag);
+                if (precondition != null) {
+                    return precondition.tag(etag)
+                            .header("Cache-Control", TREE_CACHE_CONTROL)
+                            .build();
+                }
+            }
+            TreePage page;
+            try {
+                page = datasetVersionTreeService.listChildren(datasetVersion, query);
+            } catch (InvalidQueryException ex) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
+            }
+            Response.ResponseBuilder rb = Response.ok(JsonUtil.createObjectBuilder()
+                            .add("status", ApiConstants.STATUS_OK)
+                            .add("data", jsonTreePage(page))
+                            .build())
+                    .type(MediaType.APPLICATION_JSON);
+            if (etag != null) {
+                rb.tag(etag).header("Cache-Control", TREE_CACHE_CONTROL);
+            }
+            return rb.build();
+        }, getRequestUser(crc));
+    }
+
+    private static final String TREE_CACHE_CONTROL = "private, no-cache";
+
+    private static boolean isCacheableVersion(DatasetVersion v) {
+        return v.isReleased() && !v.isDeaccessioned();
+    }
+
+    /** Bare token; {@link EntityTag} adds the quotes. Inputs must be the normalized ones so equal requests share it. */
+    private static String computeTreeEtag(DatasetVersion version, TreeQuery query,
+                                          boolean includeDeaccessioned, LocalDate dbToday) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(version.getId()).append(':')
+                .append(version.getVersionState() != null ? version.getVersionState().name() : "").append(':')
+                .append(query.path()).append(':')
+                .append(DatasetVersionTreeService.clampLimit(query.limit())).append(':')
+                .append(query.cursor() == null ? "" : query.cursor()).append(':')
+                .append(query.include().name()).append(':')
+                .append(query.order().wireValue()).append(':')
+                .append(query.originals()).append(':')
+                .append(includeDeaccessioned).append(':')
+                .append(dbToday);
+        byte[] hash = DigestUtils.sha256(sb.toString());
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(hash).substring(0, 16);
+    }
+
+    static JsonObjectBuilder jsonTreePage(TreePage page) {
+        JsonArrayBuilder items = JsonUtil.createArrayBuilder();
+        for (TreeItem item : page.items) {
+            JsonObjectBuilder ob = JsonUtil.createObjectBuilder()
+                    .add("type", item.type)
+                    .add("name", item.name)
+                    .add("path", item.path);
+            if (item instanceof FolderItem folder) {
+                ob.add("counts", jsonFolderCounts(folder));
+            } else if (item instanceof FileItem file) {
+                addFileFields(ob, file);
+            }
+            items.add(ob);
+        }
+        JsonObjectBuilder result = JsonUtil.createObjectBuilder()
+                .add("path", page.path)
+                .add("items", items);
+        if (page.nextCursor != null) {
+            result.add("nextCursor", page.nextCursor);
+        } else {
+            result.addNull("nextCursor");
+        }
+        return result
+                .add("limit", page.limit)
+                .add("order", page.order.wireValue())
+                .add("include", page.include.name().toLowerCase(Locale.ROOT))
+                .add("approximateCount", page.approximateCount);
+    }
+
+    private static JsonObjectBuilder jsonFolderCounts(FolderItem folder) {
+        return JsonUtil.createObjectBuilder()
+                .add("files", folder.fileCount)
+                .add("folders", folder.folderCount)
+                .add("bytes", folder.bytes)
+                .add("restricted", folder.restrictedCount)
+                .add("embargoed", folder.embargoedCount)
+                .add("retentionExpired", folder.retentionExpiredCount);
+    }
+
+    private static void addFileFields(JsonObjectBuilder ob, FileItem file) {
+        ob.add("id", file.id).add("size", file.size);
+        if (file.contentType != null) {
+            ob.add("contentType", file.contentType);
+        }
+        if (file.access != null) {
+            ob.add("access", file.access);
+        }
+        if (file.checksumType != null && file.checksumValue != null) {
+            ob.add("checksum", JsonUtil.createObjectBuilder()
+                    .add("type", file.checksumType)
+                    .add("value", file.checksumValue));
+        }
+        ob.add("downloadUrl", file.downloadUrl);
     }
 
     @GET

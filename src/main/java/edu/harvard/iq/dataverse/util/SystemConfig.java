@@ -2,12 +2,14 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
@@ -243,7 +245,81 @@ public class SystemConfig {
     public String getDataverseSiteUrl() {
         return getDataverseSiteUrlStatic();
     }
-    
+
+    public boolean isReactUploaderEnabled() {
+        return FeatureFlags.REACT_UPLOADER.enabled() && getReusableComponentsBaseUrl() != null;
+    }
+
+    public boolean isReactTreeViewEnabled() {
+        return FeatureFlags.REACT_TREE_VIEW.enabled() && getReusableComponentsBaseUrl() != null;
+    }
+
+    /**
+     * Shared core of the uploader gate, used directly by dataset.xhtml's create
+     * tab and layered with page state by EditDatafilesPage#isReactUploaderActive,
+     * so the two pages cannot drift apart.
+     */
+    public boolean isReactUploaderAvailable(Dataset dataset) {
+        return isReactUploaderEnabled()
+                && dataset != null
+                && directUploadEnabled(dataset)
+                && isHTTPUpload();
+    }
+
+    /**
+     * Base URL the component bundles are loaded from, without a trailing slash,
+     * or {@code null} when unset or unusable. The bundles are not shipped in the
+     * WAR, so until an operator hosts them and sets this, the components are not
+     * rendered.
+     */
+    public String getReusableComponentsBaseUrl() {
+        String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional().orElse(null);
+        if (configured == null) {
+            return null;
+        }
+        // Rendered verbatim into a script src attribute, so reject anything that
+        // could break out of it.
+        if (!isSafeReusableComponentsBaseUrl(configured)) {
+            logger.warning(() -> "REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured);
+            return null;
+        }
+        return configured.endsWith("/")
+                ? configured.substring(0, configured.length() - 1)
+                : configured;
+    }
+
+    // ALLOW_LOCAL_URLS admits single-label hosts such as a dev server; an authority is still required.
+    private static final org.apache.commons.validator.routines.UrlValidator BASE_URL_VALIDATOR =
+            new org.apache.commons.validator.routines.UrlValidator(
+                    new String[]{"http", "https"},
+                    org.apache.commons.validator.routines.UrlValidator.ALLOW_2_SLASHES
+                            + org.apache.commons.validator.routines.UrlValidator.ALLOW_LOCAL_URLS);
+
+    public static boolean isSafeReusableComponentsBaseUrl(String value) {
+        if (value == null || value.isEmpty()) return false;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c <= 0x20 || c == '"' || c == '\'' || c == '<' || c == '>') return false;
+        }
+        if (value.startsWith("/")) return true;
+        return BASE_URL_VALIDATOR.isValid(value);
+    }
+
+    /**
+     * JSON-encode a string, quotes included, for inlining into a JavaScript
+     * object literal in a JSF page. Escapes backslashes, quotes and control
+     * characters, plus {@code </} so a stray {@code </script>} in user input
+     * cannot close the tag early.
+     */
+    public String jsString(String raw) {
+        if (raw == null) {
+            return "null";
+        }
+        String json = JsonUtil.createValue(raw).toString();
+        return json.replace("</", "<\\/");
+    }
+
+
     /**
      * Lookup (or construct) the designated URL of this instance from configuration.
      *
