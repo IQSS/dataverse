@@ -5250,9 +5250,10 @@ public class Datasets extends AbstractApiBean {
 
                 List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>(fileMetadataMapCopy.values());
 
-                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                var conflictingPart = IngestUtil.findConflictingPathPart(pathPlusFilename, fmdListMinusCurrentFile);
+                if (conflictingPart.isPresent()) {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile",
-                            Arrays.asList(pathPlusFilename)));
+                            conflictingPart.stream().toList()));
                 }
 
                 // Apply optional params

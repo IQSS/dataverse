@@ -13,16 +13,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import jakarta.validation.ConstraintViolation;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.as;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class IngestUtilTest {
@@ -378,6 +382,158 @@ public class IngestUtilTest {
 
     @Test
     /**
+     * Test adding a file with a full path duplicating an existing directory
+     * or with an ancestor that duplicates the full path of an existing file.
+     */
+    public void testCheckFilesDuplicatingDirectories() throws Exception {
+
+        class Params {
+            final int iteration;
+            final FileMetadata fmd;
+
+            public Params(int iteration, String dir, String fileLabel) {
+                this.iteration = iteration;
+
+                var datafile = new DataFile("application/octet-stream");
+
+                fmd = new FileMetadata();
+                fmd.setLabel(fileLabel);
+                fmd.setDirectoryLabel(dir);
+                fmd.setDataFile(datafile);
+                datafile.getFileMetadatas().add(fmd);
+            }
+        }
+        // each iteration adds one or more files to the dataset and
+        // verifies what names would be added if all would be added (again)
+        // the adjusted names are used to add files in the next iteration
+        var paramsList = Arrays.asList(
+            new Params(0, "foo","bar"),
+            new Params(1, null, "foo"), // file/dir conflict: "foo"
+            new Params(1, null, "bar"),
+            new Params(2, null, "bar"),
+            new Params(3, "bar/foo","pint"), // dir/file conflict: "bar"
+            new Params(4, "bar/foo/pint", "beer")  // dir-ancestor/file conflict: "bar/foo/pint"
+        );
+        // more than 10 List.of elements cause subtle type problems for the assertions
+        var expectedFilesInDataset = Arrays.asList(
+            List.of("foo/bar"),
+            List.of("foo/bar", "null/foo-1", "null/bar"),
+            List.of("foo/bar", "null/foo-1", "null/bar", "null/bar-2"),
+            List.of("foo/bar", "null/foo-1", "null/bar", "null/bar-2", "bar/foo/pint"),
+            List.of("foo/bar", "null/foo-1", "null/bar", "null/bar-2", "bar/foo/pint", "bar/foo/pint/beer")
+        );
+        var expectedLabelsAfterTest = Arrays.asList(
+            List.of( "foo/bar-1", "null/foo-1", "null/bar", "null/bar-1", "bar/foo/pint", "bar/foo/pint/beer"),
+            List.of( "foo/bar-1", "null/foo-2", "null/bar-1", "null/bar-2", "bar/foo/pint", "bar/foo/pint/beer"),
+            List.of( "foo/bar-1", "null/foo-2", "null/bar-1", "null/bar-3", "bar/foo/pint", "bar/foo/pint/beer"),
+            List.of( "foo/bar-1", "null/foo-2", "null/bar-1", "null/bar-3", "bar/foo/pint-1", "bar/foo/pint/beer"),
+            List.of( "foo/bar-1", "null/foo-2", "null/bar-1", "null/bar-3", "bar/foo/pint-1", "bar/foo/pint/beer-1")
+        );
+        List<List<String>> expectedNewDataFilesAfterTest = Arrays.asList(
+            List.of( "foo/bar-1", "null/foo-1", "null/bar","null/bar-1", "bar/foo/pint", "bar/foo/pint/beer"),
+            List.of(),
+            List.of(), // ???
+            List.of(),
+            List.of()
+        );
+
+        // create dataset version
+        var dataset = makeDataset();
+        var datasetVersion = dataset.getLatestVersion();
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+
+        for (int i=0; i<expectedFilesInDataset.size(); i++) {
+            var newDataFiles = new ArrayList<DataFile>();
+            paramsList.forEach(p -> newDataFiles.add(p.fmd.getDataFile()));
+            // select files to add to the dataset for the current iteration
+            var ii = i;
+            var filesToAdd = paramsList.stream()
+                .filter(p -> p.iteration == ii)
+                .map(p -> p.fmd).toList();
+            // add files to dataset
+            for (var fmd: filesToAdd) {
+                    var fmdClone = new FileMetadata();
+                    fmdClone.setId(MocksFactory.nextId());
+                    fmdClone.setLabel(fmd.getLabel());
+                    fmdClone.setDirectoryLabel(fmd.getDirectoryLabel());
+                    fmdClone.setDatasetVersion(fmd.getDatasetVersion());
+                    if (fmd.getDataFile() != null) {
+                        var df = fmd.getDataFile();
+                        var dfClone = new DataFile(df.getContentType());
+                        fmdClone.setDataFile(dfClone);
+                        dfClone.getFileMetadatas().add(fmdClone);
+                    }
+                    datasetVersion.getFileMetadatas().add(fmdClone);
+                    fmdClone.setDatasetVersion(datasetVersion);
+            }
+
+            // precondition
+            var actualFilesInDataset = datasetVersion.getFileMetadatas().stream()
+                .map(fmd -> fmd.getDirectoryLabel() + "/" + fmd.getLabel()).toList();
+            assertThat(actualFilesInDataset)
+                .withFailMessage("expectedFilesInDataset %d \n  expected %s \n  but got  %s", i, expectedFilesInDataset.get(i), actualFilesInDataset)
+                .containsExactlyInAnyOrderElementsOf(expectedFilesInDataset.get(i));
+
+            // method under test
+            IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, newDataFiles, null);
+
+            // postconditions
+            var actualPaths = paramsList.stream()
+                .map(p -> p.fmd.getDirectoryLabel() + "/" + p.fmd.getLabel()).toList();
+            assertThat(actualPaths)
+                .withFailMessage("expectedLabelsAfterTest %d \n  expected %s \n  but got  %s", i, expectedLabelsAfterTest.get(i), actualPaths)
+                .containsExactlyInAnyOrderElementsOf(expectedLabelsAfterTest.get(i));
+            var actualNewDataFiles = newDataFiles.stream()
+                .map(p -> p.getFileMetadata().getDirectoryLabel() + "/" + p.getFileMetadata().getLabel()).toList();
+            assertThat(actualNewDataFiles)
+                .withFailMessage("expectedNewDataFilesAfterTest %d \n  expected %s \n  but got  %s", i, expectedNewDataFilesAfterTest.get(i), actualNewDataFiles)
+                .containsExactlyInAnyOrderElementsOf(expectedNewDataFilesAfterTest.get(i));
+
+        }
+    }
+
+    @Test
+    /**
+     * Test adding files to a dataset having a file with a full path duplicating a directory.
+     */
+    public void testExistingFilesDuplicatingDirectories() throws Exception {
+
+        // create dataset version
+        var dataset = makeDataset();
+        var datasetVersion = dataset.getLatestVersion();
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+
+        // add files to dataset
+        Stream.of(
+            Arrays.asList("foo","bar"),
+            Arrays.asList(null, "foo"), // file/dir conflict: "foo"
+            Arrays.asList(null, "bar"),
+            Arrays.asList("bar/foo","pint"), // dir/file conflict: "bar"
+            Arrays.asList("bar/foo/pint", "beer")  // subdir/file conflict: "bar/foo/pint"
+        ).forEach(l -> {
+            var dir = l.get(0);
+            var fileLabel = l.get(1);
+            var datafile = new DataFile("application/octet-stream");
+            var fmd = new FileMetadata();
+            fmd.setId(MocksFactory.nextId());
+            fmd.setLabel(fileLabel);
+            fmd.setDirectoryLabel(dir);
+            fmd.setDataFile(datafile);
+            datafile.getFileMetadatas().add(fmd);
+
+            // add file to dataset
+            datasetVersion.getFileMetadatas().add(fmd);
+            fmd.setDatasetVersion(datasetVersion);
+        });
+
+        // EditDataFilesPage.save() would create an error message if result is not empty
+        var duplicates = IngestUtil.findDuplicateFilenames(datasetVersion, List.of());
+
+        assertThat(duplicates).containsExactlyInAnyOrderElementsOf(List.of("bar", "foo", "bar/foo/pint"));
+    }
+
+    @Test
+    /**
      * Test tabular files (e.g., .dta) are changed when .tab files with the same
      * name exist.
      */
@@ -727,7 +883,36 @@ public class IngestUtilTest {
         FileMetadata file2 = new FileMetadata();
         file2.setLabel("README2.md");
         List<FileMetadata> fileMetadatas = Arrays.asList(file1, file2);
-        assertTrue(IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fileMetadatas));
+        assertThat(IngestUtil.findConflictingPathPart(pathPlusFilename, fileMetadatas))
+            .hasValue("README.md");
+    }
+
+    @Test
+    public void addDirConflictingWithFile() {
+        FileMetadata fmd = new FileMetadata();
+        fmd.setDirectoryLabel("foo");
+        fmd.setLabel("bar");
+        var fileMetadatas = Arrays.asList(fmd);
+        assertThat(IngestUtil.findConflictingPathPart("foo/bar/pint", fileMetadatas))
+            .hasValue("foo/bar");
+    }
+
+    @Test
+    public void addParentDirConflictingWithFile() {
+        FileMetadata fmd = new FileMetadata();
+        fmd.setLabel("foo");
+        var fileMetadatas = Arrays.asList(fmd);
+        assertThat(IngestUtil.findConflictingPathPart("foo/bar/pint", fileMetadatas))
+            .hasValue("foo");
+    }
+
+    @Test
+    public void noConflict() {
+        FileMetadata fmd = new FileMetadata();
+        fmd.setLabel("foo");
+        var fileMetadatas = Arrays.asList(fmd);
+        assertThat(IngestUtil.findConflictingPathPart("bar", fileMetadatas))
+            .isEmpty();
     }
 
 }
