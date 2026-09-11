@@ -1138,6 +1138,17 @@ Submit Dataset
 
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
+**Note:** To set the Template on the new Dataset add "templateId":{$templateId} to the Json payload:
+
+.. code-block:: bash
+
+  {
+   "templateId":1234,
+   "datasetVersion": {...}
+  }
+
+An invalid templateId will result in a 400 "Error parsing Json: Invalid template id: #".
+
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
 
 Next you need to figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new dataset. Out of the box the top level Dataverse collection has an alias of "root" and a database id of "1" but your installation may vary. The easiest way to determine the alias of your root Dataverse collection is to click "Advanced Search" and look at the URL. You may also choose a parent Dataverse collection under the root Dataverse collection.
@@ -3758,66 +3769,6 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/link/test"
-
-Unlink a Dataset
-~~~~~~~~~~~~~~~~
-
-Removes a link between a dataset and a Dataverse collection (see :ref:`dataset-linking` section of Dataverse Collection Management in the User Guide for more information):
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export DATASET_ID=24
-  export DATAVERSE_ID=test
-
-  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$DATASET_ID/deleteLink/$DATAVERSE_ID"
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/deleteLink/test"
-
-Link a Dataverse collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Creates a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export LINKED_DATAVERSE_ID=linked-collection
-  export LINKING_DATAVERSE_ID=linking-collection
-
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/link/$LINKING_DATAVERSE_ID"
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/linked-collection/link/linking-collection"
-
-Unlink a Dataverse collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Removes a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export LINKED_DATAVERSE_ID=linked-collection
-  export LINKING_DATAVERSE_ID=linking-collection
-
-  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/deleteLink/$LINKING_DATAVERSE_ID"
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/linked-collection/deleteLink/linking-collection"
 
 Dataset Locks
 ~~~~~~~~~~~~~
