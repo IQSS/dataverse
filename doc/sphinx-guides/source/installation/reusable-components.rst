@@ -75,6 +75,7 @@ The result is a self-contained directory:
   dist-reusable-components/reusable-components/
     dv-tree-view.js
     dv-uploader.js
+    zip-download-sw.js  service worker for streaming zip downloads
     chunks/          shared React, i18n, vendor and design-system code
     locales/         translations, fetched at runtime
 
@@ -132,6 +133,32 @@ WAR works on every installation; nothing in it is specific to yours.
 
 Set :ref:`dataverse.reusable-components.base-url` to ``/reusable-components``,
 as above. Nothing else differs between the two options.
+
+Streaming Zip Downloads
+-----------------------
+
+The tree view downloads a multi-file selection as a zip that is built in the
+browser and written straight to disk, so the size of the selection is not
+limited by the tab's memory and the bytes never pass through Payara. That path
+uses a service worker, ``zip-download-sw.js``, which is emitted alongside the
+bundles by the build above.
+
+There is nothing to configure. The worker answers a URL under its own directory
+that nothing else serves, and the page starts the download by pointing a hidden
+frame at it. A service worker handles a navigation like that whenever the target
+URL is inside its scope, which this one always is, so the worker does not need
+to control the JSF page and its scope does not need widening. Keep the file
+beside the entry points, as with ``chunks/`` and ``locales/``.
+
+If the worker cannot be reached at all, the tree view still downloads. It falls
+back to building the zip in memory, which caps a selection at 2 GB. Nothing else
+breaks, and a user sees no message until they select more than the cap.
+
+If your files are served directly from S3 (``dataverse.files.<id>.download-redirect``),
+the bucket also needs the CORS policy described in :ref:`cors-s3-bucket`, since
+the browser fetches the file bytes itself. The documented policy already covers
+it; note that it is motivated there by direct upload and previewers, so an
+installation with neither may not have set it.
 
 Caching
 -------
