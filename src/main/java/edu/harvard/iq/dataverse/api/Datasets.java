@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Inv
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Order;
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreeItem;
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreePage;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreeQuery;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -688,54 +689,24 @@ public class Datasets extends AbstractApiBean {
                                    @Context UriInfo uriInfo,
                                    @Context HttpHeaders headers) {
         return response(req -> {
-            Include include;
-            Order order;
-            String normalizedPath;
+            TreeQuery query;
             try {
-                include = Include.fromQuery(includeParam);
-                order = Order.fromQuery(orderParam);
-                // Normalized once, up front: junk-only paths ("..", "-")
-                // must 400 here rather than reach the ETag hash or alias
-                // onto the root listing.
-                normalizedPath = DatasetVersionTreeService.normalizePath(path);
+                query = new TreeQuery(DatasetVersionTreeService.normalizePath(path), limit, cursor,
+                        Include.fromQuery(includeParam), Order.fromQuery(orderParam), originals);
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
-            // findDatasetUserCanSeeOrDie (not findDatasetOrDie): the tree is a
-            // dataset GET endpoint and must apply the same LocallyFAIR
-            // visibility gate as its siblings (/versions/{v}/files etc.) —
-            // see the LF check in AbstractApiBean#findDatasetUserCanSeeOrDie.
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers, includeDeaccessioned);
-            // ETag for released, non-deaccessioned versions only. Drafts and
-            // deaccessioned versions can change in place, so they get no
-            // caching headers at all.
-            //
-            // A released version's *file list* is frozen, but this response
-            // is still time-dependent: the per-file `access` marker flips
-            // when an embargo lapses or a retention period expires (both at
-            // a date boundary), and `df.restricted` is live datafile state.
-            // The ETag therefore includes the current date — taken from the
-            // DATABASE's clock, because the flips happen on the SQL side's
-            // `current_date` and the JVM's timezone can trail it by hours,
-            // during which a JVM-stamped validator would keep confirming
-            // (304) a body the SQL has already changed. Cache-Control is
-            // `no-cache` (revalidate every use; a matching ETag still short-
-            // circuits to a body-less 304) rather than a long max-age or
-            // `immutable`, which would let stale access flags live forever.
-            // Restricted-flag changes are only picked up when the date (and
-            // with it the ETag) rolls over — a bounded, documented staleness.
-            //
-            // `private` rather than `public` because the route is
-            // `@AuthRequired`: it keeps a future user-dependent SQL filter
-            // from leaking through a shared proxy.
+            // Only released versions get a validator. The per-file access
+            // marker still flips on embargo and retention dates, so the ETag
+            // carries the database's current date and Cache-Control asks for
+            // revalidation on every use.
             EntityTag etag = isCacheableVersion(datasetVersion)
-                    ? new EntityTag(computeTreeEtag(datasetVersion, normalizedPath, limit, cursor, include, order,
-                            originals, includeDeaccessioned, datasetVersionTreeService.currentDbDate()))
+                    ? new EntityTag(computeTreeEtag(datasetVersion, query, includeDeaccessioned, datasetVersionTreeService.currentDbDate()))
                     : null;
             if (etag != null) {
                 Response.ResponseBuilder precondition = jaxrsRequest.evaluatePreconditions(etag);
                 if (precondition != null) {
-                    // If-None-Match matched: 304 with the validator re-attached.
                     return precondition.tag(etag)
                             .header("Cache-Control", TREE_CACHE_CONTROL)
                             .build();
@@ -743,7 +714,7 @@ public class Datasets extends AbstractApiBean {
             }
             TreePage page;
             try {
-                page = datasetVersionTreeService.listChildren(datasetVersion, normalizedPath, limit, cursor, include, order, originals);
+                page = datasetVersionTreeService.listChildren(datasetVersion, query);
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
@@ -765,78 +736,77 @@ public class Datasets extends AbstractApiBean {
         return v.isReleased() && !v.isDeaccessioned();
     }
 
-    /**
-     * Returns the bare (unquoted) ETag token; quoting is {@link EntityTag}'s
-     * job. Pre-quoting here would get quoted a second time by JAX-RS,
-     * producing a malformed {@code ETag: ""…""} header that no echoed
-     * {@code If-None-Match} can ever match.
-     *
-     * {@code path} must already be normalized (the caller normalizes once,
-     * up front) so equivalent requests share a validator; {@code dbToday}
-     * is the database's current date — the clock the SQL's embargo/
-     * retention predicates flip on, deliberately not the JVM's.
-     */
-    private static String computeTreeEtag(DatasetVersion version, String path, Integer limit,
-                                           String cursor, Include include, Order order,
-                                           boolean originals, boolean includeDeaccessioned,
-                                           LocalDate dbToday) {
+    /** Bare token; {@link EntityTag} adds the quotes. Inputs must be the normalized ones so equal requests share it. */
+    private static String computeTreeEtag(DatasetVersion version, TreeQuery query,
+                                          boolean includeDeaccessioned, LocalDate dbToday) {
         StringBuilder sb = new StringBuilder();
         sb.append(version.getId()).append(':')
                 .append(version.getVersionState() != null ? version.getVersionState().name() : "").append(':')
-                .append(path).append(':')
-                .append(DatasetVersionTreeService.clampLimit(limit)).append(':')
-                .append(cursor == null ? "" : cursor).append(':')
-                .append(include.name()).append(':')
-                .append(order.wireValue()).append(':')
-                .append(originals).append(':')
+                .append(query.path()).append(':')
+                .append(DatasetVersionTreeService.clampLimit(query.limit())).append(':')
+                .append(query.cursor() == null ? "" : query.cursor()).append(':')
+                .append(query.include().name()).append(':')
+                .append(query.order().wireValue()).append(':')
+                .append(query.originals()).append(':')
                 .append(includeDeaccessioned).append(':')
                 .append(dbToday);
         byte[] hash = DigestUtils.sha256(sb.toString());
         return Base64.getUrlEncoder().withoutPadding().encodeToString(hash).substring(0, 16);
     }
 
-    private static JsonObjectBuilder jsonTreePage(TreePage page) {
+    static JsonObjectBuilder jsonTreePage(TreePage page) {
         JsonArrayBuilder items = JsonUtil.createArrayBuilder();
         for (TreeItem item : page.items) {
-            JsonObjectBuilder ob = JsonUtil.createObjectBuilder();
-            ob.add("type", item.type);
-            ob.add("name", item.name);
-            ob.add("path", item.path);
+            JsonObjectBuilder ob = JsonUtil.createObjectBuilder()
+                    .add("type", item.type)
+                    .add("name", item.name)
+                    .add("path", item.path);
             if (item instanceof FolderItem folder) {
-                ob.add("counts", JsonUtil.createObjectBuilder()
-                        .add("files", folder.fileCount)
-                        .add("folders", folder.folderCount)
-                        .add("bytes", folder.bytes)
-                        .add("restricted", folder.restrictedCount)
-                        .add("embargoed", folder.embargoedCount)
-                        .add("retentionExpired", folder.retentionExpiredCount));
+                ob.add("counts", jsonFolderCounts(folder));
             } else if (item instanceof FileItem file) {
-                ob.add("id", file.id);
-                ob.add("size", file.size);
-                if (file.contentType != null) ob.add("contentType", file.contentType);
-                if (file.access != null) ob.add("access", file.access);
-                if (file.checksumType != null && file.checksumValue != null) {
-                    ob.add("checksum", JsonUtil.createObjectBuilder()
-                            .add("type", file.checksumType)
-                            .add("value", file.checksumValue));
-                }
-                ob.add("downloadUrl", file.downloadUrl);
+                addFileFields(ob, file);
             }
             items.add(ob);
         }
-        JsonObjectBuilder result = JsonUtil.createObjectBuilder();
-        result.add("path", page.path);
-        result.add("items", items);
+        JsonObjectBuilder result = JsonUtil.createObjectBuilder()
+                .add("path", page.path)
+                .add("items", items);
         if (page.nextCursor != null) {
             result.add("nextCursor", page.nextCursor);
         } else {
             result.addNull("nextCursor");
         }
-        result.add("limit", page.limit);
-        result.add("order", page.order.wireValue());
-        result.add("include", page.include.name().toLowerCase(Locale.ROOT));
-        result.add("approximateCount", page.approximateCount);
-        return result;
+        return result
+                .add("limit", page.limit)
+                .add("order", page.order.wireValue())
+                .add("include", page.include.name().toLowerCase(Locale.ROOT))
+                .add("approximateCount", page.approximateCount);
+    }
+
+    private static JsonObjectBuilder jsonFolderCounts(FolderItem folder) {
+        return JsonUtil.createObjectBuilder()
+                .add("files", folder.fileCount)
+                .add("folders", folder.folderCount)
+                .add("bytes", folder.bytes)
+                .add("restricted", folder.restrictedCount)
+                .add("embargoed", folder.embargoedCount)
+                .add("retentionExpired", folder.retentionExpiredCount);
+    }
+
+    private static void addFileFields(JsonObjectBuilder ob, FileItem file) {
+        ob.add("id", file.id).add("size", file.size);
+        if (file.contentType != null) {
+            ob.add("contentType", file.contentType);
+        }
+        if (file.access != null) {
+            ob.add("access", file.access);
+        }
+        if (file.checksumType != null && file.checksumValue != null) {
+            ob.add("checksum", JsonUtil.createObjectBuilder()
+                    .add("type", file.checksumType)
+                    .add("value", file.checksumValue));
+        }
+        ob.add("downloadUrl", file.downloadUrl);
     }
 
     @GET

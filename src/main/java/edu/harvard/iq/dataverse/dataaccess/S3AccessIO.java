@@ -1110,12 +1110,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     /**
-     * The temporary-state tag every direct-uploaded object carries until
-     * Dataverse registers it ({@code removeTempTag()}); lifecycle rules can
-     * expire abandoned uploads by it. The value must be byte-identical
-     * between the presigned single-part PUT signature, the {@code tagging}
-     * field advertised to the client, and the server-side multipart
-     * initiation, or every upload fails with SignatureDoesNotMatch.
+     * Tag on every direct-uploaded object until Dataverse registers it. The
+     * presigned PUT signature, the {@code tagging} value sent to the client
+     * and the multipart initiation must all use this exact string.
      */
     private static final String TEMP_TAG = "dv-state=temp";
 
@@ -1177,54 +1174,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (fileSize <= minPartSize) {
             String url = generateTemporaryS3UploadUrl(key, Date.from(expiration), taggingDisabled);
             if (url == null) {
-                // The presigner logs and returns null on S3Exception; letting
-                // the null reach JsonObjectBuilder.add would surface as an
-                // opaque NPE 500 instead of a storage error.
-                throw new IOException("Unable to presign an upload URL for " + key + " — see earlier warning for the S3 error");
+                throw new IOException("Unable to presign an upload URL for " + key + ", see the S3 warning above");
             }
             response.add("url", url);
-            // The `tagging` key instructs the client: "send this as the
-            // x-amz-tagging header on the presigned PUT" (the URL above was
-            // signed with it). It is always present on single-part responses
-            // so the client never has to guess: an empty string means tagging
-            // is disabled for this store and the header must NOT be sent —
-            // the URL was signed without it, and adding the header fails the
-            // signature check (SignatureDoesNotMatch on MinIO-style stores,
-            // which is exactly the case dataverse.files.<id>.disable-tagging
-            // exists for). The dataverse-client-javascript SDK defaults a
-            // *missing* key to "dv-state=temp" for backward compatibility,
-            // so omitting the key when tagging is disabled would break those
-            // very stores.
+            // The client sends this as x-amz-tagging on the PUT. An empty string
+            // means the URL was signed without a tag and the header must be
+            // omitted; the SDK treats a missing key as the default tag.
             response.add("tagging", taggingDisabled ? "" : TEMP_TAG);
         } else {
             JsonObjectBuilder urls = JsonUtil.createObjectBuilder();
-
-            CreateMultipartUploadRequest.Builder createMultipartUploadRequestBuilder = CreateMultipartUploadRequest
-                    .builder().bucket(bucketName).key(key);
-            // For multipart the temp tag is applied server-side, here at
-            // initiation — clients cannot tag the parts (x-amz-tagging is
-            // not part of an UploadPart signature), so this is the only
-            // place the object can get the dv-state=temp marker that
-            // single-part uploads receive via their presigned PUT.
-            if (!taggingDisabled) {
-                createMultipartUploadRequestBuilder.tagging(TEMP_TAG);
-            }
-
-            // Use the existing s3 async client for the createMultipartUpload operation
-            CompletableFuture<CreateMultipartUploadResponse> createMultipartUploadFuture = s3WriteClient.createMultipartUpload(createMultipartUploadRequestBuilder.build());
-            CreateMultipartUploadResponse createMultipartUploadResponse;
-            try {
-                createMultipartUploadResponse = createMultipartUploadFuture.join();
-            } catch (CompletionException ce) {
-                // Surface a storage error instead of an unchecked 500. The
-                // tagging hint matters: stores without object-tagging support
-                // reject the initiation only because of the Tagging parameter.
-                throw new IOException("Cannot initiate multipart upload for " + key
-                        + (taggingDisabled ? ""
-                                : " (if this store rejects object tagging, set dataverse.files." + this.driverId + ".disable-tagging)"),
-                        ce);
-            }
-            String uploadId = createMultipartUploadResponse.uploadId();
+            String uploadId = initiateMultipartUpload(key, taggingDisabled);
 
             for (int i = 1; i <= (fileSize / minPartSize) + (fileSize % minPartSize > 0 ? 1 : 0); i++) {
                 final int partNum = i;
@@ -1250,6 +1209,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         response.add("partSize", minPartSize);
 
         return response;
+    }
+
+    // Parts cannot carry tags, so the multipart object is tagged at initiation.
+    private String initiateMultipartUpload(String key, boolean taggingDisabled) throws IOException {
+        CreateMultipartUploadRequest.Builder builder = CreateMultipartUploadRequest.builder().bucket(bucketName).key(key);
+        if (!taggingDisabled) {
+            builder.tagging(TEMP_TAG);
+        }
+        try {
+            return s3WriteClient.createMultipartUpload(builder.build()).join().uploadId();
+        } catch (CompletionException ce) {
+            String hint = taggingDisabled ? ""
+                    : " (if this store rejects object tagging, set dataverse.files." + this.driverId + ".disable-tagging)";
+            throw new IOException("Cannot initiate multipart upload for " + key + hint, ce);
+        }
     }
 
     int getUrlExpirationMinutes() {
