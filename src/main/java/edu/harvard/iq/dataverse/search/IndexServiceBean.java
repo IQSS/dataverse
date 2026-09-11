@@ -1,37 +1,8 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.CurationStatus;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetFieldValueValidator;
-import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObject.DType;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.Retention;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -50,51 +21,12 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import jakarta.ejb.AsyncResult;
-import jakarta.ejb.Asynchronous;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-
-import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
-
+import jakarta.ejb.*;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -107,14 +39,35 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CursorMarkParams;
-import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 import org.xml.sax.ContentHandler;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 @Stateless
 @Named
@@ -247,6 +200,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
         solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverse.getName()); //rootDataverseName);
         /*}*/
+
+        solrInputDocument.addField(SearchFields.IS_LINKED, dataverse.isLinked());
+
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
         // if (dataverse.getOwner() != null) {
@@ -1062,6 +1018,8 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
         }
+
+        solrInputDocument.addField(SearchFields.IS_LINKED, dataset.isLinked());
 
         DatasetType datasetType = dataset.getDatasetType();
         solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getName());
