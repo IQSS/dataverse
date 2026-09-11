@@ -288,16 +288,6 @@ public class SystemConfig {
                 : configured;
     }
 
-    /**
-     * Where the components fetch translations. Passed explicitly because the
-     * bundles otherwise guess a path under the site URL, which is wrong for any
-     * bundle hosted elsewhere.
-     */
-    public String getReusableComponentsLocalesPath() {
-        String base = getReusableComponentsBaseUrl();
-        return base == null ? null : base + "/locales/{{lng}}/{{ns}}.json";
-    }
-
     // Thread-safe and immutable per commons-validator docs, so shared.
     // ALLOW_LOCAL_URLS is deliberate: pointing the base URL at a Vite dev server
     // or an internal host is a first-class use. An authority is still required,
