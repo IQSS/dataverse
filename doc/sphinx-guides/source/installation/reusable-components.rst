@@ -116,12 +116,19 @@ Option 2: A WAR Deployed to Payara
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you would rather deploy the bundles the same way you deploy Dataverse
-itself, package the same directory as a WAR and deploy it next to
-``dataverse.war``. It contains only static files -- no Java, no dependencies --
-and Payara serves it at a context root matching the WAR name, so a
-``reusable-components.war`` is served at ``/reusable-components``. Because your
-web server already proxies Dataverse, that path is same-origin with the JSF
-pages without any further configuration.
+itself, build ``reusable-components.war`` from the same checkout and deploy it
+next to ``dataverse.war``:
+
+.. code-block:: bash
+
+  cd deployment/reusable-components
+  mvn package -Dversion=<version>
+
+The WAR contains only the static files -- no Java, no dependencies -- and
+Payara serves it at ``/reusable-components``, the context root matching its
+name. Because your web server already proxies Dataverse, that path is
+same-origin with the JSF pages without any further configuration. The same
+WAR works on every installation; nothing in it is specific to yours.
 
 Set :ref:`dataverse.reusable-components.base-url` to ``/reusable-components``,
 as above. Nothing else differs between the two options.
