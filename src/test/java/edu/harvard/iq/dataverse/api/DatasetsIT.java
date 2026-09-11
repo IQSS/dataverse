@@ -7531,6 +7531,150 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
     }
 
+    @Test
+    public void testGeographicBoundingBoxHighPrecisionValidation() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation").add("geospatial"), apiToken);
+        setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Negative test: Coordinates with 6+ decimal places where South > North.
+        // Before #11559 fix, Float.parseFloat treated 42.001001f and 42.001000f as equal (both 42.001f),
+        // erroneously passing validation and later breaking Solr indexing with InvalidShapeException.
+        JsonObjectBuilder invalidBboxDataset = createDatasetJsonWithBoundingBox(
+                "-71.116431", "-71.116430", "42.001001", "42.001000"
+        );
+        Response invalidResponse = UtilIT.createDataset(dataverseAlias, invalidBboxDataset, apiToken);
+        invalidResponse.prettyPrint();
+        invalidResponse.then().assertThat()
+                .statusCode(anyOf(equalTo(BAD_REQUEST.getStatusCode()), equalTo(FORBIDDEN.getStatusCode())))
+                .body("message", containsString("invalid coordinates"));
+
+        // Positive test: High-precision coordinates with valid ordering (South <= North, West <= East)
+        JsonObjectBuilder validBboxDataset = createDatasetJsonWithBoundingBox(
+                "-71.116431", "-71.116430", "42.001000", "42.001001"
+        );
+        Response validResponse = UtilIT.createDataset(dataverseAlias, validBboxDataset, apiToken);
+        validResponse.prettyPrint();
+        validResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+    }
+
+    private JsonObjectBuilder createDatasetJsonWithBoundingBox(String west, String east, String south, String north) {
+        return JsonUtil.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("typeName", "title")
+                                                        .add("value", "Dataset with Bounding Box")
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", false)
+                                                )
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                JsonUtil.createObjectBuilder()
+                                                                                        .add("value", "Tester, Geo")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorName"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "author")
+                                                )
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
+                                                                        .add("datasetContactEmail",
+                                                                                JsonUtil.createObjectBuilder()
+                                                                                        .add("value", "geotester@mailinator.com")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "datasetContactEmail"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "datasetContact")
+                                                )
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
+                                                                        .add("dsDescriptionValue",
+                                                                                JsonUtil.createObjectBuilder()
+                                                                                        .add("value", "Dataset for geospatial bbox test.")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "dsDescriptionValue"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "dsDescription")
+                                                )
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add("Other")
+                                                        )
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "subject")
+                                                )
+                                        )
+                                )
+                                .add("geospatial", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("typeName", "geographicBoundingBox")
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
+                                                                        .add("westLongitude",
+                                                                                JsonUtil.createObjectBuilder()
+                                                                                        .add("value", west)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "westLongitude")
+                                                                        )
+                                                                        .add("southLatitude",
+                                                                                JsonUtil.createObjectBuilder()
+                                                                                        .add("value", south)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "southLatitude")
+                                                                        )
+                                                                        .add("eastLongitude",
+                                                                                JsonUtil.createObjectBuilder()
+                                                                                        .add("value", east)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "eastLongitude")
+                                                                        )
+                                                                        .add("northLatitude",
+                                                                                JsonUtil.createObjectBuilder()
+                                                                                        .add("value", north)
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "northLatitude")
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ));
+    }
+
     private String getSuperuserToken() {
         Response createResponse = UtilIT.createRandomUser();
         String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);
