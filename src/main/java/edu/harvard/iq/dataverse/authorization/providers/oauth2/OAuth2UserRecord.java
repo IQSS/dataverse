@@ -34,6 +34,7 @@ public class OAuth2UserRecord implements Serializable {
      */
     public static final String OIDC_USER_ID_CLAIM_NAME = "oidc";
     public static final String IDP_CLAIM_NAME = "idp";
+    public static final String EMAIL_VERIFIED_CLAIM_NAME = "email_verified";
 
     private final String serviceId;
 
@@ -61,6 +62,7 @@ public class OAuth2UserRecord implements Serializable {
     private final AuthenticatedUserDisplayInfo displayInfo;
     private final List<String> availableEmailAddresses;
     private final OAuth2TokenData tokenData;
+    private final Boolean emailVerified;
 
     /**
      * Constructor for users without Shibboleth attributes.
@@ -71,9 +73,10 @@ public class OAuth2UserRecord implements Serializable {
             String username,
             OAuth2TokenData tokenData,
             AuthenticatedUserDisplayInfo displayInfo,
-            List<String> availableEmailAddresses
-    ) {
-        this(serviceId, idInService, username, null, null, null, tokenData, displayInfo, availableEmailAddresses);
+            List<String> availableEmailAddresses,
+            Boolean emailVerified
+            ) {
+        this(serviceId, idInService, username, null, null, null, tokenData, displayInfo, availableEmailAddresses, emailVerified);
     }
 
     /**
@@ -88,7 +91,8 @@ public class OAuth2UserRecord implements Serializable {
             String oidcUserId,
             OAuth2TokenData tokenData,
             AuthenticatedUserDisplayInfo displayInfo,
-            List<String> availableEmailAddresses
+            List<String> availableEmailAddresses,
+            Boolean emailVerified
     ) {
         this.serviceId = serviceId;
         this.idInService = idInService;
@@ -99,6 +103,7 @@ public class OAuth2UserRecord implements Serializable {
         this.tokenData = tokenData;
         this.displayInfo = displayInfo;
         this.availableEmailAddresses = availableEmailAddresses;
+        this.emailVerified = emailVerified;
     }
 
     public String getServiceId() {
@@ -127,6 +132,10 @@ public class OAuth2UserRecord implements Serializable {
 
     public List<String> getAvailableEmailAddresses() {
         return availableEmailAddresses;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
     }
 
     public AuthenticatedUserDisplayInfo getDisplayInfo() {

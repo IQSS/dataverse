@@ -1,0 +1,1 @@
+OIDC user properties can now be synchronized with the Dataverse user account during authentication when the dataverse.feature.oidc-user-property-sync feature flag is enabled. This includes first name, last name, email address, and email verification status (mapped from the email_verified claim).
