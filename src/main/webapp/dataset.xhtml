@@ -755,8 +755,8 @@
                                     <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container padding-none margin-bottom">
                                         <table class="metadata">
                                             <tbody>
-                                                <ui:repeat value="#{datasetSummaryFields}" var="dsf">
-                                                    <tr id="keywords" jsf:rendered="#{!empty datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==datasetVersionUI.keyword.datasetFieldType.id}">
+                                                <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
+                                                    <tr id="keywords" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==datasetVersionUI.keyword.datasetFieldType.id}">
                                                         <th scope="row">
                                                             #{bundle['dataset.keywordDisplay.title']}
                                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -955,7 +955,7 @@
                     <!-- View/Tabs infoMode -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
-                            <h:inputHidden value="#{lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
+                            <h:inputHidden value="#{DatasetPage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
                             <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:resolveClientId('datasetForm:pageRefreshFragment', view)},:messagePanel" actionListener="#{DatasetPage.refreshAllLocks()}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" action="#{DatasetPage.refresh()}"/>
