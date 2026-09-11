@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Template;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -22,7 +22,7 @@ import java.util.List;
 public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
     
     private License license = null;
-    private TermsOfUseAndAccess customTermsOfUseAndAccess = null;
+    private TermsOfUseOrLicense customTermsOfUseOrLicense = null;
     private Template template;
 
     public UpdateTemplateLicenseCommand(DataverseRequest request, Template template, Dataverse dataverse, License license) {
@@ -31,17 +31,17 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
         this.license = license;
     }
     
-    public UpdateTemplateLicenseCommand(DataverseRequest request, Template template, Dataverse dataverse, TermsOfUseAndAccess customTermsOfUseAndAccess) {
+    public UpdateTemplateLicenseCommand(DataverseRequest request, Template template, Dataverse dataverse, TermsOfUseOrLicense customTermsOfUseOrLicense) {
         super(request, dataverse);
         this.template = template;
-        this.customTermsOfUseAndAccess = customTermsOfUseAndAccess;
+        this.customTermsOfUseOrLicense = customTermsOfUseOrLicense;
     }
 
     @Override
     public Template execute(CommandContext ctxt) throws CommandException {
         Template savedTemplate;
         
-        if (license == null && customTermsOfUseAndAccess == null) {
+        if (license == null && customTermsOfUseOrLicense == null) {
             throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
         }
 
@@ -49,18 +49,18 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
             if (!license.isActive()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
             }
-            TermsOfUseAndAccess termsOfUseAndAccess = template.getTermsOfUseAndAccess();
+            TermsOfUseOrLicense termsOfUseAndAccess = template.getTermsOfUseOrLicense();
             termsOfUseAndAccess.setLicense(license);
             savedTemplate = ctxt.templates().save(template);
 
         } else  {
-            if (customTermsOfUseAndAccess.getTermsOfUse() == null || customTermsOfUseAndAccess.getTermsOfUse().isBlank()) {
+            if (customTermsOfUseOrLicense.getTermsOfUse() == null || customTermsOfUseOrLicense.getTermsOfUse().isBlank()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
             }
-            TermsOfUseAndAccess termsToUpdate = template.getTermsOfUseAndAccess();
-            applyCustomTerms(termsToUpdate, customTermsOfUseAndAccess);
-            template.setTermsOfUseAndAccess(termsToUpdate);
-            template.getTermsOfUseAndAccess().setLicense(null);
+            TermsOfUseOrLicense termsToUpdate = template.getTermsOfUseOrLicense();
+            applyCustomTerms(termsToUpdate, customTermsOfUseOrLicense);
+            template.setTermsOfUseOrLicense(termsToUpdate);
+            template.getTermsOfUseOrLicense().setLicense(null);
             savedTemplate = ctxt.templates().save(template);
         }
         
@@ -75,7 +75,7 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
      * @param target The TermsOfUseAndAccess object to be modified
      * @param source The TermsOfUseAndAccess object containing the new data
      */
-    private void applyCustomTerms(TermsOfUseAndAccess target, TermsOfUseAndAccess source) {
+    private void applyCustomTerms(TermsOfUseOrLicense target, TermsOfUseOrLicense source) {
         target.setTermsOfUse(source.getTermsOfUse());
         target.setConfidentialityDeclaration(source.getConfidentialityDeclaration());
         target.setSpecialPermissions(source.getSpecialPermissions());

@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.license.License;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,13 +28,13 @@ public class UpdateTemplateLicenseCommandTest {
     @Mock private Template template;
     
     // We use a real object for terms to verify field mapping easily
-    private TermsOfUseAndAccess existingTerms;
+    private TermsOfUseOrLicense existingTerms;
 
     @BeforeEach
     void setUp() {
-        existingTerms = new TermsOfUseAndAccess();
+        existingTerms = new TermsOfUseOrLicense();
         lenient().when(ctxt.templates()).thenReturn(templateService);
-        lenient().when(template.getTermsOfUseAndAccess()).thenReturn(existingTerms);
+        lenient().when(template.getTermsOfUseOrLicense()).thenReturn(existingTerms);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class UpdateTemplateLicenseCommandTest {
     @Test
     void testExecute_SuccessWithCustomTerms() throws Exception {
         // Arrange
-        TermsOfUseAndAccess customTerms = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense customTerms = new TermsOfUseOrLicense();
         customTerms.setTermsOfUse("My Custom Rules");
         customTerms.setConfidentialityDeclaration("Top Secret");
         
@@ -91,7 +91,7 @@ public class UpdateTemplateLicenseCommandTest {
     @Test
     void testExecute_BlankCustomTermsThrowsException() {
         // Arrange
-        TermsOfUseAndAccess blankTerms = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense blankTerms = new TermsOfUseOrLicense();
         blankTerms.setTermsOfUse("   "); // Blank string
         
         cmd = new UpdateTemplateLicenseCommand(request, template, dataverse, blankTerms);

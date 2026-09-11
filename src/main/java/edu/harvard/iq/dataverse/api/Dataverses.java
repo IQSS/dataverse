@@ -445,8 +445,9 @@ public class Dataverses extends AbstractApiBean {
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
-            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
-            version.getTermsOfUseAndAccess().setDatasetVersion(version);
+            version.getTermsOfAccess().setFileAccessRequest(true);
+            version.getTermsOfAccess().setDatasetVersion(version);
+            version.getTermsOfUseOrLicense().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
@@ -512,8 +513,9 @@ public class Dataverses extends AbstractApiBean {
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
-            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
-            version.getTermsOfUseAndAccess().setDatasetVersion(version);
+            version.getTermsOfAccess().setFileAccessRequest(true);
+            version.getTermsOfAccess().setDatasetVersion(version);
+            version.getTermsOfUseOrLicense().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
@@ -2426,7 +2428,7 @@ public class Dataverses extends AbstractApiBean {
                 return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success"));
             } else if (requestBody.getCustomTerms() != null) {
                 CustomTermsDTO customTerms = requestBody.getCustomTerms();
-                execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, customTerms.toTermsOfUseAndAccess()));
+                execCommand(new UpdateTemplateLicenseCommand(createDataverseRequest(getRequestUser(crc)), template, dataverse, customTerms.toTermsOfUseOrLicense()));
                 return ok(BundleUtil.getStringFromBundle("dataverses.api.update.template.license.success"));
             } else {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.updateLicense.licenseNameIsEmpty"));
@@ -2455,7 +2457,7 @@ public class Dataverses extends AbstractApiBean {
 
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
-            TermsOfUseAndAccess toua = jsonParser().parseTermsOfAccess(json);
+            TermsOfAccess toua = jsonParser().parseTermsOfAccess(json);
 
             if (publicInstall && (toua.isFileAccessRequest() || !toua.getTermsOfAccess().isEmpty())){
                 return error(BAD_REQUEST, "Setting File Access Request or Terms of Access is not permitted on a public installation.");

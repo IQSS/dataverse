@@ -386,7 +386,7 @@
                                                     <ul class="dropdown-menu pull-right text-left">
                                                         <li jsf:rendered="#{showPublishLink}" class="#{!DatasetPage.hasValidTermsOfAccess or ( locked and !latestVersionInReview) ? 'disabled' : ''}">
                                                             <!-- Publish LINK -->
-                                                            <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (locked and !latestVersionInReview) ? 'disabled' : ''}" 
+                                                            <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (locked and !latestVersionInReview) ? 'disabled' : ''}"
                                                                            disabled="#{!DatasetPage.hasValidTermsOfAccess or (locked and !latestVersionInReview)}"
                                                                            action="#{DatasetPage.processPublishButton()}">
                                                                 #{bundle['dataset.publish.btn']}
@@ -394,7 +394,7 @@
                                                         </li>
                                                         <li jsf:rendered="#{showSubmitForReviewLink}" class="#{latestVersionInReview or dataset.locked ? 'disabled' : ''}">
                                                             <!-- Submit for Review LINK -->
-                                                            <p:commandLink class="#{latestVersionInReview or dataset.locked ? 'disabled' : ''}" 
+                                                            <p:commandLink class="#{latestVersionInReview or dataset.locked ? 'disabled' : ''}"
                                                                            disabled="#{latestVersionInReview or dataset.locked}"
                                                                            onclick="PF('inreview').show()">
                                                                 #{latestVersionInReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
@@ -402,7 +402,7 @@
                                                         </li>
                                                         <li jsf:rendered="#{showReturnToAuthorLink}" class="#{(locked and !latestVersionInReview) ? 'disabled' : ''}">
                                                             <!-- Return to Author LINK -->
-                                                            <p:commandLink class="#{(locked and !latestVersionInReview) ? 'disabled' : ''}" 
+                                                            <p:commandLink class="#{(locked and !latestVersionInReview) ? 'disabled' : ''}"
                                                                            disabled="#{locked and !latestVersionInReview}"
                                                                            onclick="PF('sendBackToContributor').show()">
                                                                 #{bundle['dataset.rejectBtn']}
@@ -709,7 +709,7 @@
                                                     </h:outputFormat>
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
-                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null and guestbookResponseServiceBean.getDownloadCountByDatasetId(dataset.id, settingsWrapper.getMDCStartDate()) > 0 }">        
+                                                    <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null and guestbookResponseServiceBean.getDownloadCountByDatasetId(dataset.id, settingsWrapper.getMDCStartDate()) > 0 }">
                                                         <h:outputFormat value="#{bundle['metrics.downloads.nonMDC']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         </h:outputFormat>
@@ -1053,7 +1053,7 @@
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0"/>
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </p:commandLink>
-                                    <div class="btn-group" jsf:rendered="#{dataset.released 
+                                    <div class="btn-group" jsf:rendered="#{dataset.released
                                                                            and (!dataset.deaccessioned
                                                                            or (deaccessioned and canUpdateDataset))
                                                                            and !anonymizedAccess}">
@@ -1090,7 +1090,8 @@
                                    rendered="#{!deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
                                 <ui:include src="dataset-license-terms.xhtml">
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? 'LICENSE': ''}"/>
-                                    <ui:param name="termsOfUseAndAccess" value="#{workingVersion.termsOfUseAndAccess}"/>
+                                    <ui:param name="termsOfUseOrLicense" value="#{version.termsOfUseOrLicense}"/>
+                                    <ui:param name="termsOfAccess" value="#{workingVersion.termsOfAccess}"/>
                                     <ui:param name="datasetPage" value="true"/>
                                     <ui:param name="publicStore" value="DatasetPage.hasPublicStore"/>
                                 </ui:include>
@@ -1358,7 +1359,7 @@
                                              action="#{DatasetPage.createPrivateUrl(true)}" 
                                              update="privateUrlPanel,:messagePanel" 
                                              rendered="#{anonymizedAccessEnabled and (empty(DatasetPage.privateUrl) or (!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl))}" 
-                                             disabled="#{dataset.released or ((!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl))}" 
+                                             disabled="#{dataset.released or ((!empty(DatasetPage.privateUrl) and !DatasetPage.anonymizedPrivateUrl))}"
                                              title="#{dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
                                   
                             </p>

@@ -113,15 +113,27 @@ public class Template implements Serializable {
     }
     
     @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
-    @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess;
+    @JoinColumn(name = "termsofaccess_id")
+    private TermsOfAccess termsOfAccess;
 
-    public TermsOfUseAndAccess getTermsOfUseAndAccess() {
-        return termsOfUseAndAccess;
+    public TermsOfAccess getTermsOfAccess() {
+        return termsOfAccess;
     }
 
-    public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
-        this.termsOfUseAndAccess = termsOfUseAndAccess;
+    public void setTermsOfAccess(TermsOfAccess termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
+    @JoinColumn(name = "termsofuseorlicense_id")
+    private TermsOfUseOrLicense termsOfUseOrLicense;
+
+    public TermsOfUseOrLicense getTermsOfUseOrLicense() {
+        return termsOfUseOrLicense;
+    }
+
+    public void setTermsOfUseOrLicense(TermsOfUseOrLicense termsOfUseOrLicense) {
+        this.termsOfUseOrLicense = termsOfUseOrLicense;
     }
 
     @OneToMany(mappedBy = "template", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -359,17 +371,26 @@ public class Template implements Serializable {
         if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
             newTemplate.setDatasetFields(newTemplate.copyDatasetFields(source.getDatasetFields()));
         }
-        TermsOfUseAndAccess terms = null;
-        if(source.getTermsOfUseAndAccess() != null){
-            terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+        TermsOfAccess termsOfAccess = null;
+        if(source.getTermsOfAccess() != null){
+            termsOfAccess = source.getTermsOfAccess().copyTermsOfAccess();
         } else {
-            terms = new TermsOfUseAndAccess();
-           // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
-            terms.setFileAccessRequest(true);
+            termsOfAccess = new TermsOfAccess();
+            termsOfAccess.setFileAccessRequest(true);
         }
-        terms.setTemplate(newTemplate);
-        newTemplate.setTermsOfUseAndAccess(terms);
+        termsOfAccess.setTemplate(newTemplate);
+        newTemplate.setTermsOfAccess(termsOfAccess);
         
+        TermsOfUseOrLicense termsOfUseOrLicense = null;
+        if(source.getTermsOfUseOrLicense() != null){
+            termsOfUseOrLicense = source.getTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+        } else {
+            termsOfUseOrLicense = new TermsOfUseOrLicense();
+           // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+        }
+        termsOfUseOrLicense.setTemplate(newTemplate);
+        newTemplate.setTermsOfUseOrLicense(termsOfUseOrLicense);
+
         newTemplate.getInstructionsMap().putAll(source.getInstructionsMap());
         newTemplate.updateInstructions();
         return newTemplate;
