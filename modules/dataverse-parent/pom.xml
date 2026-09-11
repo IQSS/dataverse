@@ -438,7 +438,7 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
         <repository>
@@ -450,20 +450,22 @@
             </snapshots>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
+        <!--
         <repository>
             <id>central-portal-snapshots</id>
             <name>Central Portal Snapshots</name>
             <url>
                 https://central.sonatype.com/repository/maven-snapshots/
             </url>
-	    <releases>
-	      <enabled>false</enabled>
-	    </releases>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-	<!--
+        -->
+	    <!--
         <repository>
             <id>s01-oss-sonatype</id>
             <name>s01-oss-sonatype</name>
