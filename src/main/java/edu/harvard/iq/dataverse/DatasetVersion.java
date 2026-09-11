@@ -183,11 +183,11 @@ public class DatasetVersion implements Serializable {
     private String jsonLd;
 
     @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetVersionUser> datasetVersionUsers;
+    private List<DatasetVersionUser> datasetVersionUsers = new ArrayList<>();
     
     // Is this the right mapping and cascading for when the workflowcomments table is being used for objects other than DatasetVersion?
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<WorkflowComment> workflowComments;
+    private List<WorkflowComment> workflowComments = new ArrayList<>();
 
     /*
      * As of v6.7, the NULLS LAST part of the annotation below appears to not be working. Explicit sorting has been added in the getCurationStatuses() method. The annotation is kept since, if it does work
@@ -2165,6 +2165,16 @@ public class DatasetVersion implements Serializable {
     public void removeCurationStatus(CurationStatus curationStatus) {
         curationStatuses.remove(curationStatus);
         curationStatus.setDatasetVersion(null);
+    }
+
+    public void addWorkflowComment(WorkflowComment comment) {
+        comment.setDatasetVersion(this);
+        workflowComments.add(comment);
+    }
+
+    public void addDatasetVersionUser(DatasetVersionUser dvu) {
+        dvu.setDatasetVersion(this);
+        datasetVersionUsers.add(dvu);
     }
 
     public CurationStatus getCurationStatusAsOfDate(Date date) {

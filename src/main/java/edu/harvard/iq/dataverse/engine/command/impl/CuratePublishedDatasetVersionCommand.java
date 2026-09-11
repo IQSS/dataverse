@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.CurationStatus;
 import edu.harvard.iq.dataverse.DataFile;
@@ -91,12 +92,35 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         
         //Also set the fileaccessrequest boolean on the dataset to match the new terms
         getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
+        
+        // Transfer workflow comments from draft to published version
         List<WorkflowComment> newComments = newVersion.getWorkflowComments();
-        if (newComments!=null && newComments.size() >0) {
-            for(WorkflowComment wfc: newComments) {
-                wfc.setDatasetVersion(updateVersion);
+        if (newComments != null && newComments.size() > 0) {
+            for (WorkflowComment wfc : newComments) {
+                updateVersion.addWorkflowComment(wfc);
             }
-            updateVersion.getWorkflowComments().addAll(newComments);
+            newVersion.getWorkflowComments().clear();
+        }
+
+        // Transfer DatasetVersionUser entries from draft to published version
+        List<DatasetVersionUser> draftDVUsers = newVersion.getDatasetVersionUsers();
+        if (draftDVUsers != null && !draftDVUsers.isEmpty()) {
+            for (DatasetVersionUser dvu : draftDVUsers) {
+                boolean found = false;
+                for (DatasetVersionUser existingDvu : updateVersion.getDatasetVersionUsers()) {
+                    if (existingDvu.getAuthenticatedUser().equals(dvu.getAuthenticatedUser())) {
+                        if (dvu.getLastUpdateDate().after(existingDvu.getLastUpdateDate())) {
+                            existingDvu.setLastUpdateDate(dvu.getLastUpdateDate());
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    updateVersion.addDatasetVersionUser(dvu);
+                }
+            }
+            newVersion.getDatasetVersionUsers().clear();
         }
 
         // Transfer curation status entries from draft to published version
@@ -232,11 +256,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
         updateDatasetUser(ctxt);
         
-        // ToDo - see if there are other DatasetVersionUser entries unique to the draft
-        // version that should be moved to the last published version
-        // As this command is intended for minor fixes, often done by the person pushing
-        // the update-current-version button, this is probably a minor issue.
-
         return savedDataset;
     }
 

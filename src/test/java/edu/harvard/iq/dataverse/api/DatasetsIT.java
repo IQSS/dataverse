@@ -4374,7 +4374,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         updateTitle.prettyPrint();
         updateTitle.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
+        // Add a workflow comment to the draft
+        UtilIT.submitDatasetForReview(datasetPid, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        JsonObjectBuilder curatorComment = JsonUtil.createObjectBuilder();
+        curatorComment.add("reasonForReturn", "Please fix the metadata.");
+        UtilIT.returnDatasetToAuthor(datasetPid, curatorComment.build(), apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Add another DatasetVersionUser by having another superuser edit the draft
+        Response createUser2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        UtilIT.setSuperuserStatus(username2, true).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken2).then().assertThat().statusCode(OK.getStatusCode());
+
         // shouldn't be able to update current unless you're a super user
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(FORBIDDEN.getStatusCode());
