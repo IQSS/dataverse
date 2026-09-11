@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -19,6 +20,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.IOException;
@@ -112,24 +114,53 @@ public class GuestbookResponseServiceBean {
         return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
     }
 
-    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
-        return findAllByGuestbookId(guestbookId, null, null);
+    private Order getOrderBy(CriteriaBuilder cb, Path<Object> pathObj, boolean isDescending) {
+        return isDescending ? cb.desc(pathObj) : cb.asc(pathObj);
     }
-    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId, Integer offset, Integer limit) {
+    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId, String sortField, String sortOrder, Integer offset, Integer limit) {
         if (guestbookId != null) {
-            TypedQuery<GuestbookResponse> query = em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class);
-            if (offset != null) {
-                query.setFirstResult(offset);
-            }
-            if (limit != null) {
-                query.setMaxResults(limit);
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<GuestbookResponse> cq = cb.createQuery(GuestbookResponse.class);
+            Root<GuestbookResponse> guestbookResponseRoot = cq.from(GuestbookResponse.class);
+
+            boolean isDescending = sortOrder != null && sortOrder.equalsIgnoreCase(SortBy.DESCENDING);
+            Order order;
+            String orderField = (sortField == null) ? "" : sortField.toLowerCase();
+            switch(orderField) {
+                case "date":
+                    order = getOrderBy(cb, guestbookResponseRoot.get("responseTime"), isDescending);
+                    break;
+                case "type":
+                    order = getOrderBy(cb, guestbookResponseRoot.get("eventType"), isDescending);
+                    break;
+                case "file":
+                    Join<GuestbookResponse, DataFile> dataFileJoin = guestbookResponseRoot.join("dataFile", JoinType.INNER);
+                    order = getOrderBy(cb, dataFileJoin.get("fileMetadatas").get("label"), isDescending);
+                    break;
+                case "user":
+                    order = getOrderBy(cb, guestbookResponseRoot.get("name"), isDescending);
+                    break;
+                default:
+                    order = null;
             }
 
-            return query.getResultList();
+            cq.where(cb.equal(guestbookResponseRoot.get("guestbook").get("id"), guestbookId));
+            if (order != null) {
+                cq.orderBy(order, getOrderBy(cb, guestbookResponseRoot.get("id"), isDescending));
+            }
+            cq.distinct(true);
+
+            int firstResult = offset == null ? 0 : offset;
+            int pageSize = limit == null ? Integer.MAX_VALUE : limit;
+
+            return em.createQuery(cq)
+                    .setFirstResult(firstResult)
+                    .setMaxResults(pageSize)
+                    .getResultList();
         }
         return null;
     }
-    
+
     /* 
        This method is used for streaming downloads of guestbook responses, in 
        CSV format, both for individual guestbooks, and for entire dataverses
