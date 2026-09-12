@@ -328,6 +328,10 @@ class DatasetsTreeIT {
                 .body("data.items[0].checksum.type", notNullValue())
                 .body("data.items[0].checksum.value", notNullValue());
 
+        UtilIT.downloadFileOriginal(withOriginals.jsonPath().getInt("data.items[0].id"), apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode())
+                .contentType(withOriginals.jsonPath().getString("data.items[0].contentType"));
+
         // size follows the same rule as checksum/downloadUrl: the default
         // (archival) form reports the converted .tab size, while
         // originals=true reports the saved original (.dta) size. The two
@@ -356,6 +360,7 @@ class DatasetsTreeIT {
                 null, null, null, "files", null, null, false, apiToken);
         withoutOriginals.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.items[0].contentType", equalTo("text/plain"))
                 .body("data.items[0].checksum", notNullValue())
                 .body("data.items[0].checksum.value", notNullValue());
 
@@ -363,6 +368,7 @@ class DatasetsTreeIT {
                 null, null, null, "files", null, null, true, apiToken);
         withOriginals.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.items[0].contentType", equalTo("text/plain"))
                 .body("data.items[0].checksum", notNullValue())
                 .body("data.items[0].checksum.value", notNullValue());
     }

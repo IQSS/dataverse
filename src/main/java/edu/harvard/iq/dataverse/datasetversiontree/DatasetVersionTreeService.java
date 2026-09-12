@@ -393,7 +393,9 @@ public class DatasetVersionTreeService {
         sql.append("SELECT fm.label, df.id, ");
         sql.append("       CASE WHEN dt.id IS NOT NULL AND ?").append(originalsSlot)
            .append(" THEN COALESCE(dt.originalfilesize, df.filesize) ELSE df.filesize END, ");
-        sql.append("       df.contenttype, x.access, ");
+        sql.append("       CASE WHEN dt.id IS NULL OR NOT ?").append(originalsSlot).append(" THEN df.contenttype ");
+        sql.append("            WHEN dt.originalfileformat LIKE 'application/x-dvn-%-zip' THEN 'application/zip' ");
+        sql.append("            ELSE COALESCE(NULLIF(dt.originalfileformat, ''), 'application/x-unknown') END, x.access, ");
         sql.append("       CASE WHEN dt.id IS NOT NULL AND NOT ?").append(originalsSlot).append(" THEN NULL ELSE df.checksumtype  END, ");
         sql.append("       CASE WHEN dt.id IS NOT NULL AND NOT ?").append(originalsSlot).append(" THEN NULL ELSE df.checksumvalue END ");
         sql.append("FROM filemetadata fm JOIN datafile df ON fm.datafile_id = df.id ");

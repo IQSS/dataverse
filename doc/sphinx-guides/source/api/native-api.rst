@@ -2545,7 +2545,7 @@ Query parameters:
 * ``include`` — ``all`` (default), ``folders``, or ``files``.
 * ``order`` — ``NameAZ`` (default) or ``NameZA``.
 * ``includeDeaccessioned`` — same semantics as the ``files`` endpoint.
-* ``originals`` — when ``true``, ingested tabular files are reported in their original-upload form: the per-file ``downloadUrl`` requests ``?format=original`` and both ``checksum`` and ``size`` reflect the saved original rather than the converted TSV. (The folder ``counts.bytes`` rollup stays the served-form total — see below.)
+* ``originals`` — when ``true``, ingested tabular files are reported in their original-upload form: the per-file ``downloadUrl`` requests ``?format=original`` and ``checksum``, ``size`` and ``contentType`` reflect the saved original rather than the converted TSV. The logical tree name and path are preserved. (The folder ``counts.bytes`` rollup stays the served-form total — see below.)
 
 Response shape:
 
