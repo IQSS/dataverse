@@ -700,12 +700,19 @@ public class Datasets extends AbstractApiBean {
             // expansion and once per page, and the dataset view it belongs to has
             // already logged its Make Data Count investigation.
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), null, headers, includeDeaccessioned);
-            // Only released versions get a validator. The per-file access
-            // marker still flips on embargo and retention dates, so the ETag
-            // carries the database's current date and Cache-Control asks for
-            // revalidation on every use.
+            TreePage page;
+            try {
+                page = datasetVersionTreeService.listChildren(datasetVersion, query);
+            } catch (InvalidQueryException ex) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
+            }
+            JsonObject body = JsonUtil.createObjectBuilder()
+                    .add("status", ApiConstants.STATUS_OK)
+                    .add("data", jsonTreePage(page))
+                    .build();
+            // Shared file state can change even for an older published version.
             EntityTag etag = isCacheableVersion(datasetVersion)
-                    ? new EntityTag(computeTreeEtag(datasetVersion, query, includeDeaccessioned, datasetVersionTreeService.currentDbDate()))
+                    ? new EntityTag(computeTreeEtag(body))
                     : null;
             if (etag != null) {
                 Response.ResponseBuilder precondition = jaxrsRequest.evaluatePreconditions(etag);
@@ -715,17 +722,7 @@ public class Datasets extends AbstractApiBean {
                             .build();
                 }
             }
-            TreePage page;
-            try {
-                page = datasetVersionTreeService.listChildren(datasetVersion, query);
-            } catch (InvalidQueryException ex) {
-                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
-            }
-            Response.ResponseBuilder rb = Response.ok(JsonUtil.createObjectBuilder()
-                            .add("status", ApiConstants.STATUS_OK)
-                            .add("data", jsonTreePage(page))
-                            .build())
-                    .type(MediaType.APPLICATION_JSON);
+            Response.ResponseBuilder rb = Response.ok(body).type(MediaType.APPLICATION_JSON);
             if (etag != null) {
                 rb.tag(etag).header("Cache-Control", TREE_CACHE_CONTROL);
             }
@@ -739,21 +736,8 @@ public class Datasets extends AbstractApiBean {
         return v.isReleased() && !v.isDeaccessioned();
     }
 
-    /** Bare token; {@link EntityTag} adds the quotes. Inputs must be the normalized ones so equal requests share it. */
-    private static String computeTreeEtag(DatasetVersion version, TreeQuery query,
-                                          boolean includeDeaccessioned, LocalDate dbToday) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(version.getId()).append(':')
-                .append(version.getVersionState() != null ? version.getVersionState().name() : "").append(':')
-                .append(query.path()).append(':')
-                .append(DatasetVersionTreeService.clampLimit(query.limit())).append(':')
-                .append(query.cursor() == null ? "" : query.cursor()).append(':')
-                .append(query.include().name()).append(':')
-                .append(query.order().wireValue()).append(':')
-                .append(query.originals()).append(':')
-                .append(includeDeaccessioned).append(':')
-                .append(dbToday);
-        byte[] hash = DigestUtils.sha256(sb.toString());
+    static String computeTreeEtag(JsonObject body) {
+        byte[] hash = DigestUtils.sha256(body.toString());
         return Base64.getUrlEncoder().withoutPadding().encodeToString(hash).substring(0, 16);
     }
 

@@ -13,9 +13,24 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DatasetsTreePrinterTest {
+
+    @Test
+    void etagChangesWithSharedFileAccessState() {
+        FileItem publicFile = new FileItem(5, "a.txt", "a.txt", 42, "text/plain", "public",
+                "MD5", "abc", "/api/access/datafile/5");
+        FileItem restrictedFile = new FileItem(5, "a.txt", "a.txt", 42, "text/plain", "restricted",
+                "MD5", "abc", "/api/access/datafile/5");
+        JsonObject publicPage = Datasets.jsonTreePage(new TreePage("", List.of(publicFile),
+                null, 10, Order.NAME_AZ, Include.ALL, 1)).build();
+        JsonObject restrictedPage = Datasets.jsonTreePage(new TreePage("", List.of(restrictedFile),
+                null, 10, Order.NAME_AZ, Include.ALL, 1)).build();
+
+        assertNotEquals(Datasets.computeTreeEtag(publicPage), Datasets.computeTreeEtag(restrictedPage));
+    }
 
     @Test
     void printsFoldersFilesAndEnvelope() {

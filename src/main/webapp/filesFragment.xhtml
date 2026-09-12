@@ -660,6 +660,8 @@
                 siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
                 datasetPid: #{systemConfig.jsString(DatasetPage.dataset.globalId.asString())},
                 datasetVersionId: #{systemConfig.jsString(DatasetPage.workingVersion.friendlyVersionNumber)},
+                includeDeaccessioned: #{DatasetPage.workingVersion.deaccessioned},
+                downloadsDisabled: #{DatasetPage.downloadPopupRequired},
                 locale: #{systemConfig.jsString(dataverseSession.localeCode)},
                 rootElementId: 'dv-tree-view',
                 fileMetadataPath: '/file.xhtml'

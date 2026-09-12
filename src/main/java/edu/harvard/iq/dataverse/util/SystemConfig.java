@@ -255,9 +255,7 @@ public class SystemConfig {
     }
 
     /**
-     * Shared core of the uploader gate, used directly by dataset.xhtml's create
-     * tab and layered with page state by EditDatafilesPage#isReactUploaderActive,
-     * so the two pages cannot drift apart.
+     * Installation-level uploader gate shared by create and edit pages.
      */
     public boolean isReactUploaderAvailable(Dataset dataset) {
         return isReactUploaderEnabled()
@@ -267,18 +265,14 @@ public class SystemConfig {
     }
 
     /**
-     * Base URL the component bundles are loaded from, without a trailing slash,
-     * or {@code null} when unset or unusable. The bundles are not shipped in the
-     * WAR, so until an operator hosts them and sets this, the components are not
-     * rendered.
+     * Component base URL without a trailing slash, or {@code null} when unusable.
      */
     public String getReusableComponentsBaseUrl() {
         String configured = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional().orElse(null);
         if (configured == null) {
             return null;
         }
-        // Rendered verbatim into a script src attribute, so reject anything that
-        // could break out of it.
+        // Validate before rendering into script attributes.
         if (!isSafeReusableComponentsBaseUrl(configured)) {
             logger.warning(() -> "REUSABLE_COMPONENTS_BASE_URL value rejected as unsafe: " + configured);
             return null;
@@ -299,7 +293,8 @@ public class SystemConfig {
         if (value == null || value.isEmpty()) return false;
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c <= 0x20 || c == '"' || c == '\'' || c == '<' || c == '>') return false;
+            if (c <= 0x20 || c == '"' || c == '\'' || c == '<' || c == '>'
+                    || c == '\\' || c == '?' || c == '#') return false;
         }
         if (value.startsWith("//")) return false;
         if (value.startsWith("/")) return true;
@@ -307,10 +302,7 @@ public class SystemConfig {
     }
 
     /**
-     * JSON-encode a string, quotes included, for inlining into a JavaScript
-     * object literal in a JSF page. Escapes backslashes, quotes and control
-     * characters, plus {@code </} so a stray {@code </script>} in user input
-     * cannot close the tag early.
+     * JSON-encode for inline scripts, escaping closing tags.
      */
     public String jsString(String raw) {
         if (raw == null) {

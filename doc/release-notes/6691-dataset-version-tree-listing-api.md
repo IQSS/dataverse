@@ -6,7 +6,7 @@ See the [Native API guide](https://guides.dataverse.org/en/latest/api/native-api
 
 ## Upgrade instructions
 
-Flyway migration `V6.10.1.2` adds `ix_filemetadata_tree` to keep this endpoint fast. On installations with a large `filemetadata` table, `CREATE INDEX` holds an `ACCESS EXCLUSIVE` lock for the duration of the build, and Flyway cannot use `CONCURRENTLY` inside its transaction. Create it out of band before upgrading:
+Flyway migration `V6.11.0.2` adds `ix_filemetadata_tree` to keep this endpoint fast. `CREATE INDEX` blocks writes while it builds. On installations with a large `filemetadata` table, create it outside Flyway's transaction before upgrading:
 
 ```sql
 CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_filemetadata_tree

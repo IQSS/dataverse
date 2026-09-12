@@ -2577,7 +2577,7 @@ Folder counts are recursive: ``counts.files`` is the total number of files anywh
 
 Checksum semantics: ``checksum`` is present on a file row only when it is the digest of the bytes a client would receive by following ``downloadUrl``. For ingested tabular files the default ``downloadUrl`` resolves to the converted TSV — bytes whose digest Dataverse does not store — so the ``checksum`` field is omitted; requesting the same listing with ``originals=true`` flips ``downloadUrl`` to ``?format=original`` (the saved-original auxiliary blob) and the matching digest is reported again. The per-file ``size`` follows the same rule: under ``originals=true`` it reports the saved original's size so it matches the original bytes, while the folder ``counts.bytes`` rollup stays the served-form total. Clients can therefore treat "``checksum`` present" as an unconditional commitment that the value matches what ``downloadUrl`` will serve — and, under ``originals=true``, that ``size`` matches too.
 
-Caching: for published, non-deaccessioned versions the response carries an ``ETag`` header (derived from the request inputs and the current date) and ``Cache-Control: private, no-cache``. A released version's file list is frozen, but the response is still time-dependent — ``access`` markers flip when an embargo lapses or a retention period expires — so clients must revalidate rather than reuse a stored copy blindly; sending the ETag back in ``If-None-Match`` yields a body-less ``304 Not Modified`` while it still matches, and the date component of the ETag makes embargo/retention transitions invalidate it. ``private`` keeps the response out of shared caches because the route is auth-required. Drafts and deaccessioned versions emit no caching headers because their content can change in place.
+Caching: published, non-deaccessioned versions return a content-derived ``ETag`` and ``Cache-Control: private, no-cache``. Clients must revalidate with ``If-None-Match``; unchanged responses return ``304 Not Modified``. File metadata, access changes and embargo/retention transitions invalidate the ETag when they change the response. Drafts and deaccessioned versions emit no caching headers.
 
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -9340,4 +9340,3 @@ A curl example listing collections:
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList"
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve/collectionList?userIdentifier=anotherUser"
-

@@ -34,6 +34,7 @@ class DatasetVersionTreeServiceTest {
         // first segment can never start with those.
         assertEquals("data/sub", DatasetVersionTreeService.normalizePath("data\\sub"));
         assertEquals("hidden", DatasetVersionTreeService.normalizePath(".hidden"));
+        assertEquals("\u2003", DatasetVersionTreeService.normalizePath("\u2003"));
     }
 
     @Test

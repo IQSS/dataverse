@@ -17,7 +17,6 @@ import jakarta.persistence.Query;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -27,7 +26,7 @@ import java.util.Objects;
 /**
  * One page of the folders and files directly inside a folder of a dataset
  * version. Two native queries over {@code filemetadata}, both served by the
- * covering index {@code ix_filemetadata_tree} (migration {@code V6.10.1.2}):
+ * covering index {@code ix_filemetadata_tree} (migration {@code V6.11.0.2}):
  * a {@code GROUP BY} on the first path segment for folders, then a keyset
  * scan for files. Folders sort before files; {@code nextCursor} is opaque.
  */
@@ -301,15 +300,6 @@ public class DatasetVersionTreeService {
             "                     LEFT JOIN embargo e ON df.embargo_id = e.id "
             + "                     LEFT JOIN retention r ON df.retention_id = r.id ";
 
-    /**
-     * The clock every date predicate in this service's SQL uses. Cache
-     * validators over this output must be stamped with it, not the JVM's.
-     */
-    public LocalDate currentDbDate() {
-        java.sql.Date d = (java.sql.Date) em.createNativeQuery("SELECT current_date").getSingleResult();
-        return d.toLocalDate();
-    }
-
     /** The first path segment of {@code directorylabel} below the listed folder. */
     private static String folderNameExpr(int substringFrom) {
         return "split_part(substring(fm.directorylabel FROM " + substringFrom + "), '/', 1)";
@@ -325,7 +315,7 @@ public class DatasetVersionTreeService {
     private List<FolderItem> runFolderQuery(long versionId, String path, int limit,
                                              String afterFolderName, Order order) {
         boolean root = path.isEmpty();
-        int substringFrom = root ? 1 : path.length() + 2;
+        int substringFrom = root ? 1 : path.codePointCount(0, path.length()) + 2;
         String folderName = folderNameExpr(substringFrom);
         String dir = order == Order.NAME_ZA ? "DESC" : "ASC";
         String cmp = order == Order.NAME_ZA ? "<" : ">";
@@ -470,7 +460,7 @@ public class DatasetVersionTreeService {
 
     private int countFolders(long versionId, String path) {
         boolean root = path.isEmpty();
-        int substringFrom = root ? 1 : path.length() + 2;
+        int substringFrom = root ? 1 : path.codePointCount(0, path.length()) + 2;
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT COUNT(DISTINCT ").append(folderNameExpr(substringFrom)).append(") ");
@@ -542,7 +532,7 @@ public class DatasetVersionTreeService {
      * @throws InvalidQueryException for non-blank input that normalizes away
      */
     public static String normalizePath(String raw) {
-        if (raw == null || raw.isBlank()) {
+        if (raw == null || raw.chars().allMatch(c -> c == ' ')) {
             return "";
         }
         String p = raw.replaceAll("[\\\\/]+", "/");

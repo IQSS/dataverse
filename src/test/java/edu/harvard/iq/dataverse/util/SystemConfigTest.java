@@ -348,6 +348,9 @@ class SystemConfigTest {
         assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("ftp://x/y"));
         assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("//evil.example/dv"));
         assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("//evil.example"));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("/\\evil.example/dv"));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("/reusable-components?version=1"));
+        assertFalse(SystemConfig.isSafeReusableComponentsBaseUrl("https://cdn.example.org/dv#bundle"));
     }
 
     @Test

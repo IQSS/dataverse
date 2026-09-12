@@ -1387,11 +1387,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     /**
-     * Whether the React uploader replaces the PrimeFaces widget on this page.
-     * Used by both the mount point in editFilesFragment.xhtml and the Done
-     * button in editdatafiles.xhtml, so the two cannot disagree. Page state
-     * lives here; the installation-level terms are in
-     * {@link SystemConfig#isReactUploaderAvailable}.
+     * Shared uploader gate for the mount point and Done button.
      */
     public boolean isReactUploaderActive() {
         return showFileUploadFragment()
