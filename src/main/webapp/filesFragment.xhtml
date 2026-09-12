@@ -664,9 +664,17 @@
                 rootElementId: 'dv-tree-view',
                 fileMetadataPath: '/file.xhtml'
             };
+            function dvReactTreeViewLoadFailed() {
+                var mount = document.getElementById('dv-tree-view');
+                if (mount) {
+                    mount.innerHTML = '<div class="alert alert-danger" role="alert">'
+                        + #{systemConfig.jsString(bundle['file.reactTreeView.loadFailed'])}
+                        + '</div>';
+                }
+            }
             //]]>
         </script>
-        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js"></script>
+        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js" onerror="dvReactTreeViewLoadFailed()"></script>
     </ui:fragment>
 
     <p:tree id="filesTree" style="width:100%;"

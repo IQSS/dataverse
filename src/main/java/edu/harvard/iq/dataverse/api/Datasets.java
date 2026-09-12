@@ -696,7 +696,10 @@ public class Datasets extends AbstractApiBean {
             } catch (InvalidQueryException ex) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.tree.invalid.query", List.of(ex.getMessage())));
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers, includeDeaccessioned);
+            // Null uriInfo on purpose: the lazy tree calls this once per folder
+            // expansion and once per page, and the dataset view it belongs to has
+            // already logged its Make Data Count investigation.
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), null, headers, includeDeaccessioned);
             // Only released versions get a validator. The per-file access
             // marker still flips on embargo and retention dates, so the ETag
             // carries the database's current date and Cache-Control asks for

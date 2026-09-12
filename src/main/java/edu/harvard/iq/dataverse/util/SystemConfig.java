@@ -301,6 +301,7 @@ public class SystemConfig {
             char c = value.charAt(i);
             if (c <= 0x20 || c == '"' || c == '\'' || c == '<' || c == '>') return false;
         }
+        if (value.startsWith("//")) return false;
         if (value.startsWith("/")) return true;
         return BASE_URL_VALIDATOR.isValid(value);
     }

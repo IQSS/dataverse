@@ -48,7 +48,7 @@ Single URL: when the file is smaller than the size at which uploads must be brok
     }
   }
 
-The ``tagging`` value is the exact string to send as the ``x-amz-tagging`` header on the PUT (the URL was presigned with it). When the store has S3 tagging disabled (see :ref:`s3-tagging`) the field is the empty string ``""``, which means the header must *not* be sent — the URL was signed without it, and sending it anyway fails the S3 signature check. Clients written against servers older than the introduction of this field should treat a *missing* ``tagging`` key as ``dv-state=temp``.
+The ``tagging`` value is the exact string to send as the ``x-amz-tagging`` header on the PUT (the URL was presigned with it). When the store has S3 tagging disabled (see :ref:`s3-tagging`) the field is the empty string ``""``, which means the header must *not* be sent — the URL was signed without it, and sending it anyway fails the S3 signature check. Clients written against servers older than the introduction of this field should treat a *missing* ``tagging`` key in **this single-URL response** as ``dv-state=temp``. The multipart response below carries no ``tagging`` field and no tag header may be sent on part uploads.
 
 Multiple URLs: when the file must be uploaded in multiple parts. The part size is set by the Dataverse installation and, for AWS-based storage, range from 5 MB to 5 GB
 

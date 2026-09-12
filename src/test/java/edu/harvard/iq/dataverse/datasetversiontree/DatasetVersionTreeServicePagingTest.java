@@ -205,10 +205,12 @@ class DatasetVersionTreeServicePagingTest {
     void keysetClausesUseTheCursorKeys() {
         folderRows = List.<Object[]>of(folder("b", 1, 0));
         fileRows = List.<Object[]>of(file("y.txt", 2, "MD5"));
+        String scope = DatasetVersionTreeService.scopeOf("",
+                new TreeQuery("", 10, null, Include.ALL, Order.NAME_AZ, false));
         String folderCursor = DatasetVersionTreeService.encodeCursor(
-                DatasetVersionTreeService.TreeCursor.folders("a").withApproximateCount(3));
+                DatasetVersionTreeService.TreeCursor.folders("a").withApproximateCount(3), scope);
         String fileCursor = DatasetVersionTreeService.encodeCursor(
-                DatasetVersionTreeService.TreeCursor.files("x.txt", 1).withApproximateCount(3));
+                DatasetVersionTreeService.TreeCursor.files("x.txt", 1).withApproximateCount(3), scope);
 
         list("", 10, folderCursor, Include.ALL, false);
         assertTrue(boundParams.get(0).contains("a"));

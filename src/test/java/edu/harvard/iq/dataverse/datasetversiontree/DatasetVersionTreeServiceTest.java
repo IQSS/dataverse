@@ -143,10 +143,43 @@ class DatasetVersionTreeServiceTest {
             String cursor = Base64.getUrlEncoder().withoutPadding()
                     .encodeToString(json.getBytes(StandardCharsets.UTF_8));
             assertThrows(DatasetVersionTreeService.InvalidQueryException.class,
-                    () -> DatasetVersionTreeService.decodeCursor(cursor),
+                    () -> DatasetVersionTreeService.decodeCursor(cursor, SCOPE),
                     "should reject: " + json);
         }
     }
+
+    @Test
+    void cursorFromAnotherListingIsRejected() {
+        // Keyset values only mean something for the query that produced them.
+        // Replaying a cursor against a different ordering, path, filter or file
+        // variant would silently duplicate and skip rows, so it is a 400.
+        var cursor = DatasetVersionTreeService.TreeCursor.folders("data").withApproximateCount(9);
+        String minted = DatasetVersionTreeService.encodeCursor(cursor, SCOPE);
+
+        assertEquals(cursor, DatasetVersionTreeService.decodeCursor(minted, SCOPE));
+        for (String other : List.of(
+                scope("data", DatasetVersionTreeService.Order.NAME_ZA,
+                        DatasetVersionTreeService.Include.ALL, false),
+                scope("other", DatasetVersionTreeService.Order.NAME_AZ,
+                        DatasetVersionTreeService.Include.ALL, false),
+                scope("data", DatasetVersionTreeService.Order.NAME_AZ,
+                        DatasetVersionTreeService.Include.FILES, false),
+                scope("data", DatasetVersionTreeService.Order.NAME_AZ,
+                        DatasetVersionTreeService.Include.ALL, true))) {
+            assertThrows(DatasetVersionTreeService.InvalidQueryException.class,
+                    () -> DatasetVersionTreeService.decodeCursor(minted, other),
+                    "should reject a cursor replayed against " + other);
+        }
+    }
+
+    private static String scope(String path, DatasetVersionTreeService.Order order,
+            DatasetVersionTreeService.Include include, boolean originals) {
+        return DatasetVersionTreeService.scopeOf(path,
+                new DatasetVersionTreeService.TreeQuery(path, null, null, include, order, originals));
+    }
+
+    private static final String SCOPE = scope("data", DatasetVersionTreeService.Order.NAME_AZ,
+            DatasetVersionTreeService.Include.ALL, false);
 
     @Test
     void cursorRoundTrips() {
@@ -154,12 +187,12 @@ class DatasetVersionTreeServiceTest {
         // snapshot just before encoding, exactly as listChildren does it.
         var folders = DatasetVersionTreeService.TreeCursor.folders("Data \"2024\" – café")
                 .withApproximateCount(42);
-        assertEquals(folders,
-                DatasetVersionTreeService.decodeCursor(DatasetVersionTreeService.encodeCursor(folders)));
+        assertEquals(folders, DatasetVersionTreeService.decodeCursor(
+                DatasetVersionTreeService.encodeCursor(folders, SCOPE), SCOPE));
 
         var files = DatasetVersionTreeService.TreeCursor.files("a \\\"quoted\\\" name.txt", 7L)
                 .withApproximateCount(42);
-        assertEquals(files,
-                DatasetVersionTreeService.decodeCursor(DatasetVersionTreeService.encodeCursor(files)));
+        assertEquals(files, DatasetVersionTreeService.decodeCursor(
+                DatasetVersionTreeService.encodeCursor(files, SCOPE), SCOPE));
     }
 }

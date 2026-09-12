@@ -2541,7 +2541,7 @@ Query parameters:
 
 * ``path`` — folder within the dataset, forward-slash separated; root is ``""`` or omit. The server normalises the value with the same rules applied to folder names at upload time: repeated slashes and backslashes collapse to ``/``, and leading dots, dashes and spaces are stripped (stored folder names never start with them). The end of the path is preserved apart from trailing slashes — interior folder names may legitimately end in a dot or space, and paths emitted by the endpoint itself always round-trip. A path that normalises to nothing (for example ``..``) is rejected with ``400``.
 * ``limit`` — page size; default ``100``, clamped to ``1000``.
-* ``cursor`` — opaque server-issued token. Pass back the ``nextCursor`` from a previous response to fetch the next page. Invalid or stale cursors yield ``400``.
+* ``cursor`` — opaque server-issued token. Pass back the ``nextCursor`` from a previous response to fetch the next page. A cursor belongs to the listing that issued it, so replaying it with a different ``path``, ``order``, ``include`` or ``originals`` yields ``400``, as do invalid or stale cursors.
 * ``include`` — ``all`` (default), ``folders``, or ``files``.
 * ``order`` — ``NameAZ`` (default) or ``NameZA``.
 * ``includeDeaccessioned`` — same semantics as the ``files`` endpoint.

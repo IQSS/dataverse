@@ -1395,6 +1395,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      */
     public boolean isReactUploaderActive() {
         return showFileUploadFragment()
+                && mode != FileEditMode.REPLACE
                 && workingVersion != null
                 && !workingVersion.isHasPackageFile()
                 && !isFileReplaceOperation()

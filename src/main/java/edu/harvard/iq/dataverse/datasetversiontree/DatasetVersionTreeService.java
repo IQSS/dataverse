@@ -215,7 +215,7 @@ public class DatasetVersionTreeService {
         Objects.requireNonNull(version);
         String path = normalizePath(query.path());
         int limit = clampLimit(query.limit());
-        TreeCursor cursor = decodeCursor(query.cursor());
+        TreeCursor cursor = decodeCursor(query.cursor(), scopeOf(path, query));
         long versionId = version.getId();
 
         Slice<FolderItem> folders = Slice.empty();
@@ -240,7 +240,9 @@ public class DatasetVersionTreeService {
                 ? cursor.approximateCount()
                 : countAll(versionId, path, query.include(), folders, files);
         TreeCursor next = nextCursor(folders, files);
-        String nextCursor = next == null ? null : encodeCursor(next.withApproximateCount(approximateCount));
+        String nextCursor = next == null
+                ? null
+                : encodeCursor(next.withApproximateCount(approximateCount), scopeOf(path, query));
 
         List<TreeItem> out = new ArrayList<>(folders.rows().size() + files.rows().size());
         out.addAll(folders.rows());
@@ -576,7 +578,17 @@ public class DatasetVersionTreeService {
     private static final String CURSOR_PHASE_FOLDERS = "FOLDERS";
     private static final String CURSOR_PHASE_FILES = "FILES";
 
-    static String encodeCursor(TreeCursor cursor) {
+    /**
+     * The listing a cursor belongs to. A cursor carries keyset values that only
+     * mean anything for the query that produced them, so replaying one against a
+     * different path, ordering, filter or file variant is a 400 rather than a
+     * silently wrong page.
+     */
+    static String scopeOf(String path, TreeQuery query) {
+        return path + '\u0000' + query.order() + '\u0000' + query.include() + '\u0000' + query.originals();
+    }
+
+    static String encodeCursor(TreeCursor cursor, String scope) {
         JsonArrayBuilder keys = JsonUtil.createArrayBuilder();
         if (cursor.phase() == TreeCursor.Phase.FOLDERS) {
             keys.add(cursor.lastFolderName());
@@ -588,13 +600,14 @@ public class DatasetVersionTreeService {
                 .add("p", cursor.phase() == TreeCursor.Phase.FOLDERS ? CURSOR_PHASE_FOLDERS : CURSOR_PHASE_FILES)
                 .add("k", keys)
                 .add("c", cursor.approximateCount())
+                .add("s", scope)
                 .build().toString();
         return Base64.getUrlEncoder().withoutPadding()
                 .encodeToString(json.getBytes(StandardCharsets.UTF_8));
     }
 
     /** Anything that is not a cursor this server minted is a 400, never a 500. */
-    static TreeCursor decodeCursor(String raw) {
+    static TreeCursor decodeCursor(String raw, String scope) {
         if (raw == null || raw.isEmpty()) {
             return null;
         }
@@ -607,6 +620,9 @@ public class DatasetVersionTreeService {
                 int approximateCount = obj.getInt("c", -1);
                 if (phaseStr == null || keys == null || approximateCount < 0) {
                     throw new InvalidQueryException("invalid cursor");
+                }
+                if (!scope.equals(obj.getString("s", null))) {
+                    throw new InvalidQueryException("cursor does not belong to this listing");
                 }
                 if (CURSOR_PHASE_FOLDERS.equals(phaseStr) && keys.size() == 1) {
                     return new TreeCursor(TreeCursor.Phase.FOLDERS,

@@ -234,7 +234,7 @@
                     </div>
 
                     <!-- Non-HTTP upload methods, siblings of httpPanel so each renders on its own flag. -->
-                    <div jsf:id="webloaderPanel" jsf:rendered="#{webloaderUploadSupported and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
+                    <div jsf:id="webloaderPanel" jsf:rendered="#{settingsWrapper.HTTPUpload and webloaderUploadSupported and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
                         <div role="tab" id="headingWebloader" data-toggle="collapse" data-target="#panelCollapseWebloader" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseWebloader">
                             #{bundle['file.fromWebloader']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>
@@ -247,7 +247,7 @@
                         </div>
                     </div>
 
-                    <div jsf:id="dropboxPanel" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
+                    <div jsf:id="dropboxPanel" jsf:rendered="#{settingsWrapper.HTTPUpload and settingsWrapper.isHasDropBoxKey() and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
                         <div role="tab" id="headingDropbox" data-toggle="collapse" data-target="#panelCollapseDropbox" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseDropbox">
                             #{bundle['file.fromDropbox']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>
@@ -270,7 +270,7 @@
                         </div>
                     </div>
 
-                    <div jsf:id="globusPanel" jsf:rendered="#{globusUploadSupported and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
+                    <div jsf:id="globusPanel" jsf:rendered="#{settingsWrapper.HTTPUpload and globusUploadSupported and !lockedFromEdits and !hasPackageFile}" class="panel panel-default">
                         <div role="tab" id="headingGlobus" data-toggle="collapse" data-target="#panelCollapseGlobus" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseGlobus">
                             #{bundle['file.fromGlobus']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>
