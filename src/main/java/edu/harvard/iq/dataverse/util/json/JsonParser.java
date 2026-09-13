@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.dto.DatasetRelationDTO;
 import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.UserDTO;
@@ -10,6 +11,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
@@ -50,6 +53,7 @@ public class JsonParser {
     LicenseServiceBean licenseService;
     DatasetTypeServiceBean datasetTypeService;
     TemplateServiceBean templateService;
+    DatasetRelationServiceBean datasetRelationService;
     HarvestingClient harvestingClient = null;
     boolean allowHarvestingMissingCVV = false;
 
@@ -65,16 +69,17 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, TemplateServiceBean templateService) {
-        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, null, templateService);
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, DatasetRelationServiceBean datasetRelationService, TemplateServiceBean templateService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, datasetRelationService, null, templateService);
     }
 
-    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, HarvestingClient harvestingClient, TemplateServiceBean templateService) {
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, DatasetTypeServiceBean datasetTypeService, DatasetRelationServiceBean datasetRelationService, HarvestingClient harvestingClient, TemplateServiceBean templateService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
         this.datasetTypeService = datasetTypeService;
+        this.datasetRelationService = datasetRelationService;
         this.harvestingClient = harvestingClient;
         this.templateService = templateService;
         this.allowHarvestingMissingCVV = harvestingClient != null && harvestingClient.getAllowHarvestingMissingCVV();
@@ -182,10 +187,10 @@ public class JsonParser {
     public DataverseDTO parseDataverseDTO(JsonObject jsonObject) throws JsonParseException {
         DataverseDTO dataverseDTO = new DataverseDTO();
 
-        setDataverseDTOPropertyIfPresent(jsonObject, "alias", dataverseDTO::setAlias);
-        setDataverseDTOPropertyIfPresent(jsonObject, "name", dataverseDTO::setName);
-        setDataverseDTOPropertyIfPresent(jsonObject, "description", dataverseDTO::setDescription);
-        setDataverseDTOPropertyIfPresent(jsonObject, "affiliation", dataverseDTO::setAffiliation);
+        setDTOPropertyIfPresent(jsonObject, "alias", dataverseDTO::setAlias);
+        setDTOPropertyIfPresent(jsonObject, "name", dataverseDTO::setName);
+        setDTOPropertyIfPresent(jsonObject, "description", dataverseDTO::setDescription);
+        setDTOPropertyIfPresent(jsonObject, "affiliation", dataverseDTO::setAffiliation);
 
         String dataverseType = jsonObject.getString("dataverseType", null);
         if (dataverseType != null) {
@@ -217,11 +222,28 @@ public class JsonParser {
         return dataverseDTO;
     }
 
-    private void setDataverseDTOPropertyIfPresent(JsonObject jsonObject, String key, Consumer<String> setter) {
+    private void setDTOPropertyIfPresent(JsonObject jsonObject, String key, Consumer<String> setter) {
         String value = jsonObject.getString(key, null);
         if (value != null) {
             setter.accept(value);
         }
+    }
+
+    public DatasetRelationDTO parseDatasetRelationDTO(JsonObject jsonObject) {
+        DatasetRelationDTO datasetRelationDTO = new DatasetRelationDTO();
+
+        setDTOPropertyIfPresent(jsonObject, "relatedDatasetPid", datasetRelationDTO::setRelatedDatasetPid);
+        setDTOPropertyIfPresent(jsonObject, "externalIdentifier", datasetRelationDTO::setExternalIdentifier);
+        setDTOPropertyIfPresent(jsonObject, "identifierScheme", datasetRelationDTO::setIdentifierScheme);
+
+        if (jsonObject.containsKey("relationType") && jsonObject.get("relationType").getValueType() == ValueType.OBJECT) {
+            setDTOPropertyIfPresent(jsonObject.getJsonObject("relationType"), "name", datasetRelationDTO::setRelationTypeName);
+        }
+        if (jsonObject.containsKey("relatedDatasetType") && jsonObject.get("relatedDatasetType").getValueType() == ValueType.OBJECT) {
+            setDTOPropertyIfPresent(jsonObject.getJsonObject("relatedDatasetType"), "displayName", datasetRelationDTO::setDatasetType);
+        }
+
+        return datasetRelationDTO;
     }
 
     public DataverseTheme parseDataverseTheme(JsonObject obj) {
@@ -442,6 +464,10 @@ public class JsonParser {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
+        List<DatasetRelation> relations = parseDatasetRelations(obj.getJsonObject("datasetVersion"), dsv);
+        if (relations != null) {
+            dsv.setRelations(relations);
+        }
         List<DatasetVersion> versions = new ArrayList<>(1);
         versions.add(dsv);
 
@@ -496,7 +522,7 @@ public class JsonParser {
 
             if (obj.containsKey("license")) {
                 try {
-                    // This method will attempt to parse the license in the format 
+                    // This method will attempt to parse the license in the format
                     // in which it appears in our json exports, as a compound
                     // field, for ex.:
                     // "license": {
@@ -506,10 +532,10 @@ public class JsonParser {
                     license = parseLicense(obj.getJsonObject("license"));
                 } catch (ClassCastException cce) {
                     logger.fine("class cast exception parsing the license section (will try parsing as a string)");
-                    // attempt to parse as string: 
+                    // attempt to parse as string:
                     // i.e. this is for backward compatibility, after the bug in #9155
-                    // was fixed, with the old style of encoding the license info 
-                    // in input json, for ex.: 
+                    // was fixed, with the old style of encoding the license info
+                    // in input json, for ex.:
                     // "license" : "CC0 1.0"
                     license = parseLicense(obj.getString("license", null));
                 }
@@ -586,12 +612,39 @@ public class JsonParser {
             if (filesJson != null) {
                 dsv.setFileMetadatas(parseFiles(filesJson, dsv));
             }
+
             return dsv;
         } catch (ParseException ex) {
             throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
         } catch (NumberFormatException ex) {
             throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number", Arrays.asList(ex.getMessage())), ex);
         }
+    }
+
+    public List<DatasetRelationDTO> parseDatasetRelationDTOs(JsonObject obj) {
+        JsonArray relationsJson = obj.getJsonArray("relations");
+        if (relationsJson == null) {
+            return null;
+        }
+        return relationsJson.getValuesAs(JsonObject.class).stream()
+                .map(this::parseDatasetRelationDTO)
+                .toList();
+    }
+
+    public List<DatasetRelation> parseDatasetRelations(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
+        List<DatasetRelationDTO> relationDTOs = parseDatasetRelationDTOs(obj);
+        if (relationDTOs == null) {
+            return null;
+        }
+        List<DatasetRelation> relations = new ArrayList<>();
+        for (DatasetRelationDTO relationDTO : relationDTOs) {
+            DatasetRelation relation = datasetRelationService.fromDTO(relationDTO, dsv);
+            if (relation == null) {
+                throw new JsonParseException(BundleUtil.getStringFromBundle("datasets.api.datasetRelation.error.invalid"));
+            }
+            relations.add(relation);
+        }
+        return relations;
     }
 
     public Guestbook parseGuestbook(JsonObject obj, Guestbook gb) throws JsonParseException {
@@ -798,7 +851,7 @@ public class JsonParser {
         }
         return fields;
     }
-    
+
     public Map<String, String> parseRequestBodyInstructionsMap(JsonObject jsonObject) {
         Map<String, String> instructionsMap = new HashMap<>();
         JsonArray instructionsJsonArray = jsonObject.getJsonArray("instructions");

@@ -3,10 +3,11 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationTypeServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchService;
 import edu.harvard.iq.dataverse.search.SearchServiceFactory;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -125,6 +126,10 @@ public interface CommandContext {
     public MetadataBlockServiceBean metadataBlocks();
 
     public DatasetTypeServiceBean datasetTypes();
+
+    public DatasetRelationServiceBean datasetRelations();
+
+    public DatasetRelationTypeServiceBean datasetRelationTypes();
 
     public void beginCommandSequence();
     

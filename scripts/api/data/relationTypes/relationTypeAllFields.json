@@ -1,0 +1,10 @@
+{
+  "name": "IsSupplementTo",
+  "displayName": "Is supplement to",
+  "description": "Indicates that A is a supplement to B.",
+  "inverse": {
+    "name": "IsSupplementedBy",
+    "displayName": "Is supplemented by",
+    "description": "Indicates that B is a supplement to A."
+  }
+}

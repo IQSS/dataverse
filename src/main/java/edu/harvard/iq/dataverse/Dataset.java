@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
@@ -360,6 +361,7 @@ public class Dataset extends DvObjectContainer {
     private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet) {
         
         DatasetVersion dsv = new DatasetVersion();
+        dsv.setDataset(this);
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
         DatasetVersion latestVersion;
@@ -409,6 +411,14 @@ public class Dataset extends DvObjectContainer {
                 terms.setFileAccessRequest(true);
                 dsv.setTermsOfUseAndAccess(terms);
             }
+
+            if (latestVersion.getRelations() != null && !latestVersion.getRelations().isEmpty()) {
+                List<DatasetRelation> relations = new ArrayList<>();
+                for (DatasetRelation rel : latestVersion.getRelations()) {
+                    relations.add(rel.copy(dsv));
+                }
+                dsv.setRelations(relations);
+            }
         }
 
         // I'm adding the version to the list so it will be persisted when
@@ -420,7 +430,6 @@ public class Dataset extends DvObjectContainer {
             getVersions().add(0, dsv);
         }
 
-        dsv.setDataset(this);
         return dsv;
     }
 

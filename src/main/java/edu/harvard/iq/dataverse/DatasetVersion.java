@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
 import jakarta.json.*;
 import jakarta.persistence.*;
 import jakarta.validation.ConstraintViolation;
@@ -101,7 +102,7 @@ public class DatasetVersion implements Serializable {
     public static final String ARCHIVAL_STATUS_SUCCESS = "success";
     public static final String ARCHIVAL_STATUS_FAILURE = "failure";
     public static final String ARCHIVAL_STATUS_OBSOLETE = "obsolete";
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -201,12 +202,23 @@ public class DatasetVersion implements Serializable {
     private DatasetVersionDifference dvd;
     
     //The Json version of the archivalCopyLocation string
-    @Transient 
+    @Transient
     private JsonObject archivalCopyLocationJson;
 
     @Transient
     private Boolean hasFiles = null;
     
+    @OneToMany(mappedBy = "definitionPoint", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+    private List<DatasetRelation> relations;
+
+    public List<DatasetRelation> getRelations() {
+        return relations;
+    }
+
+    public void setRelations(List<DatasetRelation> relations) {
+        this.relations = relations;
+    }
+
     public Long getId() {
         return this.id;
     }
@@ -703,6 +715,15 @@ public class DatasetVersion implements Serializable {
             }
 
         dsv.setDataset(this.getDataset());
+
+        if (this.getRelations() != null && !this.getRelations().isEmpty()) {
+            List<DatasetRelation> clonedRelations = new ArrayList<>();
+            for (DatasetRelation r : this.getRelations()) {
+                clonedRelations.add(r.copy(dsv));
+            }
+            dsv.setRelations(clonedRelations);
+        }
+
         return dsv;
     }
 

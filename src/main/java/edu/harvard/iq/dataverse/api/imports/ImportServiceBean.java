@@ -10,6 +10,8 @@ import com.google.gson.GsonBuilder;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -90,6 +92,9 @@ public class ImportServiceBean {
 
     @EJB
     TemplateServiceBean templateService;
+
+    @EJB
+    DatasetRelationServiceBean datasetRelationService;
 
     /**
      * This is just a convenience method, for testing migration.  It creates 
@@ -302,7 +307,7 @@ public class ImportServiceBean {
         try {
             Dataset harvestedDataset;
 
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient, templateService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, datasetRelationService, harvestingClient, templateService);
             parser.setLenient(true);
 
             if (existingDataset == null) {
@@ -336,7 +341,12 @@ public class ImportServiceBean {
                 
                 // We will attempt to import the new version, and replace the 
                 // current, already existing version with it.                
-                harvestedVersion = parser.parseDatasetVersion(obj.getJsonObject("datasetVersion"));
+                JsonObject datasetVersionJson = obj.getJsonObject("datasetVersion");
+                harvestedVersion = parser.parseDatasetVersion(datasetVersionJson);
+                List<DatasetRelation> relations = parser.parseDatasetRelations(datasetVersionJson, harvestedVersion);
+                if (relations != null) {
+                    harvestedVersion.setRelations(relations);
+                }
                 
                 // For the purposes of validation, the version needs to be attached
                 // to a non-null dataset. We will create a throwaway temporary 
@@ -432,7 +442,7 @@ public class ImportServiceBean {
         JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, templateService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, datasetRelationService, templateService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj, owner);
 

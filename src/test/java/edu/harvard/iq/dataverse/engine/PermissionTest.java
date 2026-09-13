@@ -27,6 +27,10 @@ public class PermissionTest {
         assertTrue( Permission.EditDataset.appliesTo(Dataset.class) );
         assertFalse( Permission.EditDataset.appliesTo(DvObject.class) );
         assertFalse( Permission.EditDataset.appliesTo(Dataverse.class) );
+
+        assertTrue(Permission.EditDatasetRelations.appliesTo(Dataset.class));
+        assertFalse(Permission.EditDatasetRelations.appliesTo(DvObject.class));
+        assertFalse(Permission.EditDatasetRelations.appliesTo(Dataverse.class));
     }
     
 }
