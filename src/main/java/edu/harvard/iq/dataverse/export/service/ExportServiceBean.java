@@ -2,8 +2,9 @@ package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
 import io.gdcc.spi.export.ExportDataProvider;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -55,16 +56,18 @@ public class ExportServiceBean {
      * @param datasetVersion the dataset version to retrieve the export for; must not be null
      * @param formatName the name of the export format to retrieve; must not be null
      * @return an {@link InputStream} containing the export data for the requested format
-     * @throws ExportException if the input stream for the metadata export cannot be retrieved due to underlying errors
+     * @throws InternalFailure if the input stream for the metadata export cannot be retrieved due to underlying errors
+     * @throws InvalidRequest if the request is malformed (unknown export format or version is null)
      */
-    public InputStream getExport(DatasetVersion datasetVersion, String formatName) throws ExportException {
+    public InputStream getExport(DatasetVersion datasetVersion, String formatName) {
         // Note: we don't do validation here, as the lower layers will take care of it.
         try {
             ExportCacheKey key = new ExportCacheKey(datasetVersion, formatName);
             return pipeline.readFreshCachedExport(datasetVersion, key)
                            .orElse(pipeline.readFreshExport(datasetVersion, formatName));
         } catch (IOException e) {
-            throw new ExportException("Failed to retrieve export", e);
+            throw new InternalFailure("Export to String failed for dataset version " + datasetVersion.getId() +
+                                      " to format " + formatName, ex);
         }
     }
     
@@ -79,8 +82,8 @@ public class ExportServiceBean {
      * @apiNote TODO: While returning null is frowned upon in modern Java, it is necessary for backward compatibility.
      *                This method and any callers should be refactored to follow the "never return null on public API"
      *                principle going forward.
-     * @throws ExportException if an error occurs during a non-cached, on-the-fly export
-     * @throws IllegalArgumentException if the formatName is null or not registered
+     * @throws InternalFailure if an error occurs during a non-cached, on-the-fly export
+     * @throws InvalidRequest if the formatName is null or not registered
      */
     public String getLatestPublishedAsString(Dataset dataset, String formatName) {
         if (dataset == null) {
@@ -133,9 +136,10 @@ public class ExportServiceBean {
      *       Not sure where else we may rely on this timestamp being on the dataset.
      *
      * @param dataset the dataset whose cached exports should all be cleared
-     * @throws ExportException if an I/O error occurs while clearing the cached format entries
+     * @throws InternalFailure if an error occurs while clearing the cached format entries
+     * @throws InvalidRequest if the dataset is null
      */
-    public void clearAllCachedFormats(Dataset dataset) throws ExportException {
+    public void clearAllCachedFormats(Dataset dataset) {
         // NOTE: Depending on the definition of "all", one may also use ExportCache.evictAll(),
         //       having the benefit of cleaning up leftover cache entries for which no exporter exists anymore.
         clearCachedFormats(dataset, List.of());
@@ -147,11 +151,12 @@ public class ExportServiceBean {
      *
      * @param dataset the dataset for which cached formats should be cleared; must not be null
      * @param formatNames the list of format names to clear; may not be null, use an empty list to clear all formats
-     * @throws ExportException if the dataset is null
+     * @throws InternalFailure if an error occurs while clearing the cached format entries
+     * @throws InvalidRequest if the dataset is null
      */
-    public void clearCachedFormats(Dataset dataset, List<String> formatNames) throws ExportException {
+    public void clearCachedFormats(Dataset dataset, List<String> formatNames) {
         if (dataset == null) {
-            throw new ExportException("Dataset may not be null");
+            throw new InvalidRequest("Dataset may not be null");
         }
         // Let clearCachedFormats(DatasetVersion, List<String>) handle verifying the formatNames
         
@@ -167,14 +172,16 @@ public class ExportServiceBean {
      * Clears the cached formats for the specified dataset version.
      * Validates that the dataset version is not null and that all provided format names exist in
      * the registry before clearing each cached format.
+     * Eviction cascades up; any format given being a prerequisite for another will lead to eviction of both (recursively).
      *
      * @param datasetVersion the dataset version whose cached formats should be cleared; must not be null; empty means all formats
      * @param formatNames the list of format names to clear from the cache
-     * @throws ExportException if the dataset version is null or any format name is invalid
+     * @throws InternalFailure if an error occurs while clearing the cached format entries
+     * @throws InvalidRequest if the dataset or associated data is null or any format name is invalid
      */
-    public void clearCachedFormats(DatasetVersion datasetVersion, List<String> formatNames) throws ExportException {
+    public void clearCachedFormats(DatasetVersion datasetVersion, List<String> formatNames) {
         if (datasetVersion == null || datasetVersion.getDataset() == null) {
-            throw new ExportException("Dataset version or it's containing dataset may not be null");
+            throw new InvalidRequest("Dataset version or it's containing dataset may not be null");
         }
         
         // Do not proceed if this version is not cacheable by policy (drafts)
@@ -182,13 +189,8 @@ public class ExportServiceBean {
         if (!isCacheable(datasetVersion)) {
             return;
         }
-        
-        try {
-            // Will also enforce a non-null list
-            registry.requireAllExist(formatNames);
-        } catch (IllegalArgumentException ex) {
-            throw new ExportException("Invalid format names: " + ex.getMessage(), ex);
-        }
+        // Will also enforce a non-null list
+        registry.requireAllExist(formatNames);
         
         // If the list of format names is empty, retrieve all format names from the registry and evict all.
         if (formatNames.isEmpty()) {
@@ -211,7 +213,7 @@ public class ExportServiceBean {
             }
         });
         if (!failedFormats.isEmpty()) {
-            throw new ExportException("Failed to evict cache for formats=" + String.join(", ", failedFormats) + ", see logs for details");
+            throw new InternalFailure("Failed to evict cache for formats=" + String.join(", ", failedFormats) + ", see logs for details");
         }
     }
     
@@ -229,9 +231,10 @@ public class ExportServiceBean {
      *       This may change in future versions.
      *
      * @param dataset the dataset whose metadata should be re-exported in all formats
-     * @throws ExportException if any exporter fails to produce its output
+     * @throws InternalFailure if an error occurs while exporting the dataset
+     * @throws InvalidRequest if the dataset is null
      */
-    public void exportAllFormats(Dataset dataset) throws ExportException {
+    public void exportAllFormats(Dataset dataset) {
         exportFormats(dataset, List.of());
     }
     
@@ -242,12 +245,13 @@ public class ExportServiceBean {
      *
      * @param dataset the dataset to export; must not be null
      * @param formatName the name of the export format to use; must not be null
-     * @throws ExportException if the format name is null or if the underlying export operation fails
+     * @throws InternalFailure if an error occurs while exporting the dataset
+     * @throws InvalidRequest if the dataset or format name null or invalid
      */
-    public void exportFormat(Dataset dataset, String formatName) throws ExportException {
+    public void exportFormat(Dataset dataset, String formatName) {
         // Check here to avoid NPE from List.of()
         if (formatName == null) {
-            throw new ExportException("Format name cannot be null");
+            throw new InvalidRequest("Format name cannot be null");
         }
         exportFormats(dataset, List.of(formatName));
     }
@@ -262,11 +266,12 @@ public class ExportServiceBean {
      *
      * @param dataset the dataset to export; must not be null
      * @param formatNames the list of format names to export in; an empty list means all formats
-     * @throws ExportException if the dataset is null or if any export operation fails
+     * @throws InternalFailure if an error occurs while exporting the dataset
+     * @throws InvalidRequest if the dataset or format name null or invalid
      */
-    public void exportFormats(Dataset dataset, List<String> formatNames) throws ExportException {
+    public void exportFormats(Dataset dataset, List<String> formatNames) {
         if (dataset == null) {
-            throw new ExportException("Dataset must not be null");
+            throw new InvalidRequest("Dataset must not be null");
         }
         
         exportFormats(defaultVersion(dataset), formatNames);
@@ -290,28 +295,25 @@ public class ExportServiceBean {
      * @param datasetVersion the dataset version to export; must not be null
      * @param formatNames the names of the export formats to produce; if empty, all formats registered in
      *                    the registry will be exported
-     * @throws ExportException if datasetVersion is null or does not fullfill {@link #isCacheable(DatasetVersion)},
-     *                         if any format name is invalid, or
-     *                         if one or more exports fail during execution
+     * @throws InternalFailure if an error occurs while exporting the dataset version
+     * @throws InvalidRequest if {@code datasetVersion} is null,
+     *                                              does not fullfill {@link #isCacheable(DatasetVersion)}, or
+     *                                              if any format name is invalid
      */
-    public void exportFormats(DatasetVersion datasetVersion, List<String> formatNames) throws ExportException {
+    public void exportFormats(DatasetVersion datasetVersion, List<String> formatNames) {
         if (datasetVersion == null) {
-            throw new ExportException("Dataset version must not be null");
+            throw new InvalidRequest("Dataset version must not be null");
         }
         if (!isCacheable(datasetVersion)) {
-            throw new ExportException("Dataset version is not cacheable, thus it cannot be exported to cache");
+            throw new InvalidRequest("Dataset version is not cacheable, thus it cannot be exported to cache");
         }
-        try {
-            registry.requireAllExist(formatNames);
-        } catch (IllegalArgumentException e) {
-            throw new ExportException("One or more format names are invalid: " + e.getMessage());
-        }
+        registry.requireAllExist(formatNames);
         
         // NOTE: Evict all formats at once before producing any new exports to improve cache consistency
-        //       and force prerequisite formats to be renewed before use!
+        //       and force formats using the given ones as prerequisites to be renewed before use!
         clearCachedFormats(datasetVersion, formatNames);
         
-        // If the list of format names is empty, retrieve all format names from the registry and evict all.
+        // If the list of format names is empty, retrieve all format names from the registry.
         if (formatNames.isEmpty()) {
             formatNames = registry.getDetails().stream().map(ExporterRegistryBean.Details::formatName).toList();
         // Otherwise, make sure to add all formats relying on the requested ones, as they need to be regenerated, too.
