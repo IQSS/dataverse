@@ -126,11 +126,21 @@ final class InMemoryExportCache implements ExportCache {
         return store.size();
     }
     
-    int reads()             { return reads.get(); }
-    int hits()              { return hits.get(); }
-    int writes()            { return writes.get(); }
-    int writerInvocations() { return writerInvocations.get(); }
-    int evictions()         { return evictions.get(); }
+    int reads() {
+        return reads.get();
+    }
+    int hits() {
+        return hits.get();
+    }
+    int writes() {
+        return writes.get();
+    }
+    int writerInvocations() {
+        return writerInvocations.get();
+    }
+    int evictions() {
+        return evictions.get();
+    }
     
     /** Number of streams handed out by {@link #read} that have not been closed yet. */
     int openStreams() {
@@ -139,15 +149,25 @@ final class InMemoryExportCache implements ExportCache {
     
     // ---- Test helpers: failure injection -----------------------------------------------------
     
-    InMemoryExportCache failReadsWith(IOException e)   { this.readFailure = e;  return this; }
-    InMemoryExportCache failWritesWith(IOException e)  { this.writeFailure = e; return this; }
-    InMemoryExportCache failEvictsWith(IOException e)  { this.evictFailure = e; return this; }
+    InMemoryExportCache failReadsWith(IOException e)   {
+        this.readFailure = e;  return this;
+    }
+    InMemoryExportCache failWritesWith(IOException e)  {
+        this.writeFailure = e; return this;
+    }
+    InMemoryExportCache failEvictsWith(IOException e)  {
+        this.evictFailure = e; return this;
+    }
     
     /** Streams handed out by {@link #read} are marked closed, then throw on {@code close()}. */
-    InMemoryExportCache failStreamClosesWith(IOException e) { this.streamCloseFailure = e; return this; }
+    InMemoryExportCache failStreamClosesWith(IOException e) {
+        this.streamCloseFailure = e; return this;
+    }
     
     /** Writers are executed, but nothing is stored: simulates a cache that silently loses data. */
-    InMemoryExportCache swallowWrites() { this.swallowWrites = true; return this; }
+    InMemoryExportCache swallowWrites() {
+        this.swallowWrites = true; return this;
+    }
     
     InMemoryExportCache clearFailures() {
         readFailure = writeFailure = evictFailure = null;
