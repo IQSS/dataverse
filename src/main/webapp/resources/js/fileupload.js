@@ -40,7 +40,7 @@ var finishFile = (function() {
 })();
 
 
-function setupDirectUpload(enabled) {
+function setupDirectUpload(enabled, maxFileSize, remainingQuota) {
     if (enabled) {
         directUploadEnabled = true;
         //An indicator as to which version is being used - should keep updated.
@@ -75,6 +75,16 @@ function setupDirectUpload(enabled) {
                 }
                 //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed
                 var fileDropWidget = document.getElementById('datasetForm:fileUpload');
+                fileDropWidget.addEventListener('change', function(event) {
+                    if (!checkUploadLimits(event.target.files, maxFileSize, remainingQuota)) {
+                        event.stopImmediatePropagation();
+                    }
+                }, true);
+                fileDropWidget.addEventListener('drop', function(event) {
+                    if (!checkUploadLimits(event.dataTransfer.files, maxFileSize, remainingQuota)) {
+                        event.stopImmediatePropagation();
+                    }
+                }, true);
                 fileDropWidget.addEventListener('drop', function(event) {
                     fileList = [];
                     for (var i = 0; i < event.dataTransfer.files.length; i++) {
@@ -87,11 +97,12 @@ function setupDirectUpload(enabled) {
                     mutations.forEach(function(mutation) {
                         for (i = 0; i < mutation.addedNodes.length; i++) {
                             //Add a listener on any replacement file 'select' widget
-                    if (mutation.addedNodes[i].id === 'datasetForm:fileUpload_input') {
+                            if (mutation.addedNodes[i].id === 'datasetForm:fileUpload_input') {
                                 fileInput = mutation.addedNodes[i];
                                 mutation.addedNodes[i].addEventListener('change', function(event) {
-                                    for (var j = 0; j < mutation.addedNodes[i].files.length; j++) {
-                                        queueFileForDirectUpload(mutation.addedNodes[i].files[j]);
+                                    var files = event.target.files;
+                                    for (var j = 0; j < files.length; j++) {
+                                        queueFileForDirectUpload(files[j]);
                                     }
                                 }, { once: false });
                             }

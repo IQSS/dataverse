@@ -138,6 +138,29 @@
                                 $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
                             }
                         }
+                        function checkUploadLimits(files, maxFileSize, remainingQuota) {
+                            var fileUploadWidget = PF('fileUploadWidget');
+                            var totalSize = 0;
+                            for (var i = 0; i < files.length; i++) {
+                                if (maxFileSize !== null && files[i].size > maxFileSize) {
+                                    fileUploadWidget.clear();
+                                    fileUploadWidget.showMessage({summary: '#{bundle["file.edit.error.file_exceeds_limit"]}'});
+                                    return false;
+                                }
+                                totalSize += files[i].size;
+                            }
+
+                            if (remainingQuota !== null && totalSize > remainingQuota) {
+                                var message = '#{bundle["file.addreplace.error.quota_exceeded"]}'
+                                        .replace('{0}', fileUploadWidget.formatSize(totalSize))
+                                        .replace('{1}', fileUploadWidget.formatSize(remainingQuota));
+                                fileUploadWidget.clear();
+                                fileUploadWidget.showMessage({summary: message});
+                                return false;
+                            }
+
+                            return true;
+                        }
                         function dropBoxUploadFinished(fileupload) {
                             $('button[id$="dropBoxUploadFinished"]').trigger('click');
                         }
@@ -147,7 +170,7 @@
                         
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
-                             #{useDirectUpload ? 'setupDirectUpload(true);':''}
+                            setupDirectUpload(#{useDirectUpload}, #{empty EditDatafilesPage.maxFileUploadSizeInBytes ? 'null' : EditDatafilesPage.maxFileUploadSizeInBytes}, #{empty EditDatafilesPage.maxTotalUploadSizeInBytes ? 'null' : EditDatafilesPage.maxTotalUploadSizeInBytes});
                         });
                         //]]>
                     </script>
@@ -348,9 +371,9 @@
                     
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
-                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:contentOfHttpPanel,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
-                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
-                    <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="@([id$=filesButtons]),datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:contentOfHttpPanel,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="uploadWidgetDropMsg(); setupDirectUpload(#{useDirectUpload}, #{empty EditDatafilesPage.maxFileUploadSizeInBytes ? 'null' : EditDatafilesPage.maxFileUploadSizeInBytes}, #{empty EditDatafilesPage.maxTotalUploadSizeInBytes ? 'null' : EditDatafilesPage.maxTotalUploadSizeInBytes});" style="display:none"/>
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="setupDirectUpload(#{useDirectUpload}, #{empty EditDatafilesPage.maxFileUploadSizeInBytes ? 'null' : EditDatafilesPage.maxFileUploadSizeInBytes}, #{empty EditDatafilesPage.maxTotalUploadSizeInBytes ? 'null' : EditDatafilesPage.maxTotalUploadSizeInBytes});" style="display:none"/>
+                    <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="@([id$=filesButtons]),datasetForm:contentOfHttpPanel,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="uploadWidgetDropMsg(); setupDirectUpload(#{useDirectUpload}, #{empty EditDatafilesPage.maxFileUploadSizeInBytes ? 'null' : EditDatafilesPage.maxFileUploadSizeInBytes}, #{empty EditDatafilesPage.maxTotalUploadSizeInBytes ? 'null' : EditDatafilesPage.maxTotalUploadSizeInBytes});" style="display:none"/>
                     <!-- ????? TODO: How scalable are all these hidden update buttons ????? -->
                     <!-- ????? 
                     datasetForm:fileUpload,
@@ -625,7 +648,7 @@
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForFileTypeDifferentPopUp}</p>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" oncomplete="uploadWidgetDropMsg();
-                                   #{useDirectUpload ? 'setupDirectUpload(true);': ''}"
+                                   setupDirectUpload(#{useDirectUpload}, #{empty EditDatafilesPage.maxFileUploadSizeInBytes ? 'null' : EditDatafilesPage.maxFileUploadSizeInBytes}, #{empty EditDatafilesPage.maxTotalUploadSizeInBytes ? 'null' : EditDatafilesPage.maxTotalUploadSizeInBytes});"
                              action="#{EditDatafilesPage.deleteFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
             <button class="btn btn-default" onclick="PF('fileTypeDifferentPopup').hide();" type="button">
@@ -643,7 +666,7 @@
                 </h:outputFormat>
             </p>
         <div class="button-block">
-            <p:commandButton  styleClass="btn btn-default" value="#{EditDatafilesPage.labelForDeleteFilesPopup}" onclick="PF('fileAlreadyExistsPopup').hide()" oncomplete="uploadWidgetDropMsg();"
+            <p:commandButton  styleClass="btn btn-default" value="#{EditDatafilesPage.labelForDeleteFilesPopup}" onclick="PF('fileAlreadyExistsPopup').hide()" oncomplete="uploadWidgetDropMsg(); setupDirectUpload(#{useDirectUpload}, #{empty EditDatafilesPage.maxFileUploadSizeInBytes ? 'null' : EditDatafilesPage.maxFileUploadSizeInBytes}, #{empty EditDatafilesPage.maxTotalUploadSizeInBytes ? 'null' : EditDatafilesPage.maxTotalUploadSizeInBytes});"
                               action="#{EditDatafilesPage.deleteDuplicateFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage,@([id$=filesButtons])"/>
             <button class="btn btn-default" onclick="PF('fileAlreadyExistsPopup').hide();" type="button">
