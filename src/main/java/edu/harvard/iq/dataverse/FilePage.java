@@ -25,9 +25,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
-import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -633,12 +633,12 @@ public class FilePage implements java.io.Serializable {
         if (editDataset.isReleased()) {
             try {
                 exportService.exportAllFormats(editDataset);
-            } catch (ExportException ex) {
+            } catch (ExportSystemException ex) {
                 // Something went wrong!
                 // Just like with indexing, a failure to export is not a fatal
                 // condition. We'll just log the error as a warning and keep
                 // going:
-                logger.log(Level.WARNING, "Uningest: Exception while exporting: {0}", ex);
+                logger.log(Level.WARNING, ex, () -> "Uningest: Exception while exporting " + editDataset.getId());
             }
         }
         datafileService.save(file);

@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
-import io.gdcc.spi.export.ExportException;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.RequirementStatus;
@@ -740,7 +740,7 @@ public class Files extends AbstractApiBean {
                 Long dataFileId = dataFile.getId();
                 dataFile = fileService.find(dataFileId);
                 Dataset theDataset = dataFile.getOwner();
-                exportDatasetMetadata(settingsService, theDataset);
+                exportDatasetMetadata(theDataset);
                 return ok("Datafile " + dataFileId + " uningested.");
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
@@ -884,17 +884,15 @@ public class Files extends AbstractApiBean {
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
-
+    private void exportDatasetMetadata(Dataset theDataset) {
         try {
             exportSvc.exportAllFormats(theDataset);
-
-        } catch (ExportException ex) {
+        } catch (ExportSystemException ex) {
             // Something went wrong!
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
+            logger.log(Level.WARNING, ex, () -> "Dataset publication finalization: exception while exporting:" + ex.getMessage());
         }
     }
 

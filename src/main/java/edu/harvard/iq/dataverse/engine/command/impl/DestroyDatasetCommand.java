@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -37,7 +38,6 @@ import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
 
-import io.gdcc.spi.export.ExportException;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -129,7 +129,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         try {
             ctxt.exportService().clearAllCachedFormats(managedDoomed);
         }
-        catch (ExportException e) {
+        catch (ExportSystemException e) {
             var msg = format("Ignored failure to delete cached exports of {0}: {1} ", managedDoomed.getIdentifier(), e.getClass().getSimpleName());
             logger.log(Level.WARNING, msg, e);
         }

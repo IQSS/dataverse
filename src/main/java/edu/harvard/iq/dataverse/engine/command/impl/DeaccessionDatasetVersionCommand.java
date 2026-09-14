@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import io.gdcc.spi.export.ExportException;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,7 +71,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         if (managed.getDataset().getReleasedVersion() != null) {
             try {
                 ctxt.exportService().exportAllFormats(managed.getDataset());
-            } catch (ExportException ex) {
+            } catch (ExportSystemException ex) {
                 // Something went wrong!
                 // But we're not going to treat it as a fatal condition.
                 logger.log(Level.WARNING,"Ignored failure to export all formats after deaccessioning", ex);
@@ -80,7 +80,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
             try {
                 // otherwise, we need to wipe clean the exports we may have cached:
                 ctxt.exportService().clearAllCachedFormats(managed.getDataset());
-            } catch (ExportException ex) {
+            } catch (ExportSystemException ex) {
                 //Try catch required due to original method for clearing cached metadata (non fatal)
                 logger.log(Level.WARNING,"Ignored failure to delete all formats after deaccessioning", ex);
             }

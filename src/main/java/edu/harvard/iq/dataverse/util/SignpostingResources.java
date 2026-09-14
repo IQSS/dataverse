@@ -29,8 +29,6 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import io.gdcc.spi.export.ExportException;
-import io.gdcc.spi.export.Exporter;
 
 public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());

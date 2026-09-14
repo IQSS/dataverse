@@ -23,7 +23,6 @@ import io.gdcc.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;

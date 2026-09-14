@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import java.util.Date;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 
@@ -172,7 +172,7 @@ public class Metadata extends AbstractApiBean {
         
         try {
             exporterRegistrySvc.requireAllExist(formatNames);
-        } catch (IllegalArgumentException ex) {
+        } catch (ExportSystemException.InvalidRequest ex) {
             throw new BadRequestException("Invalid/unsupported format name(s)" + ex.getMessage());
         }
         
