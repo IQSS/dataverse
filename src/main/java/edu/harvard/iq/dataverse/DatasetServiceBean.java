@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean;
@@ -1082,12 +1083,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         // and finally,
         if (countCachedExtras) {
-            // count the sizes of the files cached for the dataset itself
-            // (i.e., the metadata exports):
             try {
+                // Count the sizes of the files cached for the dataset itself (i.e., the metadata exports):
                 total += exportService.usedCacheStorage(dataset);
-            } catch (IOException ioex) {
-                // safe to ignore; object not cached
+            } catch (IOException | ExportSystemException ex) {
+                logger.log(Level.INFO, ex, () -> "Failed to count cached metadata exports size for the dataset: " + dataset.getId() + " (ignoring)");
             }
         }
 
