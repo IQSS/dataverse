@@ -4404,6 +4404,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDatasetJsonAfterUpdate.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+        // Check that the DatasetVersionUser was transferred by checking the contributors list in the version summary
+        Response getCompareSummary = UtilIT.getCompareSummary(datasetId, apiToken);
+        getCompareSummary.prettyPrint();
+        getCompareSummary.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].contributors", org.hamcrest.Matchers.containsString(username))
+                .body("data[0].contributors", org.hamcrest.Matchers.containsString(username2));
+        
         //Check that the draft version is gone
         Response getDraft1 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         getDraft1.then().assertThat()
