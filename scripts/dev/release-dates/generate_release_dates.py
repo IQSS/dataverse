@@ -27,11 +27,15 @@ def build_schedule(release_date: date) -> list[tuple[str, str]]:
     code_freeze = previous_thursday(release_date - timedelta(days=7))
     core_pr_last_call = code_freeze - timedelta(days=7)
     community_pr_last_call = core_pr_last_call - timedelta(days=7)
+    review_priorities = community_pr_last_call - timedelta(days=7)
     curation_team_review = code_freeze + timedelta(days=4)
     start = community_pr_last_call - timedelta(days=56)
+    define_release = start - timedelta(days=14)
 
     return [
+        ("Define Release", define_release.isoformat()),
         ("Start", f"Sprint ??, {start.isoformat()}"),
+        ("Review Priorities", review_priorities.isoformat()),
         ("Community PR Last Call", community_pr_last_call.isoformat()),
         ("Core PR Last Call", core_pr_last_call.isoformat()),
         ("Code Freeze", code_freeze.isoformat()),
