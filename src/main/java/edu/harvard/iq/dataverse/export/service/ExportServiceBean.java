@@ -65,7 +65,11 @@ public class ExportServiceBean {
             ExportCacheKey key = new ExportCacheKey(datasetVersion, formatName);
             return pipeline.readFreshCachedExport(datasetVersion, key)
                            .orElse(pipeline.readFreshExport(datasetVersion, formatName));
-        } catch (IOException e) {
+        // ESEs are runtime exceptions, don't double-wrap
+        } catch (ExportSystemException ex) {
+            throw ex;
+        // IOEs and any other runtime errors should not be wrapped in EJB-proxy errors, but our own, checked ones
+        } catch (IOException | RuntimeException ex) {
             throw new InternalFailure("Export to String failed for dataset version " + datasetVersion.getId() +
                                       " to format " + formatName, ex);
         }
@@ -103,8 +107,15 @@ public class ExportServiceBean {
         } catch (IOException ex) {
             // TODO: should this be escalatable via FailureEscalation?
             logger.log(Level.FINE, ex.getMessage(), ex);
+            return null;
+        } catch (ExportSystemException ex) {
+            // Note: only IOEs were explicitly ignored, runtime errors could bubble up.
+            throw ex;
+        // Any other runtime errors should not be wrapped in EJB-proxy errors, but our own, checked ones
+        } catch (RuntimeException ex) {
+            throw new InternalFailure("Export to String failed for dataset " + dataset.getId() +
+                                      " to format " + formatName, ex);
         }
-        return null;
     }
     
     
@@ -207,7 +218,9 @@ public class ExportServiceBean {
             ExportCacheKey key = new ExportCacheKey(datasetVersion, format);
             try {
                 cache.evict(datasetVersion.getDataset(), key);
-            } catch (IOException e) {
+            // Any IOE or runtime exception (this includes ExportSystemExceptions) needs to be recorded,
+            // leads to failure, and must not leave any escape hatches across the service boundary.
+            } catch (IOException | RuntimeException e) {
                 logger.log(Level.WARNING, e, () -> "Failed to evict cache of dataset version id=" + datasetVersion.getId() + " and format=" + format);
                 failedFormats.add(format);
             }
@@ -349,8 +362,9 @@ public class ExportServiceBean {
             }
         }
         
-        if (!allSucceeded) {
-            throw new ExportException("One or more exports failed, for details see logs");
+        if (!failedFormats.isEmpty()) {
+            throw new InternalFailure("Exporting formats=" +
+                String.join(", ", failedFormats) + " failed, for details see logs");
         }
     }
     
