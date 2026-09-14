@@ -3,10 +3,10 @@ package edu.harvard.iq.dataverse.export.service;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.export.service.ExportCache.ExportStreamWriter;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
 import io.gdcc.spi.export.DatasetExportQuery;
 import io.gdcc.spi.export.ExportDataProvider;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -15,12 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,42 +35,43 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+/**
+ * Tests the pipeline through its three entry points only. The cache is a real (in-memory) implementation,
+ * so assertions are about observable outcomes: what ends up cached, what was evicted, and whether streams
+ * were closed. The registry stays a mock, as it is a pure lookup table.
+ */
 @ExtendWith(MockitoExtension.class)
 class ExportPipelineBeanTest {
     
     private static final long DATASET_ID = 42L;
     private static final String BASE = "base";
     private static final String DERIVED = "derived";
+    private static final String UNKNOWN = "unknown";
     
     @Mock ExporterRegistryBean registry;
     
     private Dataset dataset;
-    private ExportCache cache;
+    private InMemoryExportCache cache;
     private CountingInvalidator invalidator;
     private ExportPipelineBean pipeline;
     
     @BeforeEach
     void setUp() {
         dataset = newDataset();
+        cache = new InMemoryExportCache();
         invalidator = new CountingInvalidator(false);
-        cache = mock(StorageIOCache.class);
         pipeline = pipelineWith(invalidator);
     }
     
-    /** Mirrors container wiring: constructor for the invalidators, field injection for the EJB/CDI collaborators. */
     private ExportPipelineBean pipelineWith(ExportCacheInvalidator... invalidators) {
         return new ExportPipelineBean(registry, cache, List.of(invalidators));
     }
@@ -85,160 +83,155 @@ class ExportPipelineBeanTest {
         return Stream.of(arguments(null, key), arguments(version, null), arguments(null, null));
     }
     
+    // ++++ ++++ ++++ readFreshCachedExport ++++ ++++ ++++
+    
     @Nested
     class ReadFreshCachedExport {
         
         @ParameterizedTest(name = "[{index}] rejects null arguments")
         @MethodSource("edu.harvard.iq.dataverse.export.service.ExportPipelineBeanTest#nullVersionAndKeyCombinations")
         void rejectsNullArguments(DatasetVersion version, ExportCacheKey key) {
-            assertThrows(IllegalArgumentException.class, () -> pipeline.readFreshCachedExport(version, key));
-            verifyNoInteractions(cache);
+            assertThrows(InvalidRequest.class, () -> pipeline.readFreshCachedExport(version, key));
+            assertEquals(0, cache.reads());
         }
         
         @Test
         void draftsBypassTheCache() throws IOException {
-            // Given
             DatasetVersion draft = draftVersion(dataset);
+            ExportCacheKey key = new ExportCacheKey(draft, BASE);
+            cache.seed(dataset, key, "should never be served for a draft");
             
-            // When
-            Optional<InputStream> result = pipeline.readFreshCachedExport(draft, new ExportCacheKey(draft, BASE));
+            Optional<InputStream> result = pipeline.readFreshCachedExport(draft, key);
             
-            // Then
             assertAll(
                 () -> assertTrue(result.isEmpty()),
                 () -> assertEquals(0, invalidator.calls()),
-                () -> verifyNoInteractions(cache)
+                () -> assertEquals(0, cache.reads())
             );
         }
         
         @Test
         void cacheMissYieldsEmpty() throws IOException {
-            // Given
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey key = new ExportCacheKey(version, BASE);
             
-            when(cache.read(dataset, key)).thenReturn(Optional.empty());
+            Optional<InputStream> result = pipeline.readFreshCachedExport(version, key);
             
-            // When & Then
-            assertTrue(pipeline.readFreshCachedExport(version, key).isEmpty());
             assertAll(
+                () -> assertTrue(result.isEmpty()),
+                () -> assertEquals(1, cache.reads()),
+                () -> assertEquals(0, cache.hits()),
                 () -> assertEquals(0, invalidator.calls()),
-                () -> verify(cache, never()).evict(any(), any())
+                () -> assertEquals(0, cache.evictions())
             );
         }
         
         @Test
-        void freshEntryIsReturnedUntouched() throws IOException {
-            // Given
+        void freshEntryIsHandedOutOpenAndUnconsumed() throws IOException {
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey key = new ExportCacheKey(version, BASE);
+            cache.seed(dataset, key, "cached");
             
-            ClosureTrackingInputStream cached = new ClosureTrackingInputStream("cached");
-            when(cache.read(dataset, key)).thenReturn(Optional.of(cached));
-            
-            // When
-            Optional<InputStream> result = pipeline.readFreshCachedExport(version, key);
-            
-             // Then
+            try (InputStream in = pipeline.readFreshCachedExport(version, key).orElseThrow()) {
+                // The pipeline must neither close nor consume the stream before the caller sees it.
+                assertEquals(1, cache.openStreams());
+                assertEquals("cached", readUtf8(in));
+            }
             assertAll(
-                () -> assertSame(cached, result.orElseThrow()),
-                () -> assertFalse(cached.isClosed()),
                 () -> assertEquals(1, invalidator.calls()),
-                () -> verify(cache, never()).evict(any(), any())
+                () -> assertEquals(0, cache.evictions()),
+                () -> assertTrue(cache.contains(dataset, key)),
+                () -> assertEquals(0, cache.openStreams())
             );
         }
         
         @Test
         void noInvalidatorsMeansAlwaysFresh() throws IOException {
-            // Given
             pipeline = pipelineWith();
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey key = new ExportCacheKey(version, BASE);
+            cache.seed(dataset, key, "cached");
             
-            ClosureTrackingInputStream cached = new ClosureTrackingInputStream("cached");
-            when(cache.read(dataset, key)).thenReturn(Optional.of(cached));
-            
-            // When & Then
-            assertSame(cached, pipeline.readFreshCachedExport(version, key).orElseThrow());
+            try (InputStream in = pipeline.readFreshCachedExport(version, key).orElseThrow()) {
+                assertEquals("cached", readUtf8(in));
+            }
         }
         
         @Test
         void staleEntryIsEvictedAndReportedAsMiss() throws IOException {
-            // Given
             pipeline = pipelineWith(new CountingInvalidator(false), new CountingInvalidator(true));
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey key = new ExportCacheKey(version, BASE);
+            cache.seed(dataset, key, "stale");
             
-            ClosureTrackingInputStream cached = new ClosureTrackingInputStream("stale");
-            when(cache.read(dataset, key)).thenReturn(Optional.of(cached));
-            
-            // When
             Optional<InputStream> result = pipeline.readFreshCachedExport(version, key);
             
-            // Then
             assertAll(
                 () -> assertTrue(result.isEmpty()),
-                () -> assertTrue(cached.isClosed()),
-                () -> verify(cache).evict(dataset, key)
+                () -> assertFalse(cache.contains(dataset, key)),
+                () -> assertEquals(1, cache.evictions()),
+                () -> assertEquals(0, cache.openStreams())
             );
         }
         
         @Test
-        void evictionFailureClosesStreamAndPropagates() throws IOException {
-            // Given
+        void evictionFailureClosesStreamAndPropagates() {
             pipeline = pipelineWith(new CountingInvalidator(true));
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey key = new ExportCacheKey(version, BASE);
+            cache.seed(dataset, key, "stale");
+            cache.failEvictsWith(new IOException("evict failed"));
             
-            ClosureTrackingInputStream cached = new ClosureTrackingInputStream("stale");
-            when(cache.read(dataset, key)).thenReturn(Optional.of(cached));
-            doThrow(new IOException("evict failed")).when(cache).evict(dataset, key);
-            
-            // When & Then
             IOException ex = assertThrows(IOException.class, () -> pipeline.readFreshCachedExport(version, key));
+            
             assertAll(
                 () -> assertEquals("evict failed", ex.getMessage()),
-                () -> assertTrue(cached.isClosed())
+                () -> assertEquals(0, cache.openStreams()),
+                () -> assertTrue(cache.contains(dataset, key), "failed eviction must not pretend the entry is gone")
             );
         }
         
         @Test
-        void invalidatorFailureNeverMasksOriginalException() throws IOException {
-            // Given
+        void invalidatorFailureNeverMasksOriginalException() {
             IllegalStateException failure = new IllegalStateException("invalidator broke");
             pipeline = pipelineWith(new FailingInvalidator(failure));
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey key = new ExportCacheKey(version, BASE);
+            cache.seed(dataset, key, "cached");
+            cache.failStreamClosesWith(new IOException("close failed"));
             
-            InputStream failingClose = mock(InputStream.class);
-            doThrow(new IOException("close failed")).when(failingClose).close();
-            when(cache.read(dataset, key)).thenReturn(Optional.of(failingClose));
-            
-            // When & Then
             IllegalStateException ex = assertThrows(IllegalStateException.class, () -> pipeline.readFreshCachedExport(version, key));
+            
             assertAll(
                 () -> assertSame(failure, ex),
                 () -> assertEquals(1, ex.getSuppressed().length),
                 () -> assertInstanceOf(IOException.class, ex.getSuppressed()[0]),
-                () -> verify(cache, never()).evict(any(), any())
+                () -> assertEquals(0, cache.openStreams()),
+                () -> assertEquals(0, cache.evictions())
             );
         }
     }
+    
+    // ++++ ++++ ++++ readFreshExport ++++ ++++ ++++
     
     @Nested
     class ReadFreshTemporaryExport {
         
         @Test
         void rejectsNullVersion() {
-            assertThrows(IllegalArgumentException.class, () -> pipeline.readFreshExport(null, BASE));
+            assertThrows(InvalidRequest.class, () -> pipeline.readFreshExport(null, BASE));
         }
         
         @Test
-        void rejectsUnregisteredFormat() {
-            doThrow(new IllegalArgumentException("unknown")).when(registry).requireExists("unknown");
+        void rejectsUnregisteredFormatBeforeDoingAnyWork() {
+            doThrow(new InvalidRequest("no such format")).when(registry).requireExists(UNKNOWN);
             
-            assertThrows(IllegalArgumentException.class, () -> pipeline.readFreshExport(draftVersion(dataset), "unknown"));
-            verifyNoInteractions(cache);
+            assertThrows(InvalidRequest.class, () -> pipeline.readFreshExport(draftVersion(dataset), UNKNOWN));
+            
+            assertAll(
+                () -> verify(registry).requireExists(UNKNOWN),
+                () -> assertEquals(0, cache.reads())
+            );
         }
         
         @Test
@@ -248,118 +241,126 @@ class ExportPipelineBeanTest {
             try (InputStream in = pipeline.readFreshExport(draftVersion(dataset), BASE)) {
                 assertEquals("BASE", readUtf8(in));
             }
-            verifyNoInteractions(cache);
+            assertAll(
+                () -> assertEquals(0, cache.reads()),
+                () -> assertEquals(0, cache.writes())
+            );
         }
         
         @Test
-        void draftPrerequisitesAreProducedFresh() throws IOException {
-            // Given
+        void draftPrerequisitesAreProducedFreshWithoutTouchingTheCache() throws IOException {
             registerExporterMock(BASE, null, writing("BASE"));
             registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
             
-            // When (& Then)
             try (InputStream in = pipeline.readFreshExport(draftVersion(dataset), DERIVED)) {
                 assertEquals("DERIVED(BASE)", readUtf8(in));
             }
             assertAll(
                 () -> assertEquals(0, invalidator.calls()),
-                () -> verifyNoInteractions(cache)
+                () -> assertEquals(0, cache.reads()),
+                () -> assertEquals(0, cache.writes())
             );
         }
         
         @Test
         void releasedPrerequisitesAreReadFromCache() throws IOException {
-            // Given
+            // Deliberately no BASE exporter: if the pipeline tried to produce it, registry.get(BASE) would be empty and fail.
             registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
-            
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey baseKey = new ExportCacheKey(version, BASE);
-            ClosureTrackingInputStream cached = new ClosureTrackingInputStream("CACHED");
-            when(cache.read(dataset, baseKey)).thenReturn(Optional.of(cached));
+            cache.seed(dataset, baseKey, "CACHED");
             
-            // When (& Then)
             try (InputStream in = pipeline.readFreshExport(version, DERIVED)) {
                 assertEquals("DERIVED(CACHED)", readUtf8(in));
             }
             assertAll(
-                () -> assertTrue(cached.isClosed()),
                 () -> assertEquals(1, invalidator.calls()),
-                () -> verify(cache, never()).write(any(), any(), any())
+                () -> assertEquals(0, cache.writes()),
+                () -> assertEquals(0, cache.openStreams(), "prerequisite stream must be closed after use"),
+                () -> assertEquals(1, cache.size(), "the derived (temporary) export must not be cached")
             );
         }
         
         @Test
         void releasedPrerequisitesAreWrittenThroughOnMiss() throws IOException {
-            // Given
             registerExporterMock(BASE, null, writing("BASE"));
             registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
-            
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey baseKey = new ExportCacheKey(version, BASE);
+            ExportCacheKey derivedKey = new ExportCacheKey(version, DERIVED);
             
-            ByteArrayOutputStream cacheContent = new ByteArrayOutputStream();
-            doAnswer(invocation -> {
-                invocation.<ExportStreamWriter>getArgument(2).writeTo(cacheContent);
-                return null;
-            }).when(cache).write(eq(dataset), eq(baseKey), any());
-            when(cache.read(dataset, baseKey))
-                // first call result
-                .thenReturn(Optional.empty())
-                // second call result, value created interactively
-                .thenAnswer(invocation -> Optional.of(new ByteArrayInputStream(cacheContent.toByteArray())));
-            
-            // When & Then
             try (InputStream in = pipeline.readFreshExport(version, DERIVED)) {
                 assertEquals("DERIVED(BASE)", readUtf8(in));
             }
             assertAll(
-                () -> assertEquals("BASE", cacheContent.toString(UTF_8)),
-                () -> verify(cache).write(eq(dataset), eq(baseKey), any()),
-                () -> verify(cache, times(2)).read(dataset, baseKey)
+                () -> assertEquals(Optional.of("BASE"), cache.contentOf(dataset, baseKey)),
+                () -> assertFalse(cache.contains(dataset, derivedKey), "the derived (temporary) export must not be cached"),
+                () -> assertEquals(1, cache.writes()),
+                () -> assertEquals(0, cache.openStreams())
             );
         }
         
         @Test
         void failsWhenPrerequisiteCannotBeReadBack() {
-            // Given
+            registerExporterMock(BASE, null, writing("BASE"));
             registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
-            // cache.write() is a no-op on the mock, cache.read() defaults to Optional.empty()
-            DatasetVersion version = releasedVersion(dataset);
+            cache.swallowWrites();
             
-            // When & Then
-            var ex = assertThrows(ExportException.class, () -> pipeline.readFreshExport(version, DERIVED));
-            assertTrue(ex.getMessage().contains(BASE + " was produced but could not be read back"));
+            var ex = assertThrows(InternalFailure.class, () -> pipeline.readFreshExport(releasedVersion(dataset), DERIVED));
+            
+            assertAll(
+                () -> assertTrue(ex.getMessage().contains(BASE + " was produced but could not be read back")),
+                () -> assertEquals(1, cache.writerInvocations(), "the prerequisite was actually produced")
+            );
         }
         
         @Test
         void detectsPrerequisiteCycles() {
-            // Given
             registerExporterMock(BASE, DERIVED, WRAPPING_PREREQUISITE);
             registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
             
-            // When & Then
-            var ex =  assertThrows(IllegalArgumentException.class, () -> pipeline.readFreshExport(draftVersion(dataset), DERIVED));
+            var ex = assertThrows(InternalFailure.class, () -> pipeline.readFreshExport(draftVersion(dataset), DERIVED));
             assertTrue(ex.getMessage().contains(DERIVED + " -> " + BASE + " -> " + DERIVED));
         }
         
         @Test
+        void cycleDetectionLeavesCacheUntouchedForReleasedVersions() {
+            registerExporterMock(BASE, DERIVED, WRAPPING_PREREQUISITE);
+            registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
+            
+            assertThrows(InternalFailure.class, () -> pipeline.readFreshExport(releasedVersion(dataset), DERIVED));
+            assertTrue(cache.isEmpty(), "no partial entry may survive a failed prerequisite chain");
+        }
+        
+        @Test
         void wrapsIllegalStateExceptionFromExporter() {
-            // Given
             IllegalStateException cause = new IllegalStateException("field type mismatch");
-            registerExporterMock(BASE, null, (provider, out) -> { throw cause; });
+            registerExporterMock(BASE, null, (provider, out) -> {
+                throw cause;
+            });
+            Dataset identified = withGlobalId(dataset);
             
-            // The wrapped message references the dataset's global id, so the fixture must provide one.
-            Dataset identified = spy(dataset);
-            doReturn(mock(GlobalId.class)).when(identified).getGlobalId();
+            var ex = assertThrows(InternalFailure.class, () -> pipeline.readFreshExport(draftVersion(identified), BASE));
             
-            // When & Then
-            var ex = assertThrows(ExportException.class, () -> pipeline.readFreshExport(draftVersion(identified), BASE));
             assertAll(
                 () -> assertSame(cause, ex.getCause()),
                 () -> assertTrue(ex.getMessage().contains("IllegalStateException caught"))
             );
         }
+        
+        @Test
+        void otherRuntimeExceptionsPropagateUnwrapped() {
+            // Only IllegalStateException is wrapped inside the pipeline; anything else surfaces as-is
+            // and is wrapped at the service boundary (ExportServiceBean).
+            IllegalArgumentException boom = new IllegalArgumentException("boom");
+            registerExporterMock(BASE, null, (provider, out) -> { throw boom; });
+            
+            var ex = assertThrows(IllegalArgumentException.class, () -> pipeline.readFreshExport(draftVersion(dataset), BASE));
+            assertSame(boom, ex);
+        }
     }
+    
+    // ++++ ++++ ++++ produceAndCache ++++ ++++ ++++
     
     @Nested
     class ProducingAndCaching {
@@ -367,51 +368,149 @@ class ExportPipelineBeanTest {
         @ParameterizedTest(name = "[{index}] rejects null arguments")
         @MethodSource("edu.harvard.iq.dataverse.export.service.ExportPipelineBeanTest#nullVersionAndKeyCombinations")
         void rejectsNullArguments(DatasetVersion version, ExportCacheKey key) {
-            assertThrows(IllegalArgumentException.class, () -> pipeline.produceAndCache(version, key));
-            verifyNoInteractions(cache);
+            assertThrows(InvalidRequest.class, () -> pipeline.produceAndCache(version, key));
+            assertEquals(0, cache.writes());
         }
         
         @Test
-        void delegatesProductionToCacheWriter() throws Exception {
-            DatasetVersion version = releasedVersion(dataset);
-            ExportCacheKey key = new ExportCacheKey(version, BASE);
+        void producesAndStoresFormatWithoutPrerequisite() throws IOException {
             registerExporterMock(BASE, null, writing("BASE"));
-            
-            pipeline.produceAndCache(version, key);
-            
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            capturedWriter(key).writeTo(out);
-            assertEquals("BASE", out.toString(UTF_8));
-        }
-        
-        @Test
-        void writerRejectsNullOutputStream() throws Exception {
             DatasetVersion version = releasedVersion(dataset);
             ExportCacheKey key = new ExportCacheKey(version, BASE);
             
             pipeline.produceAndCache(version, key);
             
-            ExportStreamWriter writer = capturedWriter(key);
-            assertThrows(IllegalArgumentException.class, () -> writer.writeTo(null));
+            assertAll(
+                () -> assertEquals(Optional.of("BASE"), cache.contentOf(dataset, key)),
+                () -> assertEquals(1, cache.size()),
+                () -> assertEquals(1, cache.writes())
+            );
         }
         
         @Test
-        void writerRejectsUnknownFormat() throws Exception {
+        void unknownFormatIsRejectedAndNothingIsCached() {
+            when(registry.get(UNKNOWN)).thenReturn(Optional.empty());
             DatasetVersion version = releasedVersion(dataset);
-            ExportCacheKey key = new ExportCacheKey(version, "unknown");
             
-            pipeline.produceAndCache(version, key);
+            var ex = assertThrows(InvalidRequest.class, () -> pipeline.produceAndCache(version, new ExportCacheKey(version, UNKNOWN)));
             
-            ExportStreamWriter writer = capturedWriter(key);
-            IllegalArgumentException ex =
-                assertThrows(IllegalArgumentException.class, () -> writer.writeTo(new ByteArrayOutputStream()));
-            assertTrue(ex.getMessage().contains("unknown"));
+            assertAll(
+                () -> assertTrue(ex.getMessage().contains(UNKNOWN)),
+                () -> assertTrue(cache.isEmpty())
+            );
         }
         
-        private ExportStreamWriter capturedWriter(ExportCacheKey key) throws IOException {
-            ArgumentCaptor<ExportStreamWriter> captor = ArgumentCaptor.forClass(ExportStreamWriter.class);
-            verify(cache).write(eq(dataset), eq(key), captor.capture());
-            return captor.getValue();
+        @Test
+        void unregisteredPrerequisiteIsRejectedAndNothingIsCached() {
+            registerExporterMock(DERIVED, "missing-prereq", WRAPPING_PREREQUISITE);
+            when(registry.get("missing-prereq")).thenReturn(Optional.empty());
+            DatasetVersion version = releasedVersion(dataset);
+            
+            var ex = assertThrows(InvalidRequest.class, () -> pipeline.produceAndCache(version, new ExportCacheKey(version, DERIVED)));
+            
+            assertAll(
+                () -> assertTrue(ex.getMessage().contains("missing-prereq")),
+                () -> assertTrue(cache.isEmpty())
+            );
+        }
+        
+        @Test
+        void exporterFailureLeavesCacheUntouched() {
+            IllegalArgumentException boom = new IllegalArgumentException("boom");
+            registerExporterMock(BASE, null, (provider, out) -> { throw boom; });
+            DatasetVersion version = releasedVersion(dataset);
+            
+            var ex = assertThrows(IllegalArgumentException.class, () -> pipeline.produceAndCache(version, new ExportCacheKey(version, BASE)));
+            
+            assertAll(
+                () -> assertSame(boom, ex),
+                () -> assertTrue(cache.isEmpty())
+            );
+        }
+        
+        @Test
+        void illegalStateExceptionIsWrappedOnTheCachePathToo() {
+            IllegalStateException cause = new IllegalStateException("field type mismatch");
+            registerExporterMock(BASE, null, (provider, out) -> { throw cause; });
+            Dataset identified = withGlobalId(dataset);
+            DatasetVersion version = releasedVersion(identified);
+            
+            var ex = assertThrows(InternalFailure.class, () -> pipeline.produceAndCache(version, new ExportCacheKey(version, BASE)));
+            
+            assertAll(
+                () -> assertSame(cause, ex.getCause()),
+                () -> assertTrue(cache.isEmpty())
+            );
+        }
+        
+        @Test
+        void prerequisiteIsProducedAndCachedAlongside() throws IOException {
+            registerExporterMock(BASE, null, writing("BASE"));
+            registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
+            DatasetVersion version = releasedVersion(dataset);
+            ExportCacheKey baseKey = new ExportCacheKey(version, BASE);
+            ExportCacheKey derivedKey = new ExportCacheKey(version, DERIVED);
+            
+            pipeline.produceAndCache(version, derivedKey);
+            
+            assertAll(
+                () -> assertEquals(Optional.of("DERIVED(BASE)"), cache.contentOf(dataset, derivedKey)),
+                () -> assertEquals(Optional.of("BASE"), cache.contentOf(dataset, baseKey)),
+                () -> assertEquals(2, cache.writes()),
+                () -> assertEquals(0, cache.openStreams())
+            );
+        }
+        
+        @Test
+        void cachedPrerequisiteIsReusedWithoutRunningItsExporter() throws IOException {
+            // Deliberately no BASE exporter registered.
+            registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
+            DatasetVersion version = releasedVersion(dataset);
+            ExportCacheKey baseKey = new ExportCacheKey(version, BASE);
+            ExportCacheKey derivedKey = new ExportCacheKey(version, DERIVED);
+            cache.seed(dataset, baseKey, "CACHED");
+            
+            pipeline.produceAndCache(version, derivedKey);
+            
+            assertAll(
+                () -> assertEquals(Optional.of("DERIVED(CACHED)"), cache.contentOf(dataset, derivedKey)),
+                () -> assertEquals(1, cache.writes()),
+                () -> verify(registry, never()).get(BASE),
+                () -> assertEquals(0, cache.openStreams())
+            );
+        }
+        
+        @Test
+        void stalePrerequisiteIsRegeneratedBeforeUse() throws IOException {
+            pipeline = pipelineWith(new CountingInvalidator(true));
+            registerExporterMock(BASE, null, writing("BASE"));
+            registerExporterMock(DERIVED, BASE, WRAPPING_PREREQUISITE);
+            DatasetVersion version = releasedVersion(dataset);
+            ExportCacheKey baseKey = new ExportCacheKey(version, BASE);
+            ExportCacheKey derivedKey = new ExportCacheKey(version, DERIVED);
+            cache.seed(dataset, baseKey, "OLD");
+            
+            pipeline.produceAndCache(version, derivedKey);
+            
+            assertAll(
+                () -> assertEquals(Optional.of("DERIVED(BASE)"), cache.contentOf(dataset, derivedKey), "stale bytes must never feed a derived export"),
+                () -> assertEquals(Optional.of("BASE"), cache.contentOf(dataset, baseKey)),
+                () -> assertEquals(1, cache.evictions()),
+                () -> assertEquals(2, cache.writes())
+            );
+        }
+        
+        @Test
+        void cacheWriteFailurePropagatesBeforeAnyExporterRuns() {
+            cache.failWritesWith(new IOException("disk full"));
+            DatasetVersion version = releasedVersion(dataset);
+            
+            IOException ex = assertThrows(IOException.class, () -> pipeline.produceAndCache(version, new ExportCacheKey(version, BASE)));
+            
+            assertAll(
+                () -> assertEquals("disk full", ex.getMessage()),
+                () -> assertEquals(0, cache.writerInvocations())
+            );
         }
     }
     
@@ -436,9 +535,9 @@ class ExportPipelineBeanTest {
     /**
      * Registers a mocked exporter under {@code formatName}.
      * The exporter's own stubs are lenient on purpose, as several tests intentionally fail before the exporter
-     * is ever driven to completion.
+     * is ever driven to completion. The registry lookup itself stays strict: every registered format must be used.
      */
-    private void registerExporterMock(String formatName, String prerequisite, ExportBody body) {
+    private Exporter registerExporterMock(String formatName, String prerequisite, ExportBody body) {
         Exporter exporter = mock(Exporter.class);
         lenient().when(exporter.getPrerequisiteFormatName()).thenReturn(Optional.ofNullable(prerequisite));
         lenient().doAnswer(invocation -> {
@@ -446,8 +545,15 @@ class ExportPipelineBeanTest {
             return null;
         }).when(exporter).exportDataset(any(), any());
         when(registry.get(formatName)).thenReturn(Optional.of(exporter));
+        return exporter;
     }
     
+    /** The ISE-wrapping message references the dataset's global id, so that fixture must provide one. */
+    private static Dataset withGlobalId(Dataset dataset) {
+        Dataset identified = spy(dataset);
+        doReturn(mock(GlobalId.class)).when(identified).getGlobalId();
+        return identified;
+    }
     
     // TODO: aren't there mock factories around for this?
     
@@ -503,25 +609,6 @@ class ExportPipelineBeanTest {
         @Override
         public boolean isStale(DatasetVersion datasetVersion, ExportCacheKey key) {
             throw failure;
-        }
-    }
-    
-    /** Records whether the pipeline closed the stream it received from the cache. */
-    private static final class ClosureTrackingInputStream extends ByteArrayInputStream {
-        private boolean closed;
-        
-        ClosureTrackingInputStream(String content) {
-            super(content.getBytes(UTF_8));
-        }
-        
-        @Override
-        public void close() throws IOException {
-            closed = true;
-            super.close();
-        }
-        
-        boolean isClosed() {
-            return closed;
         }
     }
 }
