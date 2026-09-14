@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.export.service;
 
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -117,6 +118,7 @@ public class ExporterRegistryBean {
     /**
      * Intended for testing purposes only: bypass JAR discovery and {@link ServiceLoader} and populate the registry
      * directly from the given exporters (integrity is still verified!).
+     * @throws InternalFailure if the given exporters are not valid or if they form a cyclic dependency.
      */
     ExporterRegistryBean(Map<String, Exporter> exporters) {
         populate(exporters);
@@ -142,11 +144,12 @@ public class ExporterRegistryBean {
      *
      * @param detail the details containing the format name used to look up the exporter; must not be null
      * @return the exporter associated with the format name from the provided details
-     * @throws IllegalArgumentException if the detail parameter is null
+     * @throws InvalidRequest if the detail parameter is null
+     * @implNote As the only way to get a {@code detail} is from this registry, it's safe to assume that we can never return null.
      */
     public Exporter get(Details detail) {
         if (detail == null) {
-            throw new IllegalArgumentException("Exporter details cannot be null");
+            throw new InvalidRequest("Exporter details cannot be null");
         }   
         return exporters.get(detail.formatName());
     }
@@ -200,14 +203,14 @@ public class ExporterRegistryBean {
      * Throws an exception if the format name is null or if no exporter has been registered under that name.
      *
      * @param formatName the name of the format to check; must not be null
-     * @throws IllegalArgumentException if formatName is null, or if no exporter is registered for the specified format name
+     * @throws InvalidRequest if formatName is null, or if no exporter is registered for the specified format name
      */
     public void requireExists(String formatName) {
         if (formatName == null) {
-            throw new IllegalArgumentException("format name may not be null");
+            throw new InvalidRequest("format name may not be null");
         }
         if (!exporters.containsKey(formatName)) {
-            throw new IllegalArgumentException("no exporter registered for format: " + formatName);
+            throw new InvalidRequest("no exporter registered for format: " + formatName);
         }
     }
     
@@ -217,18 +220,18 @@ public class ExporterRegistryBean {
      *
      * @param formats the list of format names that must each have a registered exporter; must not be null;
      *                an empty list is allowed (no formats are checked)
-     * @throws IllegalArgumentException if any format in the list does not have a corresponding registered exporter,
-     *                                  with the message enumerating all invalid format names; or if the list is null
+     * @throws InvalidRequest if any format in the list does not have a corresponding registered exporter,
+     *                                              with the message enumerating all invalid format names; or if the list is null
      */
     public void requireAllExist(List<String> formats) {
         if (formats == null) {
-            throw new IllegalArgumentException("list must not be null (hint: use empty list to express 'all')");
+            throw new InvalidRequest("list must not be null (hint: use empty list to express 'all')");
         }
         Set<String> invalidFormats = formats.stream()
                                             .filter(format -> !exporters.containsKey(format))
                                             .collect(Collectors.toUnmodifiableSet());
         if (!invalidFormats.isEmpty()) {
-            throw new IllegalArgumentException("no exporters available for " + String.join(", ", invalidFormats));
+            throw new InvalidRequest("no exporters available for " + String.join(", ", invalidFormats));
         }
     }
     
@@ -369,7 +372,7 @@ public class ExporterRegistryBean {
      * referenced by an exporter is itself backed by a registered exporter in the provided map.
      * In addition, it verifies no prerequisite formats form a cyclic dependency.
      *
-     * @throws ExportException if one or more prerequisite format names in the dependency map
+     * @throws InternalFailure if one or more prerequisite format names in the dependency map
      *                         do not have a corresponding entry in the provided exporters map
      */
     static void verifyRequirements(Map<String, Exporter> exporters) {
@@ -392,7 +395,7 @@ public class ExporterRegistryBean {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             
             logger.log(Level.SEVERE, "Exporter registry integrity check failed: the following exporters are missing prerequisites: {}", unsatisfied);
-            throw new ExportException("Exporter registry integrity check failed");
+            throw new InternalFailure("Exporter registry integrity check failed");
         }
         
         // Now that we know all exporters are present as required, check for cyclic dependencies!
@@ -419,7 +422,7 @@ public class ExporterRegistryBean {
             }
         }
         if (cycleDetected) {
-            throw new ExportException("Exporter registry integrity check failed: cyclic dependencies detected.");
+            throw new InternalFailure("Exporter registry integrity check failed: cyclic dependencies detected.");
         }
     }
     

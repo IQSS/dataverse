@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Named;
@@ -135,7 +134,7 @@ class ExporterRegistryBeanTest {
         
         @Test
         void getByNullDetailsIsRejected() {
-            assertThrows(IllegalArgumentException.class, () -> registry.get((Details) null));
+            assertThrows(ExportSystemException.InvalidRequest.class, () -> registry.get((Details) null));
         }
         
         @Test
@@ -177,12 +176,12 @@ class ExporterRegistryBeanTest {
         @NullSource
         @ValueSource(strings = {"", "unknown"})
         void requireExistsRejectsNullOrUnknown(String formatName) {
-            assertThrows(IllegalArgumentException.class, () -> registry.requireExists(formatName));
+            assertThrows(ExportSystemException.InvalidRequest.class, () -> registry.requireExists(formatName));
         }
         
         @Test
         void requireAllExistEnumeratesOnlyInvalidFormats() {
-            var ex = assertThrows(IllegalArgumentException.class,
+            var ex = assertThrows(ExportSystemException.InvalidRequest.class,
                 () -> registry.requireAllExist(List.of(BASE, "foo", DEEP, "bar")));
             assertAll(
                 () -> assertTrue(ex.getMessage().contains("foo")),
@@ -194,7 +193,7 @@ class ExporterRegistryBeanTest {
         
         @Test
         void requireAllExistRejectsNullList() {
-            assertThrows(IllegalArgumentException.class, () -> registry.requireAllExist(null));
+            assertThrows(ExportSystemException.InvalidRequest.class, () -> registry.requireAllExist(null));
         }
         
         @ParameterizedTest(name = "dependents of ''{0}''")
@@ -233,7 +232,7 @@ class ExporterRegistryBeanTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("brokenGraphs")
         void rejectsBrokenGraphs(Map<String, Exporter> exporters) {
-            assertThrows(ExportException.class, () -> ExporterRegistryBean.verifyRequirements(exporters));
+            assertThrows(ExportSystemException.InternalFailure.class, () -> ExporterRegistryBean.verifyRequirements(exporters));
         }
         
         static Stream<Named<Map<String, Exporter>>> brokenGraphs() {
