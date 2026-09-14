@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import io.gdcc.xoai.dataprovider.exceptions.handler.IdDoesNotExistException;
 import io.gdcc.xoai.dataprovider.filter.ScopedFilter;
 import io.gdcc.xoai.dataprovider.model.Item;
@@ -10,7 +11,6 @@ import io.gdcc.xoai.dataprovider.repository.ItemRepository;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
-import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -20,8 +20,6 @@ import io.gdcc.xoai.dataprovider.repository.ResultsPage;
 import io.gdcc.xoai.model.oaipmh.ResumptionToken;
 import io.gdcc.xoai.model.oaipmh.results.record.Metadata;
 import io.gdcc.xoai.xml.EchoElement;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.time.Instant;
 import java.util.List;
@@ -241,25 +239,18 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         return xoaiItem;
     }
     
-    private Metadata getDatasetMetadata(Dataset dataset, String metadataPrefix) throws ExportException, IOException {
-        Metadata metadata;
-
+    private Metadata getDatasetMetadata(Dataset dataset, String metadataPrefix) {
         if ("dataverse_json".equals(metadataPrefix)) {
             // Solely for backward compatibility, for older Dataverse harvesting clients
             // that may still be relying on harvesting "dataverse_json";
             // we will want to eventually get rid of this hack! 
             // @Deprecated(since = "5.0")
-            metadata = new Metadata(
+            return new Metadata(
                     new EchoElement("<dataverse_json>custom metadata</dataverse_json>"))
                     .withAttribute("directApiCall", customDataverseJsonApiUri(dataset.getGlobalId().asString()));
             
-        } else {
-            InputStream pregeneratedMetadataStream;
-            pregeneratedMetadataStream = exportService.getExport(dataset.getReleasedVersion(), metadataPrefix);
-
-            metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
         }
-        return metadata;
+        return Metadata.copyFromStream(exportService.getExport(dataset.getReleasedVersion(), metadataPrefix));
     }
     
     private String customDataverseJsonApiUri(String identifier) {
