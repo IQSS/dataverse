@@ -353,15 +353,15 @@ public class ExportServiceBean {
         // Note: If parallelization of exports is to be achieved, use a different data structure (like a queue) and
         //       group by number of dependencies. All exports at a certain depth must be done before proceeding to
         //       avoid race conditions.
-        boolean allSucceeded = true;
+        List<String> failedFormats = new ArrayList<>();
         for (Exporter exporter : exporters) {
             String formatName = exporter.getFormatName();
             ExportCacheKey key = new ExportCacheKey(datasetVersion, formatName);
             try {
                 pipeline.produceAndCache(datasetVersion, key);
-            // RuntimeEx also catches ExportException and NPEs
+            // RuntimeEx also catches ExportSystemException and NPEs
             } catch (IOException | RuntimeException ex) {
-                allSucceeded = false;
+                failedFormats.add(formatName);
                 logger.log(Level.WARNING, ex, () -> "Export of " + formatName + " failed for dataset version" + datasetVersion);
             }
         }
