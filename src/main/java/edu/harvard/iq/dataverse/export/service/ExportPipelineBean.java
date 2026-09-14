@@ -229,7 +229,7 @@ class ExportPipelineBean {
      *                         if prerequisite format resolution fails
      *
      */
-    private void produce(String formatName, DatasetVersion version, OutputStream out, Set<String> inFlight) {
+    private void produce(String formatName, DatasetVersion version, OutputStream out, Set<String> inFlight) throws IOException {
         // version is null checked before, inFlight is injected by the caller. This is a private method, no additional checks necessary.
         if (out == null) {
             throw new InvalidRequest("Output stream may not be null");
@@ -255,11 +255,9 @@ class ExportPipelineBean {
             // Case B: Prerequisite format needed, recursively resolve, then export
             try (InputStream prereqStream = resolvePrerequisite(prereqFormatName.get(), version, inFlight)) {
                 exporter.exportDataset(new InternalExportDataProvider(version, prereqStream), out);
-            } catch (IOException ioe) {
-                throw new ExportException("Could not provide prerequisite " + prereqFormatName.get() +
-                    " to create " + formatName + " export for dataset " +
-                    version.getDataset().getId(), ioe);
-            }
+            } // IOE bubbles up!
+        // TODO: This is legacy code, left over from the former ExportService.
+        //       Can this be let bubble up to the service, where the service boundary makes handling it necessary?
         } catch (IllegalStateException ise) {
             /* @landreev 2023-04-23:
              * IllegalStateException can potentially mean very different, and unexpected things.
