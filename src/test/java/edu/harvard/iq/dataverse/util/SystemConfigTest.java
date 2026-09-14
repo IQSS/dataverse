@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 @LocalJvmSettings
 @ExtendWith(MockitoExtension.class)
@@ -333,6 +335,35 @@ class SystemConfigTest {
     void unsafeReusableComponentsBaseUrlDisablesTheComponents() {
         assertNull(systemConfig.getReusableComponentsBaseUrl());
         assertFalse(systemConfig.isReactUploaderEnabled());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true, true, true", "true, false, false", "false, true, false"})
+    @JvmSetting(key = JvmSettings.REUSABLE_COMPONENTS_BASE_URL, value = "/reusable-components")
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "react-uploader")
+    void reusableUploaderRequiresDirectStorageAndHttpUploads(boolean directUpload,
+                                                            boolean httpUpload,
+                                                            boolean expected) {
+        SystemConfig config = spy(systemConfig);
+        Dataset dataset = new Dataset();
+        doReturn(directUpload).when(config).directUploadEnabled(dataset);
+        if (directUpload) {
+            doReturn(httpUpload).when(config).isHTTPUpload();
+        }
+        assertEquals(expected, config.isReactUploaderAvailable(dataset));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.REUSABLE_COMPONENTS_BASE_URL, value = "/reusable-components")
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "react-uploader")
+    void reusableUploaderRequiresADataset() {
+        assertFalse(systemConfig.isReactUploaderAvailable(null));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.REUSABLE_COMPONENTS_BASE_URL, value = "/reusable-components")
+    void configuredBundleDoesNotEnableUploaderWithoutFeatureFlag() {
+        assertFalse(systemConfig.isReactUploaderAvailable(new Dataset()));
     }
 
     @Test

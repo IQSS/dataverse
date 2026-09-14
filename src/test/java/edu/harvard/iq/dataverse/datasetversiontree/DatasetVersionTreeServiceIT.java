@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.VersionRecipe;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -29,6 +30,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Tag(Tags.INTEGRATION_TEST)
 @Tag(Tags.USES_TESTCONTAINERS)
@@ -56,6 +58,48 @@ class DatasetVersionTreeServiceIT {
             }
             em.persist(fixture.dataset());
         });
+    }
+
+    @Test
+    void supplementaryCharactersInParentPathsPreserveChildrenAndCounts()
+            throws ReflectiveOperationException {
+        String parent = "data/\uD83D\uDCC1";
+        try (EntityManager em = jpa.createEntityManager()) {
+            DatasetVersionTreeService service = new DatasetVersionTreeService();
+            var field = DatasetVersionTreeService.class.getDeclaredField("em");
+            field.setAccessible(true);
+            field.set(service, em);
+            em.getTransaction().begin();
+            try {
+                // The upload API only accepts ASCII directory labels. Seed the
+                // database directly to test PostgreSQL's code-point offsets,
+                // independently of that write-side validation.
+                for (int i = 0; i < 2; i++) {
+                    em.createNativeQuery("UPDATE filemetadata SET directorylabel = ?1 WHERE id = ?2")
+                            .setParameter(1, parent + (i == 0 ? "/aa" : "/ba"))
+                            .setParameter(2, fixture.fileMetadatas().get(i).getId())
+                            .executeUpdate();
+                }
+
+                var first = service.listChildren(fixture.currentVersion(),
+                        new TreeQuery(parent, 1, null, Include.ALL, Order.NAME_AZ, false));
+                assertEquals(1, first.items.size());
+                assertEquals("aa", first.items.getFirst().name);
+                assertEquals(parent + "/aa", first.items.getFirst().path);
+                assertEquals(2, first.approximateCount);
+                assertNotNull(first.nextCursor);
+
+                var second = service.listChildren(fixture.currentVersion(),
+                        new TreeQuery(parent, 1, first.nextCursor, Include.ALL, Order.NAME_AZ, false));
+                assertEquals(1, second.items.size());
+                assertEquals("ba", second.items.getFirst().name);
+                assertEquals(parent + "/ba", second.items.getFirst().path);
+                assertEquals(2, second.approximateCount);
+                assertNull(second.nextCursor);
+            } finally {
+                em.getTransaction().rollback();
+            }
+        }
     }
 
     @ParameterizedTest

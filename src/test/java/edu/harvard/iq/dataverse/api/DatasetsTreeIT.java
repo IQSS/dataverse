@@ -91,29 +91,6 @@ class DatasetsTreeIT {
     }
 
     @Test
-    void supplementaryCharactersInParentPathsPreserveChildrenAndCounts() {
-        String apiToken = UtilIT.createRandomUserGetToken();
-        int datasetId = createDatasetWithTree(apiToken);
-        String parent = "data/\uD83D\uDCC1";
-        upload(datasetId, "a.txt", parent + "/aa", apiToken);
-        upload(datasetId, "b.txt", parent + "/ba", apiToken);
-
-        Response first = UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
-                parent, 1, null, null, null, null, null, apiToken);
-        first.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data.items[0].name", equalTo("aa"))
-                .body("data.items[0].path", equalTo(parent + "/aa"))
-                .body("data.approximateCount", equalTo(2));
-
-        UtilIT.getVersionTree(datasetId, DRAFT_VERSION,
-                parent, 1, first.jsonPath().getString("data.nextCursor"),
-                null, null, null, null, apiToken)
-                .then().assertThat().statusCode(OK.getStatusCode())
-                .body("data.items[0].name", equalTo("ba"))
-                .body("data.nextCursor", nullValue());
-    }
-
-    @Test
     void rootListingReturnsImmediateChildrenFoldersFirst() {
         String apiToken = UtilIT.createRandomUserGetToken();
         int datasetId = createDatasetWithTree(apiToken);
