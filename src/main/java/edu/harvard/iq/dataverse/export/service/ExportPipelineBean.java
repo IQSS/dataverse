@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
 import edu.harvard.iq.dataverse.util.SecureTempFiles;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
@@ -101,12 +102,12 @@ class ExportPipelineBean {
      * @param key            the cache key identifying the target export format and cache location; must not be null
      * @return an {@link Optional} containing an open {@link InputStream} to the cached export data, or
      *         {@link Optional#empty()} if the version is not cacheable, no entry exists, or the entry was determined to be stale and evicted
-     * @throws IllegalArgumentException if {@code datasetVersion} or {@code key} is null
+     * @throws InvalidRequest if {@code datasetVersion} or {@code key} is null
      * @throws IOException if an I/O error occurs while closing a stale stream or evicting the cache entry
      */
     Optional<InputStream> readFreshCachedExport(DatasetVersion datasetVersion, ExportCacheKey key) throws IOException {
         if (datasetVersion == null || key == null) {
-            throw new IllegalArgumentException("Dataset version and export cache key must not be null");
+            throw new InvalidRequest("Dataset version and export cache key must not be null");
         }
         
         // Short-circuit if the version is not cacheable anyway
@@ -165,15 +166,16 @@ class ExportPipelineBean {
      *
      * @param datasetVersion the dataset version whose metadata will be exported
      * @param formatName     the name of the export format to produce; must be a registered format
-     * @throws IllegalArgumentException if the dataset version or output stream is null,
+     * @throws InvalidRequest if the dataset version or output stream is null,
      *                                  if no exporter is registered for the format, or
-     *                                  if a prerequisite cycle is detected
-     * @throws ExportException if the prerequisite format resolution fails, or
-     *                         if the exporter throws an {@link IllegalStateException}
+     *                                  if a prerequisite cycle is detected, or
+     *                                  if the prerequisite format resolution fails
+     * @throws InternalFailure if the exporter throws any kind of RuntimeException,
+     *
      */
     InputStream readFreshExport(DatasetVersion datasetVersion, String formatName) throws IOException {
         if (datasetVersion == null) {
-            throw new IllegalArgumentException("datasetVersion must not be null");
+            throw new InvalidRequest("datasetVersion must not be null");
         }
         registry.requireExists(formatName);
         
@@ -185,13 +187,13 @@ class ExportPipelineBean {
      *
      * @param datasetVersion the dataset version whose metadata will be exported
      * @param key            the cache key identifying the target export format and cache location
-     * @throws IllegalArgumentException argument validation fails
-     * @throws ExportException if an error occurs during export in {@link #produce(String, DatasetVersion, OutputStream, Set)}
+     * @throws InvalidRequest argument validation fails
+     * @throws InternalFailure if an error occurs during export in {@link #produce(String, DatasetVersion, OutputStream, Set)}
      * @throws IOException if an I/O error occurs while writing the export to the cache
      */
     void produceAndCache(DatasetVersion datasetVersion, ExportCacheKey key) throws IOException {
         if (datasetVersion == null || key == null) {
-            throw new IllegalArgumentException("Neither dataset version nor cache key may be null");
+            throw new InvalidRequest("Neither dataset version nor cache key may be null");
         }
         
         cache.write(
@@ -209,7 +211,7 @@ class ExportPipelineBean {
      * <p>
      * If the exporter declares a prerequisite format, this method resolves that prerequisite recursively via
      * {@link #resolvePrerequisite(String, DatasetVersion, Set)}, before invoking the exporter's export logic.
-     * The in-flight set is used to detect circular prerequisite chains and throws an {@link ExportException} if a cycle is found.
+     * The in-flight set is used to detect circular prerequisite chains and throws an {@link InternalFailure} if a cycle is found.
      * <p>
      * The requested format name is added to the in-flight set at entry and removed in a "finally" block, ensuring the
      * set is left in its original state regardless of whether the export succeeds or fails.
@@ -220,27 +222,26 @@ class ExportPipelineBean {
      *                    responsible for closing it
      * @param inFlight    a set of format names currently being produced along the prerequisite
      *                    resolution chain; used to detect and reject circular dependencies
-     * @throws IllegalArgumentException if no exporter is registered for the format,
-     *                                  if a prerequisite cycle is detected, or
-     *                                  if the output stream is null
-     * @throws ExportException if the exporter throws an {@link IllegalStateException} or
+     * @throws InvalidRequest if no exporter is registered for the format,
+     *                        if a prerequisite cycle is detected, or
+     *                        if the output stream is null
+     * @throws InternalFailure if the exporter throws an {@code IllegalStateException} or
      *                         if prerequisite format resolution fails
      *
      */
     private void produce(String formatName, DatasetVersion version, OutputStream out, Set<String> inFlight) {
         // version is null checked before, inFlight is injected by the caller. This is a private method, no additional checks necessary.
         if (out == null) {
-            throw new IllegalArgumentException("Output stream may not be null");
+            throw new InvalidRequest("Output stream may not be null");
         }
         
         // Try retrieving the exporter for the requested format
-        Exporter exporter = registry.get(formatName).orElseThrow(() -> new IllegalArgumentException("No such exporter available for format " + formatName));
+        Exporter exporter = registry.get(formatName).orElseThrow(() -> new InvalidRequest("No such exporter available for format " + formatName));
         
         // Add current requested format to the set of formats requested before for this dataset version.
         if (!inFlight.add(formatName)) {
-            throw new IllegalArgumentException("Prerequisite cycle detected while exporting: " +
-                String.join(" -> ", inFlight) +
-                " -> " + formatName);
+            throw new InternalFailure("Prerequisite cycle detected while exporting: " +
+                                      String.join(" -> ", inFlight) + " -> " + formatName);
         }
         
         try {
@@ -268,7 +269,7 @@ class ExportPipelineBean {
              * metadata field type change.
              * Wrap it here so ALL data production paths (draft, cached, bulk) report it usefully.
              */
-            throw new ExportException("IllegalStateException caught when exporting "
+            throw new InternalFailure("IllegalStateException caught when exporting "
                 + formatName + " for dataset "
                 + version.getDataset().getGlobalId().toString()
                 + "; may or may not be due to a mismatch between exporter code "
@@ -295,6 +296,8 @@ class ExportPipelineBean {
      * @param inFlight a set of format names currently being produced along the prerequisite
      *                 resolution chain; used to detect and reject circular dependencies
      * @return open stream to the exported metadata, which the caller must close
+     * @throws InternalFailure if the prerequisite format cannot be produced or read back
+     * @throws IOException if an I/O error occurs while reading or writing the prerequisite format to the cache
      */
     private InputStream resolvePrerequisite(String prereqFormatName, DatasetVersion version, Set<String> inFlight) throws IOException {
         // Note: Intentionally no checks for null parameters or writability of the set here.
@@ -319,7 +322,7 @@ class ExportPipelineBean {
         cache.write(version.getDataset(), key, out -> produce(prereqFormatName, version, out, inFlight));
         return cache
             .read(version.getDataset(), key)
-            .orElseThrow(() -> new ExportException("Prerequisite " + prereqFormatName + " was produced but could not be read back"));
+            .orElseThrow(() -> new InternalFailure("Prerequisite " + prereqFormatName + " was produced but could not be read back"));
     }
     
     /**
@@ -335,6 +338,9 @@ class ExportPipelineBean {
      * TODO: Using temporary files will leave things behind when the JVM crashes.
      *       If we ever think this may become a problem (given that java.io.tmp dir should be cleaned up by the OS),
      *       we can always add something to an @Startup EJB.
+     * @throws InternalFailure if metadata export production fails for internal reasons
+     * @throws InvalidRequest if metadata export production fails due to a malformed request
+     * @throws IOException in case files could not be written, read, or deleted
      *
      * @return an open {@link InputStream} to the temporary file containing the produced export data;
      *         the caller is responsible for closing it, which also deletes the temporary file
