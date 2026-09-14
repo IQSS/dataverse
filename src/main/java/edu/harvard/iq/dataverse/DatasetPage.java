@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -6125,8 +6126,15 @@ public class DatasetPage implements java.io.Serializable {
             // The full version is available from the "Export Metadata" dropdown.
             // Both versions are available via API.
             final String CROISSANT_SCHEMA_NAME = "croissantSlim";
-            String croissant = exportService.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
-            if (FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()) {
+            String croissant = null;
+            try {
+                croissant = exportService.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
+            } catch (ExportSystemException e) {
+                logger.log(Level.WARNING, "Unable to get latest published croissant schema as String", e);
+                return null;
+            }
+            
+            if (croissant != null && FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()) {
                 // Rewrite the export on the fly and insert local reviews until we have a solution for https://github.com/gdcc/dataverse-spi/issues/5
                 JsonObjectBuilder reviewsJsonObj = null;
                 try {
