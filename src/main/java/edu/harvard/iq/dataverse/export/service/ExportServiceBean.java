@@ -126,9 +126,13 @@ public class ExportServiceBean {
      * Returns the amount of storage used by the cache for the given dataset.
      * @param dataset the dataset
      * @return the amount of storage used by the cache for the given dataset
-     * @throws IOException if an I/O error occurs
+     * @throws IOException if an I/O error occurs while calculating the storage usage
+     * @throws InvalidRequest if the dataset is null
      */
     public long usedCacheStorage(Dataset dataset) throws IOException {
+        if (dataset == null) {
+            throw new InvalidRequest("Dataset may not be null");
+        }
         return cache.usedStorage(dataset);
     }
     
