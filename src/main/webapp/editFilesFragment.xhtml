@@ -145,6 +145,7 @@
                                 if (maxFileSize !== null && files[i].size > maxFileSize) {
                                     fileUploadWidget.clear();
                                     fileUploadWidget.showMessage({summary: '#{bundle["file.edit.error.file_exceeds_limit"]}'});
+                                    fileUploadWidget.jq.find('.ui-messages-error-icon').remove();
                                     return false;
                                 }
                                 totalSize += files[i].size;
@@ -156,6 +157,7 @@
                                         .replace('{1}', fileUploadWidget.formatSize(remainingQuota));
                                 fileUploadWidget.clear();
                                 fileUploadWidget.showMessage({summary: message});
+                                fileUploadWidget.jq.find('.ui-messages-error-icon').remove();
                                 return false;
                             }
 
