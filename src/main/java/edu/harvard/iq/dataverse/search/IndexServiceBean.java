@@ -52,6 +52,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -1373,23 +1374,31 @@ public class IndexServiceBean {
                             } else if (southLat == null) {
                                 southLat = northLat;
                             }
-                            //Find the overall bounding box that includes all bounding boxes
-                            if(minWestLon==null || Float.parseFloat(minWestLon) > Float.parseFloat(westLon)) {
-                                minWestLon=westLon;
-                            }
-                            if(maxEastLon==null || Float.parseFloat(maxEastLon) < Float.parseFloat(eastLon)) {
-                                maxEastLon=eastLon;
-                            }
-                            if(minSouthLat==null || Float.parseFloat(minSouthLat) > Float.parseFloat(southLat)) {
-                                minSouthLat=southLat;
-                            }
-                            if(maxNorthLat==null || Float.parseFloat(maxNorthLat) < Float.parseFloat(northLat)) {
-                                maxNorthLat=northLat;
-                            }
-
                             if (DatasetFieldValueValidator.validateBoundingBox(westLon, eastLon, northLat, southLat)) {
                                 //W, E, N, S
                                 solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+
+                                //Find the overall bounding box that includes all valid bounding boxes
+                                try {
+                                    BigDecimal curWest = new BigDecimal(westLon.trim());
+                                    BigDecimal curEast = new BigDecimal(eastLon.trim());
+                                    BigDecimal curSouth = new BigDecimal(southLat.trim());
+                                    BigDecimal curNorth = new BigDecimal(northLat.trim());
+
+                                    if (minWestLon == null || new BigDecimal(minWestLon.trim()).compareTo(curWest) > 0) {
+                                        minWestLon = westLon;
+                                    }
+                                    if (maxEastLon == null || new BigDecimal(maxEastLon.trim()).compareTo(curEast) < 0) {
+                                        maxEastLon = eastLon;
+                                    }
+                                    if (minSouthLat == null || new BigDecimal(minSouthLat.trim()).compareTo(curSouth) > 0) {
+                                        minSouthLat = southLat;
+                                    }
+                                    if (maxNorthLat == null || new BigDecimal(maxNorthLat.trim()).compareTo(curNorth) < 0) {
+                                        maxNorthLat = northLat;
+                                    }
+                                } catch (NumberFormatException ignored) {
+                                }
                             }
                         }
                     }
