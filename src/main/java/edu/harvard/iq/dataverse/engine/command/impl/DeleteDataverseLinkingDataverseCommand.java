@@ -26,7 +26,7 @@ import org.apache.solr.client.solrj.SolrServerException;
  * @author sarahferry
  */
 
-@RequiredPermissions( Permission.LinkDataverse )
+@RequiredPermissions( Permission.EditDataverse )
 public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final DataverseLinkingDataverse doomed;
@@ -42,6 +42,10 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
+        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
+            throw new PermissionException("Delete dataverse linking dataverse can only be called by superusers.",
+                    this, Collections.singleton(Permission.DeleteDataverse), editedDv);
+        }
         Dataverse merged = ctxt.em().merge(editedDv);
         DataverseLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
