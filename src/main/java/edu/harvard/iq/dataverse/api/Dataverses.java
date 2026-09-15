@@ -78,8 +78,12 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.xml.stream.XMLStreamException;
@@ -385,6 +389,10 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Read dataset schema for a dataverse",
             description = "Returns the dataset JSON schema generated for the selected dataverse.")
+    @APIResponse(responseCode = "200", description = "Dataset JSON schema.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "JSON Schema document for datasets in the selected dataverse.")))
     public Response getDatasetSchema(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String idtf) {
@@ -1003,6 +1011,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Assign metadata blocks to a dataverse",
             description = "Replaces the metadata blocks configured directly on a dataverse.")
+    @APIResponse(responseCode = "200", description = "Metadata blocks assigned.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response setMetadataBlocks(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
@@ -1038,6 +1049,9 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/metadatablocks/:isRoot")
     @Operation(summary = "Read metadata-block root status through legacy route",
             description = "Returns whether a dataverse is a metadata-block root using the legacy route.")
+    @APIResponse(responseCode = "200", description = "Metadata-block root status.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getMetadataRoot_legacy(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf) {
@@ -1050,6 +1064,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Read metadata-block root status",
             description = "Returns whether a dataverse is a metadata-block root.")
+    @APIResponse(responseCode = "200", description = "Metadata-block root status.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getMetadataRoot(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf) {
@@ -1072,6 +1089,9 @@ public class Dataverses extends AbstractApiBean {
     @Consumes(MediaType.WILDCARD)
     @Operation(summary = "Set metadata-block root status through legacy route",
             description = "Changes whether a dataverse is a metadata-block root using the legacy route.")
+    @APIResponse(responseCode = "200", description = "Metadata-block root status updated.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
     public Response setMetadataRoot_legacy(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
@@ -1088,6 +1108,9 @@ public class Dataverses extends AbstractApiBean {
     @Consumes(MediaType.WILDCARD)
     @Operation(summary = "Assign metadata-block root status",
             description = "Changes whether a dataverse is a metadata-block root.")
+    @APIResponse(responseCode = "200", description = "Metadata-block root status updated.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block root.")
     public Response setMetadataRoot(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
@@ -1268,6 +1291,9 @@ public class Dataverses extends AbstractApiBean {
      */
     @Operation(summary = "Assign dataverse facets",
             description = "Replaces the dataset field facets configured directly on a dataverse.")
+    @APIResponse(responseCode = "200", description = "Dataverse facets assigned.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response setFacets(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
@@ -1298,6 +1324,10 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Read metadata block facets",
             description = "Returns metadata block facet settings for a dataverse.")
+    @APIResponse(responseCode = "200", description = "Metadata block facets.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Dataverse metadata block facet settings.")))
     public Response listMetadataBlockFacets(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf) {
@@ -1323,6 +1353,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Assign metadata block facets",
             description = "Replaces metadata block facets on a dataverse that is a metadata-block-facet root.")
+    @APIResponse(responseCode = "200", description = "Metadata block facets assigned.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response setMetadataBlockFacets(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
@@ -1363,6 +1396,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Assign metadata block facet root status",
             description = "Changes whether a dataverse is a metadata-block-facet root.")
+    @APIResponse(responseCode = "200", description = "Metadata block facet root status updated.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     @RequestBody(description = "Boolean text indicating whether the dataverse is a metadata-block-facet root.")
     public Response updateMetadataBlockFacetsRoot(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
@@ -2042,6 +2078,9 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/{type}/linkingDataverses")
     @Operation(summary = "Search dataverses for linking",
             description = "Lists dataverses that can be linked to the selected dataverse object, optionally filtered by search text and existing link status.")
+    @APIResponse(responseCode = "200", description = "Linkable dataverses.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getLinkingDataverseList(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse object id or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf,
@@ -2589,6 +2628,11 @@ public class Dataverses extends AbstractApiBean {
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
     @Operation(summary = "Read dataverse role assignment history",
             description = "Returns dataverse role assignment history as JSON or CSV.")
+    @APIResponse(responseCode = "200", description = "Dataverse role assignment history.",
+            content = {
+                    @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING))
+            })
     public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String id,
@@ -2711,6 +2755,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Lists locally FAIR role assignees",
             description = "Lists role assignee identifiers configured for locally FAIR metadata access in a dataverse.")
+    @APIResponse(responseCode = "200", description = "Locally FAIR role assignees.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response listLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
             @PathParam("identifier") String dvIdtf) {
@@ -2738,6 +2785,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Replaces locally FAIR role assignees",
             description = "Replaces the full locally FAIR role assignee identifier set for a dataverse and reindexes the dataverse.")
+    @APIResponse(responseCode = "200", description = "Locally FAIR role assignees replaced.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     @RequestBody(description = "JSON array of role assignee identifiers to configure for locally FAIR metadata access.")
     public Response setLocallyFairRoleAssignees(@Context ContainerRequestContext crc,
                                                 @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
@@ -2768,6 +2818,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Adds a locally FAIR role assignee",
             description = "Adds one role assignee identifier to the locally FAIR metadata access set for a dataverse and reindexes the dataverse.")
+    @APIResponse(responseCode = "200", description = "Locally FAIR role assignee added.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response addLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
                                                @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                                @PathParam("identifier") String dvIdtf,
@@ -2800,6 +2853,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Removes a locally FAIR role assignee",
             description = "Removes one role assignee identifier from the locally FAIR metadata access set for a dataverse and reindexes the dataverse.")
+    @APIResponse(responseCode = "200", description = "Locally FAIR role assignee removed.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response deleteLocallyFairRoleAssignee(@Context ContainerRequestContext crc,
                                                   @Parameter(description = "Dataverse alias, id, or persistent identifier.", required = true)
                                                   @PathParam("identifier") String dvIdtf,
