@@ -232,7 +232,7 @@ Integrate with the Local Contexts platform, enabling the use of Traditional Know
 ```
 
 ```{grid-item-card} Locally FAIR Data (Experimental)
-Some data cannot be shared with the public right away, but should be available to certain groups of people.
+Some datasets' existence cannot be shared with the public right away, but should be findable and accessible to certain groups of people.
 +++
 {ref}`More information.<locally-fair>`
 ```
