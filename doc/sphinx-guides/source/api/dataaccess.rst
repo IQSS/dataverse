@@ -271,8 +271,12 @@ Usage example:
   export SERVER_URL=https://demo.dataverse.org
   export DATAFILE_ID=99
   export FORMAT=EndNote
+  export VERSION=1.0
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
-  curl "$SERVER_URL/api/access/datafile/$DATAFILE_ID/citation/$FORMAT"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/access/datafile/$DATAFILE_ID/citation/$FORMAT?version=$VERSION"
+
+The ``version`` query parameter is optional. It will default to ``:latest-published``. See :ref:`dataset-version-specifiers` for the list of possible values. If you request a draft, an API token with access must be provided.
 
 .. _data-variable-metadata-access:
 
