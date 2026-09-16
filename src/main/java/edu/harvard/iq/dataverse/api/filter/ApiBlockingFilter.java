@@ -11,15 +11,11 @@ import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.container.ResourceInfo;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,10 +52,12 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     @Inject
     private PasswordValidatorServiceBean passwordValidatorService;
 
-    @Context
-    private ResourceInfo resourceInfo;
-
-    @Context
+    // Field injection rather than constructor injection is deliberate here: this
+    // @Provider is instantiated outside of CDI as well, so it has to keep a no-arg
+    // constructor. The request scoped proxy resolves per request.
+    // See https://github.com/IQSS/dataverse/issues/12715
+    @Inject
+    @SuppressWarnings("java:S6813")
     private HttpServletRequest httpServletRequest;
 
     private String policy = null;
@@ -119,20 +117,6 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
 
-        Method method = resourceInfo.getResourceMethod();
-        Class<?> clazz = resourceInfo.getResourceClass();
-
-        String classPath = "";
-        String methodPath = "";
-
-        if (clazz.isAnnotationPresent(Path.class)) {
-            classPath = clazz.getAnnotation(Path.class).value();
-        }
-
-        if (method.isAnnotationPresent(Path.class)) {
-            methodPath = method.getAnnotation(Path.class).value();
-        }
-
         if (checkSettings) {
             // Backward compatibility, e.g. for setup scripts, dev environments where
             // dynamic update from the db settings is expected
@@ -153,7 +137,11 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
                 }
             }
         }
-        String fullPath = (classPath + "/" + methodPath).replaceAll("//", "/");
+
+        // Taken from the request context rather than an injected ResourceInfo: this
+        // filter is a CDI bean (it has @Inject fields and @PostConstruct), so JAX-RS
+        // @Context field injection is not applied to it. See https://github.com/IQSS/dataverse/issues/12715
+        String fullPath = canonicalize(requestContext.getUriInfo().getPath());
         logger.fine("Full path is " + fullPath);
 
         boolean isBlockableEndpoint = false;
