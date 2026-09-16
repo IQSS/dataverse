@@ -56,10 +56,10 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     @Inject
     private PasswordValidatorServiceBean passwordValidatorService;
 
-    @Context
+    @Inject
     private ResourceInfo resourceInfo;
 
-    @Context
+    @Inject
     private HttpServletRequest httpServletRequest;
 
     private String policy = null;
