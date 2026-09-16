@@ -8,14 +8,13 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
+
 import jakarta.json.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ResourceInfo;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
@@ -57,7 +56,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
     private PasswordValidatorServiceBean passwordValidatorService;
 
     @Inject
-    private ResourceInfo resourceInfo;
+    private jakarta.inject.Provider<ResourceInfo> resourceProvider;
 
     @Inject
     private HttpServletRequest httpServletRequest;
@@ -118,7 +117,7 @@ public class ApiBlockingFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-
+        ResourceInfo resourceInfo = resourceProvider.get();
         Method method = resourceInfo.getResourceMethod();
         Class<?> clazz = resourceInfo.getResourceClass();
 
