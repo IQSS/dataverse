@@ -35,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +44,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @LocalJvmSettings
@@ -113,6 +115,51 @@ public class IndexServiceBeanTest {
         assertTrue(doc.isPresent());
         assertTrue(!doc.get().containsKey("geolocation"));
         assertTrue(!doc.get().containsKey("boundingBox"));
+    }
+
+    @Test
+    public void testBoundingBoxAggregationHighPrecision() throws SolrServerException, IOException {
+        final IndexableDataset indexableDataset = createIndexableDataset();
+        final DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
+        DatasetField dsf = new DatasetField();
+        DatasetFieldType dsft = new DatasetFieldType(DatasetFieldConstant.geographicBoundingBox, DatasetFieldType.FieldType.TEXT, true);
+        dsf.setDatasetFieldType(dsft);
+
+        List<DatasetFieldCompoundValue> vals = new LinkedList<>();
+        // Box 1: Valid high precision
+        vals.add(constructBoundingBoxCompoundValue(dsf, "-71.116431", "-71.116420", "42.377010", "42.377000"));
+        // Box 2: Valid high precision expanding the envelope in all four directions
+        vals.add(constructBoundingBoxCompoundValue(dsf, "-71.116435", "-71.116415", "42.377015", "42.376990"));
+        // Box 3: Invalid high precision (South > North at 6th decimal) - must NOT be aggregated into boundingBox nor indexed in geolocation
+        vals.add(constructBoundingBoxCompoundValue(dsf, "-71.116440", "-71.116410", "42.001000", "42.001001"));
+
+        dsf.setDatasetFieldCompoundValues(vals);
+        datasetVersion.getDatasetFields().add(dsf);
+
+        final SolrInputDocuments docs = indexService.toSolrDocs(indexableDataset, null);
+        Optional<SolrInputDocument> doc = docs.getDocuments().stream().findFirst();
+        assertTrue(doc.isPresent());
+
+        // Overall boundingBox envelope must aggregate only valid boxes with exact BigDecimal precision
+        assertEquals("ENVELOPE(-71.116435,-71.116415,42.377015,42.376990)", doc.get().getFieldValue(SearchFields.BOUNDING_BOX));
+
+        // Geolocation must contain only the 2 valid bounding boxes
+        Collection<Object> geolocations = doc.get().getFieldValues(SearchFields.GEOLOCATION);
+        assertEquals(2, geolocations.size());
+        assertTrue(geolocations.contains("ENVELOPE(-71.116431,-71.116420,42.377010,42.377000)"));
+        assertTrue(geolocations.contains("ENVELOPE(-71.116435,-71.116415,42.377015,42.376990)"));
+    }
+
+    private DatasetFieldCompoundValue constructBoundingBoxCompoundValue(DatasetField parent, String west, String east, String north, String south) {
+        DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
+        val.setParentDatasetField(parent);
+        val.setChildDatasetFields(Arrays.asList(
+                constructBoundingBoxValue(DatasetFieldConstant.westLongitude, west),
+                constructBoundingBoxValue(DatasetFieldConstant.eastLongitude, east),
+                constructBoundingBoxValue(DatasetFieldConstant.northLatitude, north),
+                constructBoundingBoxValue(DatasetFieldConstant.southLatitude, south)
+        ));
+        return val;
     }
 
     private DatasetField constructBoundingBoxValue(String datasetFieldTypeName, String value) {
