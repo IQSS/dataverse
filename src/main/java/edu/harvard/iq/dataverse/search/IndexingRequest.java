@@ -7,14 +7,20 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Indexing work requested from inside a transaction.
+ * Indexing work that must wait for the requesting transaction to commit.
  *
- * Fired as a CDI event by {@link IndexServiceBean} and {@link IndexAsync}, and carried
- * out by {@link IndexingRequestObserver} once the requesting transaction has committed,
- * or immediately when there is no transaction. Without this, the background index job
- * could read the database before the changes it should index were visible to it: a
- * dataset created in the same transaction got a permission document without its
- * creator and never had its index time recorded.
+ * How it works:
+ * <ol>
+ * <li>a bean fires one of the records below from inside its transaction; nothing runs yet,</li>
+ * <li>CDI holds the event, because its only observer is marked {@code AFTER_SUCCESS}, and
+ *     delivers it once the transaction has committed (immediately when there is no
+ *     transaction, never when it rolls back),</li>
+ * <li>{@link IndexingRequestObserver} calls the matching {@code @Asynchronous} method, which
+ *     does the work in the background as before.</li>
+ * </ol>
+ * Without this, the background job could read the database before the changes it should
+ * index were visible to it: a dataset created in the same transaction got a permission
+ * document without its creator and never had its index time recorded.
  */
 public sealed interface IndexingRequest {
 

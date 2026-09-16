@@ -24,12 +24,12 @@ public class IndexingRequestObserver {
 
     public void afterCommit(@Observes(during = TransactionPhase.AFTER_SUCCESS) IndexingRequest request) {
         switch (request) {
-            case IndexingRequest.IndexDataset r -> indexService.indexDatasetInBackground(r.dataset(), r.doNormalSolrDocCleanUp());
-            case IndexingRequest.IndexDatasetById r -> indexService.indexDatasetInBackground(r.datasetId(), r.doNormalSolrDocCleanUp());
-            case IndexingRequest.IndexDatasets r -> indexService.indexDatasetListInBackground(r.datasets(), r.doNormalSolrDocCleanUp());
-            case IndexingRequest.RecordIndexTime r -> indexService.updateLastIndexedTime(r.datasetId());
-            case IndexingRequest.IndexRole r -> indexAsync.indexRoleInBackground(r.roleAssignment());
-            case IndexingRequest.IndexRoles r -> indexAsync.indexRolesInBackground(r.dvObjects());
+            case IndexingRequest.IndexDataset(var dataset, var cleanUp) -> indexService.indexDatasetInBackground(dataset, cleanUp);
+            case IndexingRequest.IndexDatasetById(var datasetId, var cleanUp) -> indexService.indexDatasetInBackground(datasetId, cleanUp);
+            case IndexingRequest.IndexDatasets(var datasets, var cleanUp) -> indexService.indexDatasetListInBackground(datasets, cleanUp);
+            case IndexingRequest.RecordIndexTime(var datasetId) -> indexService.updateLastIndexedTime(datasetId);
+            case IndexingRequest.IndexRole(var roleAssignment) -> indexAsync.indexRoleInBackground(roleAssignment);
+            case IndexingRequest.IndexRoles(var dvObjects) -> indexAsync.indexRolesInBackground(dvObjects);
         }
     }
 }
