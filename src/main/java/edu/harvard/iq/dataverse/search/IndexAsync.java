@@ -17,8 +17,6 @@ public class IndexAsync {
 
     @EJB
     SolrIndexServiceBean solrIndexService;
-    @EJB
-    IndexAsync self;
     @Inject
     Event<IndexingRequest> indexingRequests;
 
@@ -28,11 +26,11 @@ public class IndexAsync {
      * the change (see {@link IndexingRequest}).
      */
     public void indexRole(RoleAssignment roleAssignment) {
-        indexingRequests.fire(new IndexingRequest(() -> self.indexRoleInBackground(roleAssignment)));
+        indexingRequests.fire(new IndexingRequest.IndexRole(roleAssignment));
     }
 
     public void indexRoles(Collection<DvObject> dvObjects) {
-        indexingRequests.fire(new IndexingRequest(() -> self.indexRolesInBackground(dvObjects)));
+        indexingRequests.fire(new IndexingRequest.IndexRoles(dvObjects));
     }
 
     @Asynchronous

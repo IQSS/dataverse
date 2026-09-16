@@ -433,7 +433,7 @@ public class IndexServiceBean {
      * @param doNormalSolrDocCleanUp Flag for normal Solr doc clean up.
      */
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        afterCommit(() -> self.indexDatasetInBackground(dataset, doNormalSolrDocCleanUp));
+        indexingRequests.fire(new IndexingRequest.IndexDataset(dataset, doNormalSolrDocCleanUp));
     }
 
     @Asynchronous
@@ -451,7 +451,7 @@ public class IndexServiceBean {
     }
 
     public void asyncIndexDataset(Long datasetId, boolean doNormalSolrDocCleanUp) {
-        afterCommit(() -> self.indexDatasetInBackground(datasetId, doNormalSolrDocCleanUp));
+        indexingRequests.fire(new IndexingRequest.IndexDatasetById(datasetId, doNormalSolrDocCleanUp));
     }
 
     @Asynchronous
@@ -494,7 +494,7 @@ public class IndexServiceBean {
     }
 
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
-        afterCommit(() -> self.indexDatasetListInBackground(datasets, doNormalSolrDocCleanUp));
+        indexingRequests.fire(new IndexingRequest.IndexDatasets(datasets, doNormalSolrDocCleanUp));
     }
 
     @Asynchronous
@@ -525,12 +525,7 @@ public class IndexServiceBean {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
         // the caller may still be inside the transaction that created the dataset (harvesting),
         // and the index time is written in a new transaction that would not find it yet
-        Long id = dataset.getId();
-        afterCommit(() -> self.updateLastIndexedTime(id));
-    }
-
-    private void afterCommit(Runnable action) {
-        indexingRequests.fire(new IndexingRequest(action));
+        indexingRequests.fire(new IndexingRequest.RecordIndexTime(dataset.getId()));
     }
     
     private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
