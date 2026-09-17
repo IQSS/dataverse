@@ -2414,6 +2414,13 @@ public class UtilIT {
         return response;
     }
 
+    static Response getCompareSummary(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/compareSummary");
+        return response;
+    }
+
     static Response privateUrlGet(Integer datasetId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
