@@ -1106,8 +1106,9 @@ public class OpenAireExportUtil {
                                     relationType = "IsSupplementTo";
                                 }
                                 relatedIdentifier_map.put("relationType", relationType);
-
-                                if (StringUtils.containsIgnoreCase(relatedIdentifierType, "url")) {
+                                //12309 update handling of PURL type identifiers 
+                                // by differentiating with "url"
+                                if (StringUtils.containsOnly(relatedIdentifierType, "url")) {
                                     writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, relatedURL, language);
                                 } else {
                                     if (StringUtils.contains(relatedIdentifier, "http")) {
