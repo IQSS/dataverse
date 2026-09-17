@@ -103,9 +103,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         }
 
         // Transfer DatasetVersionUser entries from draft to published version
-        List<DatasetVersionUser> draftDVUsers = newVersion.getDatasetVersionUsers();
-        if (draftDVUsers != null && !draftDVUsers.isEmpty()) {
-            for (DatasetVersionUser dvu : draftDVUsers) {
+        if (newVersion.getDatasetVersionUsers() != null && !newVersion.getDatasetVersionUsers().isEmpty()) {
+            for (Iterator<DatasetVersionUser> it = newVersion.getDatasetVersionUsers().iterator(); it.hasNext();) {
+                DatasetVersionUser dvu = it.next();
                 boolean found = false;
                 for (DatasetVersionUser existingDvu : updateVersion.getDatasetVersionUsers()) {
                     if (existingDvu.getAuthenticatedUser().equals(dvu.getAuthenticatedUser())) {
@@ -116,11 +116,14 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                         break;
                     }
                 }
-                if (!found) {
+                if (found) {
+                    it.remove();
+                    ctxt.em().remove(dvu);
+                } else {
                     updateVersion.addDatasetVersionUser(dvu);
+                    it.remove();
                 }
             }
-            newVersion.getDatasetVersionUsers().clear();
         }
 
         // Transfer curation status entries from draft to published version
