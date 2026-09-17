@@ -230,7 +230,7 @@ jobs:
           DV_FULL_NAME:   "Dataverse Admin"
           ROOT_DATAVERSE: "/dataverse/root"
           SKIP_PREFLIGHT: "true"
-          LOCALLY_FAIR_ENABLED: "true"
+          LOCALLY_FAIR_ENABLED: "false"
           DOTENV_CONFIG_QUIET: "true"
 
       # ---------------------------
