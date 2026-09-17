@@ -240,6 +240,7 @@ class ExportPipelineBean {
         
         // Add current requested format to the set of formats requested before for this dataset version.
         if (!inFlight.add(formatName)) {
+            // Dependency cycles require admin intervention (internal error) - they are never result of an invalid user request
             throw new InternalFailure("Prerequisite cycle detected while exporting: " +
                                       String.join(" -> ", inFlight) + " -> " + formatName);
         }
