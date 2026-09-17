@@ -368,17 +368,13 @@ See also {ref}`schemaspy`.
 
 Check <https://www.iq.harvard.edu/roadmap-dataverse-project> to see if there is a list of releases to add to. There may not be. This page is in transition.
 
-## Announce the Release on the Dataverse Blog
+## Announce the Release
 
-Make a blog post at <https://dataverse.org/blog>
+<span class="label label-success pull-left">Dedicated Issue</span>&nbsp;
 
-## Announce the Release on the Mailing List
-
-Post a message at <https://groups.google.com/g/dataverse-community>
-
-## Announce the Release on Zulip
-
-Post a message under #community at <https://dataverse.zulipchat.com>
+- Make a blog post at <https://dataverse.org/blog>
+- Post a message at <https://groups.google.com/g/dataverse-community>
+- Post a message under #community at <https://dataverse.zulipchat.com>
 
 ## For Hotfixes, Merge Hotfix Branch into "develop"
 
