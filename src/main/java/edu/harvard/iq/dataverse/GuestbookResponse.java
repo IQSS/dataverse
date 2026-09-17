@@ -136,14 +136,14 @@ public class GuestbookResponse implements Serializable {
     protected static final String GUESTBOOK_RESPONSE_LIST_QUERY = """
             WITH LatestDatasetVersion AS (
                 SELECT
-            	    id,
-            		dataset_id,
-            		ROW_NUMBER() OVER (PARTITION BY dataset_id ORDER BY id DESC) as rn
+                    id,
+                    dataset_id,
+                    ROW_NUMBER() OVER (PARTITION BY dataset_id ORDER BY id DESC) as rn
                 FROM datasetversion
             ),
             LatestFileMetadata AS (
                 SELECT
-            	    id,
+                    id,
                     datafile_id,
                     label,
                     ROW_NUMBER() OVER (PARTITION BY datafile_id ORDER BY id DESC) as rn
@@ -151,15 +151,15 @@ public class GuestbookResponse implements Serializable {
             )
             SELECT
                 gr.id as id
-            	,dsfv.value as dataset
+                ,dsfv.value as dataset
                 ,gr.name as user
-            	,gr.eventtype as type
-            	,gr.responseTime as date
+                ,gr.eventtype as type
+                ,gr.responseTime as date
                 ,lfm.label as file
-            	,(SELECT STRING_AGG(CONCAT('"',cq.questionstring, '":"', cqr.response, '"'), ', ') AS responses
-            	  FROM customquestionresponse cqr
-            	  LEFT JOIN customquestion cq ON cq.id = cqr.customquestion_id
-            	  WHERE gr.id = cqr.guestbookresponse_id)
+                ,(SELECT STRING_AGG(CONCAT('"',cq.questionstring, '":"', cqr.response, '"'), ', ') AS responses
+                  FROM customquestionresponse cqr
+                  LEFT JOIN customquestion cq ON cq.id = cqr.customquestion_id
+                  WHERE gr.id = cqr.guestbookresponse_id)
             
             FROM guestbookresponse gr
             LEFT JOIN LatestFileMetadata lfm ON gr.datafile_id = lfm.datafile_id AND lfm.rn = 1
