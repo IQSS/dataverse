@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.api.dto.AlternativePersistentIdentifierDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
@@ -1125,6 +1126,26 @@ public class OpenAireExportUtil {
                 }
             }
         }
+        //12308 write related identifiers for files...
+        if (datasetVersionDTO.getFiles() != null) {
+            Map<String, String> relatedIdentifier_map = new HashMap<String, String>();
+            relatedIdentifier_map.clear();
+            relatedIdentifier_map.put("relationType", "HasPart");
+            for (FileDTO fileDTO : datasetVersionDTO.getFiles()) {
+                String pidURL = fileDTO.getDataFile().getPidURL();
+                String protocol = PidUtil.parseAsGlobalID(pidURL).getProtocol();
+                if (pidURL != null && protocol != null) {
+                    String relatedIdentifierType = protocol;
+                    if (relatedIdentifierTypeMap.containsKey(relatedIdentifierType)) {
+                        relatedIdentifierType = (String) relatedIdentifierTypeMap.get(relatedIdentifierType);
+                    }
+                    relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
+                    relatedIdentifier_check = writeOpenTag(xmlw, "relatedIdentifiers", relatedIdentifier_check);
+                    writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, pidURL, language);
+                }
+            }
+        }
+        
         writeEndTag(xmlw, relatedIdentifier_check);
     }
 
