@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -173,10 +174,10 @@ public class Guestbooks extends AbstractApiBean {
     @AuthRequired
     @Path("/{id}/responses")
     @Operation(summary = "Lists guestbook responses",
-            description = "Returns guestbook metadata and response records, with pagination links when a limit is supplied.")
+            description = "Returns guestbook metadata and response records, with pagination when a limit is supplied.")
     public Response getResponses(@Context ContainerRequestContext crc,
                                  @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true) @PathParam("id") Long id,
-                                 @Parameter(description = "Sort Field. One of: 'date'; 'type'; 'file'; 'user'") @QueryParam("sort") String sortField,
+                                 @Parameter(description = "Sort Field. One of: 'dataset'; 'date'; 'type'; 'file'; 'user'") @QueryParam("sort") String sortField,
                                  @Parameter(description = "Sort order. ('asc' or 'desc')") @QueryParam("order") String sortOrder,
                                  @Parameter(description = "Maximum number of response records to return.") @QueryParam("limit") Integer limit,
                                  @Parameter(description = "Response record offset.") @QueryParam("offset") Integer offset) {
@@ -198,16 +199,11 @@ public class Guestbooks extends AbstractApiBean {
             guestbook.setUsageCount(totalUsageCount);
             guestbook.setResponseCount(totalResponseCount);
 
-            List<GuestbookResponse> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), sortField, sortOrder, offset, limit);
+            List<GuestbookResponseListDTO> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), sortField, sortOrder, offset, limit);
 
             JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
             guestbookResponseObject.add("guestbook", JsonPrinter.json(guestbook));
-
-            JsonArrayBuilder responseObjects = JsonUtil.createArrayBuilder();
-            for (GuestbookResponse gr : responses) {
-                responseObjects.add(JsonPrinter.json(gr));
-            }
-            guestbookResponseObject.add("responses", responseObjects);
+            guestbookResponseObject.add("responses", JsonPrinter.getGuestbookResponseList(responses));
 
             return ok(guestbookResponseObject);
         }, getRequestUser(crc));

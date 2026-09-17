@@ -3933,8 +3933,77 @@ public class FilesIT {
         Response guestbookListResponses = UtilIT.getGuestbooksResponses(parentGuestbook.getId(), 0, 100, ownerApiToken);
         guestbookListResponses.prettyPrint();
         int responseListSize = guestbookListResponses.jsonPath().getList("data.responses").size();
-        int totalCountFromJson = guestbookListResponses.jsonPath().getInt("data.pagination.totalResponses");
+        int totalCountFromJson = guestbookListResponses.jsonPath().getInt("data.guestbook.responseCount");
         assertEquals(responseListSize, totalCountFromJson);
+    }
+
+    @Test
+    public void testSortGuestbookResponsesByFilename() throws IOException, JsonParseException {
+        msgt("testSortGuestbookResponsesByFilename");
+
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+        // Create user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String directoryLabel = "data/store/" + persistentId.substring(4);
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+        // Create a Guestbook and add it to the Dataset
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, ownerApiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "desc1").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json2 = JsonUtil.createObjectBuilder().add("description", "desc2").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json2.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
+
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
+        Response downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getSignedUrlFromResponse(downloadResponse);
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId2, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
+                .add("label", "dv.png")
+                .add("description", "This file is awesome.");
+        Response moveFileResponse = UtilIT.updateFileMetadata(fileId1.toString(), updateFileMetadata.build().toString(), ownerApiToken);
+        moveFileResponse.prettyPrint();
+
+        Response guestbookListResponses = testSortByField(guestbook.getId(), "file", "asc", 0, Integer.MAX_VALUE, null, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        int totalCount = jsonPath.getList("data.responses").size();
+        assertEquals(2, totalCount);
     }
 
     @Test
@@ -4213,10 +4282,8 @@ public class FilesIT {
         assertEquals(pagedTotalCount, totalCountFromJson);
     }
 
-    private void testSortByField(Long id, String sortField, String order, Integer offset, Integer limit, String errorMsg, String token) {
+    private Response testSortByField(Long id, String sortField, String order, Integer offset, Integer limit, String errorMsg, String token) {
         Response guestbookListResponses = UtilIT.getGuestbooksResponses(id, sortField, order, offset, limit, token);
-        Map<String,String> fieldMap = Map.of("type", "type", "user", "name", "file", "fileName", "date", "date");
-        String fieldName = sortField != null ? fieldMap.get(sortField) : null;
         boolean isDescending = order != null && order.equalsIgnoreCase("desc");
         guestbookListResponses.prettyPrint();
         if (errorMsg == null) {
@@ -4224,9 +4291,9 @@ public class FilesIT {
             JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
             int totalCount = jsonPath.getList("data.responses").size();
             assertTrue(totalCount > 0);
-            String lastFieldValue = jsonPath.getString("data.responses[0]." + fieldName).toLowerCase(); // The sort seems to be case-insensitive
+            String lastFieldValue = jsonPath.getString("data.responses[0]." + sortField).toLowerCase(); // The sort seems to be case-insensitive
             for (int i = 1; i < totalCount; i++) {
-                String fieldValue = jsonPath.getString("data.responses[" + i + "]." + fieldName).toLowerCase();
+                String fieldValue = jsonPath.getString("data.responses[" + i + "]." + sortField).toLowerCase();
                 assertTrue(isDescending ? fieldValue.compareTo(lastFieldValue) <= 0 : fieldValue.compareTo(lastFieldValue) >= 0);
                 lastFieldValue = fieldValue;
             }
@@ -4235,6 +4302,7 @@ public class FilesIT {
                     .statusCode(BAD_REQUEST.getStatusCode())
                     .body("message", equalTo(errorMsg));
         }
+        return guestbookListResponses;
     }
 
     @Test

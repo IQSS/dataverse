@@ -6,6 +6,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -20,7 +21,6 @@ import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import java.util.Collections;
-import java.util.Comparator;
 
 /**
  *
@@ -45,6 +45,32 @@ import java.util.Comparator;
 @NamedQueries(
         @NamedQuery(name = "GuestbookResponse.findByAuthenticatedUserId",
                 query = "SELECT gbr FROM GuestbookResponse gbr WHERE gbr.authenticatedUser.id=:authenticatedUserId")
+)
+
+@NamedNativeQuery(
+        name = "GuestbookResponse.getGuestbookResponseListAsc",
+        query = GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY + " ASC",
+        resultSetMapping = "GuestbookResponse.GuestbookResponseListDTOMapping"
+)
+@NamedNativeQuery(
+        name = "GuestbookResponse.getGuestbookResponseListDesc",
+        query = GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY + " DESC",
+        resultSetMapping = "GuestbookResponse.GuestbookResponseListDTOMapping"
+)
+@SqlResultSetMapping(
+        name = "GuestbookResponse.GuestbookResponseListDTOMapping",
+        classes = @ConstructorResult(
+                targetClass = GuestbookResponseListDTO.class,
+                columns = {
+                        @ColumnResult(name = "id", type = Long.class),
+                        @ColumnResult(name = "dataset", type = String.class),
+                        @ColumnResult(name = "user", type = String.class),
+                        @ColumnResult(name = "type", type = String.class),
+                        @ColumnResult(name = "date", type =  Date.class),
+                        @ColumnResult(name = "file", type = String.class),
+                        @ColumnResult(name = "responses", type = String.class)
+                }
+        )
 )
 
 public class GuestbookResponse implements Serializable {
@@ -107,7 +133,48 @@ public class GuestbookResponse implements Serializable {
     public static final String DOWNLOAD = "Download";
     static final String SUBSET = "Subset";
     static final String EXPLORE = "Explore";
-
+    protected static final String GUESTBOOK_RESPONSE_LIST_QUERY = """
+            WITH LatestDatasetVersion AS (
+                SELECT
+            	    id,
+            		dataset_id,
+            		ROW_NUMBER() OVER (PARTITION BY dataset_id ORDER BY id DESC) as rn
+                FROM datasetversion
+            ),
+            LatestFileMetadata AS (
+                SELECT
+            	    id,
+                    datafile_id,
+                    label,
+                    ROW_NUMBER() OVER (PARTITION BY datafile_id ORDER BY id DESC) as rn
+                FROM filemetadata
+            )
+            SELECT
+                gr.id as id
+            	,dsfv.value as dataset
+                ,gr.name as user
+            	,gr.eventtype as type
+            	,gr.responseTime as date
+                ,lfm.label as file
+            	,(SELECT STRING_AGG(CONCAT('"',cq.questionstring, '":"', cqr.response, '"'), ', ') AS responses
+            	  FROM customquestionresponse cqr
+            	  LEFT JOIN customquestion cq ON cq.id = cqr.customquestion_id
+            	  WHERE gr.id = cqr.guestbookresponse_id)
+            
+            FROM guestbookresponse gr
+            LEFT JOIN LatestFileMetadata lfm ON gr.datafile_id = lfm.datafile_id AND lfm.rn = 1
+            LEFT JOIN LatestDatasetVersion ldsv ON gr.dataset_id = ldsv.dataset_id AND ldsv.rn = 1
+            LEFT JOIN datasetfield dsf ON dsf.datasetversion_id = ldsv.id AND dsf.datasetfieldtype_id = 1
+            LEFT JOIN datasetfieldvalue dsfv ON dsfv.datasetfield_id = dsf.id
+            WHERE gr.guestbook_id = ?
+                  ORDER BY CASE ?
+                       WHEN 'date' THEN gr.responseTime::text
+                       WHEN 'user' THEN gr.name
+                       WHEN 'type' THEN gr.eventtype
+                       WHEN 'file' THEN lfm.label
+                    ELSE dsfv.value
+                    END
+            """;
     /*
     Transient Values carry non-written information 
     that will assist in the download process

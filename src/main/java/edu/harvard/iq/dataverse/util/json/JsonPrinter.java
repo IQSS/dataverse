@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -36,6 +37,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import jakarta.json.*;
 
+import java.text.DateFormat;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -416,6 +418,22 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject){
         return getOwnersFromDvObject(dvObject, null);
+    }
+
+    public static JsonArrayBuilder getGuestbookResponseList(List<GuestbookResponseListDTO> gbResponses) {
+        JsonArrayBuilder responsesArray = JsonUtil.createArrayBuilder();
+        for (GuestbookResponseListDTO gr : gbResponses) {
+            NullSafeJsonBuilder grObject = jsonObjectBuilder();
+            grObject.add("id", gr.getId());
+            grObject.add("dataset", gr.getDataset());
+            grObject.add("user", gr.getUser());
+            grObject.add("type", gr.getType());
+            grObject.add("date", DateFormat.getDateTimeInstance().format(gr.getDate()));
+            grObject.add("file", gr.getFile());
+            grObject.add("responses", gr.getResponses());
+            responsesArray.add(grObject);
+        }
+        return responsesArray;
     }
 
     public static JsonObjectBuilder json(GuestbookResponse gbResponse) {

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
@@ -16,10 +17,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -114,51 +112,23 @@ public class GuestbookResponseServiceBean {
         return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
     }
 
-    private Order getOrderBy(CriteriaBuilder cb, Path<Object> pathObj, boolean isDescending) {
-        return isDescending ? cb.desc(pathObj) : cb.asc(pathObj);
-    }
-    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId, String sortField, String sortOrder, Integer offset, Integer limit) {
+    public List<GuestbookResponseListDTO> findAllByGuestbookId(Long guestbookId, String sortField, String sortOrder, Integer offset, Integer limit) {
+        // UI columns: Dataset (title), Date, Type, File, User, Custom Questions
+        List<GuestbookResponseListDTO> results = null;
         if (guestbookId != null) {
-            CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<GuestbookResponse> cq = cb.createQuery(GuestbookResponse.class);
-            Root<GuestbookResponse> guestbookResponseRoot = cq.from(GuestbookResponse.class);
-
-            boolean isDescending = sortOrder != null && sortOrder.equalsIgnoreCase(SortBy.DESCENDING);
-            Order order;
-            String orderField = (sortField == null) ? "" : sortField.toLowerCase();
-            switch(orderField) {
-                case "date":
-                    order = getOrderBy(cb, guestbookResponseRoot.get("responseTime"), isDescending);
-                    break;
-                case "type":
-                    order = getOrderBy(cb, guestbookResponseRoot.get("eventType"), isDescending);
-                    break;
-                case "file":
-                    Join<GuestbookResponse, DataFile> dataFileJoin = guestbookResponseRoot.join("dataFile", JoinType.INNER);
-                    order = getOrderBy(cb, dataFileJoin.get("fileMetadatas").get("label"), isDescending);
-                    break;
-                case "user":
-                    order = getOrderBy(cb, guestbookResponseRoot.get("name"), isDescending);
-                    break;
-                default:
-                    order = null;
-            }
-
-            cq.where(cb.equal(guestbookResponseRoot.get("guestbook").get("id"), guestbookId));
-            if (order != null) {
-                cq.orderBy(order, getOrderBy(cb, guestbookResponseRoot.get("id"), isDescending));
-            }
-            cq.distinct(true);
-
             int firstResult = offset == null ? 0 : offset;
             int pageSize = limit == null ? Integer.MAX_VALUE : limit;
+            String orderByField = sortField != null ? sortField.toLowerCase() : "dataset";
+            boolean isDescending = sortOrder != null && sortOrder.equalsIgnoreCase(SortBy.DESCENDING);
 
-            return em.createQuery(cq)
-                    .setFirstResult(firstResult)
-                    .setMaxResults(pageSize)
-                    .getResultList();
+            Query query = isDescending ? em.createNamedQuery("GuestbookResponse.getGuestbookResponseListDesc") :
+                    em.createNamedQuery("GuestbookResponse.getGuestbookResponseListAsc");
+            query.setParameter(1, guestbookId);
+            query.setParameter(2, orderByField);
+            query.setFirstResult(firstResult).setMaxResults(pageSize);
+            results = query.getResultList();
         }
-        return null;
+        return results;
     }
 
     /* 

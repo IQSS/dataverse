@@ -1460,6 +1460,7 @@ For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 In order to retrieve the Guestbook Responses for a Guestbook within a Dataverse collection, you must know the ID if the Guestbook. This API also supports pagination by passing a page limit and an optional offset (starting point). The resulting Json will include the total number of responses as `responseCount`.
 The Responses can be sorted by specifying one of the following in query parameter 'sort' and 'order':
 
+* ``dataset``: Dataset title
 * ``type``: Event Type
 * ``file``: File Name
 * ``user``: Entered Name
@@ -1467,7 +1468,7 @@ The Responses can be sorted by specifying one of the following in query paramete
 
 To sort in reverse order you can add ``&order=desc``.
 
-The resulting Json will be more detailed than that of the :ref:`download-guestbook-api` CSV response file by including Guestbook metadata as well as Guestbook Response metadata.
+The resulting Json will be more detailed than that of the :ref:`download-guestbook-api` CSV response file by including Guestbook metadata. The response list will include the id of the guestbook response along with the textual fields required to populate the UI. This included all the fields that can be sorted on as well as the custom question responses.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
