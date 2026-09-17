@@ -875,7 +875,7 @@
                                                          value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}"
                                                          action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" process="@form"/>
                                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}"
-                                                         action="#{DataverseUserPage.cancel}" process="@this" update="@form">
+                                                         action="#{DataverseUserPage.cancel}" process="@this" update="@form,:messagePanel">
                                             <p:resetInput target="@form"/>
                                         </p:commandButton>
                                     </div>
