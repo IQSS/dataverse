@@ -155,40 +155,34 @@ For a hotfix, there are no release notes to merge yet.
 
 <span class="label label-success pull-left">Dedicated Issue</span>&nbsp;
 
-The release branch will have the final changes such as bumping the version number.
+**Note:** The changes below must be the very last commits merged into the develop branch before it is merged into master and tagged for the release!
 
-Usually we branch from the "develop" branch to create the release branch. If we are creating a hotfix for a particular version (5.11, for example), we branch from the tag (e.g. `v5.11`).
+For a regular release, branch from the "develop" branch and give the branch a name like "12520-bump-to-6.12" like we did at <https://github.com/IQSS/dataverse/pull/12710>.
 
-Create a release branch named after the issue that tracks bumping the version with a descriptive name like "10852-bump-to-6.4" from <https://github.com/IQSS/dataverse/pull/10871>.
-
-**Note:** the changes below must be the very last commits merged into the develop branch before it is merged into master and tagged for the release!
+For a hotfix release, branch from the appropriate tag such as `v6.12` and give the branch a reasonable name.
 
 Make the following changes in the release branch.
 
-Increment the version number to the milestone (e.g. 6.10.1) in the following two files:
+Increment the version number to the milestone (e.g. 6.12) in the following two files:
 
-- modules/dataverse-parent/pom.xml -> `<properties>` -> `<revision>` (e.g. [pom.xml commit](https://github.com/IQSS/dataverse/commit/3943aa0))
+- modules/dataverse-parent/pom.xml -> `<properties>` -> `<revision>`
 - doc/sphinx-guides/source/conf.py
 
 In the following `versions.rst` file:
 
 - doc/sphinx-guides/source/versions.rst - Below the `- |version|` bullet (`|version|` comes from the `conf.py` file you just edited), add a bullet for what is soon to be the previous release.
 
-Return to the parent pom and make the following change, which is necessary for proper tagging of images:
+If you are making a regular release, return to the parent pom and make the following change, which is necessary for proper tagging of images:
 
 - modules/dataverse-parent/pom.xml -> `<profiles>` -> profile "ct" -> `<properties>` -> Set `<base.image.version>` to `${revision}`
 
-When testing the version change in Docker note that you will have to build the base image manually. See {ref}`base-image-build-instructions`.
+(Before you make this change the value should be `${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}`. Later on, after cutting a release, we'll change it back to that value. See {ref}`base_image_post_release`.)
 
-(Before you make this change the value should be `${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}`. Later on, after cutting a release, we'll change it back to that value.)
+Test the changes in Docker. Note that you will have to build the base image manually. See {ref}`base-image-build-instructions`.
 
-For a regular release, make the changes above in the release branch you created, but hold off for a moment on making a pull request because Jenkins will fail because it will be testing the previous release.
+If you are making a regular release, you can refer to <https://github.com/IQSS/dataverse/pull/12710> as an example of the changes described above. Make a pull request. Make sure tests are passing. Have someone approve it. Once we have collectively decided to go forward with the release, merge the pull request.
 
-In the dataverse-ansible repo bump the version in [jenkins.yml](https://github.com/gdcc/dataverse-ansible/blob/develop/tests/group_vars/jenkins.yml) and make a pull request such as <https://github.com/gdcc/dataverse-ansible/pull/386>. Wait for it to be merged. Note that bumping on the Jenkins side like this will mean that all pull requests will show failures in Jenkins until they are updated to the version we are releasing.
-
-Once dataverse-ansible has been merged, return to the branch you created above ("10852-bump-to-6.4" or whatever) and make a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
-
-If you are making a hotfix release, `<base.image.version>` should already be set to `${revision}`. If so, leave it alone. Go ahead and do the normal bumping of version numbers described above. Make the pull request against the "master" branch. Put it through review and QA. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
+If you are making a hotfix release, `<base.image.version>` should already be set to `${revision}`. If so, leave it alone. Go ahead and do the normal bumping of version numbers described above. Make the pull request against the "master" branch. Put it through review and QA, including merging. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
 
 ## Merge "develop" into "master" (non-hotfix only)
 
