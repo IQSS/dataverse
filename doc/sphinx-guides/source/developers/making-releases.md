@@ -366,7 +366,7 @@ See also {ref}`schemaspy`.
 
 ## Add the Release to the Dataverse Roadmap
 
-Add an entry to the list of releases at <https://www.iq.harvard.edu/roadmap-dataverse-project>
+Check <https://www.iq.harvard.edu/roadmap-dataverse-project> to see if there is a list of releases to add to. There may not be. This page is in transition.
 
 ## Announce the Release on the Dataverse Blog
 
