@@ -128,6 +128,11 @@ If you just downloaded Netbeans and are using the out-of-the-box settings, you s
 
 If you know of a way to easily share Netbeans configuration across a team, please get in touch.
 
+### Temporary Files Security
+
+To avoid exposing potentially sensitive information in temporary files stored on the file system, use the
+`edu.harvard.iq.dataverse.util.SecureTempFiles` utility instead of Java mechanics as `Files.createTempFile` directly.
+
 ## Bash
 
 Generally, Google's Shell Style Guide at <https://google.github.io/styleguide/shell.xml> seems to have good advice.
