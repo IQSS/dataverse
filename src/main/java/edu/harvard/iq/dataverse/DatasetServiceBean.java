@@ -16,7 +16,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBean;
@@ -103,6 +104,9 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     UserNotificationServiceBean userNotificationService;
+    
+    @EJB
+    ExportServiceBean exportService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -1079,17 +1083,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         // and finally,
         if (countCachedExtras) {
-            // count the sizes of the files cached for the dataset itself
-            // (i.e., the metadata exports):
-            StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
-
-            for (String[] exportProvider : ExportService.getInstance().getExportersLabels()) {
-                String exportLabel = "export_" + exportProvider[1] + ".cached";
-                try {
-                    total += datasetSIO.getAuxObjectSize(exportLabel);
-                } catch (IOException ioex) {
-                    // safe to ignore; object not cached
-                }
+            try {
+                // Count the sizes of the files cached for the dataset itself (i.e., the metadata exports):
+                total += exportService.usedCacheStorage(dataset);
+            } catch (IOException | ExportSystemException ex) {
+                logger.log(Level.INFO, ex, () -> "Failed to count cached metadata exports size for the dataset: " + dataset.getId() + " (ignoring)");
             }
         }
 

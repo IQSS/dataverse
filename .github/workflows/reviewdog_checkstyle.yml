@@ -12,7 +12,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v7
             - name: Run check style
-              uses: nikitasavinov/checkstyle-action@master
+              uses: nikitasavinov/checkstyle-action@1.0.0
               with:
                   fail_on_error: true
                   reporter: github-pr-review
