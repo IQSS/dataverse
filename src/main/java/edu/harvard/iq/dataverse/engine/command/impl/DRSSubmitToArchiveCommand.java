@@ -42,7 +42,6 @@ import java.util.logging.Logger;
 
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
@@ -64,6 +63,8 @@ import org.erdtman.jcs.JsonCanonicalizer;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import org.omnifaces.util.Json;
+
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DRSArchiverConfig;
 
 @RequiredPermissions(Permission.PublishDataset)
@@ -142,7 +143,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
         if (!preconditionsMet(version, token, requestedSettings)) {
-            JsonObjectBuilder statusObjectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder statusObjectBuilder = JsonUtil.createObjectBuilder();
             statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObjectBuilder.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE,
                     "Successful archiving of earlier versions is required.");
@@ -192,7 +193,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                 WorkflowStepResult s3Result = super.performArchiveSubmission(dv, dataciteXml, ore, terms, token, requestedSettings);
 
-                JsonObjectBuilder statusObject = Json.createObjectBuilder();
+                JsonObjectBuilder statusObject = JsonUtil.createObjectBuilder();
                 statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
                 statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
 
@@ -204,7 +205,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     // Now contact DRS
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
                     int jwtTimeout = drsConfigObject.getInt(TIMEOUT, 5);
-                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    JsonObjectBuilder job = JsonUtil.createObjectBuilder();
 
                     job.add(S3_BUCKET_NAME, adminMetadata.getString(S3_BUCKET_NAME));
 
@@ -212,7 +213,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     job.add(S3_PATH, spaceName);
 
                     // We start with the default admin_metadata
-                    JsonObjectBuilder amob = Json.createObjectBuilder(adminMetadata);
+                    JsonObjectBuilder amob = JsonUtil.createObjectBuilder(adminMetadata);
                     // Remove collections and then override any params for the given alias
                     amob.remove(COLLECTIONS);
                     // Allow override of bucket name
@@ -295,7 +296,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                     String status = responseObject.getString(DatasetVersion.ARCHIVAL_STATUS);
                                     if (status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)
                                             || status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
-                                        statusObject.addAll(Json.createObjectBuilder(responseObject));
+                                        statusObject.addAll(JsonUtil.createObjectBuilder(responseObject));
                                         switch (status) {
                                         case DatasetVersion.ARCHIVAL_STATUS_PENDING:
                                             logger.info("DRS Ingest successfully started for: " + packageId + " : "

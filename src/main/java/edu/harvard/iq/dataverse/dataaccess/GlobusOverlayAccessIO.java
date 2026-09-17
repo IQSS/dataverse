@@ -276,9 +276,9 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                 logger.fine("submission_id for delete is: " + submissionId);
                 absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/delete");
                 HttpPost post = new HttpPost(absoluteURI);
-                JsonObjectBuilder taskJsonBuilder = Json.createObjectBuilder();
+                JsonObjectBuilder taskJsonBuilder = JsonUtil.createObjectBuilder();
                 taskJsonBuilder.add("submission_id", submissionId).add("DATA_TYPE", "delete").add("endpoint", endpoint)
-                        .add("DATA", Json.createArrayBuilder().add(Json.createObjectBuilder().add("DATA_TYPE", "delete_item").add("path",
+                        .add("DATA", JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("DATA_TYPE", "delete_item").add("path",
                                 endpointPath + relativeDirectoryPath + "/" + filename)));
                 post.setHeader("Content-Type", "application/json");
                 post.addHeader("Authorization", "Bearer " + globusAccessToken);

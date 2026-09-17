@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import jakarta.json.Json;
@@ -53,7 +54,7 @@ public class RemoteStoreIT {
          *
          * <jvm-options>-Ddataverse.files.trsa.download-redirect=true</jvm-options>
          */
-        JsonObjectBuilder remoteFileJson = Json.createObjectBuilder()
+        JsonObjectBuilder remoteFileJson = JsonUtil.createObjectBuilder()
                 .add("description", "A remote image.")
                 .add("storageIdentifier", "trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png")
                 .add("checksumType", "MD5")

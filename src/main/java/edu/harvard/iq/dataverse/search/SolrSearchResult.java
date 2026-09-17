@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -249,7 +250,7 @@ public class SolrSearchResult {
 
     public JsonArrayBuilder getPublicationStatusesAsJSON() {
 
-        JsonArrayBuilder statuses = Json.createArrayBuilder();
+        JsonArrayBuilder statuses = JsonUtil.createArrayBuilder();
         for (String status : this.getPublicationStatuses()) {
             statuses.add(status);
         }
@@ -397,13 +398,13 @@ public class SolrSearchResult {
     }
 
     public JsonArrayBuilder getRelevance() {
-        JsonArrayBuilder matchedFieldsArray = Json.createArrayBuilder();
-        JsonObjectBuilder matchedFieldObject = Json.createObjectBuilder();
+        JsonArrayBuilder matchedFieldsArray = JsonUtil.createArrayBuilder();
+        JsonObjectBuilder matchedFieldObject = JsonUtil.createObjectBuilder();
         for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
             SolrField solrField = entry.getKey();
             Highlight snippets = entry.getValue();
-            JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
-            JsonObjectBuilder matchedFieldDetails = Json.createObjectBuilder();
+            JsonArrayBuilder snippetArrayBuilder = JsonUtil.createArrayBuilder();
+            JsonObjectBuilder matchedFieldDetails = JsonUtil.createObjectBuilder();
             for (String highlight : snippets.getSnippets()) {
                 snippetArrayBuilder.add(highlight);
             }
@@ -613,14 +614,14 @@ public class SolrSearchResult {
                 DatasetVersion dv = ds.getVersionFromId(this.datasetVersionId);
 
                 if (!dv.getKeywords().isEmpty()) {
-                    JsonArrayBuilder keyWords = Json.createArrayBuilder();
+                    JsonArrayBuilder keyWords = JsonUtil.createArrayBuilder();
                     for (String keyword : dv.getKeywords()) {
                         keyWords.add(keyword);
                     }
                     nullSafeJsonBuilder.add("keywords", keyWords);
                 }
 
-                JsonArrayBuilder subjects = Json.createArrayBuilder();
+                JsonArrayBuilder subjects = JsonUtil.createArrayBuilder();
                 for (String subject : dv.getDatasetSubjects()) {
                     subjects.add(subject);
                 }
@@ -637,7 +638,7 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
 
                 if (!dv.getDatasetContacts().isEmpty()) {
-                    JsonArrayBuilder contacts = Json.createArrayBuilder();
+                    JsonArrayBuilder contacts = JsonUtil.createArrayBuilder();
                     NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
                     for (String contact[] : dv.getDatasetContacts(false)) {
                         nullSafeJsonBuilderInner.add("name", contact[0]);
@@ -647,7 +648,7 @@ public class SolrSearchResult {
                     nullSafeJsonBuilder.add("contacts", contacts);
                 }
                 if (!dv.getRelatedPublications().isEmpty()) {
-                    JsonArrayBuilder relPub = Json.createArrayBuilder();
+                    JsonArrayBuilder relPub = JsonUtil.createArrayBuilder();
                     NullSafeJsonBuilder inner = jsonObjectBuilder();
                     for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
                         inner.add("title", dsRelPub.getTitle());
@@ -659,14 +660,14 @@ public class SolrSearchResult {
                 }
 
                 if (!dv.getDatasetProducers().isEmpty()) {
-                    JsonArrayBuilder producers = Json.createArrayBuilder();
+                    JsonArrayBuilder producers = JsonUtil.createArrayBuilder();
                     for (String[] producer : dv.getDatasetProducers()) {
                         producers.add(producer[0]);
                     }
                     nullSafeJsonBuilder.add("producers", producers);
                 }
                 if (!dv.getRelatedMaterial().isEmpty()) {
-                    JsonArrayBuilder relatedMaterials = Json.createArrayBuilder();
+                    JsonArrayBuilder relatedMaterials = JsonUtil.createArrayBuilder();
                     for (String relatedMaterial : dv.getRelatedMaterial()) {
                         relatedMaterials.add(relatedMaterial);
                     }
@@ -674,7 +675,7 @@ public class SolrSearchResult {
                 }
 
                 if (!dv.getGeographicCoverage().isEmpty()) {
-                    JsonArrayBuilder geoCov = Json.createArrayBuilder();
+                    JsonArrayBuilder geoCov = JsonUtil.createArrayBuilder();
                     NullSafeJsonBuilder inner = jsonObjectBuilder();
                     for (String ind[] : dv.getGeographicCoverage()) {
                         inner.add("country", ind[0]);
@@ -686,7 +687,7 @@ public class SolrSearchResult {
                     nullSafeJsonBuilder.add("geographicCoverage", geoCov);
                 }
                 if (!dv.getDataSource().isEmpty()) {
-                    JsonArrayBuilder dataSources = Json.createArrayBuilder();
+                    JsonArrayBuilder dataSources = JsonUtil.createArrayBuilder();
                     for (String dsource : dv.getDataSource()) {
                         dataSources.add(dsource);
                     }
@@ -709,7 +710,7 @@ public class SolrSearchResult {
                 }
 
                 if (this.collections != null && !this.collections.isEmpty()) {
-                    JsonArrayBuilder collections = Json.createArrayBuilder();
+                    JsonArrayBuilder collections = JsonUtil.createArrayBuilder();
                     for (Dataverse collection : this.collections) {
                         NullSafeJsonBuilder dvBuilder = jsonObjectBuilder();
                         dvBuilder.add("id", collection.getId());
@@ -748,7 +749,7 @@ public class SolrSearchResult {
         }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
         if (!datasetAuthors.isEmpty()) {
-            JsonArrayBuilder authors = Json.createArrayBuilder();
+            JsonArrayBuilder authors = JsonUtil.createArrayBuilder();
             for (String datasetAuthor : datasetAuthors) {
                 authors.add(datasetAuthor);
             }
@@ -767,7 +768,7 @@ public class SolrSearchResult {
                     // create metadataBlock object
                     NullSafeJsonBuilder metadataBlockBuilder = jsonObjectBuilder();
                     metadataBlockBuilder.add("displayName", metadataBlock.getDisplayName());
-                    JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
+                    JsonArrayBuilder fieldsArray = JsonUtil.createArrayBuilder();
 
                     List<DatasetField> datasetFields = groupedFields.get(metadataBlock);
                     for (DatasetField datasetField : datasetFields) {
@@ -1350,7 +1351,7 @@ public class SolrSearchResult {
     /*
 	 * public JsonArrayBuilder getUserRolesAsJson() {
 	 * 
-	 * JsonArrayBuilder jsonRoleStrings = Json.createArrayBuilder(); for (String role : this.getUserRole()) { jsonRoleStrings.add(role); } return
+	 * JsonArrayBuilder jsonRoleStrings = JsonUtil.createArrayBuilder(); for (String role : this.getUserRole()) { jsonRoleStrings.add(role); } return
 	 * jsonRoleStrings; }
      */
     public List<String> getUserRole() {

@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -32,7 +34,7 @@ public class DataCaptureModuleUtil {
      */
     @Deprecated(forRemoval = true, since = "2024-07-07")
     public static JsonObject generateJsonForUploadRequest(AuthenticatedUser user, Dataset dataset) {
-        JsonObjectBuilder jab = Json.createObjectBuilder();
+        JsonObjectBuilder jab = JsonUtil.createObjectBuilder();
         // The general rule should be to always pass the user id and dataset identifier to the DCM.
         jab.add("userId", user.getId());
         jab.add("datasetIdentifier", dataset.getIdentifier());

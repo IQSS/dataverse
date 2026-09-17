@@ -122,7 +122,7 @@
                 </div>
             </div>
             <div class="fileDescription small" jsf:rendered="#{hasDescription}">
-                <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}"/>
+                <h:outputText id="fileDescNonEmpty" value="#{MarkupChecker:sanitizeBasicHTML(fileMetadata.description)}" escape="false"/>
             </div>
             <div class="file-tags-block" jsf:rendered="#{hasCategories or hasTags}">
                 <ui:repeat value="#{fileMetadata.categories}" var="cat">

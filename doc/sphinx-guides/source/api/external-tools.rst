@@ -180,6 +180,10 @@ The signed URL mechanism is more secure than exposing API tokens and therefore r
 
 .. note::
 
+   An ``allowedApiCalls`` ``urlTemplate`` should not use any of Dataverse's reserved authentication-related query parameters ``until``, ``user``, ``method``, ``token``, ``key`` or ``signed``: launching a tool whose manifest includes them will be rejected with an error naming the parameter. See :ref:`dataverse.api.signing-secret` for how the URLs are signed.
+
+.. note::
+
    **For Dataverse site administrators:** When Dataverse is behind a proxy, signed URLs may not work correctly due to protocol mismatches (HTTP vs HTTPS). Please refer to the :ref:`signed-urls-forwarded-proto-header` section to ensure signed URLs work properly in proxy environments.
 
 API Token

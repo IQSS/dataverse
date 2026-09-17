@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.json.Json;
@@ -129,9 +130,9 @@ public class DatasetsEmbargoAPITest {
     public void testCreateFileEmbargo_withReasonRequired_shouldRejectNullReason() {
         // Arrange
         LocalDate futureDate = LocalDate.now().plusMonths(6);
-        JsonObjectBuilder embargoJson = Json.createObjectBuilder()
+        JsonObjectBuilder embargoJson = JsonUtil.createObjectBuilder()
                 .add("dateAvailable", futureDate.toString())
-                .add("fileIds", Json.createArrayBuilder().add(1L));
+                .add("fileIds", JsonUtil.createArrayBuilder().add(1L));
         
         // Act
         Response response = datasetsApi.createFileEmbargo(crc, "1", embargoJson.build().toString());
@@ -154,10 +155,10 @@ public class DatasetsEmbargoAPITest {
     public void testCreateFileEmbargo_withReasonRequired_shouldAcceptValidReason() throws CommandException {
         // Arrange
         LocalDate futureDate = LocalDate.now().plusMonths(6);
-        JsonObjectBuilder embargoJson = Json.createObjectBuilder()
+        JsonObjectBuilder embargoJson = JsonUtil.createObjectBuilder()
                 .add("dateAvailable", futureDate.toString())
                 .add("reason", "Valid embargo reason for testing")
-                .add("fileIds", Json.createArrayBuilder().add(2L));
+                .add("fileIds", JsonUtil.createArrayBuilder().add(2L));
         
         // Act
         Response response = datasetsApi.createFileEmbargo(crc, "1", embargoJson.build().toString());
@@ -171,9 +172,9 @@ public class DatasetsEmbargoAPITest {
     public void testCreateFileEmbargo_withReasonNotRequired_shouldAcceptNullReason() throws CommandException {
         // Arrange
         LocalDate futureDate = LocalDate.now().plusMonths(6);
-        JsonObjectBuilder embargoJson = Json.createObjectBuilder()
+        JsonObjectBuilder embargoJson = JsonUtil.createObjectBuilder()
                 .add("dateAvailable", futureDate.toString())
-                .add("fileIds", Json.createArrayBuilder().add(2L));
+                .add("fileIds", JsonUtil.createArrayBuilder().add(2L));
         
         // Act
         Response response = datasetsApi.createFileEmbargo(crc, "1", embargoJson.build().toString());
@@ -197,10 +198,10 @@ public class DatasetsEmbargoAPITest {
     public void testCreateFileEmbargo_shouldRejectBlankReason_regardlessOfFlag(String blankReason) {
         // Arrange
         LocalDate futureDate = LocalDate.now().plusMonths(6);
-        JsonObjectBuilder embargoJson = Json.createObjectBuilder()
+        JsonObjectBuilder embargoJson = JsonUtil.createObjectBuilder()
                 .add("dateAvailable", futureDate.toString())
                 .add("reason", blankReason)
-                .add("fileIds", Json.createArrayBuilder().add(2L));
+                .add("fileIds", JsonUtil.createArrayBuilder().add(2L));
         
         // Act
         Response response = datasetsApi.createFileEmbargo(crc, "1", embargoJson.build().toString());
@@ -223,10 +224,10 @@ public class DatasetsEmbargoAPITest {
     public void testCreateFileEmbargo_withReasonRequired_shouldRejectEmptyString() {
         // Arrange
         LocalDate futureDate = LocalDate.now().plusMonths(6);
-        JsonObjectBuilder embargoJson = Json.createObjectBuilder()
+        JsonObjectBuilder embargoJson = JsonUtil.createObjectBuilder()
                 .add("dateAvailable", futureDate.toString())
                 .add("reason", "")
-                .add("fileIds", Json.createArrayBuilder().add(2L));
+                .add("fileIds", JsonUtil.createArrayBuilder().add(2L));
         
         // Act
         Response response = datasetsApi.createFileEmbargo(crc, "1", embargoJson.build().toString());

@@ -62,13 +62,13 @@ RUN true && \
   ARCH="${TARGETARCH:-$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')}" && \
 
   # 1. wait4x \
-  curl -sSfL -o /usr/bin/wait4x.tar.gz "https://github.com/wait4x/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${ARCH}.tar.gz" && \
-  curl -sSfL -o /tmp/w4x-checksum "https://github.com/wait4x/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${ARCH}.tar.gz.sha256sum" && \
+  curl --retry 5 --retry-all-errors --retry-delay 3 -sSfL -o /usr/bin/wait4x.tar.gz "https://github.com/wait4x/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${ARCH}.tar.gz" && \
+  curl --retry 5 --retry-all-errors --retry-delay 3 -sSfL -o /tmp/w4x-checksum "https://github.com/wait4x/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${ARCH}.tar.gz.sha256sum" && \
   echo "$(cat /tmp/w4x-checksum | cut -f1 -d" ") /usr/bin/wait4x.tar.gz" | sha256sum -c - && \
   tar -xzf /usr/bin/wait4x.tar.gz -C /usr/bin && chmod +x /usr/bin/wait4x && \
 
   # 2. yq-go \
-  curl -sSfL -o /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${ARCH}" && \
+  curl --retry 5 --retry-all-errors --retry-delay 3 -sSfL -o /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${ARCH}" && \
   chmod +x /usr/bin/yq && \
 
   # 3. Python packages

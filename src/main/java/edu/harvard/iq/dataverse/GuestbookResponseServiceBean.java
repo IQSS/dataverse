@@ -91,6 +91,8 @@ public class GuestbookResponseServiceBean {
     
     
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
+
+    private static final String DOWNLOAD_COUNT_QUERY = "select count(*) from GuestbookResponse where eventtype != '" + GuestbookResponse.ACCESS_REQUEST + "'";
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -174,7 +176,7 @@ public class GuestbookResponseServiceBean {
     
     public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Map<Integer, String> datasetTitles, Object[] result) throws IOException {
 
-            Integer guestbookResponseId = (Integer)result[0];
+            Integer guestbookResponseId = ((Number)result[0]).intValue();
             
             StringBuilder sb = new StringBuilder();
             
@@ -188,7 +190,7 @@ public class GuestbookResponseServiceBean {
 
             
             // Dataset name: 
-            Integer datasetId = (Integer) result[2];
+            Integer datasetId = ((Number) result[2]).intValue();
             String datasetTitle = datasetTitles.get(datasetId);
             sb.append(datasetTitle == null ? "" : StringEscapeUtils.escapeCsv(datasetTitle));
             sb.append(SEPARATOR);
@@ -394,7 +396,7 @@ public class GuestbookResponseServiceBean {
 
         if (customResponses != null) {
             for (Object[] response : customResponses) {
-                Integer responseId = (Integer) response[2];
+                Integer responseId = ((Number) response[2]).intValue();
 
                 if (asString) {
                     // as combined strings of comma-separated question and answer values
@@ -878,6 +880,13 @@ public class GuestbookResponseServiceBean {
         return em.find(GuestbookResponse.class, id);
     }
 
+    public Object[] getDatasetIdAndResponseTime(Long id) {
+        List<Object[]> results = em.createQuery("SELECT g.dataset.id, g.responseTime FROM GuestbookResponse g WHERE g.id = :id", Object[].class)
+                .setParameter("id", id)
+                .getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void save(GuestbookResponse guestbookResponse) {
         em.persist(guestbookResponse);
@@ -893,24 +902,33 @@ public class GuestbookResponseServiceBean {
         
     public Long getDownloadCountByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId + " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
-        return (Long) query.getSingleResult();
+        return guestbookResponseCountQuery(null, dataFileId,  null);
     }
     
     public Long getDownloadCountByDatasetId(Long datasetId) {
-        return getDownloadCountByDatasetId(datasetId, null);
+        return guestbookResponseCountQuery(datasetId, null, null);
     }
     
     public Long getDownloadCountByDatasetId(Long datasetId, LocalDate date) {
         // dataset id is null, will return 0        
-        Query query;
-        if(date != null) {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "' and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
-        }else {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
+        return guestbookResponseCountQuery(datasetId,  null, date);
+    }
+
+    private Long guestbookResponseCountQuery(Long datasetId, Long datafileId, LocalDate date) {
+        StringBuilder queryStr = new StringBuilder(DOWNLOAD_COUNT_QUERY);
+        if (datasetId != null) {
+            queryStr.append(" and dataset_id = " + datasetId);
+        } else if (datafileId != null) {
+            queryStr.append(" and datafile_id = " + datafileId);
+        } else {
+            return 0L;
         }
-        return (Long) query.getSingleResult();
-    }    
+        if (date != null) {
+            queryStr.append(" and responsetime < '" + date + "'");
+        }
+        queryStr.append(";");
+        return (Long) em.createNativeQuery(queryStr.toString()).getSingleResult();
+    }
 
     public Long getTotalDownloadCount() {
         // dataset id is null, will return 0  
@@ -956,7 +974,7 @@ public class GuestbookResponseServiceBean {
 
         if (titleResults != null) {
             for (Object[] titleObj : titleResults) {
-                Integer datasetId = (Integer) titleObj[1];
+                Integer datasetId = ((Number) titleObj[1]).intValue();
                 String datasetTitle = (String) titleObj[0];
                 
                 ret.put(datasetId, datasetTitle);

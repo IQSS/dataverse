@@ -13,6 +13,7 @@ public class DataverseDTO {
     private List<DataverseContact> dataverseContacts;
     private Dataverse.DataverseType dataverseType;
     private Integer datasetFileCountLimit;
+    private Boolean guestbookRoot;
 
     public String getAlias() {
         return alias;
@@ -68,5 +69,13 @@ public class DataverseDTO {
 
     public void setDataverseType(Dataverse.DataverseType dataverseType) {
         this.dataverseType = dataverseType;
+    }
+
+    public Boolean getGuestbookRoot() {
+        return guestbookRoot;
+    }
+
+    public void setGuestbookRoot(Boolean guestbookRoot) {
+        this.guestbookRoot = guestbookRoot;
     }
 }

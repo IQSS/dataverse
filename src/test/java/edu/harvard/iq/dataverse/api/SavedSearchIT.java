@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -140,12 +141,12 @@ public class SavedSearchIT {
 
     public String createSavedSearchJson(String query, Integer creatorId, Integer definitionPointId, String... filterQueries) {
 
-        JsonArrayBuilder arr = Json.createArrayBuilder();
+        JsonArrayBuilder arr = JsonUtil.createArrayBuilder();
         for (String filterQuery : filterQueries) {
             arr.add(filterQuery);
         }
 
-        JsonObjectBuilder json = Json.createObjectBuilder();
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder();
         if(query != null) json.add("query", query);
         if(creatorId != null) json.add("creatorId", creatorId);
         if(definitionPointId != null) json.add("definitionPointId", definitionPointId);
@@ -155,12 +156,12 @@ public class SavedSearchIT {
 
     public String createSavedSearchJson(String query, String creatorId, String definitionPointId, String... filterQueries) {
 
-        JsonArrayBuilder arr = Json.createArrayBuilder();
+        JsonArrayBuilder arr = JsonUtil.createArrayBuilder();
         for (String filterQuery : filterQueries) {
             arr.add(filterQuery);
         }
 
-        JsonObjectBuilder json = Json.createObjectBuilder();
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder();
         if(query != null) json.add("query", query);
         if(creatorId != null) json.add("creatorId", creatorId);
         if(definitionPointId != null) json.add("definitionPointId", definitionPointId);

@@ -6,9 +6,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
-import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -121,12 +119,11 @@ public class DatasetFieldServiceApiTest {
 
         Path resourceDirectory = Paths.get("src/test/resources/tsv/whitespace-test.tsv");
         File testfile = new File(resourceDirectory.toFile().getAbsolutePath());
-        JsonReader jsonReader;
+        JsonObject jsonObject;
         try (Response response = api.loadDatasetFields(testfile)) {
             assertEquals(200, response.getStatus());
-            jsonReader = Json.createReader(new StringReader(response.getEntity().toString()));
+            jsonObject = JsonUtil.getJsonObject(response.getEntity().toString());
         }
-        JsonObject jsonObject = jsonReader.readObject();
 
         final List<String> metadataNames = jsonObject.getJsonObject("data").getJsonArray("added")
             .getValuesAs(e -> e.asJsonObject().getString("name"));

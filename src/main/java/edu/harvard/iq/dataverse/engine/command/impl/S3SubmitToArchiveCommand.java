@@ -108,7 +108,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
             createClient(configObject);
 
             // Set a failure status that will be updated if we succeed
-            JsonObjectBuilder statusObject = Json.createObjectBuilder();
+            JsonObjectBuilder statusObject = JsonUtil.createObjectBuilder();
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
             ExecutorService executor = Executors.newCachedThreadPool();

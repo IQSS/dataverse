@@ -39,7 +39,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DublinCoreExportUtil {
  
-    private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DublinCoreExportUtil.class.getCanonicalName());
     
     public static String OAI_DC_XML_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/"; 
     public static String OAI_DC_XML_SCHEMALOCATION = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";

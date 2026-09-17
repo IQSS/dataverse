@@ -30,8 +30,11 @@ public class GetDataverseFeaturedItemCommand extends AbstractCommand<DataverseFe
 
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
-        return Collections.singletonMap("",
-                dataverseFeaturedItem.getDataverse().isReleased() ? Collections.emptySet()
-                        : Collections.singleton(Permission.ViewUnpublishedDataverse));
+        // If the dataverse is not released only a user with ViewUnpublishedDataverse permissions or the creator can access the featured item and its images
+        if (!dataverseFeaturedItem.getDataverse().isReleased() && !getRequest().getUser().equals(dataverseFeaturedItem.getDataverse().getCreator())) {
+            return Collections.singletonMap("", Collections.singleton(Permission.ViewUnpublishedDataverse));
+        } else {
+            return Collections.singletonMap("",Collections.emptySet());
+        }
     }
 }
