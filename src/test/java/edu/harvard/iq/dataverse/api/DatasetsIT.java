@@ -4268,6 +4268,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createUser2 = UtilIT.createRandomUser();
         String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
         String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        UtilIT.setSuperuserStatus(username2, true).then().assertThat().statusCode(OK.getStatusCode());
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
         
         Response createDataverse = UtilIT.createRandomDataverse(apiToken);
@@ -4398,7 +4399,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String apiToken3 = UtilIT.getApiTokenFromResponse(createUser3);
         String username3 = UtilIT.getUsernameFromResponse(createUser3);
         UtilIT.setSuperuserStatus(username3, true).then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.setSuperuserStatus(username2, true).then().assertThat().statusCode(OK.getStatusCode());
         
         updateDatasetMetadataUnique(datasetPid, pathToJsonFile, "Title Draft 2", apiToken2).then().assertThat().statusCode(OK.getStatusCode());
         updateDatasetMetadataUnique(datasetPid, pathToJsonFile, "Title Draft 3", apiToken3).then().assertThat().statusCode(OK.getStatusCode());
