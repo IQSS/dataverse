@@ -188,12 +188,17 @@ If you are making a hotfix release, `<base.image.version>` should already be set
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: <https://github.com/IQSS/dataverse/compare/master...develop>
 
-Allow time for important tests pass:
+After making the pull request, allow time for important tests pass:
 
 - Unit tests: Maven Tests
 - API tests: Container Integration Tests Workflow
+- JSF tests: Dataverse JSF Frontend Tests Workflow
 
-Don't worry about style tests failing such as for shell scripts.
+Don't worry about style and quality test failures such as these:
+
+- Code scanning results / CodeQL
+- Maven CheckStyle Task / Checkstyle job
+- Maven Tests / SonarQube Analysis and Coverage
 
 It's ok to skip code review.
 
