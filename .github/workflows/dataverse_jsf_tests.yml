@@ -103,7 +103,8 @@ jobs:
           mvn -Pct docker:start \
             -Ddataverse.feature.index-harvested-metadata-source=true \
             -Ddataverse.oai.server.maxidentifiers=2 \
-            -Ddataverse.oai.server.maxrecords=2
+            -Ddataverse.oai.server.maxrecords=2 \
+            -Ddataverse.feature.allow-locally-fair-data=true
 
       # ---------------------------
       # WAIT FOR API READINESS
