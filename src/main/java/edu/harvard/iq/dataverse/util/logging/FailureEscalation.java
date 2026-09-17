@@ -17,6 +17,27 @@ import java.util.logging.Level;
  * {@link #recordSuccess()} reports whether the cleared streak had been escalated, so the caller can log
  * a recovery message — otherwise the log would show escalations without ever showing the recovery.
  * <p>
+ * <b>Example:</b>
+ * (Optional) Add a {@link edu.harvard.iq.dataverse.settings.JvmSettings} entry to make the threshold configurable.
+ * The following setting is read from MicroProfile Config as {@code dataverse.export.cache.failure-escalation-threshold},
+ * setting it to {@code 0} disables escalation.
+ *
+ * <pre>{@code
+ * private static final FailureEscalation readFailures = new FailureEscalation(
+ *     JvmSettings.MY_USECASE_FAILURE_ESCALATION_THRESHOLD
+ *         .lookupOptional(Integer.class)
+ *         .orElse(256));
+ *
+ * try {
+ *     InputStream stream = usecase.getData(fromWhere);
+ *     readFailures.recordSuccess().ifPresent(count -> logger.warning("Reading the data recovered after " + count + " consecutive failures"));
+ *     return Optional.of(stream);
+ * } catch (IOException e) {
+ *     logger.log(readFailures.incrementAndGetLevel(), e, () -> "Could not read data " + fromWhere + " (consecutive failures: " + readFailures.currentStreak() + ")");
+ *     return Optional.empty();
+ * }
+ * }</pre>
+ * <p>
  * Instances are thread-safe and may be shared across concurrent callers and used in other,
  * thread-safe contexts like {@code ConcurrentHashMap}.
  */
