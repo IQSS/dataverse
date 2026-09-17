@@ -850,7 +850,7 @@ public class Datasets extends AbstractApiBean {
             }
 
             DatasetVersion latestVersion = ds.getLatestVersion();
-            if (isDatasetVersionNoOp(incomingVersion, latestVersion)) {
+            if (new DatasetVersionUpdateDifference(incomingVersion, latestVersion).isEmpty()) {
                 return ok(json(latestVersion, true));
             }
 
@@ -885,12 +885,6 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
 
         }
-    }
-
-    // Helper extracted to make no-op detection testable.
-    static boolean isDatasetVersionNoOp(DatasetVersion incomingVersion, DatasetVersion latestVersion) {
-        DatasetVersionUpdateDifference diff = new DatasetVersionUpdateDifference(incomingVersion, latestVersion);
-        return diff.isEmpty();
     }
 
     @GET
