@@ -293,10 +293,9 @@ public class ExportServiceBean {
         
         exportFormats(defaultVersion(dataset), formatNames);
         
-        // All exports done successfully, update last export time on the dataset
-        // TODO: Is it correct to update the last export time even if only some formats were exported?
-        //       Keep in mind that this date will be crucial to determine results of cache staleness checks!
-        dataset.setLastExportTime(Date.from(Instant.now()));
+        // Only if all formats were requested to be exported, update last export time on the dataset
+        if (formatNames.isEmpty())
+            dataset.setLastExportTime(Date.from(Instant.now()));
     }
     
     /**
