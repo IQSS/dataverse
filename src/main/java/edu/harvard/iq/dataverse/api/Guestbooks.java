@@ -177,7 +177,7 @@ public class Guestbooks extends AbstractApiBean {
             description = "Returns guestbook metadata and response records, with pagination when a limit is supplied.")
     public Response getResponses(@Context ContainerRequestContext crc,
                                  @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true) @PathParam("id") Long id,
-                                 @Parameter(description = "Sort Field. One of: 'dataset'; 'date'; 'type'; 'file'; 'user'") @QueryParam("sort") String sortField,
+                                 @Parameter(description = "Sort Field. One of: 'dataset'; 'date'; 'type'; 'file'; 'name'") @QueryParam("sort") String sortField,
                                  @Parameter(description = "Sort order. ('asc' or 'desc')") @QueryParam("order") String sortOrder,
                                  @Parameter(description = "Maximum number of response records to return.") @QueryParam("limit") Integer limit,
                                  @Parameter(description = "Response record offset.") @QueryParam("offset") Integer offset) {
@@ -252,7 +252,7 @@ public class Guestbooks extends AbstractApiBean {
     }
 
     private void validateFindGuestbookResponsesParameters(String sortField, String sortOrder, Integer offset, Integer limit) throws WrappedResponse {
-        if (sortField != null && !List.of("date","type","file","user").contains(sortField.toLowerCase())) {
+        if (sortField != null && !List.of("dataset","date","type","file","name").contains(sortField.toLowerCase())) {
             throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidSortField")));
         }
         if (sortOrder != null && !List.of("asc","desc").contains(sortOrder.toLowerCase())) {

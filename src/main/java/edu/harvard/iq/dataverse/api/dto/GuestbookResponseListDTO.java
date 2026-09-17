@@ -5,17 +5,17 @@ import java.util.Date;
 public class GuestbookResponseListDTO {
     private final Long id;
     private final String dataset;
-    private final String user;
+    private final String name;
     private final String type;
     private final Date date;
     private final String file;
     private final String responses;
 
     // Must match the column order in your @ConstructorResult mapping
-    public GuestbookResponseListDTO(Long id, String dataset, String user, String type, Date date, String file, String responses) {
+    public GuestbookResponseListDTO(Long id, String dataset, String name, String type, Date date, String file, String responses) {
         this.id = id;
         this.dataset = dataset;
-        this.user = user;
+        this.name = name;
         this.type = type;
         this.date = date;
         this.file = file;
@@ -24,7 +24,7 @@ public class GuestbookResponseListDTO {
 
     public Long getId() { return id; }
     public String getDataset() { return dataset; }
-    public String getUser() { return user; }
+    public String getName() { return name; }
     public String getType() { return type; }
     public Date getDate() { return date; }
     public String getFile() { return file; }
@@ -32,7 +32,7 @@ public class GuestbookResponseListDTO {
 
     @Override
     public String toString() {
-        return "id: " + id + ", dataset: " + dataset + ", user: " + user + ", type: " + type + ", date: " + date  + ", file: " + file +
+        return "id: " + id + ", dataset: " + dataset + ", name: " + name + ", type: " + type + ", date: " + date  + ", file: " + file +
                 responses != null && !responses.isEmpty() ? ", responses: " + responses : "";
     }
 }

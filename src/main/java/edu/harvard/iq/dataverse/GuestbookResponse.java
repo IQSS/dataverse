@@ -64,7 +64,7 @@ import java.util.Collections;
                 columns = {
                         @ColumnResult(name = "id", type = Long.class),
                         @ColumnResult(name = "dataset", type = String.class),
-                        @ColumnResult(name = "user", type = String.class),
+                        @ColumnResult(name = "name", type = String.class),
                         @ColumnResult(name = "type", type = String.class),
                         @ColumnResult(name = "date", type =  Date.class),
                         @ColumnResult(name = "file", type = String.class),
@@ -152,7 +152,7 @@ public class GuestbookResponse implements Serializable {
             SELECT
                 gr.id as id
                 ,dsfv.value as dataset
-                ,gr.name as user
+                ,gr.name as name
                 ,gr.eventtype as type
                 ,gr.responseTime as date
                 ,lfm.label as file
@@ -169,7 +169,7 @@ public class GuestbookResponse implements Serializable {
             WHERE gr.guestbook_id = ?
                   ORDER BY CASE ?
                        WHEN 'date' THEN gr.responseTime::text
-                       WHEN 'user' THEN gr.name
+                       WHEN 'name' THEN gr.name
                        WHEN 'type' THEN gr.eventtype
                        WHEN 'file' THEN lfm.label
                     ELSE dsfv.value

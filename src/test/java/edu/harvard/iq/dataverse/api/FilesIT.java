@@ -4255,8 +4255,8 @@ public class FilesIT {
 
         // Test Get All Responses Sorted
         testSortByField(guestbook.getId(), "file", "asc", 0, Integer.MAX_VALUE, null, ownerApiToken);
-        testSortByField(guestbook.getId(), "user", "asc", null, null, null, ownerApiToken);
-        testSortByField(guestbook.getId(), "user", "desc",null, null, null, ownerApiToken);
+        testSortByField(guestbook.getId(), "name", "asc", null, null, null, ownerApiToken);
+        testSortByField(guestbook.getId(), "name", "desc",null, null, null, ownerApiToken);
         testSortByField(guestbook.getId(), "date", "asc", null, null, null, ownerApiToken);
         testSortByField(guestbook.getId(), "date", "desc",null, null, null, ownerApiToken);
         // Test Get All Responses Sorted with errors

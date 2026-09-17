@@ -10,7 +10,7 @@ This API changelog is experimental and we would love feedback on its usefulness.
 V6.13
 -----
 
-- Changes to the Json response for /api/guestbooks/{id}/responses were made to limit the data returned to only those fields needed to populate the list in the UI.
+- Changes to the Json response for /api/guestbooks/{id}/responses were made to limit the data returned to only those fields needed to populate the list in the UI. "user" field is now renamed to "name" also changing the sort field
 
 v6.12
 -----

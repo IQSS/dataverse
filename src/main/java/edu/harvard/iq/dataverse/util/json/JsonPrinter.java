@@ -426,7 +426,7 @@ public class JsonPrinter {
             NullSafeJsonBuilder grObject = jsonObjectBuilder();
             grObject.add("id", gr.getId());
             grObject.add("dataset", gr.getDataset());
-            grObject.add("user", gr.getUser());
+            grObject.add("name", gr.getName());
             grObject.add("type", gr.getType());
             grObject.add("date", DateFormat.getDateTimeInstance().format(gr.getDate()));
             grObject.add("file", gr.getFile());

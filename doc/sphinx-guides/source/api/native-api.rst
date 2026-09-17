@@ -1463,7 +1463,7 @@ The Responses can be sorted by specifying one of the following in query paramete
 * ``dataset``: Dataset title
 * ``type``: Event Type
 * ``file``: File Name
-* ``user``: Entered Name
+* ``name``: Entered Name
 * ``date``: Response Date (Default)
 
 To sort in reverse order you can add ``&order=desc``.
