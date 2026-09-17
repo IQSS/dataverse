@@ -113,19 +113,13 @@ Deploy the same war file to <https://qa.dataverse.org> using the same upgrade in
 
 ## Solicit Feedback from Curation Team
 
-Ask the curation team to test on <https://qa.dataverse.org> and give them five days to provide feedback.
+Ask the curation team to test on <https://qa.dataverse.org> and give them five days to provide feedback. This is our main form of regression testing for the UI.
 
 ## Conduct Performance Testing
 
 <span class="label label-success pull-left">Dedicated Issue</span>&nbsp;
 
 See {ref}`locust` and <https://github.com/IQSS/dataverse/issues/12284>, for example.
-
-## Conduct Regression Testing
-
-<span class="label label-success pull-left">Dedicated Issue</span>&nbsp;
-
-Regression testing should be conducted on production data.
 
 ## Build the Guides for the Release Candidate
 
@@ -145,7 +139,7 @@ When previewing the HTML version of docs from pull requests, we don't usually us
 
 <span class="label label-success pull-left">Dedicated Issue</span>&nbsp;
 
-Time has passed. The curation team has given feedback. We've finished regression and performance testing. Fixes may have been merged into the "develop" branch. We're ready to actually make the release now, which includes deploying a release candidate to the demo server.
+Time has passed. The curation team has given feedback. Fixes may have been merged into the "develop" branch. We're ready to actually make the release now, which includes deploying a release candidate to the demo server.
 
 Build a new war file, if necessary, and deploy it to <https://demo.dataverse.org> using the upgrade instructions in the release notes.
 
