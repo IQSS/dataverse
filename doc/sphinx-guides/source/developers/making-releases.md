@@ -318,15 +318,9 @@ docker compose up
 
 Wait for the bootstrapping process to complete. Then, look at <http://localhost:8080/api/info/version> to make sure "version" shows the version that you just released. Note that it's normal for "build" to be null for our Docker images.
 
-## Close Milestone on GitHub and Create a New One
+## Close Milestone on GitHub
 
-You can find our milestones at <https://github.com/IQSS/dataverse/milestones>
-
-Now that we've published the release, close the milestone and create a new one for the **next** release, the release **after** the one we're working on, that is.
-
-Note that for milestones we use just the number without the "v" (e.g. "6.10.1").
-
-On the project board at <https://github.com/orgs/IQSS/projects/34> edit the tab (view) that shows the milestone to show the next milestone.
+Now that we've published the release, close the [milestone](https://github.com/IQSS/dataverse/milestones).
 
 (base_image_post_release)=
 ## Update the Container Base Image Version Property
