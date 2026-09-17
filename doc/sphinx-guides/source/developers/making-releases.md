@@ -364,12 +364,6 @@ Consider updating [the thread](https://groups.google.com/g/dataverse-community/c
 
 See also {ref}`schemaspy`.
 
-## Alert Translators About the New Release
-
-Create an issue at <https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/issues> to say a new release is out and that we would love for the properties files for English to be added.
-
-For example, for 6.4 we wrote "Update en_US/Bundle.properties etc. for Dataverse 6.4" at <https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/issues/125>
-
 ## Add the Release to the Dataverse Roadmap
 
 Add an entry to the list of releases at <https://www.iq.harvard.edu/roadmap-dataverse-project>
@@ -407,6 +401,12 @@ Because we have merged a version bump from the hotfix into the "develop" branch,
 Look at `src/main/resources/db/migration` in the "develop" branch and if any SQL scripts have the wrong version, make a pull request (or ask a developer to) to update them (all at once in a single PR is fine).
 
 Tell developers to merge the "develop" into their open pull requests (to pick up the new version and any fixes) and rename SQL scripts (if any) with the new version.
+
+## Alert Translators About the New Release
+
+Create an issue at <https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/issues> to say a new release is out and that we would love for the properties files for English to be added.
+
+For example, for 6.11 we wrote "Update en_US/Bundle.properties etc. for Dataverse 6.11" at <https://github.com/GlobalDataverseCommunityConsortium/dataverse-language-packs/issues/139>
 
 ## Lift the Code Freeze and Encourage Developers to Update Their Branches
 
