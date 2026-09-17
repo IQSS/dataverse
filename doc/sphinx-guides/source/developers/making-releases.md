@@ -406,6 +406,8 @@ For example, for 6.11 we wrote "Update en_US/Bundle.properties etc. for Datavers
 
 ## Lift the Code Freeze and Encourage Developers to Update Their Branches
 
+First, double check that the pull request that contains the change in the {ref}`base_image_post_release` step has been merged.
+
 It's now safe to lift the code freeze. We can start merging pull requests into the "develop" branch for the next release.
 
 Let developers know that they should merge the latest from the "develop" branch into any branches they are working on. (For hotfixes we've already told them this.)
