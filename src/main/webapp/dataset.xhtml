@@ -78,6 +78,9 @@
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
             <ui:param name="valid" value="#{DatasetPage.valid}"/>
             <ui:param name="datasetVersionDifference" value="#{DatasetPage.datasetVersionDifference}"/>
+            <ui:param name="datasetVersionUI" value="#{DatasetPage.datasetVersionUI}"/>
+            <ui:param name="datasetSummaryFields" value="#{DatasetPage.datasetSummaryFields}"/>
+            <ui:param name="datasetConfigureTools" value="#{DatasetPage.datasetConfigureTools}"/>
             <ui:define name="meta_header">
                 <ui:fragment rendered="#{!anonymizedAccess}">
                     <meta name="description" content="#{description}"/>
@@ -755,8 +758,8 @@
                                     <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container padding-none margin-bottom">
                                         <table class="metadata">
                                             <tbody>
-                                                <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
-                                                    <tr id="keywords" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==datasetVersionUI.keyword.datasetFieldType.id}">
+                                                <ui:repeat value="#{datasetSummaryFields}" var="dsf">
+                                                    <tr id="keywords" jsf:rendered="#{!empty datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==datasetVersionUI.keyword.datasetFieldType.id}">
                                                         <th scope="row">
                                                             #{bundle['dataset.keywordDisplay.title']}
                                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
