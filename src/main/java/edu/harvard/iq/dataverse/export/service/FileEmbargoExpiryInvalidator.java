@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export.service;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.export.DDIExporter;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -32,6 +33,13 @@ public final class FileEmbargoExpiryInvalidator implements ExportCacheInvalidato
             throw new IllegalArgumentException("key cannot be null");
         }
         
+        // TODO: The file metadata walking is a potentially expensive waste of CPU cycles on every cache lookup.
+        //       For now, keep it limited to the original function of limiting it to the DDI format.
+        //       As stated in the original code's loop: this should be done much more efficient, and applied to all formats.
+        if (!key.formatName().equals(DDIExporter.PROVIDER_NAME)) {
+            return false;
+        }
+        
         return isStaleDueToExpiredEmbargo(datasetVersion);
     }
     
@@ -50,8 +58,7 @@ public final class FileEmbargoExpiryInvalidator implements ExportCacheInvalidato
         }
         
         // The following code was originally contained in ExportServiceBean and written by @landreev.
-        // Its limitation to the DDI format was lifted, as other formats supporting file metadata may benefit from it as well.
-        // Also, it now uses the given dataset version, no longer receiving it by itself from the dataset.
+        // Except it now uses a given dataset version, no longer receiving it by itself from the dataset.
         
         Date lastExportDate = datasetVersion.getDataset().getLastExportTime();
         // if lastExportDate == null, assume it's not set because we're exporting for the
