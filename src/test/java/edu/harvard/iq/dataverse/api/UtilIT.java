@@ -4399,12 +4399,22 @@ public class UtilIT {
     }
 
     static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
+        return  retrieveMyCollectionList(apiToken, userIdentifier, null, null);
+    }
+
+    static Response retrieveMyCollectionList(String apiToken, String userIdentifier, Integer offset, Integer limit) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
         }
         if (userIdentifier != null) {
             requestSpecification.queryParam("userIdentifier", userIdentifier);
+        }
+        if (offset != null) {
+            requestSpecification.queryParam("offset", offset);
+        }
+        if (limit != null) {
+            requestSpecification.queryParam("limit", limit);
         }
 
         return requestSpecification.get("/api/mydata/retrieve/collectionList");

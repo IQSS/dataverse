@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.util.Pagination;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -389,8 +390,14 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses) {
+        return jsonArray(dataverses, null);
+    }
+    public static JsonObjectBuilder jsonArray(List<Dataverse> dataverses, Pagination pagination) {
         JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("count", dataverses.size());
+        if (pagination != null) {
+            job.add("totalCount", pagination.getNumResults());
+        }
         JsonArrayBuilder jsonArrayBuilder = JsonUtil.createArrayBuilder();
         for (Dataverse dataverse : dataverses) {
             NullSafeJsonBuilder jsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
