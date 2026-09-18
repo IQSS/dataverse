@@ -1,0 +1,1 @@
+This release fixes a bug which, in the JSF UI, the 'Cancel' button on the Guestbook Response dialog/preview tab does not close the dialog/tab. With this fix the dialog will close or, when in the preview tab, the tab will go back to the 'Files' tab.
