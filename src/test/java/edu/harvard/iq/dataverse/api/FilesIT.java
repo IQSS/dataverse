@@ -4284,6 +4284,68 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testGetFileCitationFormattedWithVersion() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.then().statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = createDataset.jsonPath().getInt("data.id");
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(),
+                "src/test/resources/images/coffeeshop.png", JsonUtil.createObjectBuilder().build(), apiToken);
+        uploadFile.then().statusCode(OK.getStatusCode());
+
+        String fileId = uploadFile.jsonPath().getString("data.files[0].dataFile.id");
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().statusCode(OK.getStatusCode());
+        UtilIT.updateFileMetadata(fileId, "{\"label\":\"renamed.png\"}", apiToken)
+                .then().statusCode(OK.getStatusCode());
+
+        // The same file has different metadata in the published version and the draft.
+        UtilIT.getFileCitationFormat(fileId, "EndNote", null, "1.0").then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>coffeeshop.png</custom1>"));
+        UtilIT.getFileCitationFormat(fileId, "EndNote", apiToken, ":draft").then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>renamed.png</custom1>"));
+        UtilIT.getFileCitationFormat(fileId, "EndNote", apiToken, ":latest").then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>renamed.png</custom1>"));
+        // No API token given so the published filename is shown
+        UtilIT.getFileCitationFormat(fileId, "EndNote", null, ":latest").then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>coffeeshop.png</custom1>"));
+        UtilIT.getFileCitationFormat(fileId, "EndNote", apiToken, ":latest-published").then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>coffeeshop.png</custom1>"));
+        UtilIT.getFileCitationFormat(fileId, "EndNote", null, ":draft").then()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "minor", apiToken).then().statusCode(OK.getStatusCode());
+        UtilIT.getFileCitationFormat(fileId, "EndNote", null, "1.1").then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>renamed.png</custom1>"));
+        // Historical citations still use the original file metadata after another release.
+        UtilIT.getFileCitationFormat(fileId, "EndNote", null, "1.0").then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>coffeeshop.png</custom1>"));
+        UtilIT.getFileCitationFormat(fileId, "RIS", null, "1.0").then()
+                .statusCode(OK.getStatusCode()).body(containsString("C1  - coffeeshop.png"));
+        UtilIT.getFileCitationFormat(fileId, "EndNote", apiToken, "666.0").then()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        UtilIT.getFileCitationFormat(fileId, "EndNote", apiToken, "invalid").then()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        Response uploadNewFile = UtilIT.uploadFileViaNative(datasetId.toString(),
+                "src/main/webapp/resources/images/dataverseproject.png", JsonUtil.createObjectBuilder().build(), apiToken);
+        uploadNewFile.then().statusCode(OK.getStatusCode());
+        String newFileId = uploadNewFile.jsonPath().getString("data.files[0].dataFile.id");
+        UtilIT.getFileCitationFormat(newFileId, "EndNote", apiToken, "1.0").then()
+                .statusCode(BAD_REQUEST.getStatusCode()).body("message", equalTo("File not found in dataset version: 1.0"));
+    }
+
     // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
     @Test
     @Disabled
