@@ -12,12 +12,16 @@ import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -263,5 +267,4 @@ public class TemplatePage implements java.io.Serializable {
         String fieldInstructions = template.getInstructionsMap().get(fieldType);
         return (fieldInstructions!=null && !fieldInstructions.isBlank()) ? fieldInstructions : BundleUtil.getStringFromBundle("template.instructions.empty.label");
     }
-
 }
