@@ -40,3 +40,17 @@ jakarta.json.Json#createPatchBuilder()
 jakarta.json.Json#createPatchBuilder(jakarta.json.JsonArray)
 jakarta.json.Json#createPointer(java.lang.String)
 jakarta.json.Json#createBuilderFactory(java.util.Map)
+
+@defaultMessage Use edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureDocumentBuilderFactory() instead
+javax.xml.parsers.DocumentBuilderFactory#newInstance()
+javax.xml.parsers.DocumentBuilderFactory#newInstance(java.lang.String,java.lang.ClassLoader)
+
+@defaultMessage Use edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureXMLReader() instead
+javax.xml.parsers.SAXParserFactory#newInstance()
+javax.xml.parsers.SAXParserFactory#newInstance(java.lang.String,java.lang.ClassLoader)
+
+@defaultMessage Use edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureXMLInputFactory() instead
+javax.xml.stream.XMLInputFactory#newInstance()
+javax.xml.stream.XMLInputFactory#newInstance(java.lang.String,java.lang.ClassLoader)
+javax.xml.stream.XMLInputFactory#newFactory()
+javax.xml.stream.XMLInputFactory#newFactory(java.lang.String,java.lang.ClassLoader)
