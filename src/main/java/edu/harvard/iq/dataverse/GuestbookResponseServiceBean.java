@@ -116,7 +116,7 @@ public class GuestbookResponseServiceBean {
         if (guestbookId != null) {
             int firstResult = offset == null ? 0 : offset;
             int pageSize = limit == null ? Integer.MAX_VALUE : limit;
-            String orderByField = sortField != null ? sortField.toLowerCase() : "dataset";
+            String orderByField = sortField != null ? sortField.toLowerCase() : "date";
             boolean isDescending = sortOrder != null && sortOrder.equalsIgnoreCase(SortBy.DESCENDING);
 
             Query query = isDescending ? em.createNamedQuery("GuestbookResponse.getGuestbookResponseListDesc") :

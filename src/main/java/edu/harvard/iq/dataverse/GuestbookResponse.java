@@ -49,12 +49,12 @@ import java.util.Collections;
 
 @NamedNativeQuery(
         name = "GuestbookResponse.getGuestbookResponseListAsc",
-        query = GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY + " ASC",
+        query = GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY + GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY_ORDERBY_ASC,
         resultSetMapping = "GuestbookResponse.GuestbookResponseListDTOMapping"
 )
 @NamedNativeQuery(
         name = "GuestbookResponse.getGuestbookResponseListDesc",
-        query = GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY + " DESC",
+        query = GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY + GuestbookResponse.GUESTBOOK_RESPONSE_LIST_QUERY_ORDERBY_DESC,
         resultSetMapping = "GuestbookResponse.GuestbookResponseListDTOMapping"
 )
 @SqlResultSetMapping(
@@ -170,16 +170,37 @@ public class GuestbookResponse implements Serializable {
             LEFT JOIN LatestDatasetVersion ldsv ON gr.dataset_id = ldsv.dataset_id AND ldsv.rn = 1
             LEFT JOIN datasetfield dsf ON dsf.datasetversion_id = ldsv.id AND dsf.datasetfieldtype_id = 1 -- datasetfieldtype_id 1 is title
             LEFT JOIN datasetfieldvalue dsfv ON dsfv.datasetfield_id = dsf.id
-            WHERE gr.guestbook_id = ?
-                  ORDER BY CASE ?
-                       WHEN 'dataset' THEN dsfv.value
-                       WHEN 'date' THEN gr.responseTime::text
-                       WHEN 'name' THEN gr.name
-                       WHEN 'type' THEN gr.eventtype
-                       WHEN 'file' THEN lfm.label
-                    ELSE dsfv.value
-                    END
+            WHERE gr.guestbook_id = ?1
             """;
+    protected static final String GUESTBOOK_RESPONSE_LIST_QUERY_ORDERBY_ASC = """
+             ORDER BY
+               -- Handle DATETIME columns
+               CASE ?2
+                  WHEN 'date' THEN gr.responseTime
+               END ASC,
+               -- Handle VARCHAR columns
+               CASE ?2
+                  WHEN 'dataset' THEN dsfv.value
+                  WHEN 'name' THEN gr.name
+                  WHEN 'type' THEN gr.eventtype
+                  WHEN 'file' THEN lfm.label
+               END ASC
+            """;
+    protected static final String GUESTBOOK_RESPONSE_LIST_QUERY_ORDERBY_DESC = """
+             ORDER BY
+               -- Handle DATETIME columns
+               CASE ?2
+                  WHEN 'date' THEN gr.responseTime
+               END DESC,
+               -- Handle VARCHAR columns
+               CASE ?2
+                  WHEN 'dataset' THEN dsfv.value
+                  WHEN 'name' THEN gr.name
+                  WHEN 'type' THEN gr.eventtype
+                  WHEN 'file' THEN lfm.label
+               END DESC
+            """;
+
     /*
     Transient Values carry non-written information 
     that will assist in the download process
