@@ -844,7 +844,7 @@ public class JsonPrinterTest {
         GuestbookResponseListDTO guestbookResponseListDTO = new GuestbookResponseListDTO(1L,"datasetTitle","Name","My Institution","My Position","Download", now,"file.txt","responseText");
         List<GuestbookResponseListDTO> guestbookResponseList = List.of(guestbookResponseListDTO);
         JsonArray result = JsonPrinter.getGuestbookResponseList(guestbookResponseList).build();
-        assertEquals(1L,result.size());
+        assertEquals(1,result.size());
         JsonObject firstObj = result.getJsonObject(0);
         assertEquals(1, firstObj.getInt("id"));
         assertEquals(guestbookResponseListDTO.getDataset(), firstObj.getString("dataset"));
