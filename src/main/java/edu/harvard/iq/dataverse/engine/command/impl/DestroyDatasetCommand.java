@@ -75,6 +75,10 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                 this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
         Dataset managedDoomed = ctxt.em().merge(doomed);
+
+        // Remove relations defined by this dataset and relations from other datasets targeting it.
+        // The latter are not removed by deleting this dataset's versions.
+        ctxt.datasetRelations().deleteAllDatasetRelationsInvolving(managedDoomed);
         
         // If there is a dedicated thumbnail DataFile, it needs to be reset
         // explicitly, or we'll get a constraint violation when deleting:

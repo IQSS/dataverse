@@ -5,6 +5,7 @@
     "permissions":[
         "ViewUnpublishedDataset",
         "EditDataset",
+        "EditDatasetRelations",
         "DownloadFile",
         "DeleteDatasetDraft",
         "PublishDataset",
