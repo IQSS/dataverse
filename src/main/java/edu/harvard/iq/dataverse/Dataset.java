@@ -764,7 +764,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getThumbnailUrl() {
-        return thumbnailFile != null ? SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/" + this.getId() + "/logo" : null;
+        return !useGenericThumbnail ? SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/" + this.getId() + "/logo" : null;
     }
 
     public boolean isUseGenericThumbnail() {
