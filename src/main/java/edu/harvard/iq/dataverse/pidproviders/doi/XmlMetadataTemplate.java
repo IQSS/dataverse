@@ -885,6 +885,14 @@ public class XmlMetadataTemplate {
             case DatasetType.DATASET_TYPE_REVIEW -> "Other";
             default -> "Dataset";
             };
+        } else if (dvObject instanceof DataFile) {
+            // For now, we are giving data files a resourceTypeGeneral of "Other"
+            // but longer term, we are working with DataCite on a more appropriate
+            // value. See the following:
+            // - https://github.com/IQSS/dataverse/issues/12476
+            // - https://github.com/IQSS/dataverse/issues/5086
+            // - https://github.com/datacite/datacite-suggestions/discussions/214 
+            resourceType = "Other";
         }
         attributes.put("resourceTypeGeneral", resourceType);
         if (dvObject instanceof Dataset d) {
