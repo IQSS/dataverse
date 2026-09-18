@@ -264,7 +264,7 @@
         </ui:fragment>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
-                             action="#{bean[deleteFileAction]}"/>
+                             action="#{bean[deleteFileAction]}" oncomplete="#{deleteFileOncomplete}"/>
             <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide()" type="button">
                 #{bundle.cancel}
             </button>
