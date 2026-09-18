@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -833,5 +835,25 @@ public class JsonPrinterTest {
         System.clearProperty("dataverse.files.test-driver3.upload-out-of-band");
         System.clearProperty("dataverse.files.test-driver4.type");
         System.clearProperty("dataverse.files.test-driver4.label");
+    }
+
+    @Test
+    public void testGetGuestbookResponseList() {
+        Date now = new Date();
+        String dateStr = DateFormat.getDateTimeInstance().format(now);
+        GuestbookResponseListDTO guestbookResponseListDTO = new GuestbookResponseListDTO(1L,"datasetTitle","Name","My Institution","My Position","Download", now,"file.txt","responseText");
+        List<GuestbookResponseListDTO> guestbookResponseList = List.of(guestbookResponseListDTO);
+        JsonArray result = JsonPrinter.getGuestbookResponseList(guestbookResponseList).build();
+        assertEquals(1,result.size());
+        JsonObject firstObj = result.getJsonObject(0);
+        assertEquals(1, firstObj.getInt("id"));
+        assertEquals(guestbookResponseListDTO.getDataset(), firstObj.getString("dataset"));
+        assertEquals(guestbookResponseListDTO.getName(), firstObj.getString("name"));
+        assertEquals(guestbookResponseListDTO.getInstitution(), firstObj.getString("institution"));
+        assertEquals(guestbookResponseListDTO.getPosition(), firstObj.getString("position"));
+        assertEquals(guestbookResponseListDTO.getFile(), firstObj.getString("file"));
+        assertEquals(guestbookResponseListDTO.getType(), firstObj.getString("type"));
+        assertEquals(dateStr, firstObj.getString("date"));
+        assertEquals(guestbookResponseListDTO.getResponses(), firstObj.getString("responses"));
     }
 }

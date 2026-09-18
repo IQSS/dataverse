@@ -5,9 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -15,10 +17,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.IOException;
@@ -112,24 +111,25 @@ public class GuestbookResponseServiceBean {
         return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
     }
 
-    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
-        return findAllByGuestbookId(guestbookId, null, null);
-    }
-    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId, Integer offset, Integer limit) {
+    public List<GuestbookResponseListDTO> findAllByGuestbookId(Long guestbookId, String sortField, String sortOrder, Integer offset, Integer limit) {
+        // UI columns: Dataset (title), Date, Type, File, User, Custom Questions
         if (guestbookId != null) {
-            TypedQuery<GuestbookResponse> query = em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class);
-            if (offset != null) {
-                query.setFirstResult(offset);
-            }
-            if (limit != null) {
-                query.setMaxResults(limit);
-            }
+            int firstResult = offset == null ? 0 : offset;
+            int pageSize = limit == null ? Integer.MAX_VALUE : limit;
+            String orderByField = sortField != null ? sortField.toLowerCase() : "date";
+            boolean isDescending = sortOrder != null && sortOrder.equalsIgnoreCase(SortBy.DESCENDING);
 
+            Query query = isDescending ? em.createNamedQuery("GuestbookResponse.getGuestbookResponseListDesc") :
+                    em.createNamedQuery("GuestbookResponse.getGuestbookResponseListAsc");
+            query.setParameter(1, guestbookId);
+            query.setParameter(2, orderByField);
+            query.setFirstResult(firstResult).setMaxResults(pageSize);
             return query.getResultList();
+        } else {
+            return null;
         }
-        return null;
     }
-    
+
     /* 
        This method is used for streaming downloads of guestbook responses, in 
        CSV format, both for individual guestbooks, and for entire dataverses

@@ -646,6 +646,9 @@ public class UtilIT {
     }
 
     static Response getGuestbooksResponses(Long guestbookId, Integer offset, Integer limit, String apiToken) {
+        return getGuestbooksResponses(guestbookId, null, null, offset, limit, apiToken);
+    }
+    static Response getGuestbooksResponses(Long guestbookId, String sortField, String sortOrder, Integer offset, Integer limit, String apiToken) {
         RequestSpecification requestSpec = given();
         if (apiToken != null) {
             requestSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
@@ -655,6 +658,12 @@ public class UtilIT {
         }
         if (limit != null) {
             requestSpec.queryParam("limit", limit);
+        }
+        if (sortField != null) {
+            requestSpec.queryParam("sort", sortField);
+        }
+        if (sortOrder != null) {
+            requestSpec.queryParam("order", sortOrder);
         }
         return requestSpec.get("/api/guestbooks/" + guestbookId + "/responses");
     }
