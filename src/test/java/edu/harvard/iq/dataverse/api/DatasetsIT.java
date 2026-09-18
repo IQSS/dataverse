@@ -7531,6 +7531,348 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.guestbookId", equalTo(guestbook.getId().intValue()));
     }
 
+    /**
+     * Verifies that the update-draft API can process a maximal dataset-version JSON containing every non-file field
+     * that this API accepts (files are explicitly rejected), and documents the difference between the two update paths:
+     *
+     * When the latest version is published, the API creates a new draft from the request and updates the version-level
+     * fields.
+     *
+     * When a draft already exists, the API updates only metadata and terms/license; the other DatasetVersion fields
+     * remain unchanged.
+     */
+    @Test
+    public void testUpdateDatasetMetadata() {
+        String apiToken = getSuperuserToken();
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+        UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        String metadataJson = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-update-metadata.json");
+
+        // First exercise the published-version path
+        // We create a "maximal" JSON that contains all fields accepted by the API, including metadataBlocks,
+        // version-level fields, license, and every terms/access field
+        String licenseJson = buildMaximalDatasetVersionJson(metadataJson, true, "one", "2020-01-01", "2020-01-01T00:00:01Z");
+        // Create a new draft
+        UtilIT.updateDatasetMetadataFromJsonViaNative(datasetPid, licenseJson, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response draft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+
+        // Confirm the newly created draft contains what was sent in the maximal JSON
+        assertVersionFields(draft, "one", "2020-01-01", "2020-01-01T00:00:01Z");
+        assertMetadata(draft, "one");
+        assertLicenseAndTerms(draft, "one", true);
+
+        // Updating an existing draft persists metadata and terms, but not the other version-level fields supplied in
+        // the request
+        String changedLicenseJson = buildMaximalDatasetVersionJson(metadataJson, true, "two", "2020-01-02", "2020-01-02T00:00:02Z");
+        // Update the existing draft
+        UtilIT.updateDatasetMetadataFromJsonViaNative(datasetPid, changedLicenseJson, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response changedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+
+        // Confirm the updated draft contains what was sent in the maximal JSON (metadata and license)...
+        assertMetadata(changedDraft, "two");
+        assertLicenseAndTerms(changedDraft, "two", true);
+        // ...but not the other version-level fields
+        assertVersionFields(changedDraft, "one", "2020-01-01", "2020-01-01T00:00:01Z");
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // After publishing, there is no draft again
+        // We can send another maximal JSON, this time without a license, to verify that all custom terms fields are
+        // parsed and stored when a new draft is created from the published version
+        String customTermsJson = buildMaximalDatasetVersionJson(metadataJson, false, "three", "2020-01-03", "2020-01-03T00:00:03Z");
+        UtilIT.updateDatasetMetadataFromJsonViaNative(datasetPid, customTermsJson, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Confirm the newly created draft contains what was sent in the maximal JSON
+        Response customTermsDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        assertVersionFields(customTermsDraft, "three", "2020-01-03", "2020-01-03T00:00:03Z");
+        assertMetadata(customTermsDraft, "three");
+        assertLicenseAndTerms(customTermsDraft, "three", false);
+
+        // Finally, send a changed maximal JSON while that draft exists, again without a license but with custom terms
+        String changedCustomTermsJson = buildMaximalDatasetVersionJson(metadataJson, false, "four", "2020-01-04", "2020-01-04T00:00:04Z");
+        UtilIT.updateDatasetMetadataFromJsonViaNative(datasetPid, changedCustomTermsJson, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response changedCustomTermsDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+
+        // Confirm the updated draft contains what was sent in the maximal JSON (metadata and terms)...
+        assertMetadata(changedCustomTermsDraft, "four");
+        assertLicenseAndTerms(changedCustomTermsDraft, "four", false);
+        // ...but not the other version-level fields
+        assertVersionFields(changedCustomTermsDraft, "three",  "2020-01-03", "2020-01-03T00:00:03Z");
+    }
+
+    private String buildMaximalDatasetVersionJson(String metadataJson, boolean includeLicense, String suffix, String releaseDate, String archiveTime) {
+        // Each request in the scenario uses a different suffix
+        // It lets the assertions distinguish values from the different requests
+        JsonObject metadata = Json.createReader(new StringReader(metadataJson.replace("\"newTitle\"", "\"title-" + suffix + "\""))).readObject();
+        JsonObjectBuilder builder = Json.createObjectBuilder(metadata)
+                .add("deaccessionLink", "https://example.org/deaccession-" + suffix)
+                .add("deaccessionNote", "deaccessionNote-" + suffix)
+                .add("versionNote", "versionNote-" + suffix)
+                .add("releaseDate", releaseDate)
+                .add("archiveTime", archiveTime)
+                .add("UNF", "UNF-" + suffix)
+                .add("termsOfUse", "termsOfUse-" + suffix)
+                .add("confidentialityDeclaration", "confidentialityDeclaration-" + suffix)
+                .add("specialPermissions", "specialPermissions-" + suffix)
+                .add("restrictions", "restrictions-" + suffix)
+                .add("citationRequirements", "citationRequirements-" + suffix)
+                .add("depositorRequirements", "depositorRequirements-" + suffix)
+                .add("conditions", "conditions-" + suffix)
+                .add("disclaimer", "disclaimer-" + suffix)
+                .add("termsOfAccess", "termsOfAccess-" + suffix)
+                .add("dataAccessPlace", "dataAccessPlace-" + suffix)
+                .add("originalArchive", "originalArchive-" + suffix)
+                .add("availabilityStatus", "availabilityStatus-" + suffix)
+                .add("contactForAccess", "contactForAccess-" + suffix)
+                .add("sizeOfCollection", "sizeOfCollection-" + suffix)
+                .add("studyCompletion", "studyCompletion-" + suffix)
+                .add("fileAccessRequest", suffix.length() % 2 == 1);
+        if (includeLicense) {
+            builder.add("license", Json.createObjectBuilder()
+                    .add("name", suffix.equals("one") ? "CC0 1.0" : "CC BY 4.0")
+                    .add("uri", suffix.equals("one")
+                            ? "http://creativecommons.org/publicdomain/zero/1.0"
+                            : "https://creativecommons.org/licenses/by/4.0/")
+                    .build());
+        } else {
+            builder.remove("license");
+        }
+        return builder.build().toString();
+    }
+
+    private void assertVersionFields(Response response, String suffix, String releaseDate, String archiveTime) {
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.versionNote", equalTo("versionNote-" + suffix))
+                // NOTE: Is it indended that users are able to set the following fields via the "update draft version" API?
+                .body("data.deaccessionLink", equalTo("https://example.org/deaccession-" + suffix))
+                .body("data.deaccessionNote", equalTo("deaccessionNote-" + suffix))
+                .body("data.releaseTime", equalTo(releaseDate + "T00:00:00Z"))
+                .body("data.archiveTime", equalTo(archiveTime))
+                .body("data.UNF", equalTo("UNF-" + suffix));
+    }
+
+    private void assertMetadata(Response response, String suffix) {
+        response.then().assertThat()
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'title' }.value", equalTo("title-" + suffix))
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'author' }.value[0].authorName.value", equalTo("Spruce, Sabrina"))
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'datasetContact' }.value[0].datasetContactName.value", equalTo("Spruce, Sabrina"))
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'datasetContact' }.value[0].datasetContactEmail.value", equalTo("spruce@mailinator.com"))
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'dsDescription' }.value[0].dsDescriptionValue.value", equalTo("test"))
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'subject' }.value", hasItem("Other"))
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'depositor' }.value", equalTo("Spruce, Sabrina"))
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'dateOfDeposit' }.value", equalTo("2017-04-19"));
+    }
+
+    private void assertLicenseAndTerms(Response response, String suffix, boolean hasLicense) {
+        // When the "license" field is sent to the update API, the parser currently stores that license and a number of
+        // terms fields that are parsed independently of the license (termsOfAccess, dataAccessPlace,...)
+        //
+        // A number of other fields are parsed only when no license is present (termsOfUse,
+        // confidentialityDeclaration,...)
+
+        response.then().assertThat()
+                .body("data.termsOfAccess", equalTo("termsOfAccess-" + suffix))
+                .body("data.dataAccessPlace", equalTo("dataAccessPlace-" + suffix))
+                .body("data.originalArchive", equalTo("originalArchive-" + suffix))
+                .body("data.availabilityStatus", equalTo("availabilityStatus-" + suffix))
+                .body("data.contactForAccess", equalTo("contactForAccess-" + suffix))
+                .body("data.sizeOfCollection", equalTo("sizeOfCollection-" + suffix))
+                .body("data.studyCompletion", equalTo("studyCompletion-" + suffix))
+                .body("data.fileAccessRequest", equalTo(suffix.length() % 2 == 1));
+
+        if (hasLicense) {
+            response.then().assertThat()
+                    .body("data.license.name", equalTo(suffix.equals("one") ? "CC0 1.0" : "CC BY 4.0"))
+                    .body("data.termsOfUse", equalTo(null))
+                    .body("data.confidentialityDeclaration", equalTo(null))
+                    .body("data.specialPermissions", equalTo(null))
+                    .body("data.restrictions", equalTo(null))
+                    .body("data.citationRequirements", equalTo(null))
+                    .body("data.depositorRequirements", equalTo(null))
+                    .body("data.conditions", equalTo(null))
+                    .body("data.disclaimer", equalTo(null));
+        } else {
+            response.then().assertThat()
+                    .body("data.license.name", equalTo(null))
+                    .body("data.termsOfUse", equalTo("termsOfUse-" + suffix))
+                    .body("data.confidentialityDeclaration", equalTo("confidentialityDeclaration-" + suffix))
+                    .body("data.specialPermissions", equalTo("specialPermissions-" + suffix))
+                    .body("data.restrictions", equalTo("restrictions-" + suffix))
+                    .body("data.citationRequirements", equalTo("citationRequirements-" + suffix))
+                    .body("data.depositorRequirements", equalTo("depositorRequirements-" + suffix))
+                    .body("data.conditions", equalTo("conditions-" + suffix))
+                    .body("data.disclaimer", equalTo("disclaimer-" + suffix));
+        }
+    }
+
+    /**
+     * Verifies that uploading metadata which is identical to the current dataset version does not create a new draft
+     * or update an existing draft's last-update time.
+     *
+     * It also verifies that certain tricky cases of metadata changes (such as email changes, HTML/script changes and
+     * case-only changes) are still persisted even when their display values are unchanged.
+     */
+    @Test
+    public void testUpdateDatasetMetadataNoOp() {
+        String apiToken = getSuperuserToken();
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+        UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        String updateJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+
+        // Create a dataset and update it with known metadata from a file
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        UtilIT.updateDatasetMetadataViaNative(datasetPid, updateJsonFile, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Call API with identical metadata (Published case)
+        UtilIT.updateDatasetMetadataViaNative(datasetPid, updateJsonFile, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify no draft was created
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Test the scenario where a draft ALREADY exists
+        String currentMetadata = UtilIT.getDatasetJson(updateJsonFile);
+        String draftJson = currentMetadata.replace("\"newTitle\"", "\"Updated Title\"");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(draftJson)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response draftResponse = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        draftResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String lastUpdateTimeBefore = draftResponse.jsonPath().getString("data.lastUpdateTime");
+
+        // Call API with identical metadata to the current draft
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(draftJson)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify it was a no-op (lastUpdateTime should NOT have changed)
+        Response draftResponseAfter = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        String lastUpdateTimeAfter = draftResponseAfter.jsonPath().getString("data.lastUpdateTime");
+
+        assertEquals(lastUpdateTimeBefore, lastUpdateTimeAfter, "Last update time should not change for no-op metadata update on draft");
+
+        // Now let's test a couple of metadata changes that should NOT be treated as a no-op
+
+        // Changing only the dataset contact email must not be treated as a no-op
+        String draftJsonWithChangedContactEmail = draftJson.replace("spruce@mailinator.com", "spruce1@mailinator.com");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(draftJsonWithChangedContactEmail)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the changed contact email was persisted in the draft
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'datasetContact' }.value[0].datasetContactEmail.value", equalTo("spruce1@mailinator.com"));
+
+        // Different textbox values that sanitize to the same value must not be treated as a no-op
+        String textboxValueWithFormatting = draftJsonWithChangedContactEmail.replace("\"value\": \"test\"", "\"value\": \"<b>test</b>\"");
+        String textboxValueWithRemovedScript = textboxValueWithFormatting.replace("</b>\"", "</b><script>alert('hi')</script>\"");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textboxValueWithFormatting)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textboxValueWithRemovedScript)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the changed textbox value was persisted
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'dsDescription' }.value[0].dsDescriptionValue.value", equalTo("<b>test</b><script>alert('hi')</script>"));
+
+        // Different text values that strip to the same value must not be treated as a no-op
+        String textValueWithBoldTag = textboxValueWithFormatting.replace("\"value\": \"Updated Title\"", "\"value\": \"First <b>Title</b>\"");
+        String textValueWithItalicTag = textValueWithBoldTag.replace("<b>Title</b>", "<i>Title</i>");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textValueWithBoldTag)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(textValueWithItalicTag)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the changed text value was persisted
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'title' }.value", equalTo("First <i>Title</i>"));
+
+        // Case-only changes to primitive text values must not be treated as a no-op
+        String titleWithChangedCase = textValueWithItalicTag.replace("First <i>Title</i>", "first <i>title</i>");
+
+        given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(titleWithChangedCase)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that the case-only title change was persisted
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken)
+                .then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields.find { fields -> fields.typeName == 'title' }.value", equalTo("first <i>title</i>"));
+    }
+
     private String getSuperuserToken() {
         Response createResponse = UtilIT.createRandomUser();
         String adminApiToken = UtilIT.getApiTokenFromResponse(createResponse);

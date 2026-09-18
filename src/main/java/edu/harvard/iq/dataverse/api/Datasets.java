@@ -932,7 +932,12 @@ public class Datasets extends AbstractApiBean {
                 return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
             }
 
-            boolean updateDraft = ds.getLatestVersion().isDraft();
+            DatasetVersion latestVersion = ds.getLatestVersion();
+            if (new DatasetVersionUpdateDifference(incomingVersion, latestVersion).isEmpty()) {
+                return ok(json(latestVersion, true));
+            }
+
+            boolean updateDraft = latestVersion.isDraft();
 
             DatasetVersion managedVersion;
             if (updateDraft) {
