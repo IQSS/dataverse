@@ -18,7 +18,6 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.IOException;
@@ -114,7 +113,6 @@ public class GuestbookResponseServiceBean {
 
     public List<GuestbookResponseListDTO> findAllByGuestbookId(Long guestbookId, String sortField, String sortOrder, Integer offset, Integer limit) {
         // UI columns: Dataset (title), Date, Type, File, User, Custom Questions
-        List<GuestbookResponseListDTO> results = null;
         if (guestbookId != null) {
             int firstResult = offset == null ? 0 : offset;
             int pageSize = limit == null ? Integer.MAX_VALUE : limit;
@@ -126,9 +124,10 @@ public class GuestbookResponseServiceBean {
             query.setParameter(1, guestbookId);
             query.setParameter(2, orderByField);
             query.setFirstResult(firstResult).setMaxResults(pageSize);
-            results = query.getResultList();
+            return query.getResultList();
+        } else {
+            return null;
         }
-        return results;
     }
 
     /* 

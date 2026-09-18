@@ -3953,7 +3953,6 @@ public class FilesIT {
         createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
-        String username = UtilIT.getUsernameFromResponse(createUserResponse);
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
         Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);

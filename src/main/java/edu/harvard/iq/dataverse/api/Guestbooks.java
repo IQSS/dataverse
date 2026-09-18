@@ -22,7 +22,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
-import java.security.InvalidParameterException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
