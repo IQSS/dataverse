@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
@@ -47,18 +48,20 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
     private String apiUrl;
     private String username;
     private String password;
+    private XmlMetadataTemplate.DatafileInfoMode datafileInfoMode;
     
     private DOIDataCiteRegisterService doiDataCiteRegisterService;
 
     public DataCiteDOIProvider(String id, String label, String providerAuthority, String providerShoulder,
             String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList,
-            String mdsUrl, String apiUrl, String username, String password) {
+            String mdsUrl, String apiUrl, String username, String password, String datafileInfoMode) {
         super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList,
                 excludedList);
         this.mdsUrl = mdsUrl;
         this.apiUrl = apiUrl;
         this.username = username;
         this.password = password;
+        this.datafileInfoMode = XmlMetadataTemplate.DatafileInfoMode.from(datafileInfoMode);
         doiDataCiteRegisterService = new DOIDataCiteRegisterService(mdsUrl, apiUrl, username, password);
     }
 
@@ -95,7 +98,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", DRAFT);
         try {
-            String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject);
+            String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject, datafileInfoMode);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
             return retString;
         } catch (Exception e) {
@@ -132,7 +135,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         try {
             Map<String, String> metadata = getIdentifierMetadata(dvObject);
             metadata.put("_target", getTargetUrl(dvObject));
-            doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
+            doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject, datafileInfoMode);
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed", e);
             throw e;
@@ -219,9 +222,9 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         metadata.put("_target", getTargetUrl(dvObject));
         try {
             if (FeatureFlags.ONLY_UPDATE_DATACITE_WHEN_NEEDED.enabled()) {
-                doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
+                doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject, datafileInfoMode);
             } else {
-                doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
+                doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject, datafileInfoMode);
             }
             return true;
         } catch (Exception e) {
