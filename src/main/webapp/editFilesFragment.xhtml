@@ -498,8 +498,8 @@
                                                                 update="@([id$=accessPopup])" 
                                                                 oncomplete="PF('accessPopup').show();">                                                               
                                                     <h:outputText value="#{bundle['file.restrict']}"/>
-                                                    <f:setPropertyActionListener target="#{EditDatafilesPage.termsOfAccess}" value="#{version.termsOfUseAndAccess.termsOfAccess}" />
-                                                    <f:setPropertyActionListener target="#{EditDatafilesPage.fileAccessRequest}" value="#{version.termsOfUseAndAccess.fileAccessRequest}" />                        
+                                                    <f:setPropertyActionListener target="#{EditDatafilesPage.termsOfAccess}" value="#{version.termsOfAccess.termsOfAccess}" />
+                                                    <f:setPropertyActionListener target="#{EditDatafilesPage.fileAccessRequest}" value="#{version.termsOfAccess.fileAccessRequest}" />
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
