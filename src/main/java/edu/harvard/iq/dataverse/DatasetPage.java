@@ -2492,9 +2492,11 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean fileTreeViewRequired = null;
 
     public boolean isFileTreeViewRequired() {
+        // The React tree also supports flat datasets.
         if (fileTreeViewRequired == null) {
             fileTreeViewRequired = workingVersion.getFileMetadatas().size() > 1
-                    && datafileService.isFoldersMetadataPresentInVersion(workingVersion);
+                    && (systemConfig.isReactTreeViewEnabled()
+                        || datafileService.isFoldersMetadataPresentInVersion(workingVersion));
         }
         return fileTreeViewRequired;
     }
