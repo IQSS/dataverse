@@ -41,12 +41,12 @@ import java.io.IOException;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
- * Same as {@link DeleteDatasetCommand}, but does not stop if the dataset is
+ * Same as {@link DeleteDatasetVersionCommand}, but does not stop if the dataset is
  * published. This command is reserved for super-users, if at all.
  *
  * @author michael
  */
-// Since this is used by DeleteDatasetCommand, must have at least that permission
+// Since this is used by DeleteDatasetVersionCommand, must have at least that permission
 // (for released, user is checked for superuser)
 @RequiredPermissions( Permission.DeleteDatasetDraft )
 public class DestroyDatasetCommand extends AbstractVoidCommand {
