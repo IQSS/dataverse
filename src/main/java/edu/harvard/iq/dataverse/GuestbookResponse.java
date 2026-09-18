@@ -65,6 +65,8 @@ import java.util.Collections;
                         @ColumnResult(name = "id", type = Long.class),
                         @ColumnResult(name = "dataset", type = String.class),
                         @ColumnResult(name = "name", type = String.class),
+                        @ColumnResult(name = "institution", type = String.class),
+                        @ColumnResult(name = "position", type = String.class),
                         @ColumnResult(name = "type", type = String.class),
                         @ColumnResult(name = "date", type =  Date.class),
                         @ColumnResult(name = "file", type = String.class),
@@ -153,6 +155,8 @@ public class GuestbookResponse implements Serializable {
                 gr.id as id
                 ,dsfv.value as dataset
                 ,gr.name as name
+                ,gr.institution as institution
+                ,gr.position as position
                 ,gr.eventtype as type
                 ,gr.responseTime as date
                 ,lfm.label as file
@@ -164,10 +168,11 @@ public class GuestbookResponse implements Serializable {
             FROM guestbookresponse gr
             LEFT JOIN LatestFileMetadata lfm ON gr.datafile_id = lfm.datafile_id AND lfm.rn = 1
             LEFT JOIN LatestDatasetVersion ldsv ON gr.dataset_id = ldsv.dataset_id AND ldsv.rn = 1
-            LEFT JOIN datasetfield dsf ON dsf.datasetversion_id = ldsv.id AND dsf.datasetfieldtype_id = 1
+            LEFT JOIN datasetfield dsf ON dsf.datasetversion_id = ldsv.id AND dsf.datasetfieldtype_id = 1 -- datasetfieldtype_id 1 is title
             LEFT JOIN datasetfieldvalue dsfv ON dsfv.datasetfield_id = dsf.id
             WHERE gr.guestbook_id = ?
                   ORDER BY CASE ?
+                       WHEN 'dataset' THEN dsfv.value
                        WHEN 'date' THEN gr.responseTime::text
                        WHEN 'name' THEN gr.name
                        WHEN 'type' THEN gr.eventtype

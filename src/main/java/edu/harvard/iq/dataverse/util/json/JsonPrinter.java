@@ -427,6 +427,8 @@ public class JsonPrinter {
             grObject.add("id", gr.getId());
             grObject.add("dataset", gr.getDataset());
             grObject.add("name", gr.getName());
+            grObject.add("institution", gr.getInstitution());
+            grObject.add("position", gr.getPosition());
             grObject.add("type", gr.getType());
             grObject.add("date", DateFormat.getDateTimeInstance().format(gr.getDate()));
             grObject.add("file", gr.getFile());

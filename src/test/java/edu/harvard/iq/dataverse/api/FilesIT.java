@@ -36,7 +36,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.time.Year;
 import java.util.*;
 import java.util.logging.Logger;
@@ -4292,6 +4294,17 @@ public class FilesIT {
             int totalCount = jsonPath.getList("data.responses").size();
             assertTrue(totalCount > 0);
             String lastFieldValue = jsonPath.getString("data.responses[0]." + sortField).toLowerCase(); // The sort seems to be case-insensitive
+            if (sortField.equalsIgnoreCase("date") && totalCount > 1) {
+                try {
+                    // test the date order by converting the formatted date back to a Date: "date": "Sep 18, 2026, 1:55:45 PM",
+                    DateFormat df = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.getDefault());
+                    Date date1 = df.parse(jsonPath.getString("data.responses[0]." + sortField));
+                    Date date2 = df.parse(jsonPath.getString("data.responses[" + (totalCount - 1) + "]." + sortField));
+                    assertTrue(isDescending ? date1.after(date2) : date1.before(date2));
+                } catch (ParseException e) {
+                    fail(e.getMessage());
+                }
+            }
             for (int i = 1; i < totalCount; i++) {
                 String fieldValue = jsonPath.getString("data.responses[" + i + "]." + sortField).toLowerCase();
                 assertTrue(isDescending ? fieldValue.compareTo(lastFieldValue) <= 0 : fieldValue.compareTo(lastFieldValue) >= 0);
