@@ -22,13 +22,27 @@ public class GuestbookResponseListDTO {
         this.responses = responses;
     }
 
-    public Long getId() { return id; }
-    public String getDataset() { return dataset; }
-    public String getName() { return name; }
-    public String getType() { return type; }
-    public Date getDate() { return date; }
-    public String getFile() { return file; }
-    public String getResponses() { return responses; }
+    public Long getId() {
+        return id;
+    }
+    public String getDataset() {
+        return dataset;
+    }
+    public String getName() {
+        return name;
+    }
+    public String getType() {
+        return type;
+    }
+    public Date getDate() {
+        return date;
+    }
+    public String getFile() {
+        return file;
+    }
+    public String getResponses() {
+        return responses;
+    }
 
     @Override
     public String toString() {
