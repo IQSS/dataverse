@@ -24,7 +24,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -57,6 +61,13 @@ public class Metadata extends AbstractApiBean {
     @Produces("application/json")
     @Operation(summary = "Starts metadata export jobs",
             description = "Starts background exports for published local datasets that have not been exported since their last publication.")
+    @APIResponse(responseCode = "200", description = "This endpoint responds with 202 when the export is accepted.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
+    @APIResponse(responseCode = "202", description = "Metadata export jobs accepted.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Indicates that the background export is in progress.")))
     public Response exportAll() {
         datasetService.exportAllAsync();
         return this.accepted();
@@ -69,9 +80,17 @@ public class Metadata extends AbstractApiBean {
     @Produces("application/json")
     @Operation(summary = "Starts metadata re-export jobs",
             description = "Starts background re-export jobs for published local datasets, optionally limited to datasets older than a supplied date.")
+    @APIResponse(responseCode = "200", description = "This endpoint responds with 202 when the re-export is accepted.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
+    @APIResponse(responseCode = "202", description = "Metadata re-export jobs accepted.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Indicates that the background re-export is in progress.")))
     public Response reExportAll(
             @Parameter(description = "Optional cutoff date in YYYY-MM-DD format for selecting datasets to re-export.")
             @QueryParam(value = "olderThan") String olderThan, 
+            @Parameter(description = "Comma-separated metadata export formats to re-export; omitted to use all configured formats.")
             @QueryParam("formats") String formats) {
         Date reExportDate = null;
         if (olderThan != null && !olderThan.isEmpty()) {
@@ -99,6 +118,7 @@ public class Metadata extends AbstractApiBean {
     public Response exportDatasetByPersistentId(
             @Parameter(description = "Dataset id or persistent identifier to re-export.", required = true)
             @PathParam("id") String id,
+            @Parameter(description = "Comma-separated metadata export formats to re-export; omitted to use all configured formats.")
             @QueryParam("formats") String formats) {
         try {
             Dataset dataset = findDatasetOrDie(id);

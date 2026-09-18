@@ -79,7 +79,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -251,6 +253,14 @@ public class Datasets extends AbstractApiBean {
     @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
     @Operation(summary = "Export dataset metadata",
             description = "Exports dataset metadata by persistent id using the requested version and exporter.")
+    @APIResponse(responseCode = "200", description = "Exported dataset metadata.",
+            content = {
+                    @Content(mediaType = "application/xml", schema = @Schema(type = SchemaType.STRING)),
+                    @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "application/html", schema = @Schema(type = SchemaType.STRING)),
+                    @Content(mediaType = "application/ld+json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "*/*", schema = @Schema(type = SchemaType.STRING))
+            })
     public Response exportDataset(@Context ContainerRequestContext crc, @Parameter(description = "Persistent identifier.") @QueryParam("persistentId") String persistentId,
             @Parameter(description = "Dataset version selector.") @QueryParam("version") String versionId, @Parameter(description = "Exporter option.") @QueryParam("exporter") String exporter,
             @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
@@ -1624,6 +1634,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Embargoes dataset files",
             description = "Applies embargo settings to the specified dataset files after checking dataset edit permissions.")
     @RequestBody(description = "JSON payload identifying dataset files and embargo settings to apply.")
+    @APIResponse(responseCode = "200", description = "Dataset file embargo settings applied.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response createFileEmbargo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
             @RequestBody(description = "JSON payload identifying dataset files and embargo settings to apply.")
             String jsonBody){
@@ -1801,6 +1814,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Removes file embargoes",
             description = "Removes embargoes from the specified dataset files after checking dataset edit permissions.")
     @RequestBody(description = "JSON payload identifying the dataset files whose embargoes should be removed.")
+    @APIResponse(responseCode = "200", description = "Dataset file embargoes removed.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response removeFileEmbargo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
             @RequestBody(description = "JSON payload identifying the dataset files whose embargoes should be removed.")
             String jsonBody){
@@ -2635,7 +2651,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Uploads a logo for a dataset",
                description = "Uploads a logo for a dataset")
     @APIResponse(responseCode = "200",
-               description = "Dataset logo uploaded successfully")
+               description = "Dataset logo uploaded successfully",
+               content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                       schema = @Schema(type = SchemaType.OBJECT)))
     @Tag(name = "uploadDatasetLogo",
          description = "Uploads a logo for a dataset")
     @RequestBody(description = "Multipart dataset logo upload containing the image file.",
@@ -2906,6 +2924,9 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns dataset curation status",
             description = "Returns the current or historical curation status for a dataset when the requester may view it.")
+    @APIResponse(responseCode = "200", description = "Dataset curation status.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getCurationStatus(@Context ContainerRequestContext crc,
             @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied,
             @Parameter(description = "Whether historical records are included.") @QueryParam("includeHistory") boolean includeHistory) {
@@ -3233,7 +3254,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Uploads a file for a dataset",
                description = "Uploads a file for a dataset")
     @APIResponse(responseCode = "200",
-               description = "File uploaded successfully to dataset")
+               description = "File uploaded successfully to dataset",
+               content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                       schema = @Schema(type = SchemaType.OBJECT)))
     @Tag(name = "addFileToDataset",
          description = "Uploads a file for a dataset")
     @RequestBody(description = "Multipart request containing one uploaded file and JSON metadata for the dataset.",
@@ -4229,6 +4252,9 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns dataset timestamps",
             description = "Returns creation, publication, export, index, and update timestamps visible to the requester for a dataset.")
+    @APIResponse(responseCode = "200", description = "Dataset timestamps.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getTimestamps(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id) {
 
         Dataset dataset = null;
@@ -4346,6 +4372,9 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns Globus upload parameters",
             description = "Returns signed parameters and allowed callback URLs for a Globus upload or reference workflow for a dataset.")
+    @APIResponse(responseCode = "200", description = "Globus upload parameters.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getGlobusUploadParams(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
             @Parameter(description = "Locale for localized Globus metadata.") @QueryParam(value = "locale") String locale) {
         // -------------------------------------
@@ -4463,6 +4492,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Requests Globus upload paths",
             description = "Creates upload path assignments and permissions for a Globus user to upload files to a dataset.")
     @RequestBody(description = "Globus upload request with the transfer principal and number of files.")
+    @APIResponse(responseCode = "200", description = "Globus upload paths created.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response requestGlobusUpload(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
             @RequestBody(description = "Globus upload request with the transfer principal and number of files.")
             String jsonBody) throws IOException, ExecutionException, InterruptedException {
@@ -4559,7 +4591,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Uploads a Globus file for a dataset",
                description = "Uploads a Globus file for a dataset")
     @APIResponse(responseCode = "200",
-               description = "Globus file uploaded successfully to dataset")
+               description = "Globus file uploaded successfully to dataset",
+               content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                       schema = @Schema(type = SchemaType.OBJECT)))
     @Tag(name = "addGlobusFilesToDataset",
          description = "Uploads a Globus file for a dataset")
     @RequestBody(description = "Multipart request containing Globus file metadata and transfer task information.",
@@ -4685,6 +4719,9 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns Globus download parameters",
             description = "Returns signed parameters and allowed callback URLs for a Globus download workflow for a dataset.")
+    @APIResponse(responseCode = "200", description = "Globus download parameters.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getGlobusDownloadParams(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
             @Parameter(description = "Locale for localized Globus metadata.") @QueryParam(value = "locale") String locale, @Parameter(description = "Globus download request id.") @QueryParam(value = "downloadId") String downloadId) {
         // -------------------------------------
@@ -4787,6 +4824,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Requests a Globus download",
             description = "Creates temporary Globus download permissions and returns endpoint path information for dataset files.")
     @RequestBody(description = "Globus download request with transfer principal and optional file id list.")
+    @APIResponse(responseCode = "200", description = "Globus download paths created.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response requestGlobusDownload(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
             @Parameter(description = "Globus download request id.") @QueryParam(value = "downloadId") String downloadId,
             @RequestBody(description = "Globus download request with transfer principal and optional file id list.")
@@ -4993,7 +5033,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Uploads a set of files to a dataset",
                description = "Uploads a set of files to a dataset")
     @APIResponse(responseCode = "200",
-               description = "Files uploaded successfully to dataset")
+               description = "Files uploaded successfully to dataset",
+               content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                       schema = @Schema(type = SchemaType.OBJECT)))
     @Tag(name = "addFilesToDataset",
          description = "Uploads a set of files to a dataset")
     @RequestBody(description = "Multipart request containing file content and JSON metadata for files to add.",
@@ -5069,7 +5111,9 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Replace a set of files to a dataset",
                description = "Replace a set of files to a dataset")
     @APIResponse(responseCode = "200",
-               description = "Files replaced successfully to dataset")
+               description = "Files replaced successfully to dataset",
+               content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                       schema = @Schema(type = SchemaType.OBJECT)))
     @Tag(name = "replaceFilesInDataset",
          description = "Replace a set of files to a dataset")
     @RequestBody(description = "Multipart request containing replacement file content and JSON metadata.",
@@ -5389,6 +5433,9 @@ public class Datasets extends AbstractApiBean {
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Returns archival status for a dataset version",
             description = "Returns stored archival status information for a dataset version when the requester is a superuser.")
+    @APIResponse(responseCode = "200", description = "Dataset version archival status.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                     @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                                     @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
@@ -5483,6 +5530,9 @@ public class Datasets extends AbstractApiBean {
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Deletes archival status for a dataset version",
             description = "Removes stored archival status information from a dataset version when the requester is a superuser.")
+    @APIResponse(responseCode = "200", description = "Dataset version archival status deleted.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response deleteDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                        @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                                        @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
@@ -6692,6 +6742,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
     @Operation(summary = "Read dataset role assignment history",
             description = "Returns dataset role assignment history as JSON or CSV.")
+    @APIResponse(responseCode = "200", description = "Dataset role assignment history.",
+            content = {
+                    @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING))
+            })
     public Response getRoleAssignmentHistory(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("identifier") String id,
@@ -6712,6 +6767,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
     @Operation(summary = "Read file role assignment history",
             description = "Returns file-level role assignment history for a dataset as JSON or CSV.")
+    @APIResponse(responseCode = "200", description = "File role assignment history.",
+            content = {
+                    @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING))
+            })
     public Response getFilesRoleAssignmentHistory(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("identifier") String id,
@@ -6762,6 +6822,9 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns dataset reviews",
             description = "Returns review metadata stored for a dataset.")
+    @APIResponse(responseCode = "200", description = "Dataset reviews.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getReviews(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("identifier") String id) {
