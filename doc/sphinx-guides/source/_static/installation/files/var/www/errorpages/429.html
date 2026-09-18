@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!--
+  Custom "429 Too Many Requests" page served by the reverse proxy in place of
+  the bare application error. Because ErrorDocument renders this page via an
+  internal redirect at the ORIGINAL request URL, every URL in this document
+  must be absolute - relative paths would break on nested request URLs.
+  Self-contained: no JavaScript required.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Too Many Requests - Example Research Data Repository</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; color: #333; }
+        header { background: #1a4c7c; color: #fff; padding: 1rem 2rem; }
+        header h1 { margin: 0; font-size: 1.4rem; }
+        main { max-width: 40rem; margin: 3rem auto; padding: 0 1rem; }
+        .button { display: inline-block; padding: 0.6rem 1.2rem; border-radius: 4px;
+                  background: #1a4c7c; color: #fff; text-decoration: none; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Example Research Data Repository</h1>
+</header>
+<main>
+    <h2>Too many requests (429)</h2>
+    <p>Our repository is currently receiving a high volume of anonymous traffic, and
+       rate limits are protecting the service. Anonymous browsing is temporarily
+       restricted; logged-in users have a much higher limit and are unlikely
+       to be affected.</p>
+    <p><a class="button" href="/loginpage.xhtml">Log in to continue</a></p>
+    <p>If you prefer not to log in, please try again in a little while.</p>
+</main>
+</body>
+</html>
