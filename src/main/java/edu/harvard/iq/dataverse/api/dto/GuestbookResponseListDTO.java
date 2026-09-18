@@ -53,10 +53,4 @@ public class GuestbookResponseListDTO {
     public String getResponses() {
         return responses;
     }
-
-    @Override
-    public String toString() {
-        return "id: " + id + ", dataset: " + dataset + ", name: " + name + ", type: " + type + ", date: " + date  + ", file: " + file +
-                responses != null && !responses.isEmpty() ? ", responses: " + responses : "";
-    }
 }
