@@ -2712,7 +2712,7 @@ public class UtilIT {
             }
         }
         if (!UtilIT.sleepForReindex(id, apiToken, 20)) {
-            logger.warning("Still indexing after 20 seconds");
+            fail("Dataset " + id + " is still indexing after 20 seconds");
         }
     }
 
@@ -3504,42 +3504,48 @@ public class UtilIT {
 
     }
     
+    // Solr only makes new documents visible on its next soft commit. This mirrors
+    // solr.autoSoftCommit.maxTime: 1000 ms in the stock solrconfig.xml, 100 ms in
+    // docker-compose-dev.yml (run the tests with -Ddataverse.test.solr.softcommit.millis=100 to match).
+    private static final int SOLR_SOFT_COMMIT_MILLIS = Integer.getInteger("dataverse.test.solr.softcommit.millis", 1000);
+
     static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
-        int i = 0;
-        Response timestampResponse;
-        int sleepStep = 500;
-        int repeats = durationInSeconds * (1000 / sleepStep);
-        boolean stale=true;
-        do {
-            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
-            System.out.println(timestampResponse.body().asString());
-            try {
-                String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
-                System.out.println(hasStaleIndex);
-                stale = Boolean.parseBoolean(hasStaleIndex);
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
-                stale = false;
-            }
-            try {
-                Thread.sleep(sleepStep);
-                i++;
-            } catch (InterruptedException ex) {
-                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
-                i = repeats + 1;
-            }
-        } while ((i <= repeats) && stale);
+        long start = System.currentTimeMillis();
+        long deadline = start + durationInSeconds * 1000L;
+        boolean stale = hasStaleIndex(idOrPersistentId, apiToken);
+        while (stale && System.currentTimeMillis() < deadline && sleepMillis(100)) {
+            stale = hasStaleIndex(idOrPersistentId, apiToken);
+        }
+        if (stale) {
+            System.out.println(UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken).body().asString());
+        }
+        // the documents have been sent to Solr, give it time to soft commit them
+        sleepMillis(SOLR_SOFT_COMMIT_MILLIS + 100);
+        System.out.println("Waited " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
+        return !stale;
+    }
+
+    private static boolean hasStaleIndex(String idOrPersistentId, String apiToken) {
+        Response timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
         try {
-            Thread.sleep(1000);  //Current autoSoftIndexTime - which adds a delay to when the new docs are visible 
-            i++;
+            return Boolean.parseBoolean(timestampResponse.body().jsonPath().getString("data.hasStaleIndex"));
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
+            return false;
+        }
+    }
+
+    private static boolean sleepMillis(long millis) {
+        try {
+            Thread.sleep(millis);
+            return true;
         } catch (InterruptedException ex) {
             Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
-            i = repeats + 1;
+            Thread.currentThread().interrupt();
+            return false;
         }
-        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
-        return i <= repeats;
-
     }
+
     static boolean sleepForReexport(String idOrPersistentId, String apiToken, int durationInSeconds) {
         int i = 0;
         Response timestampResponse;

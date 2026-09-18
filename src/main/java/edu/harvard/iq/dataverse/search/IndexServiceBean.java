@@ -88,6 +88,7 @@ import jakarta.ejb.TransactionAttribute;
 
 import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
@@ -163,6 +164,8 @@ public class IndexServiceBean {
 
     @EJB
     IndexServiceBean self;
+    @Inject
+    Event<IndexingRequest> indexingRequests;
     
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
@@ -408,7 +411,9 @@ public class IndexServiceBean {
     }
 
     /**
-     * Indexes a dataset asynchronously.
+     * Indexes a dataset asynchronously, once the transaction that requested it has
+     * committed. Starting the background job earlier lets it read the database
+     * before the requesting changes are visible to it (see {@link IndexingRequest}).
      * 
      * Note that this method implement a synchronized skipping mechanism. When an
      * indexing job is already running for a given dataset in the background, the
@@ -427,8 +432,12 @@ public class IndexServiceBean {
      * @param dataset                The dataset to be indexed.
      * @param doNormalSolrDocCleanUp Flag for normal Solr doc clean up.
      */
-    @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+        indexingRequests.fire(new IndexingRequest.IndexDataset(dataset, doNormalSolrDocCleanUp));
+    }
+
+    @Asynchronous
+    public void indexDatasetInBackground(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
             doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
@@ -441,8 +450,12 @@ public class IndexServiceBean {
         }
     }
 
-    @Asynchronous
     public void asyncIndexDataset(Long datasetId, boolean doNormalSolrDocCleanUp) {
+        indexingRequests.fire(new IndexingRequest.IndexDatasetById(datasetId, doNormalSolrDocCleanUp));
+    }
+
+    @Asynchronous
+    public void indexDatasetInBackground(Long datasetId, boolean doNormalSolrDocCleanUp) {
         //Initialize dataset here for logging (LoggingUtil) purposes
         Dataset dataset = null;
         try {
@@ -467,7 +480,10 @@ public class IndexServiceBean {
         while (next != null) {
             // Time context will automatically start on creation and stop when leaving the try block
             try (var timeContext = indexTimer.time()) {
-                indexDataset(next, doNormalSolrDocCleanUp);
+                // background jobs start after the requesting transaction has committed,
+                // so the index time can be recorded right away
+                doIndexDataset(next, doNormalSolrDocCleanUp);
+                self.updateLastIndexedTime(id);
             } catch (Exception e) { // catch all possible exceptions; otherwise when something unexpected happes the dataset wold remain locked and impossible to reindex
                 String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
                 failureLogText += "\r\n" + e.getLocalizedMessage();
@@ -477,8 +493,12 @@ public class IndexServiceBean {
         }
     }
 
-    @Asynchronous
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
+        indexingRequests.fire(new IndexingRequest.IndexDatasets(datasets, doNormalSolrDocCleanUp));
+    }
+
+    @Asynchronous
+    public void indexDatasetListInBackground(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
             try {
                 acquirePermitFromSemaphore();
@@ -503,7 +523,9 @@ public class IndexServiceBean {
 
     public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
-        self.updateLastIndexedTime(dataset.getId());
+        // the caller may still be inside the transaction that created the dataset (harvesting),
+        // and the index time is written in a new transaction that would not find it yet
+        indexingRequests.fire(new IndexingRequest.RecordIndexTime(dataset.getId()));
     }
     
     private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
