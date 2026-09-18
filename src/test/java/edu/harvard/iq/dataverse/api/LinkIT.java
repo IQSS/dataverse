@@ -84,6 +84,13 @@ public class LinkIT {
         assertEquals("Darwin's Finches", JsonPath.from(getLinksResponse.asString()).getString("data.linkedDatasets[0].title"));
         assertEquals(datasetPid, JsonPath.from(getLinksResponse.asString()).getString("data.linkedDatasets[0].identifier"));
 
+        // Test that search shows the "isLinked" attribute in the result
+        Response searchResponse = UtilIT.search("id:dataset_" + datasetId + "_draft", superuserApiToken);
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].isLinked", equalTo(true));
+
         // A dataset cannot be linked to its parent dataverse.
         Response tryToLinkToParentDataverse = UtilIT.linkDataset(datasetPid, dataverse1Alias, superuserApiToken);
         tryToLinkToParentDataverse.prettyPrint();
@@ -146,11 +153,25 @@ public class LinkIT {
                 .body("data.linkedDataverses[0].alias", equalTo(dataverseAlias))
                 .body("data.linkedDataverses[0].displayName", equalTo(dataverseAlias));
 
+        // Test that search shows the "isLinked" attribute in the result
+        Response searchResponse = UtilIT.search("dvAlias:" + dataverseAlias, apiToken);
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].isLinked", equalTo(true));
+
         Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
         deleteLinkingDataverseResponse.prettyPrint();
         deleteLinkingDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"));
+
+        // Test that search no longer shows the "isLinked" attribute in the result
+        searchResponse = UtilIT.search("dvAlias:" + dataverseAlias, apiToken);
+        searchResponse.prettyPrint();
+        searchResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.items[0].isLinked", equalTo(null));
     }
 
     @Test
@@ -178,7 +199,7 @@ public class LinkIT {
                 .body("data.message", equalTo("Dataverse " + level1a + " linked successfully to " + level1b));
 
         assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree="+level1b, 1, UtilIT.GENERAL_LONG_DURATION), "Zero counts in level1b");
-        
+
         Response searchLevel1toLevel1 = UtilIT.search("*", apiToken, "&subtree=" + level1b);
         searchLevel1toLevel1.prettyPrint();
         searchLevel1toLevel1.then().assertThat()
@@ -201,7 +222,7 @@ public class LinkIT {
                 .body("data.message", equalTo("Dataverse " + level2a + " linked successfully to " + level2b));
 
         assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree=" + level2b, 1, UtilIT.GENERAL_LONG_DURATION), "Never found linked dataverse: " + level2b);
-        
+
         Response searchLevel2toLevel2 = UtilIT.search("*", apiToken, "&subtree=" + level2b);
         searchLevel2toLevel2.prettyPrint();
         searchLevel2toLevel2.then().assertThat()
