@@ -23,6 +23,19 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
             <ui:define name="body">
+	                    <div id="status-alert" class="bg-warning">
+                <div class="alert alert-dismissible container text-warning">
+                  <h:outputFormat value="{0}Note about ORCID, GitHub, and Google sign-in:{1} {2}These options are available only to the existing accounts that previously authenticated with these methods. New sign-ups via ORCID, GitHub, or Google are not supported. Please use your {3}Institutional Login{4} or {5}Username/Email{6} to sign up. If you need help logging in, please contact support." escape="false">
+                    <f:param value="&lt;b&gt;"/>
+                    <f:param value="&lt;/b&gt;"/>
+                    <f:param value="&lt;p/&gt;"/>
+                    <f:param value="&lt;b&gt;"/>
+                    <f:param value="&lt;/b&gt;"/>
+                    <f:param value="&lt;b&gt;"/>
+                    <f:param value="&lt;/b&gt;"/>
+                  </h:outputFormat>
+                </div>
+              </div>
                 <ui:fragment rendered="#{LoginPage.listAuthenticationProviders().size() lt 1}">
                     <div class="row">
                         <div class="col-sm-12">
@@ -218,7 +231,7 @@
                                 <h3>#{bundle['auth.providers.title']}</h3>
                                 <h:form>
                                     <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
-                                        <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container">
+                                        <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id and provider.id != 'oidc-mpconfig'}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container">
                                             <h:outputText value="#{provider.title}" />
                                         </p:commandLink>
                                     </ui:repeat>
