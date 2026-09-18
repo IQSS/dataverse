@@ -169,7 +169,7 @@
                                         </h:outputLink>
                                     </li>
                                     <li class="divider"></li>
-                                    <li jsf:rendered="#{dataverseSession.user.superuser}" tabindex="-1">
+                                    <li jsf:rendered="#{permissionsWrapper.powerUserOnSomeDvObject}" tabindex="-1">
                                         <h:outputLink value="/dashboard.xhtml?dataverseId=#{settingsWrapper.rootDataverse.id}">
                                             <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>

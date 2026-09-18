@@ -1,7 +1,7 @@
 Dashboard
 =========
 
-The Dataverse Software offers a dashboard of administrative tools for superusers only. If you are a logged-in superuser, you can access it by clicking your username in the navbar, and then clicking "Dashboard" from the dropdown. You can verify that you are a superuser by checking the color of your username in the navbar. If it's red, you have the right permissions to use the Dashboard. Superusers can give other users the superuser status via :doc:`user-administration`.
+The Dataverse Software offers a dashboard of administrative tools for superusers and power users. While superusers have access to all tools, power users (those with the "Power User" role assigned on a specific Dataverse collection or dataset) only see tools that are relevant to their scoped objects, such as "Move Data". If you are a logged-in superuser or power user, you can access the dashboard by clicking your username in the navbar, and then clicking "Dashboard" from the dropdown. You can verify that you are a superuser by checking the color of your username in the navbar. If it's red, you have the right permissions to use all parts of the Dashboard. Superusers can give other users the superuser status via :doc:`user-administration`.
 
 .. contents:: Contents:
 	:local:

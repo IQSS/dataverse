@@ -684,7 +684,7 @@ public class SettingsServiceBean {
          * the states in an organizations curation process(es) and are intended to help
          * users/curators track the progress of a dataset through an externally defined
          * curation process. Only one set of labels are allowed per dataset (defined via
-         * API by a superuser per collection (UI or API) or per dataset (API only)). A
+         * API by a poweruser per collection (UI or API) or per dataset (API only)). A
          * dataset may only have one label at a time and if a label is set, it will be
          * removed at publication time. This functionality is disabled when this setting
          * is empty/not set.

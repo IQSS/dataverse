@@ -34,7 +34,7 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         }
 
         List<FileMetadata> files = getDataset().getLatestVersion().getFileMetadatas();
-        if ((files == null || files.isEmpty()) && getEffectiveRequiresFilesToPublishDataset()) {
+        if ((files == null || files.isEmpty()) && getRequiresFilesToPublishOrReviewDataset(ctxt)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.mayNotSubmitForReview.FilesRequired"), this);
         }
 

@@ -7,15 +7,14 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.faces.view.ViewScoped;
@@ -36,6 +35,9 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     @EJB
     DatasetVersionServiceBean  datasetVersionService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @Inject
     DataverseSession session;
@@ -264,7 +266,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (dvo == null || u == null || u instanceof GuestUser || !(dvo instanceof Dataset)) {
             return false; // guests can not publish
         }
-        if (u.isSuperuser()) {
+        if (u instanceof AuthenticatedUser && permissionService.isPowerUserOn((AuthenticatedUser) u, dvo)) {
             return true;
         }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
@@ -329,8 +331,24 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
         return authenticatedUsersCanIssueCommand(dataverse, CreateDataverseCommand.class);
     }
-    
-    // todo: move any calls to this to call NavigationWrapper   
+
+    public boolean isPowerUserOn(DvObject dvo) {
+        User u = session.getUser();
+        return (u instanceof AuthenticatedUser && permissionService.isPowerUserOn((AuthenticatedUser) u, dvo));
+    }
+
+    public boolean isPowerUserOnSomeDvObject() {
+        User u = session.getUser();
+        if (u.isSuperuser()) {
+            return true;
+        }
+        if (!(u instanceof AuthenticatedUser)) {
+            return false;
+        }
+        return permissionService.isPowerUserOnSomeDvObject((AuthenticatedUser) u);
+    }
+
+    // todo: move any calls to this to call NavigationWrapper
     @Inject NavigationWrapper navigationWrapper;
     
     public String notAuthorized(){
