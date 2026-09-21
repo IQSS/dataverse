@@ -7621,8 +7621,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     private String buildMaximalDatasetVersionJson(String metadataJson, boolean includeLicense, String suffix, String releaseDate, String archiveTime) {
         // Each request in the scenario uses a different suffix
         // It lets the assertions distinguish values from the different requests
-        JsonObject metadata = Json.createReader(new StringReader(metadataJson.replace("\"newTitle\"", "\"title-" + suffix + "\""))).readObject();
-        JsonObjectBuilder builder = Json.createObjectBuilder(metadata)
+        JsonObject metadata = JsonUtil.getJsonObject(metadataJson.replace("\"newTitle\"", "\"title-" + suffix + "\""));
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder(metadata)
                 .add("deaccessionLink", "https://example.org/deaccession-" + suffix)
                 .add("deaccessionNote", "deaccessionNote-" + suffix)
                 .add("versionNote", "versionNote-" + suffix)
@@ -7646,7 +7646,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .add("studyCompletion", "studyCompletion-" + suffix)
                 .add("fileAccessRequest", suffix.length() % 2 == 1);
         if (includeLicense) {
-            builder.add("license", Json.createObjectBuilder()
+            builder.add("license", JsonUtil.createObjectBuilder()
                     .add("name", suffix.equals("one") ? "CC0 1.0" : "CC BY 4.0")
                     .add("uri", suffix.equals("one")
                             ? "http://creativecommons.org/publicdomain/zero/1.0"
