@@ -4320,6 +4320,9 @@ public class FilesIT {
         // No API token given so the published filename is shown
         UtilIT.getFileCitationFormat(fileId, "EndNote", null, ":latest").then()
                 .statusCode(OK.getStatusCode()).body(containsString("<custom1>coffeeshop.png</custom1>"));
+        // An API token with access is passed and no version is specified, so :latest (the draft) is shown
+        UtilIT.getFileCitationFormat(fileId, "EndNote", apiToken).then()
+                .statusCode(OK.getStatusCode()).body(containsString("<custom1>renamed.png</custom1>"));
         UtilIT.getFileCitationFormat(fileId, "EndNote", apiToken, ":latest-published").then()
                 .statusCode(OK.getStatusCode()).body(containsString("<custom1>coffeeshop.png</custom1>"));
         UtilIT.getFileCitationFormat(fileId, "EndNote", null, ":draft").then()

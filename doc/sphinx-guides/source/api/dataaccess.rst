@@ -276,7 +276,7 @@ Usage example:
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/access/datafile/$DATAFILE_ID/citation/$FORMAT?version=$VERSION"
 
-The ``version`` query parameter is optional. It will default to ``:latest-published``. See :ref:`dataset-version-specifiers` for the list of possible values. If you request a draft, an API token with access must be provided.
+The ``version`` query parameter is optional. It will default to ``:latest``. See :ref:`dataset-version-specifiers` for the list of possible values. If you request a draft, an API token with access must be provided.
 
 .. _data-variable-metadata-access:
 

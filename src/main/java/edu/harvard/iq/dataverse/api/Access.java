@@ -147,7 +147,7 @@ public class Access extends AbstractApiBean {
                                      @PathParam("fileId") String fileId,
                                      @Parameter(description = "Citation format to return.")
                                      @PathParam("format") String formatString,
-                                     @Parameter(description = "Dataset version, such as 1.0, :draft, :latest, or :latest-published. If omitted, uses :latest-published.", required = false)
+                                     @Parameter(description = "Dataset version, such as 1.0, :draft, :latest, or :latest-published. If omitted, uses :latest.", required = false)
                                      @QueryParam("version") String version) {
 
         DataCitation.Format format = DataCitation.getFormat(formatString);
