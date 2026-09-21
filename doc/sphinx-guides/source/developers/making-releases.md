@@ -36,6 +36,8 @@ Early on, make sure it's clear what type of release this is. The steps below des
 
 We have a "create release issues" script at <https://github.com/IQSS/dvpm> that should be run a week or so before code freeze.
 
+A parent issue is created (see the [6.12 example](https://github.com/IQSS/dataverse-pm/issues/574)) and a number of sub-issues.
+
 For each issue that is created by the script there is likely a corresponding step in this document that has "dedicated" label on it like this:
 
 <span class="label label-success pull-left">Dedicated Issue</span>&nbsp;
@@ -47,8 +49,20 @@ There are a variety of reasons why a step might deserve its own dedicated issue:
 
 Steps don't get their own dedicated issue if it would be confusing to have multiple people involved. Too many cooks in the kitchen, as they say. Also, some steps are so small the overhead of an issue isn't worth it.
 
+## Announce the Timeline for the Next Release
+
+<span class="label label-success pull-left">Dedicated Issue</span>&nbsp;
+
+For the next release in our list of [milestones](https://github.com/IQSS/dataverse/milestones), pass the release date to {download}`generate_release_dates.py <../../../../scripts/dev/release-dates/generate_release_dates.py>`. Put these dates on the milestone and accounce them. See examples from the [Google Group](https://groups.google.com/g/dataverse-community/c/kKh4YUBzU9I/m/7wF1048PCgAJ) and [Zulip](https://dataverse.zulipchat.com/#narrow/channel/375707-community/topic/Release.206.2E12.20Timeline/near/615705804).
+
+## Push Back Milestones on Pull Requests That Missed the Train
+
+As the code freeze date approaches, work with the team to decided which pull requests won't make the cut, and bump them to the next release. Don't worry. There will be [another train](https://github.com/IQSS/dataverse/milestones). 🚂
+
 (declare-code-freeze)=
 ## Declare a Code Freeze
+
+The code freeze date is announced well in advance.
 
 When we declare a code freeze, we mean:
 
@@ -64,12 +78,6 @@ The benefits of the code freeze are:
 
 In short, the steps described below become easier under a code freeze.
 
-## Push Back Milestones on Pull Requests That Missed the Train
-
-As of this writing, we optimistically add milestones to issues and pull requests, hoping that the work will be complete before code freeze. Inevitably, we're a bit too optimistic.
-
-Hopefully, as the release approached, the team has already decided which pull requests (that aren't related to the release) won't make the cut. If not, go ahead and bump them to the next release.
-
 (write-release-notes)=
 ## Write Release Notes
 
@@ -80,11 +88,12 @@ Developers express the need for an addition to release notes by creating a "rele
 The task at or near release time is to collect these snippets into a single file.
 
 - Find the issue in GitHub that tracks the work of creating release notes for the upcoming release.
-- Create a branch, add a .md file for the release (ex. 6.10.1 Release Notes) in `/doc/release-notes` and write the release notes, making sure to pull content from the release note snippets mentioned above. Snippets may not include any issue number or pull request number in the text so be sure to copy the number from the filename of the snippet into the final release note.
+- Create a branch, add a .md file for the release (ex. 6.10.1 Release Notes) in `/doc/release-notes` and write the release notes, making sure to pull content from the release note snippets mentioned above.
+- We don't want readers to reach a dead end. Don't just write, "This or that bug was fixed." Always include at least the pull request number so that the reader can click something to learn more. Write somethine like "This or that bug was fixed. See #1234." For features, include a link to the guides as well.
 - Delete (`git rm`) the release note snippets as the content is added to the main release notes file.
 - Include instructions describing the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure. These instructions are required for the next steps (deploying to various environments) so try to prioritize them over finding just the right words in release highlights (which you can do later).
 - We usually include a "Security Updates" section due to dependencies we've updated. Under that section, give credit to any security researchers who have reported vulnerabilities. In the [6.11 release notes](https://github.com/IQSS/dataverse/releases/tag/v6.11), for example, we wrote "We would like to thank [person1], [person2], and [person3] for notifying us about vulnerabilities that were fixed in this release." See {ref}`security-researcher-credit` and {ref}`reporting-security-issues`.
-- Make a pull request. Here's an example: <https://github.com/IQSS/dataverse/pull/11613>
+- Make a pull request. Here's an example: <https://github.com/IQSS/dataverse/pull/12671>
 - Note that we won't merge the release notes until after we have confirmed that the upgrade instructions are valid by performing a couple upgrades.
 
 For a hotfix, don't worry about release notes yet.
@@ -364,7 +373,7 @@ See also {ref}`schemaspy`.
 
 ## Add the Release to the Dataverse Roadmap
 
-Check <https://www.iq.harvard.edu/roadmap-dataverse-project> to see if there is a list of releases to add to. There may not be. This page is in transition.
+If <https://www.iq.harvard.edu/roadmap-dataverse-project> shows a list of releases, add it to.
 
 ## Announce the Release
 
