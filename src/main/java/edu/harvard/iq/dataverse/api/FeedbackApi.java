@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -19,8 +20,12 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("admin/feedback")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class FeedbackApi extends AbstractApiBean {
 
     @EJB MailServiceBean mailService;
@@ -35,9 +40,13 @@ public class FeedbackApi extends AbstractApiBean {
      * unauthenticated user (with access to the /admin api path) to send email from
      * anyone to any contacts in Dataverse. (It also does not do much to validate
      * user input (e.g. to strip potentially malicious html, etc.)!!!!
-     **/
+    **/
     @POST
-    public Response submitFeedback(JsonObject jsonObject) {
+    @Operation(summary = "Submits administrative feedback",
+            description = "Sends a feedback email to contacts for a target object or to the support address when no target is supplied.")
+    public Response submitFeedback(
+            @RequestBody(description = "Feedback JSON with subject, body, sender email, and an optional target object id.")
+            JsonObject jsonObject) {
         JsonNumber jsonNumber = jsonObject.getJsonNumber("targetId");
         DvObject feedbackTarget = null;
         if (jsonNumber != null) {
@@ -54,7 +63,7 @@ public class FeedbackApi extends AbstractApiBean {
         String baseUrl = systemConfig.getDataverseSiteUrl();
         String installationBrandName = BrandingUtil.getInstallationBrandName();
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName, SendFeedbackDialog.ccSupport(feedbackTarget));
         jab.add(feedback.toJsonObjectBuilder());
         mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody());

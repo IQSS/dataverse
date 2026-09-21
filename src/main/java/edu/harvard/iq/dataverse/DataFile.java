@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.*;
@@ -446,7 +448,7 @@ public class DataFile extends DvObject implements Comparable {
         
         List<DataFileTag> currentDataTags = this.getTags();
 
-        JsonArrayBuilder builder = Json.createArrayBuilder();
+        JsonArrayBuilder builder = JsonUtil.createArrayBuilder();
         
         if ( (currentDataTags == null)||(currentDataTags.isEmpty())){
             return builder;

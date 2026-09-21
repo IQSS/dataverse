@@ -7,8 +7,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -24,31 +26,16 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import edu.harvard.iq.dataverse.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.ocpsoft.common.util.Strings;
 
-import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetAuthor;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetRelPublication;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.ExternalIdentifier;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
@@ -67,9 +54,9 @@ public class XmlMetadataTemplate {
     private static final Logger logger = Logger.getLogger(XmlMetadataTemplate.class.getName());
 
     public static final String XML_NAMESPACE = "http://datacite.org/schema/kernel-4";
-    public static final String XML_SCHEMA_LOCATION = "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.5/metadata.xsd";
+    public static final String XML_SCHEMA_LOCATION = "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.7/metadata.xsd";
     public static final String XML_XSI = "http://www.w3.org/2001/XMLSchema-instance";
-    public static final String XML_SCHEMA_VERSION = "4.5";
+    public static final String XML_SCHEMA_VERSION = "4.7";
 
     private DoiMetadata doiMetadata;
 
@@ -359,6 +346,7 @@ public class XmlMetadataTemplate {
             String keyword = null;
             String scheme = null;
             String schemeUri = null;
+            String valueUri = null;
 
             for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
                 switch (subField.getDatasetFieldType().getName()) {
@@ -371,6 +359,9 @@ public class XmlMetadataTemplate {
                 case DatasetFieldConstant.keywordVocabURI:
                     schemeUri = subField.getValue();
                     break;
+                case DatasetFieldConstant.keywordTermURI:
+                    valueUri = subField.getValue();
+                    break;
                 }
             }
             if (StringUtils.isNotBlank(keyword)) {
@@ -380,6 +371,9 @@ public class XmlMetadataTemplate {
                 }
                 if (StringUtils.isNotBlank(schemeUri)) {
                     attributesMap.put("schemeURI", schemeUri);
+                }
+                if (StringUtils.isNotBlank(valueUri)) {
+                    attributesMap.put("valueURI", valueUri);
                 }
                 subjectsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "subjects", subjectsCreated);
                 XmlWriterUtil.writeFullElementWithAttributes(xmlw, "subject", attributesMap, StringEscapeUtils.escapeXml10(keyword));
@@ -425,7 +419,8 @@ public class XmlMetadataTemplate {
      * 7, Contributor (with optional given name, family name, name identifier and
      * affiliation sub-properties)
      *
-     * @see #writeContributorElement(javax.xml.stream.XMLStreamWriter,
+     * @see #writeEntityElements(javax.xml.stream.XMLStreamWriter,
+     *      java.lang.String, java.lang.String, jakarta.json.JsonObject,
      *      java.lang.String, java.lang.String, java.lang.String)
      *
      * @param xmlw
@@ -570,7 +565,7 @@ public class XmlMetadataTemplate {
     //List from https://schema.datacite.org/meta/kernel-4/include/datacite-contributorType-v4.xsd
     private Set<String> contributorTypes = new HashSet<>(Arrays.asList("ContactPerson", "DataCollector", "DataCurator", "DataManager", "Distributor", "Editor", 
                 "HostingInstitution", "Other", "Producer", "ProjectLeader", "ProjectManager", "ProjectMember", "RegistrationAgency", "RegistrationAuthority", 
-                "RelatedPerson", "ResearchGroup", "RightsHolder", "Researcher", "Sponsor", "Supervisor", "WorkPackageLeader"));
+                "RelatedPerson", "ResearchGroup", "RightsHolder", "Researcher", "Sponsor", "Supervisor", "Translator", "WorkPackageLeader"));
 
     private String getCanonicalContributorType(String contributorType) {
         if(StringUtils.isBlank(contributorType) || !contributorTypes.contains(contributorType)) {
@@ -758,21 +753,21 @@ public class XmlMetadataTemplate {
                 for (DatasetField subField : collectionDateFieldValue.getChildDatasetFields()) {
                     switch (subField.getDatasetFieldType().getName()) {
                     case DatasetFieldConstant.dateOfCollectionStart:
-                        startDate = subField.getValue();
+                        startDate = StringUtils.strip(subField.getValue());
                         break;
                     case DatasetFieldConstant.dateOfCollectionEnd:
-                        endDate = subField.getValue();
+                        endDate = StringUtils.strip(subField.getValue());
                         break;
                     }
                 }
-                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
-                // exception would clear the date so we don't send nonsense
-                startDate = cleanUpDate(startDate);
-                endDate = cleanUpDate(endDate);
+                // Verify valid date format
+
+                startDate = isValidYearMonthOrDay(startDate) ? startDate:"";
+                endDate = isValidYearMonthOrDay(endDate) ? endDate:"";
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
-                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate));
                 }
             }
         }
@@ -784,22 +779,21 @@ public class XmlMetadataTemplate {
                 for (DatasetField subField : timePeriodFieldValue.getChildDatasetFields()) {
                     switch (subField.getDatasetFieldType().getName()) {
                     case DatasetFieldConstant.timePeriodCoveredStart:
-                        startDate = subField.getValue();
+                        startDate = StringUtils.strip(subField.getValue());
                         break;
                     case DatasetFieldConstant.timePeriodCoveredEnd:
-                        endDate = subField.getValue();
+                        endDate = StringUtils.strip(subField.getValue());
                         break;
                     }
                 }
-                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
-                // exception would clear the date so we don't send nonsense
-                startDate = cleanUpDate(startDate);
-                endDate = cleanUpDate(endDate);
+                // Verify valid date format
+                startDate = isValidYearMonthOrDay(startDate) ? startDate:"";
+                endDate = isValidYearMonthOrDay(endDate) ? endDate:"";
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Other");
                     attributes.put("dateInformation", "Time period covered by the data");
-                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate));
                 }
             }
         }
@@ -808,26 +802,67 @@ public class XmlMetadataTemplate {
         }
     }
 
-    private String cleanUpDate(String date) {
-        String newDate = null;
-        if (!StringUtils.isBlank(date)) {
-            try {
-                SimpleDateFormat sdf = Util.getDateFormat();
-                Date start = sdf.parse(date);
-                newDate = sdf.format(start);
-            } catch (ParseException e) {
-                logger.warning("Could not parse date: " + date);
-            }
+    /** Checks for yyyy, yyyy-MM, or yyyy-MM-dd format
+     * @param value
+     * @return true if valid date format, false otherwise
+     */
+    private boolean isValidYearMonthOrDay(String value) {
+        if (StringUtils.isBlank(value)) {
+            return false;
         }
-        return newDate;
+
+        try {
+            if (value.matches("\\d{4}")) {
+                Year.parse(value);
+                return true;
+            }
+
+            if (value.matches("\\d{4}-\\d{2}")) {
+                YearMonth.parse(value);
+                return true;
+            }
+
+            if (value.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                LocalDate.parse(value);
+                return true;
+            }
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+
+        return false;
     }
 
     // 9, Language (MA), language
     private void writeLanguage(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
-        // Currently not supported. Spec indicates one 'primary' language. Could send
-        // the first entry in DatasetFieldConstant.language or send iff there is only
-        // one entry, and/or default to the machine's default lang, or the dataverse metadatalang?
+        // Spec indicates one 'primary' language. Sending a language iff there is only
+        // one citation mdb language entry (Could send first entry if there are several and/or default to the machine's default lang, or use the dataset's metadatalang?)
+        if (dvObject.isInstanceofDataFile()) {
+            dvObject = dvObject.getOwner();
+        }
+        if (!(dvObject instanceof Dataset dataset)) {
+            return;
+        }
+
+        DatasetVersion dv = dataset.getLatestVersionForCopy();
+        if (dv == null) {
+            return;
+        }
+        Optional<DatasetField> dsf = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)).findFirst();
+        if (dsf.isPresent()) {
+            String languageIdentifier = null;
+            List<ControlledVocabularyValue> controlledVocabularyValues = dsf.get().getControlledVocabularyValues();
+            if (controlledVocabularyValues != null && controlledVocabularyValues.size() == 1) {
+                ControlledVocabularyValue cvv = controlledVocabularyValues.get(0);
+                languageIdentifier = cvv.getIdentifier();
+            }
+            // 'Not applicable' has no identifier - we want to skip it.
+            if (StringUtils.isNotBlank(languageIdentifier)) {
+                XmlWriterUtil.writeFullElement(xmlw, "language", StringEscapeUtils.escapeXml10(languageIdentifier));
+            }
+        }
         return;
+
     }
 
     // 10, ResourceType (with mandatory general type
@@ -1287,8 +1322,131 @@ public class XmlMetadataTemplate {
             ;
         }
         xmlw.writeEndElement(); // </rights>
+        for (DatasetField dsf : dv.getDatasetFields()) {
+            if ("LCProjectUrl".equals(dsf.getDatasetFieldType().getName())) {
+                if (!dsf.isEmpty()) {
+                    String projectUrl = dsf.getValue();
+                    if (projectUrl != null) {
+                        JsonObject evv = getExternalVocabularyValue(projectUrl);
+                        if (evv != null) {
+                            if (evv.containsKey("notices")) {
+                                JsonValue notices = evv.get("notices");
+                                if (notices.getValueType() == ValueType.ARRAY) {
+                                    for (JsonValue notice : notices.asJsonArray()) {
+                                        if (notice.getValueType() == ValueType.OBJECT) {
+                                            JsonObject noticeObject = notice.asJsonObject();
+                                            writeLocalContextNoticeRightsElement(xmlw, projectUrl, noticeObject);
+
+                                        }
+                                    }
+                                }
+                            } else if (evv.containsKey("tk_labels")) {
+                                JsonValue tkLabels = evv.get("tk_labels");
+                                if (tkLabels.getValueType() == ValueType.ARRAY) {
+                                    for (JsonValue tkLabel : tkLabels.asJsonArray()) {
+                                        if (tkLabel.getValueType() == ValueType.OBJECT) {
+                                            JsonObject tkLabelObject = tkLabel.asJsonObject();
+                                            writeLocalContextLabelRightsElement(xmlw, projectUrl, tkLabelObject);
+
+                                        }
+                                    }
+                                }
+                            } else if (evv.containsKey("bc_labels")) {
+                                JsonValue bcLabels = evv.get("bc_labels");
+                                if (bcLabels.getValueType() == ValueType.ARRAY) {
+                                    for (JsonValue bcLabel : bcLabels.asJsonArray()) {
+                                        if (bcLabel.getValueType() == ValueType.OBJECT) {
+                                            JsonObject bcLabelObject = bcLabel.asJsonObject();
+                                            writeLocalContextLabelRightsElement(xmlw, projectUrl, bcLabelObject);
+
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            
+                            // No label or notice info - we'll still add a pointer to the project
+                            xmlw.writeStartElement("rights"); // <rights>
+                            xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
+                            xmlw.writeAttribute("rightsIdentifierScheme", "Local Contexts");
+                            xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
+                            xmlw.writeEndElement(); // </rights>
+                        }
+
+                    }
+
+                }
+            }
+
+        }
         xmlw.writeEndElement(); // </rightsList>
     }
+
+    private void writeLocalContextNoticeRightsElement(XMLStreamWriter xmlw, String projectUrl, JsonObject noticeObject) throws XMLStreamException {
+        xmlw.writeStartElement("rights"); // <rights>
+        xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
+        xmlw.writeAttribute("rightsIdentifierScheme", "Local Contexts");
+        xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
+        if (noticeObject.containsKey("notice_type")) {
+            String noticeType = noticeObject.getString("notice_type");
+            xmlw.writeAttribute("rightsIdentifier", noticeType);
+        }
+        String rightsValue = null;
+        String lang = null;
+        if (noticeObject.containsKey("name")) {
+            String name = noticeObject.getString("name");
+            xmlw.writeAttribute("rightsIdentifier", name);
+            rightsValue = name;
+        }
+        if (noticeObject.containsKey("notice_page")) {
+            rightsValue = rightsValue + " " + noticeObject.getString("notice_page");
+        }
+        if (noticeObject.containsKey("default_text")) {
+            rightsValue = rightsValue + ": " + noticeObject.getString("default_text");
+        }
+        if (noticeObject.containsKey("language_tag")) {
+            lang = noticeObject.getString("language_tag");
+        }
+        if (rightsValue != null) {
+            if (lang != null) {
+                xmlw.writeAttribute("xml:lang", lang);
+            }
+            xmlw.writeCharacters(rightsValue);
+        }
+        xmlw.writeEndElement(); // </rights>
+    }
+    
+    private void writeLocalContextLabelRightsElement(XMLStreamWriter xmlw, String projectUrl, JsonObject labelObject) throws XMLStreamException {
+        xmlw.writeStartElement("rights"); // <rights>
+        xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
+        xmlw.writeAttribute("rightsIdentifierScheme", "Local Contexts");
+        xmlw.writeAttribute("schemeURI", "https://localcontexts.org");
+        String rightsValue = null;
+        String lang = null;
+        if (labelObject.containsKey("label_type")) {
+            String labelType = labelObject.getString("label_type");
+            xmlw.writeAttribute("rightsIdentifier", labelType);
+        }
+        if (labelObject.containsKey("name")) {
+            String name = labelObject.getString("name");
+            xmlw.writeAttribute("rightsIdentifier", name);
+            rightsValue = name;
+        }
+        if (labelObject.containsKey("default_text")) {
+            rightsValue = rightsValue + ": " + labelObject.getString("default_text");
+        }
+        if (labelObject.containsKey("language_tag")) {
+            lang = labelObject.getString("language_tag");
+        }
+        if (rightsValue != null) {
+            if (lang != null) {
+                xmlw.writeAttribute("xml:lang", lang);
+            }
+            xmlw.writeCharacters(rightsValue);
+        }
+        xmlw.writeEndElement(); // </rights>
+    }
+
 
     private void writeDescriptions(XMLStreamWriter xmlw, DvObject dvObject, boolean deaccessioned) throws XMLStreamException {
         // descriptions -> description with descriptionType attribute
@@ -1569,7 +1727,7 @@ public class XmlMetadataTemplate {
                                     funder = jo.getString("termName");
                                 }
                             }
-                          
+
                             xmlw.writeStartElement("fundingReference"); // <fundingReference>
                             XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(funder));
                             if (isROR) {

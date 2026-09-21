@@ -2,16 +2,15 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -364,7 +363,7 @@ public class MoveIT {
                 .statusCode(FORBIDDEN.getStatusCode())
                 .body("message", equalTo("Use the query parameter forceMove=true to complete the move. This dataset is linked to the new host dataverse or one of its parents. This move would remove the link to this dataset. "));
 
-        JsonObject linksBeforeData = Json.createReader(new StringReader(getLinksBefore.asString())).readObject();
+        JsonObject linksBeforeData = JsonUtil.getJsonObject(getLinksBefore.asString());
         assertEquals(datasetId, linksBeforeData.getJsonObject("data").getInt("id"));
         assertEquals(dataverse2Id, linksBeforeData.getJsonObject("data").getJsonArray("linked-dataverses").get(0).asJsonObject().getInt("id"));
 
@@ -393,7 +392,7 @@ public class MoveIT {
         getLinksAfter.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        JsonObject linksAfterData = Json.createReader(new StringReader(getLinksAfter.asString())).readObject();
+        JsonObject linksAfterData = JsonUtil.getJsonObject(getLinksAfter.asString());
         assertEquals("OK", linksAfterData.getString("status"));
         assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("linked-dataverses").size());
     }

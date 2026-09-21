@@ -46,7 +46,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * This test requires LocalStack and Minio to be running. Developers can use our
+ * This test requires LocalStack to be running. Developers can use our
  * docker-compose file, which has all the necessary configuration.
  */
 public class S3AccessIT {
@@ -54,8 +54,8 @@ public class S3AccessIT {
     private static final Logger logger = Logger.getLogger(S3AccessIT.class.getCanonicalName());
 
     static final String BUCKET_NAME = "mybucket";
+    static final String BUCKET_NAME_NOREDIRECT = "mybucket-noredirect";
     static S3Client s3localstack = null;
-    static S3Client s3minio = null;
 
     @BeforeAll
     public static void setUp() {
@@ -71,45 +71,34 @@ public class S3AccessIT {
                 .region(Region.US_EAST_2)
                 .build();
 
-        String accessKeyMinio = "4cc355_k3y";
-        String secretKeyMinio = "s3cr3t_4cc355_k3y";
-        s3minio = S3Client.builder()
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyMinio, secretKeyMinio)))
-                .endpointOverride(URI.create("http://localhost:9000"))
-                .region(Region.US_EAST_1)
-                .forcePathStyle(true)
-                .build();
+        ensureBucketExists(BUCKET_NAME);
+        ensureBucketExists(BUCKET_NAME_NOREDIRECT);
+    }
 
-        // create bucket if it doesn't exist
+    private static void ensureBucketExists(String bucketName) {
         try {
-            s3localstack.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
-        } catch (NoSuchBucketException ex) {
-            s3localstack.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
-        }
-
-        try {
-            s3minio.headBucket(HeadBucketRequest.builder().bucket(BUCKET_NAME).build());
-        } catch (NoSuchBucketException ex) {
-            try {
-                CreateBucketResponse createBucketResponse = s3minio.createBucket(CreateBucketRequest.builder().bucket(BUCKET_NAME).build());
-                if (createBucketResponse.sdkHttpResponse().isSuccessful()) {
-                    System.out.println("Bucket created successfully");
-                } else {
-                    System.err.println("Failed to create bucket: " + createBucketResponse.sdkHttpResponse().statusCode());
-                }
-            } catch (S3Exception e) {
-                System.err.println("Error creating bucket: " + e.getMessage());
+            s3localstack.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+        } catch (S3Exception ex) {
+            String errorCode = ex.awsErrorDetails() == null ? null : ex.awsErrorDetails().errorCode();
+            if (ex.statusCode() == 404 || "NoSuchBucket".equals(errorCode)) {
+                s3localstack.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+            } else {
+                throw ex;
             }
         }
     }
 
     /**
-     * We're using MinIO for testing non-direct upload.
+     * We're using LocalStack (with redirects disabled) for testing non-direct
+     * upload. Using localstack_noredirect ensures the non-redirect
+     * (proxy-through-Dataverse) code path is actually exercised. If localstack1
+     * (redirect-enabled) were used, RestAssured would silently follow the 303
+     * redirect and the proxy path would never be tested.
      */
     @Test
     public void testNonDirectUpload() {
-        String driverId = "minio1";
-        String driverLabel = "MinIO";
+        String driverId = "localstack_noredirect";
+        String driverLabel = "LocalStackNoRedirect";
 
         Response createSuperuser = UtilIT.createRandomUser();
         createSuperuser.then().assertThat().statusCode(200);
@@ -124,7 +113,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -186,13 +175,13 @@ public class S3AccessIT {
 
         String storageIdentifier = JsonPath.from(addFileResponse.body().asString()).getString("data.files[0].dataFile.storageIdentifier");
         String keyInDataverse = storageIdentifier.split(":")[2];
-        Assertions.assertEquals(driverId + "://" + BUCKET_NAME + ":" + keyInDataverse, storageIdentifier);
+        Assertions.assertEquals(driverId + "://" + BUCKET_NAME_NOREDIRECT + ":" + keyInDataverse, storageIdentifier);
 
         String keyInS3 = datasetStorageIdentifier + "/" + keyInDataverse;
         String s3Object = null;
         try {
-            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME_NOREDIRECT)
                     .key(keyInS3)
                     .build());
             // Read the content of the object into a string
@@ -207,8 +196,11 @@ public class S3AccessIT {
             fail("Failed to read S3 object content: " + ex.getMessage());
         }
 
+        // Use downloadFileNoRedirect to verify Dataverse serves the content directly
+        // (status 200). If the driver were misconfigured with download-redirect=true,
+        // this would return 303 instead, causing the test to fail explicitly.
         System.out.println("non-direct download...");
-        Response downloadFile = UtilIT.downloadFile(Integer.valueOf(fileId), apiToken);
+        Response downloadFile = UtilIT.downloadFileNoRedirect(Integer.valueOf(fileId), apiToken);
         downloadFile.then().assertThat().statusCode(200);
 
         String contentsOfDownloadedFile = downloadFile.getBody().asString();
@@ -220,8 +212,8 @@ public class S3AccessIT {
 
         S3Exception expectedException = null;
         try {
-            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
+                    .bucket(BUCKET_NAME_NOREDIRECT)
                     .key(keyInS3)
                     .build());
             // Read the content of the object into a string
@@ -258,7 +250,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -336,18 +328,6 @@ public class S3AccessIT {
         InputStream inputStream = new ByteArrayInputStream(contentsOfFile.getBytes(StandardCharsets.UTF_8));
         Response uploadFileDirect = UtilIT.uploadFileDirect(localhostUrl, inputStream);
         uploadFileDirect.prettyPrint();
-        /*
-        Direct upload to MinIO is failing with errors like this:
-        <Error>
-          <Code>SignatureDoesNotMatch</Code>
-          <Message>The request signature we calculated does not match the signature you provided. Check your key and signing method.</Message>
-          <Key>10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Key>
-          <BucketName>mybucket</BucketName>
-          <Resource>/mybucket/10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Resource>
-          <RequestId>1793915CCC5BC95C</RequestId>
-          <HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId>
-        </Error>
-         */
         uploadFileDirect.then().assertThat().statusCode(200);
 
         // TODO: Use MD5 or whatever Dataverse is configured for and
@@ -441,7 +421,7 @@ public class S3AccessIT {
 
         S3Exception expectedException = null;
         try {
-            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3minio.getObject(GetObjectRequest.builder()
+            ResponseInputStream<GetObjectResponse> s3ObjectResponse = s3localstack.getObject(GetObjectRequest.builder()
                     .bucket(BUCKET_NAME)
                     .key(keyInS3)
                     .build());
@@ -476,7 +456,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }
@@ -550,18 +530,6 @@ public class S3AccessIT {
         }
         Response uploadFileDirect = UtilIT.uploadFileDirect(localhostUrl, inputStream);
         uploadFileDirect.prettyPrint();
-        /*
-        Direct upload to MinIO is failing with errors like this:
-        <Error>
-          <Code>SignatureDoesNotMatch</Code>
-          <Message>The request signature we calculated does not match the signature you provided. Check your key and signing method.</Message>
-          <Key>10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Key>
-          <BucketName>mybucket</BucketName>
-          <Resource>/mybucket/10.5072/FK2/KGFCEJ/18b8c06688c-21b8320a3ee5</Resource>
-          <RequestId>1793915CCC5BC95C</RequestId>
-          <HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId>
-        </Error>
-         */
         uploadFileDirect.then().assertThat().statusCode(200);
 
         // TODO: Use MD5 or whatever Dataverse is configured for and
@@ -663,7 +631,7 @@ public class S3AccessIT {
     "status": "OK",
     "data": {
         "LocalStack": "localstack1",
-        "MinIO": "minio1",
+        "LocalStackNoRedirect": "localstack_noredirect",
         "Local": "local",
         "Filesystem": "file1"
     }

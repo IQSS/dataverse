@@ -60,6 +60,7 @@ public class UtilIT {
 
     public static final String API_TOKEN_HTTP_HEADER = "X-Dataverse-key";
     private static final String USERNAME_KEY = "userName";
+    private static final String PERSISTENTUSERID_KEY = "persistentUserId";
     private static final String EMAIL_KEY = "email";
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
@@ -144,7 +145,7 @@ public class UtilIT {
     }
 
     private static String getUserAsJsonString(String username, String firstName, String lastName, String email) {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         builder.add(USERNAME_KEY, username);
         builder.add("firstName", firstName);
         builder.add("lastName", lastName);
@@ -155,7 +156,7 @@ public class UtilIT {
     }
 
     private static String getUserAsJsonString(String username, String firstName, String lastName) {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         builder.add(USERNAME_KEY, username);
         builder.add("firstName", firstName);
         builder.add("lastName", lastName);
@@ -257,7 +258,7 @@ public class UtilIT {
     }
 
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);
         builder.add("persistentUserId", persistentUserId);
         builder.add("identifier", identifier);
@@ -310,6 +311,11 @@ public class UtilIT {
         JsonPath createdUser = JsonPath.from(createUserResponse.body().asString());
         String username = createdUser.getString("data.user." + USERNAME_KEY);
         logger.info("Username found in create user response: " + username);
+        //Support for when user is created via a call to /api/users/:me which doesn't return username
+        if( username == null ) {
+            username = createdUser.getString("data." + PERSISTENTUSERID_KEY);
+            logger.info("Username found via persistentUserId in create user response: " + username);
+        }
         return username;
     }
 
@@ -409,11 +415,11 @@ public class UtilIT {
     }
 
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames, String affiliation) {
-        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
-        contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
-        JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder contactArrayBuilder = JsonUtil.createArrayBuilder();
+        contactArrayBuilder.add(JsonUtil.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
+        JsonArrayBuilder subjectArrayBuilder = JsonUtil.createArrayBuilder();
         subjectArrayBuilder.add("Other");
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder objectBuilder = JsonUtil.createObjectBuilder()
                 .add("alias", alias)
                 .add("name", alias)
                 .add("dataverseContacts", contactArrayBuilder)
@@ -444,7 +450,7 @@ public class UtilIT {
                                     String apiToken) {
 
         return updateDataverse(alias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
-                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null, null);
+                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null, null, null);
     }
 
     static Response updateDataverse(String alias,
@@ -459,10 +465,11 @@ public class UtilIT {
                                     String apiToken,
                                     Boolean inheritMetadataBlocksFromParent,
                                     Boolean inheritFacetsFromParent,
-                                    Integer datasetFileCountLimit) {
-        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+                                    Integer datasetFileCountLimit,
+                                    Boolean guestbookRoot) {
+        JsonArrayBuilder contactArrayBuilder = JsonUtil.createArrayBuilder();
         for(String contactEmail : newContactEmails) {
-            contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", contactEmail));
+            contactArrayBuilder.add(JsonUtil.createObjectBuilder().add("contactEmail", contactEmail));
         }
         NullSafeJsonBuilder jsonBuilder = jsonObjectBuilder()
                 .add("alias", newAlias)
@@ -474,6 +481,9 @@ public class UtilIT {
                 ;
         if (datasetFileCountLimit != null) {
             jsonBuilder.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
+        if (guestbookRoot != null) {
+            jsonBuilder.add("guestbookRoot", guestbookRoot);
         }
 
         updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
@@ -499,7 +509,8 @@ public class UtilIT {
                 apiToken,
                 null,
                 null,
-                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1);
+                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1,
+                null);
     }
 
     private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
@@ -508,12 +519,12 @@ public class UtilIT {
                                                                                   Boolean inheritFacetsFromParent,
                                                                                   Boolean inheritMetadataBlocksFromParent,
                                                                                   JsonObjectBuilder objectBuilder) {
-        JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder metadataBlocksObjectBuilder = JsonUtil.createObjectBuilder();
 
         if (inputLevelNames != null) {
-            JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder inputLevelsArrayBuilder = JsonUtil.createArrayBuilder();
             for(String inputLevelName : inputLevelNames) {
-                inputLevelsArrayBuilder.add(Json.createObjectBuilder()
+                inputLevelsArrayBuilder.add(JsonUtil.createObjectBuilder()
                         .add("datasetFieldTypeName", inputLevelName)
                         .add("required", true)
                         .add("include", true)
@@ -523,7 +534,7 @@ public class UtilIT {
         }
 
         if (metadataBlockNames != null) {
-            JsonArrayBuilder metadataBlockNamesArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder metadataBlockNamesArrayBuilder = JsonUtil.createArrayBuilder();
             for(String metadataBlockName : metadataBlockNames) {
                 metadataBlockNamesArrayBuilder.add(metadataBlockName);
             }
@@ -534,7 +545,7 @@ public class UtilIT {
         }
 
         if (facetIds != null) {
-            JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder facetIdsArrayBuilder = JsonUtil.createArrayBuilder();
             for(String facetId : facetIds) {
                 facetIdsArrayBuilder.add(facetId);
             }
@@ -1590,7 +1601,7 @@ public class UtilIT {
     }
 
     static Response createGroup(String dataverseToCreateGroupIn, String aliasInOwner, String displayName, String apiToken) {
-        JsonObjectBuilder groupBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder groupBuilder = JsonUtil.createObjectBuilder();
         groupBuilder.add("aliasInOwner", aliasInOwner);
         groupBuilder.add("displayName", displayName);
         Response response = given()
@@ -1628,7 +1639,7 @@ public class UtilIT {
     }
 
     static Response addToGroup(String dataverseThatGroupBelongsIn, String groupIdentifier, List<String> roleAssigneesToAdd, String apiToken) {
-        JsonArrayBuilder groupBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder groupBuilder = JsonUtil.createArrayBuilder();
         roleAssigneesToAdd.stream().forEach((string) -> {
             groupBuilder.add(string);
         });
@@ -1641,7 +1652,7 @@ public class UtilIT {
     }
 
     static public Response grantRoleOnDataverse(String definitionPoint, String role, String roleAssignee, String apiToken) {
-        JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder roleBuilder = JsonUtil.createObjectBuilder();
         roleBuilder.add("assignee", roleAssignee);
         roleBuilder.add("role", role);
         JsonObject roleObject = roleBuilder.build();
@@ -2033,9 +2044,11 @@ public class UtilIT {
     }
     
     static Response getDataverseWithOwners(String alias,  String apiToken, boolean returnOwners) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/dataverses/"
+        RequestSpecification rs = given();
+        if(apiToken != null) {
+            rs = rs.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return rs.get("/api/dataverses/"
                         + alias
                         + (returnOwners ? "/?returnOwners=true" : ""));
     }
@@ -2706,8 +2719,8 @@ public class UtilIT {
                 id = splitted[1];
             }
         }
-        if (!UtilIT.sleepForReindex(id, apiToken, 10)) {
-            logger.warning("Still indexing after 10 seconds");
+        if (!UtilIT.sleepForReindex(id, apiToken, 20)) {
+            logger.warning("Still indexing after 20 seconds");
         }
     }
 
@@ -2842,7 +2855,7 @@ public class UtilIT {
 
     static Response grantRoleOnDataset(String definitionPoint, String role, String roleAssignee, String apiToken) {
 
-        JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder roleBuilder = JsonUtil.createObjectBuilder();
         roleBuilder.add("assignee", roleAssignee);
         roleBuilder.add("role", role);
         
@@ -4610,10 +4623,10 @@ public class UtilIT {
     }
 
     static Response createFileEmbargo(Integer datasetId, Integer fileId, String dateAvailable, String apiToken) {
-        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonBuilder = JsonUtil.createObjectBuilder();
         jsonBuilder.add("dateAvailable", dateAvailable);
         jsonBuilder.add("reason", "This is a test embargo");
-        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        jsonBuilder.add("fileIds", JsonUtil.createArrayBuilder().add(fileId));
         String jsonString = jsonBuilder.build().toString();
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4624,10 +4637,10 @@ public class UtilIT {
     }
 
     static Response createFileRetention(Integer datasetId, Integer fileId, String dateUnavailable, String apiToken) {
-        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonBuilder = JsonUtil.createObjectBuilder();
         jsonBuilder.add("dateUnavailable", dateUnavailable);
         jsonBuilder.add("reason", "This is a test retention");
-        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        jsonBuilder.add("fileIds", JsonUtil.createArrayBuilder().add(fileId));
         String jsonString = jsonBuilder.build().toString();
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -4673,12 +4686,12 @@ public class UtilIT {
         return setFileCategories(dataFileId, apiToken, categories, null);
     }
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories, Boolean replaceData) {
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArrayBuilder = JsonUtil.createArrayBuilder();
         for (String category : categories) {
             jsonArrayBuilder.add(category);
         }
         String replace = replaceData != null ? "?replace=" + replaceData : "";
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         jsonObjectBuilder.add("categories", jsonArrayBuilder);
         String jsonString = jsonObjectBuilder.build().toString();
         return given()
@@ -4691,12 +4704,12 @@ public class UtilIT {
         return setFileTabularTags(dataFileId, apiToken, tabularTags, null);
     }
     static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags, Boolean replaceData) {
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArrayBuilder = JsonUtil.createArrayBuilder();
         for (String tabularTag : tabularTags) {
             jsonArrayBuilder.add(tabularTag);
         }
         String replace = replaceData != null ? "?replace=" + replaceData : "";
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         jsonObjectBuilder.add("tabularTags", jsonArrayBuilder);
         String jsonString = jsonObjectBuilder.build().toString();
         return given()
@@ -4730,7 +4743,7 @@ public class UtilIT {
             optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
         }
     
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
         if (deaccessionForwardURL != null) {
             jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
@@ -4880,7 +4893,7 @@ public class UtilIT {
     }
 
     public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, String apiToken) {
-        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder inputLevelsArrayBuilder = JsonUtil.createArrayBuilder();
         for (int i = 0; i < inputLevelNames.length; i++) {
             inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i]));
         }
@@ -4892,7 +4905,7 @@ public class UtilIT {
     }
     
      public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, boolean[] displayOnCreate, String apiToken) {
-        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder inputLevelsArrayBuilder = JsonUtil.createArrayBuilder();
         for (int i = 0; i < inputLevelNames.length; i++) {
             inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i], displayOnCreate[i]));
         }
@@ -4904,14 +4917,14 @@ public class UtilIT {
     }
 
     private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include) {
-        return Json.createObjectBuilder()
+        return JsonUtil.createObjectBuilder()
                 .add("datasetFieldTypeName", name)
                 .add("required", required)
                 .add("include", include);
     }
     
     private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include, boolean displayOnCreate) {
-        return Json.createObjectBuilder()
+        return JsonUtil.createObjectBuilder()
                 .add("datasetFieldTypeName", name)
                 .add("required", required)
                 .add("include", include)
@@ -5301,8 +5314,8 @@ public class UtilIT {
     }
   
     public static Response updateDataverseInputLevelDisplayOnCreate(String dataverseAlias, String fieldTypeName, Boolean displayOnCreate, String apiToken) {
-        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
-        JsonObjectBuilder inputLevel = Json.createObjectBuilder()
+        JsonArrayBuilder inputLevelsArrayBuilder = JsonUtil.createArrayBuilder();
+        JsonObjectBuilder inputLevel = JsonUtil.createObjectBuilder()
                 .add("datasetFieldTypeName", fieldTypeName)
                 .add("required", false)
                 .add("include", true);
@@ -5446,7 +5459,25 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + templateId + "/template");
     }
-    
+
+    static Response getReviews(String datasetIdOrPersistentId) {
+        return getReviews(datasetIdOrPersistentId, null);
+    }
+
+    static Response getReviews(String datasetIdOrPersistentId, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        RequestSpecification responseSpec = given();
+        if (apiToken != null) {
+            responseSpec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return responseSpec.get("/api/datasets/" + idInPath + "/reviews" + optionalQueryParam);
+    }
+
     /**
      * Gets the tool URL for a dataset with optional parameters
      * @param datasetId The ID of the dataset
@@ -5580,7 +5611,7 @@ public class UtilIT {
     public static Guestbook createRandomGuestbook(String ownerAlias, String persistentId, String apiToken) throws IOException, JsonParseException {
         Guestbook gb = new Guestbook();
         File guestbookJson = new File("scripts/api/data/guestbook-test.json");
-        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
+        String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath()))).replace("{@}", UUID.randomUUID().toString());
         JsonObject jsonObj = JsonUtil.getJsonObject(guestbookAsJson);
         JsonParser jsonParsor = new JsonParser();
         jsonParsor.parseGuestbook(jsonObj, gb);
@@ -5604,6 +5635,7 @@ public class UtilIT {
         gb.getCustomQuestions().get(0).setId(jsonPath.getLong("data.customQuestions[0].id"));
         gb.getCustomQuestions().get(1).setId(jsonPath.getLong("data.customQuestions[1].id"));
         gb.getCustomQuestions().get(2).setId(jsonPath.getLong("data.customQuestions[2].id"));
+        gb.getCustomQuestions().get(3).setId(jsonPath.getLong("data.customQuestions[3].id"));
 
         // Add the Guestbook to the Dataset
         if (persistentId != null) {
@@ -5618,11 +5650,14 @@ public class UtilIT {
         String guestbookAsJson = new String(Files.readAllBytes(Paths.get(guestbookJson.getAbsolutePath())));
 
         List<Long> cqIDs = new ArrayList<>();
-        gb.getCustomQuestions().stream().forEach(cq -> cqIDs.add(cq.getId()));
+        // Try to match the IDs. This is no easy task as the custom questions are not added to the db in order by id.
+        // We will use "displayOrder" to help match them up
+        gb.getCustomQuestions().stream().sorted(Comparator.comparing(CustomQuestion::getDisplayOrder)).forEach(cq -> cqIDs.add(cq.getId()));
 
         return guestbookAsJson.replace("@ID", gb.getId().toString())
                 .replace("@QID1", cqIDs.get(0).toString())
                 .replace("@QID2", cqIDs.get(1).toString())
-                .replace("@QID3", cqIDs.get(2).toString());
+                .replace("@QID3", cqIDs.get(2).toString())
+                .replace("@QID4", cqIDs.get(3).toString());
     }
 }

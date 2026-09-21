@@ -87,7 +87,8 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
         // This check is not recursive as all the values just report the immediate parent
         if (!oldDvType.equals(dataverse.getDataverseType())
                 || !oldDvName.equals(dataverse.getName())
-                || !oldDvAlias.equals(dataverse.getAlias())) {
+                || !oldDvAlias.equals(dataverse.getAlias())
+                || !oldDv.getLocallyFAIRRoleAssigneeIdentifiers().equals(dataverse.getLocallyFAIRRoleAssigneeIdentifiers())) {
             datasetsReindexRequired = true;
         }
 
@@ -131,6 +132,9 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
         }
         if (dto.getDatasetFileCountLimit() != null) {
             dataverse.setDatasetFileCountLimit(dto.getDatasetFileCountLimit());
+        }
+        if (dto.getGuestbookRoot() != null) {
+            dataverse.setGuestbookRoot(dto.getGuestbookRoot());
         }
     }
 

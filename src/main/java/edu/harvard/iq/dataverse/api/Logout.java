@@ -8,8 +8,11 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("logout")
+@Tag(name = "Users", description = "User account and authenticated user operations.")
 public class Logout extends AbstractApiBean {
 
     @Inject
@@ -27,6 +30,8 @@ public class Logout extends AbstractApiBean {
      */
     @POST
     @Path("/")
+    @Operation(summary = "Logs out the current session",
+            description = "Clears the authenticated session-cookie user when API session authentication is enabled.")
     public Response logout() {
         if (!FeatureFlags.API_SESSION_AUTH.enabled()) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "This endpoint is only available when session authentication feature flag is enabled");

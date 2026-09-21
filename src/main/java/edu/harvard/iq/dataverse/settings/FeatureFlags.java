@@ -99,6 +99,17 @@ public enum FeatureFlags {
     API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH("api-bearer-auth-use-oauth-user-on-id-match"),
 
     /**
+     * When creating a dataset via API, if neither a license nor any terms of use are provided,
+     * the system normally assigns the default license.
+     *
+     * <p>If this feature flag is enabled, no license is assigned (and no terms) in this case.</p>
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.do-not-assume-default-license"
+     * @since Dataverse 6.12
+     */
+    DO_NOT_ASSUME_DEFAULT_LICENSE("do-not-assume-default-license"),
+
+    /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
      * in order to add the boolean publicObject_b:true field to all the public
@@ -250,11 +261,50 @@ public enum FeatureFlags {
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
     
+    /**
+     * Historically, success messages have returned success messages as {data:{message:...}}.
+     * Error messages have been return as either {message:...} or {message:{message:...}}.
+     * While the alignment of error messages is opt-out (see {@link JvmSettings#LEGACY_API_RESPONSE_MESSAGE_STYLE},
+     * changing the response format of ~230 success responses may cause a lot of friction.
+     * This feature flag makes sure any early adopters can change to the unified response layout,
+     * and it will graduate to the new default later.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.unify-api-response-message-style"
+     * @since Dataverse 6.12
+     */
+    UNIFY_API_RESPONSE_MESSAGE_STYLE("unify-api-response-message-style"),
+    
     /** Require Embargo Reason. By default, adding a reason when embargoing is optional. This 
      * flag makes a reason required, both in the UI and API.
      */
     REQUIRE_EMBARGO_REASON("require-embargo-reason"),
+
+    /**
+     * The croissant and croissantSlim metadata export formats can include an extra
+     * "reviews" array if local reviews exist.
+     */
+    CROISSANT_WITH_LOCAL_REVIEWS("croissant-with-local-reviews"),
+
+    /**
+     * Experimental: Allow Locally FAIR Data. With Locally FAIR, access to a
+     * collection and published data in it are restricited to people/groups
+     * specified. For a non-privileged user, the collection, datasets, and files
+     * will not be returned in search results, requests to access the relevant pages
+     * will fail with 404 responses, etc. This functionality is explicitly
+     * experimental at present and will be confusing and/or ineffective if other
+     * settings for the collection, datasets, files are not appopriate for Locally
+     * FAIR data. For example, using DataCite DOIs results in the datasets (and
+     * files is configured) being reported to DataCite and thus the fact of their
+     * existence and their metadata would be visible despite the Locally FAIR
+     * restriction. See the Guides for further considerations.
+     *
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.allow-locally-fair-data"
+     * @since Dataverse 6.10
+     */
+    ALLOW_LOCALLY_FAIR_DATA("allow-locally-fair-data"),
     ;
+    
     
     final String flag;
     final boolean defaultStatus;
@@ -288,6 +338,17 @@ public enum FeatureFlags {
      */
     public boolean enabled() {
         return JvmSettings.FEATURE_FLAG.lookupOptional(Boolean.class, flag).orElse(defaultStatus);
+    }
+    
+    /**
+     * Returns the scoped configuration key for this feature flag.
+     * The key is constructed by inserting the flag name into the {@link JvmSettings#FEATURE_FLAG} pattern,
+     * resulting in a string of the form "dataverse.feature.{flag}".
+     *
+     * @return the scoped configuration key as a String
+     */
+    public String getScopedKey() {
+        return JvmSettings.FEATURE_FLAG.insert(flag);
     }
 
 }

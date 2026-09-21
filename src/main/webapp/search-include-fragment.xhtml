@@ -1,12 +1,13 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui"
-     xmlns:of="http://omnifaces.org/functions"
-     xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:of="http://omnifaces.org/functions"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:Strings="http://omnifaces.org/functions">
 
     <c:set var="page" value="/dataverse/#{DataversePage.dataverse.alias}"/>
     <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf(true)}"/>
@@ -520,6 +521,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.locallyFAIR']}"  title="#{bundle['dataset.versionUI.locallyFAIR.tip']}"  styleClass="label label-primary" rendered="#{result.locallyFAIR}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink rel="nofollow" value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
@@ -538,7 +540,7 @@
 
                         <hr style="margin:.5em;border:0;"/>
 
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:stripAllTags(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
@@ -581,9 +583,10 @@
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
                             <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-warning" rendered="#{SearchIncludeFragment.isRetentionExpired(result)}"/>
-                            <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabelFromString(result.curationStatus)}" styleClass="label label-info curation-status" rendered="#{SearchIncludeFragment.canSeeCurationStatus(result.entityId)}"/>
+                            <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabelFromString(result.curationStatus)}" styleClass="label label-info curation-status" rendered="#{!empty result.curationStatus and SearchIncludeFragment.canSeeCurationStatus(result.entity)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                             <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!result.harvested and !SearchIncludeFragment.isValid(result)}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.locallyFAIR']}"  title="#{bundle['dataset.versionUI.locallyFAIR.tip']}"  styleClass="label label-primary" rendered="#{result.locallyFAIR}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a rel="nofollow" href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.title}">
@@ -605,7 +608,7 @@
                             <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
                         </div>
                         
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:stripAllTags(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
@@ -660,6 +663,7 @@
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
                             <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-danger" rendered="#{SearchIncludeFragment.isRetentionExpired(result)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
+                            <h:outputText value="#{bundle['dataset.versionUI.locallyFAIR']}"  title="#{bundle['dataset.versionUI.locallyFAIR.tip']}"  styleClass="label label-primary" rendered="#{result.locallyFAIR}"/>
                         </div>
 
                         <div class="card-preview-icon-block text-center">
@@ -718,7 +722,7 @@
                             </ui:repeat>
                         </div>
 
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                        <h:outputText value="#{Strings:abbreviate(MarkupChecker:stripAllTags(result.descriptionNoSnippet), descriptionAbbreviationThreshold)}" escape="false" rendered="#{result.descriptionSnippets.size() eq 0}"/>
 
                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">

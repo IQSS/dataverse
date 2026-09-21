@@ -228,6 +228,11 @@ public class SearchFields {
      */
     public static final String PUBLIC_OBJECT = "publicObject_b";
 
+    /** Whether the collection/dataset/file is locally FAIR (discoverable_by only certain groups/users when published)
+     *
+     */
+    public static final String LOCALLY_FAIR = "locallyFair_b";
+
     /**
      * i.e. "Unpublished", "Draft" (multivalued)
      */

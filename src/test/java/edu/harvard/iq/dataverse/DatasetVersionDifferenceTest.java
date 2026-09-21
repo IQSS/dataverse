@@ -77,7 +77,7 @@ public class DatasetVersionDifferenceTest {
         datasetVersion2.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
         datasetVersion2.getTermsOfUseAndAccess().setLicense(license);
         datasetVersion.setFileMetadatas(new ArrayList<>());
-        
+
         // Published version's two files
         DataFile dataFile = new DataFile();
         dataFile.setId(1L);
@@ -91,7 +91,7 @@ public class DatasetVersionDifferenceTest {
 
         List<FileMetadata> fileMetadatas = new ArrayList<>(Arrays.asList(fileMetadata1, fileMetadata2));
         datasetVersion.setFileMetadatas(fileMetadatas);
-        
+
         // Draft version - same two files with one label change
         FileMetadata fileMetadata3 = fileMetadata1.createCopyInVersion(datasetVersion2);
         fileMetadata3.setId(30L);
@@ -184,37 +184,43 @@ public class DatasetVersionDifferenceTest {
 
         // Set a term field
 
-        datasetVersion2.getTermsOfUseAndAccess().setTermsOfUse("Terms o' Use");
+        datasetVersion2.getTermsOfUseAndAccess().setTermsOfAccess("Terms o' Access");
         String[] termField = new String[] {
-                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.header"), "", "Terms o' Use" };
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess"), "", "Terms o' Access" };
         changedTerms.add(termField);
 
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
-        // Set a term field in the original version
-
+        // Set a term field in the original version that will also remove the license
+        changedTerms = new ArrayList<>();
         datasetVersion.getTermsOfUseAndAccess().setDisclaimer("Not our fault");
         String[] termField2 = new String[] {
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer"),
                 "Not our fault", "" };
+
+        String[] termField3 = new String[] {
+                BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"),
+                BundleUtil.getStringFromBundle("license.none.chosen"), license.getName() };
+        changedTerms.add(termField3);
         changedTerms.add(termField2);
+        changedTerms.add(termField);
 
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
-        
-        // Change License in Draft version
+
+        // Change License in Draft version (from no license), which resets Disclaimer to null, but leaves termsOfAccess alone
 
         datasetVersion2.getTermsOfUseAndAccess().setLicense(license2);
-        datasetVersion2.getTermsOfUseAndAccess().setTermsOfUse("");
-        datasetVersion.getTermsOfUseAndAccess().setDisclaimer("");
-        
-        String[] termField3 = new String[] {
+
+        String[] termField4 = new String[] {
                 BundleUtil.getStringFromBundle("file.dataFilesTab.terms.list.license"),
-                "CC0 1.0", "CC BY 4.0" };
+                BundleUtil.getStringFromBundle("license.none.chosen"), license2.getName() };
         changedTerms = new ArrayList<>();
-        changedTerms.add(termField3);
-        
+        changedTerms.add(termField4);
+        changedTerms.add(termField2);
+        changedTerms.add(termField);
+
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
@@ -238,7 +244,7 @@ public class DatasetVersionDifferenceTest {
      * correct (i.e. the manually created expected* parameters are set correctly for
      * each use case), we could drop running the originalCalculateDifference method
      * and just compare with the expected* results.
-     * 
+     *
      * @param changedTerms
      */
     private void compareResults(DatasetVersion datasetVersion, DatasetVersion datasetVersion2,
@@ -425,10 +431,10 @@ public class DatasetVersionDifferenceTest {
         assertTrue("true".equalsIgnoreCase(dataFile.getString("fileChanges[0].changed[0].newValue")));
         assertTrue("disclaimer".equalsIgnoreCase(dataFile.getString("TermsOfAccess.changed[0].newValue")));
     }
-    
+
     @Test
     public void testGetSummaryAsJson(){
-                
+
         Dataverse dv = new Dataverse();
         Dataset ds = new Dataset();
         ds.setOwner(dv);
@@ -462,23 +468,23 @@ public class DatasetVersionDifferenceTest {
         dv2.getFileMetadatas().remove(1);
 
         DatasetVersionDifference dvd  = dv2.getDefaultVersionDifference();
-        
+
 
 
         JsonObjectBuilder json = dvd.getSummaryDifferenceAsJson();
         JsonObject obj = json.build();
         JsonPath dataFile = JsonPath.from(JsonUtil.prettyPrint(obj));
-                
+
         assertTrue("true".equalsIgnoreCase(dataFile.getString("termsAccessChanged")));
         assertEquals(1,(Long.parseLong(dataFile.getString("files.changedFileMetaData"))));
         assertEquals(0,(Long.parseLong(dataFile.getString("testMetadataBlock.deleted"))));
         assertEquals(1, (int) (Long.parseLong(dataFile.getString("testMetadataBlock.added"))));
         assertEquals(1,(Long.parseLong(dataFile.getString("files.added"))));
 
-        
+
     }
-    
-    
+
+
     private DatasetVersion initDatasetVersion(Long id, Dataset ds, DatasetVersion.VersionState vs) {
         DatasetVersion dv = new DatasetVersion();
         dv.setDataset(ds);

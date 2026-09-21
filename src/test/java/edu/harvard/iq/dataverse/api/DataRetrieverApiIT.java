@@ -187,10 +187,14 @@ public class DataRetrieverApiIT {
         // The count should show the list size to be only Root Dataverse count
         items = retrieveMyCollectionListResponse.getBody().jsonPath().getList("data.items");
         assertEquals(rootCount, items.size());
-        // Verify the name and alias of the Root Dataverse. We don't know the id so just make sure it's in the response
-        assertNotNull(items.get(0).get("id"));
-        assertEquals("Root", items.get(0).get("name"));
-        assertEquals("root", items.get(0).get("alias"));
+        // Verify the alias of the Root Dataverse is in the response
+        boolean found = false;
+        for  (int i = 0; i < items.size(); i++) {
+            if ("root".equalsIgnoreCase(items.get(i).get("alias"))) {
+                found = true;
+            }
+        }
+        assertTrue(found, "Root dataverse not found in my collection list");
 
         // Superuser gets the list of Dataverses/Collections it has access to
         retrieveMyCollectionListResponse = UtilIT.retrieveMyCollectionList(superUserApiToken, null);

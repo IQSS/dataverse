@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.api.AbstractApiBean;
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -139,7 +139,7 @@ public class DataverseRequest {
                 }
             }
             
-            String headerParamWFKey = aHttpServletRequest.getHeader(AbstractApiBean.DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
+            String headerParamWFKey = aHttpServletRequest.getHeader(ApiConstants.DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
             String queryParamWFKey = aHttpServletRequest.getParameter("invocationId");
                     
             invocationId = headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;

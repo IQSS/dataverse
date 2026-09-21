@@ -13,14 +13,18 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.signing.FixedSigningSecret;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.ws.rs.BadRequestException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -41,9 +45,9 @@ public class ExternalToolHandlerTest {
         ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
         // One query parameter, not a reserved word, no {fileId} (required) used.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("mode", "mode1")
                         )
                 )
@@ -62,9 +66,9 @@ public class ExternalToolHandlerTest {
         assertEquals("A DataFile is required.", expectedException1.getMessage());
 
         // One query parameter, not a reserved word, no {fileMetadata} (required) used.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("mode", "mode1")
                         )
                 )
@@ -81,12 +85,12 @@ public class ExternalToolHandlerTest {
 
         
         // Two query parameters.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("mode", "mode1")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "value2")
                         )
                 )
@@ -101,12 +105,12 @@ public class ExternalToolHandlerTest {
         assertEquals("A DataFile is required.", expectedException2.getMessage());
 
         // Two query parameters, both reserved words, one is {fileId} which is required.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
                 )
@@ -129,15 +133,15 @@ public class ExternalToolHandlerTest {
 
         // Three query parameters, all reserved words, two {fileId}{fileMetadataId} which are required.
         fmd.setId(2L);
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key3", "{fileMetadataId}")
                         )
                 )
@@ -148,12 +152,12 @@ public class ExternalToolHandlerTest {
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7&key3=2", result6);
 
         // Two query parameters, both reserved words, no apiToken
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
                 )
@@ -164,18 +168,18 @@ public class ExternalToolHandlerTest {
         assertEquals("?key1=42", result4);
 
         //localeCode test
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{fileId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key3", "{fileMetadataId}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key4", "{localeCode}")
                         )
                 )
@@ -186,12 +190,12 @@ public class ExternalToolHandlerTest {
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7&key3=2&key4=en", result7);
 
         // Two query parameters, attempt to use a reserved word that doesn't exist.
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key1", "{junk}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("key2", "{apiToken}")
                         )
                 )
@@ -227,6 +231,7 @@ public class ExternalToolHandlerTest {
         System.out.println("allowedApiCalls et created");
         System.out.println(et.getAllowedApiCalls());
         URLTokenUtil externalToolHandler = new ExternalToolHandler(et, ds, at, null);
+        externalToolHandler.setSigningSecretService(FixedSigningSecret.withSecret("test-only-signing-secret"));
         System.out.println("allowedApiCalls eth created");
         JsonObject jo = externalToolHandler
                 .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
@@ -243,6 +248,71 @@ public class ExternalToolHandlerTest {
 
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    public void testGetToolUrlWithAllowedApiCallsRejectsReservedParameters() {
+        // A manifest that (mis)uses reserved words in an allowedApiCalls urlTemplate - most
+        // dangerously key={apiToken}, which would put the user's real API token into the URL handed
+        // to the tool - is a manifest bug and must be rejected, not silently rewritten.
+        Dataset ds = new Dataset();
+        ds.setId(1L);
+        ApiToken at = new ApiToken();
+        AuthenticatedUser au = new AuthenticatedUser();
+        au.setUserIdentifier("dataverseAdmin");
+        at.setAuthenticatedUser(au);
+        at.setTokenString("secret-api-token-1234");
+        ExternalTool et = getToolWithAllowedApiCallsUrlTemplate("/api/v1/datasets/{datasetId}?key={apiToken}&signed=true&user=Fred");
+        URLTokenUtil handler = new ExternalToolHandler(et, ds, at, null);
+        handler.setSigningSecretService(FixedSigningSecret.withSecret("test-only-signing-secret"));
+        JsonObject params = handler.getParams(JsonUtil.getJsonObject(et.getToolParameters()));
+        JsonArray allowedApiCalls = JsonUtil.getJsonArray(et.getAllowedApiCalls());
+        BadRequestException e = assertThrows(BadRequestException.class,
+                () -> handler.createPostBody(params, allowedApiCalls));
+        assertTrue(e.getMessage().contains("key"), "the error must name the offending reserved parameter");
+        assertFalse(e.getMessage().contains("secret-api-token-1234"), "the error must not leak the user's API token");
+    }
+
+    private static ExternalTool getToolWithAllowedApiCallsUrlTemplate(String urlTemplate) {
+        String tool = JsonUtil.createObjectBuilder()
+                .add("displayName", "AwesomeTool")
+                .add("toolName", "explorer")
+                .add("description", "This tool is awesome.")
+                .add("types", JsonUtil.createArrayBuilder().add("explore"))
+                .add("scope", "dataset")
+                .add("toolUrl", "http://awesometool.com")
+                .add("hasPreviewMode", "true")
+                .add("toolParameters", JsonUtil.createObjectBuilder()
+                        .add("httpMethod", "GET")
+                        .add("queryParameters", JsonUtil.createArrayBuilder()
+                                .add(JsonUtil.createObjectBuilder().add("datasetId", "{datasetId}"))))
+                .add("allowedApiCalls", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
+                                .add("name", "getDataset")
+                                .add("httpMethod", "GET")
+                                .add("urlTemplate", urlTemplate)
+                                .add("timeOut", 10)))
+                .build().toString();
+        return ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    public void testGetToolUrlWithAllowedApiCallsGuestGetsUnsignedUrl() {
+        // Without an API token (guest user) the URL is sent unsigned: there is no user key to sign with.
+        Dataset ds = new Dataset();
+        ds.setId(1L);
+        ExternalTool et = ExternalToolServiceBeanTest.getAllowedApiCallsTool();
+        URLTokenUtil externalToolHandler = new ExternalToolHandler(et, ds, null, null);
+        JsonObject jo = externalToolHandler
+                .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
+        String signedUrl = jo.getJsonArray("signedUrls").getJsonObject(0).getString("signedUrl");
+        assertEquals("https://librascholar.org/api/v1/datasets/1", signedUrl);
+        assertFalse(signedUrl.contains("until="));
+        assertFalse(signedUrl.contains("user="));
+        assertFalse(signedUrl.contains("method="));
+        assertFalse(signedUrl.contains("token="));
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
     public void testDatasetConfigureTool() {
         List<ExternalToolType> externalToolTypes = new ArrayList<>();
         var externalToolType = new ExternalToolType();
@@ -252,15 +322,15 @@ public class ExternalToolHandlerTest {
         String toolUrl = "http://example.com";
         var externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
-        externalTool.setToolParameters(Json.createObjectBuilder()
-                .add("queryParameters", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        externalTool.setToolParameters(JsonUtil.createObjectBuilder()
+                .add("queryParameters", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("siteUrl", "{siteUrl}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("datasetPid", "{datasetPid}")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("localeCode", "{localeCode}")
                         )
                 )
@@ -279,4 +349,27 @@ public class ExternalToolHandlerTest {
 
     }
 
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    public void testGetRequestWithAllowedApiCallsSignsTheCallback() {
+        // A GET tool with allowedApiCalls receives a signed callback URL instead of raw params.
+        Dataset ds = new Dataset();
+        ds.setId(1L);
+        ApiToken at = new ApiToken();
+        AuthenticatedUser au = new AuthenticatedUser();
+        au.setUserIdentifier("dataverseAdmin");
+        at.setAuthenticatedUser(au);
+        at.setTokenString("1234");
+        ExternalTool et = ExternalToolServiceBeanTest.getAllowedApiCallsTool();
+        ExternalToolHandler handler = new ExternalToolHandler(et, ds, at, null);
+        handler.setSigningSecretService(FixedSigningSecret.withSecret("test-only-signing-secret"));
+
+        String queryString = handler.handleRequest();
+
+        assertTrue(queryString.startsWith("?callback="), queryString);
+        String callback = new String(java.util.Base64.getDecoder().decode(
+                queryString.substring("?callback=".length()).split("&")[0]), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(callback.contains("&token="), "the callback must be signed: " + callback);
+        assertFalse(callback.contains("1234&"), "the raw API token must not appear in the callback");
+    }
 }

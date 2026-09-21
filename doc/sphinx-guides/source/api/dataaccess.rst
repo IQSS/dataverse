@@ -494,7 +494,7 @@ Get User Permissions on a File:
 
 ``/api/access/datafile/{id}/userPermissions``
 
-This method returns the permissions that the calling user has on a particular file.
+This method returns the permissions that the calling user has on a particular file. 
 
 In particular, the user permissions that this method checks, returned as booleans, are the following:
 
@@ -505,3 +505,5 @@ In particular, the user permissions that this method checks, returned as boolean
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userPermissions"
+
+Authentication is required for this API. 

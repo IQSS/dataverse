@@ -1,0 +1,52 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+
+    <!-- Component Interface: Defines the attributes you can pass to this component -->
+    <cc:interface>
+        <cc:attribute name="value" required="true" type="java.util.List" shortDescription="The list to hold the selected RoleAssignees."/>
+        <cc:attribute name="completeMethod" required="true" method-signature="java.util.List complete(java.lang.String)" shortDescription="Backing bean method to provide autocomplete suggestions."/>
+        <cc:attribute name="update" shortDescription="Component(s) to update on item select/unselect."/>
+        <cc:attribute name="placeholder" type="java.lang.String" default="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"/>
+        <cc:attribute name="required" type="java.lang.Boolean" default="false"/>
+        <cc:attribute name="requiredMessage" type="java.lang.String"/>
+        <cc:attribute name="multiple" type="java.lang.Boolean" default="true"/>
+    </cc:interface>
+
+    <!-- Component Implementation: The actual UI and logic -->
+    <cc:implementation>
+        <p:autoComplete id="userGroupAutoComplete"
+                        value="#{cc.attrs.value}"
+                        completeMethod="#{cc.attrs.completeMethod}"
+                        multiple="#{cc.attrs.multiple}"
+                        var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}"
+                        converter="roleAssigneeConverter"
+                        placeholder="#{cc.attrs.placeholder}"
+                        required="#{cc.attrs.required}"
+                        requiredMessage="#{cc.attrs.requiredMessage}"
+                        scrollHeight="180"
+                        forceSelection="true"
+                        minQueryLength="2"
+                        queryDelay="1000"
+                        groupBy="#{roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"
+                        emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
+                        styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel">
+
+            <p:column>
+                <h:outputText value="#{roleAssignee.displayInfo.title}"/>
+                <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
+            </p:column>
+            <p:column>
+                <h:outputText value="#{roleAssignee.identifier}"/>
+            </p:column>
+
+            <p:ajax process="@this" event="itemSelect" update="#{cc.attrs.update}"/>
+            <p:ajax process="@this" event="itemUnselect" update="#{cc.attrs.update}"/>
+        </p:autoComplete>
+        <p:message for="userGroupAutoComplete" display="text"/>
+    </cc:implementation>
+
+</ui:composition>

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
 
+import static edu.harvard.iq.dataverse.util.MarkupCheckerUtil.htmlEqualTo;
 import static jakarta.ws.rs.core.Response.Status.*;
 import java.io.File;
 import java.io.IOException;
@@ -89,7 +90,7 @@ public class DataverseFeaturedItemsIT {
     }
 
     @Test
-    public void testCreateFeaturedItemWithBadDvOdbjectIds() {
+    public void testCreateFeaturedItemWithBadDvObjectIds() {
         // Set up a new published dataverse and dataset
         String apiToken = createUserAndGetApiToken();
         String dataverseAlias = createDataverseAndGetAlias(apiToken);
@@ -100,7 +101,7 @@ public class DataverseFeaturedItemsIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).prettyPrint();
         String datasetPersistentIdBad = datasetPersistentId + "BAD";
         String dataverseAliasBad = dataverseAlias + "BAD";
-        String fieldIdBad = "999";
+        String fieldIdBad = String.valueOf(Integer.MAX_VALUE);
 
         // Test with bad Dataset id should return bad request with not found message
         Response createFeatureItemResponse = UtilIT.createDataverseFeaturedItem(dataverseAlias, apiToken, null, 0, null, "dataset", datasetPersistentIdBad);
@@ -408,7 +409,7 @@ public class DataverseFeaturedItemsIT {
     private void verifyUpdatedFeaturedItem(Response response, String expectedContent, String expectedImageFileName, int expectedDisplayOrder, String type, String dvObject, String dvObjectDisplayName) {
         response.prettyPrint();
         response.then().assertThat()
-                .body("data.content", equalTo(expectedContent))
+                .body("data.content", htmlEqualTo(expectedContent))
                 .body("data.imageFileName", equalTo(expectedImageFileName))
                 .body("data.displayOrder", equalTo(expectedDisplayOrder))
                 .body("data.type", equalTo(type))
