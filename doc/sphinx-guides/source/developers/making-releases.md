@@ -64,8 +64,6 @@ The benefits of the code freeze are:
 
 In short, the steps described below become easier under a code freeze.
 
-Note: for a hotfix, a code freeze is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests. Basically, we want to get the hotfix merged quickly so we can propagate the version bump into all open pull requests so that API tests can start passing again in those pull requests.
-
 ## Push Back Milestones on Pull Requests That Missed the Train
 
 As of this writing, we optimistically add milestones to issues and pull requests, hoping that the work will be complete before code freeze. Inevitably, we're a bit too optimistic.
