@@ -4,17 +4,18 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-
-import java.util.logging.Logger;
-
-import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.*;
-
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST;
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LinkIT {
 
@@ -58,6 +59,7 @@ public class LinkIT {
                 .statusCode(CREATED.getStatusCode());
 
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
         String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
 
         Response createDataverse2 = UtilIT.createRandomDataverse(apiToken);
@@ -90,6 +92,12 @@ public class LinkIT {
         searchResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.items[0].isLinked", equalTo(true));
+
+        // Test that isLinked is in the results for get Dataset Version and get Dataset
+        Response getResponse = UtilIT.getDatasetVersion(persistentId, DS_VERSION_LATEST, superuserApiToken);
+        getResponse.then().assertThat().statusCode(OK.getStatusCode()).body("data.isLinked", equalTo(true));
+        getResponse = UtilIT.nativeGet(datasetId, superuserApiToken);
+        getResponse.then().assertThat().statusCode(OK.getStatusCode()).body("data.isLinked", equalTo(true));
 
         // A dataset cannot be linked to its parent dataverse.
         Response tryToLinkToParentDataverse = UtilIT.linkDataset(datasetPid, dataverse1Alias, superuserApiToken);
@@ -131,6 +139,10 @@ public class LinkIT {
         createLinkingDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Dataverse " + dataverseAlias + " linked successfully to " + dataverseAlias2));
+
+        // Test that isLinked is included in the get Dataverse response
+        Response getResponse = UtilIT.getDataverseWithOwners(dataverseAlias, apiToken, true);
+        getResponse.then().assertThat().statusCode(OK.getStatusCode()).body("data.isLinked", equalTo(true));
 
         Response tryLinkingAgain = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
         tryLinkingAgain.prettyPrint();
