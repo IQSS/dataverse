@@ -173,13 +173,7 @@ public class ExporterRegistryBean {
         return exporters.values().stream()
             .filter(exporter -> exporter.getFormatName().equals(formatName))
             .findFirst()
-            .map(exporter -> new ExporterDetails(
-                exporter.getDisplayName(BundleUtil.getCurrentLocale()),
-                exporter.getFormatName(),
-                exporter.getMediaType(),
-                exporter.isHarvestable(),
-                exporter.isAvailableToUsers())
-            );
+            .map(ExporterRegistryBean::toDetail);
     }
     
     /**
@@ -188,13 +182,7 @@ public class ExporterRegistryBean {
      */
     public List<Details> getDetails() {
         return exporters.values().stream()
-            .<Details>map(exporter -> new ExporterDetails(
-                exporter.getDisplayName(BundleUtil.getCurrentLocale()),
-                exporter.getFormatName(),
-                exporter.getMediaType(),
-                exporter.isHarvestable(),
-                exporter.isAvailableToUsers()
-            ))
+            .map(ExporterRegistryBean::toDetail)
             .toList();
     }
     
@@ -473,5 +461,15 @@ public class ExporterRegistryBean {
                 (Exporter e) -> dependentsByFormat.getOrDefault(e.getFormatName(), Set.of()).size())
             .reversed() // inversed order as the more transitive dependents, the earlier it needs to be processed!
             .thenComparing(Exporter::getFormatName);
+    }
+    
+    private static Details toDetail(Exporter exporter) {
+        return new ExporterDetails(
+            exporter.getDisplayName(BundleUtil.getCurrentLocale()),
+            exporter.getFormatName(),
+            exporter.getMediaType(),
+            exporter.isHarvestable(),
+            exporter.isAvailableToUsers()
+        );
     }
 }
