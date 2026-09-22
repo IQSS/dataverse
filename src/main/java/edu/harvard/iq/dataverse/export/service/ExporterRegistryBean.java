@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequ
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.meta.plugin.Plugin;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.ejb.Lock;
@@ -221,6 +222,25 @@ public class ExporterRegistryBean {
         if (!invalidFormats.isEmpty()) {
             throw new InvalidRequest("no exporters available for " + String.join(", ", invalidFormats));
         }
+    }
+    
+    /**
+     * Ensures that an exporter exists for the format, and it supports the required plugin interface.
+     *
+     * @param formatName the name of the format to validate
+     * @param pluginInterface the class of the plugin interface that the exporter must support
+     * @throws InvalidRequest if format or plugin interface are null, or the format does not exist,
+     *                        or the exporter does not support the plugin interface
+     */
+    public Details requireExistsAndSupports(String formatName, Class<? extends Plugin> pluginInterface) {
+        requireExists(formatName);
+        if (pluginInterface == null) {
+            throw new InvalidRequest("Plugin interface must not be null");
+        }
+        if (!pluginInterface.isAssignableFrom(exporters.get(formatName).getClass())) {
+            throw new InvalidRequest("exporter for " + formatName + " does not support " + pluginInterface.getCanonicalName());
+        }
+        return toDetail(exporters.get(formatName));
     }
     
     /**
