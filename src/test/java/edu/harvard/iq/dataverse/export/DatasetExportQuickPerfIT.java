@@ -62,11 +62,13 @@ class DatasetExportQuickPerfIT {
     }
 
     @Test
-    @DisplayName("QuickPerf POC: Assert maximum SELECT queries and zero mutations during metadata export")
+    @DisplayName("QuickPerf POC: Assert query limits, bind parameter safety, and zero mutations during metadata export")
     @ExpectMaxSelect(55)
-    @ExpectMaxInsert(0)
-    @ExpectMaxUpdate(0)
-    @ExpectMaxDelete(0)
+    @org.quickperf.sql.annotation.ExpectUpdate(0)
+    @org.quickperf.sql.annotation.ExpectInsert(0)
+    @org.quickperf.sql.annotation.ExpectDelete(0)
+    @org.quickperf.sql.annotation.DisableQueriesWithoutBindParameters
+    @org.quickperf.sql.annotation.DisableLikeWithLeadingWildcard
     @AnalyzeSql
     void shouldExportDatasetWithinExpectedQueryLimits() {
         Long datasetVersionId = sampleDataset.getVersions().get(0).getId();
