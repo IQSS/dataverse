@@ -309,14 +309,8 @@
                              update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
-            <!--PREVIEW TAB CANCEL BUTTON-->
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}"
-                             rendered="#{popupContext == 'previewTab'}"
-                             onclick="history.back();"
-                             update="fileForm:tabView">
-            </p:commandButton>
             <!--DIALOG CANCEL BUTTON-->
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}"
+            <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.cancel}"
                              rendered="#{popupContext != 'previewTab'}"
                              onclick="PF('guestbookAndTermsPopup').hide();">
             </p:commandButton>
@@ -336,7 +330,7 @@
                     oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
                     <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandLink>
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}"
+            <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.cancel}"
                              onclick="PF('guestbookAndTermsPopup').hide();">
             </p:commandButton>
         </div>
