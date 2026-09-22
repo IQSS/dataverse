@@ -47,10 +47,12 @@ public class JpaEntityManagerService implements AutoCloseable {
             throw new IllegalStateException("JpaEntityManagerService has already been started.");
         }
         
-        proxiedDataSource = ProxyDataSourceBuilder.create()
+        DataSource countProxy = ProxyDataSourceBuilder.create()
             .dataSource(baseDataSource)
             .countQuery()
-            .buildProxy();
+            .build();
+
+        proxiedDataSource = org.quickperf.sql.config.QuickPerfSqlDataSourceBuilder.aDataSourceBuilder().buildProxy(countProxy);
         
         validateDataSource(proxiedDataSource);
         
