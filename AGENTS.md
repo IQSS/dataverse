@@ -8,7 +8,10 @@ This file defines the operational guidelines, verification gates, architectural 
 
 - **Java Version**: OpenJDK / Amazon Corretto **21** (Dataverse 6.x strictly requires Java 21; do NOT use JDK 17).
   ```bash
-  export JAVA_HOME="/Users/tuannguyen/Library/Java/JavaVirtualMachines/corretto-21.0.4/Contents/Home"
+  # macOS:
+  export JAVA_HOME="$(/usr/libexec/java_home -v 21 2>/dev/null || echo '/Library/Java/JavaVirtualMachines/corretto-21.jdk/Contents/Home')"
+  # Linux:
+  # export JAVA_HOME="/usr/lib/jvm/java-21-amazon-corretto"
   export PATH="$JAVA_HOME/bin:$PATH"
   ```
 - **Build Tools**: Apache Maven 3.9+ (`mvn` or `./mvnw`).
