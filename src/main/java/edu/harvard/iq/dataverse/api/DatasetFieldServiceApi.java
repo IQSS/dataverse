@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
@@ -53,8 +55,13 @@ import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("admin/datasetfield")
+@Tag(name = "Dataset Fields", description = "Dataset field type, controlled vocabulary, and metadata block loading operations.")
 public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @EJB
@@ -72,6 +79,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
     
     @GET
+    @Operation(summary = "Lists dataset field groupings",
+            description = "Returns dataset field type names grouped by parent relationship, multiplicity, and required status.")
     public Response getAll() {
         try {
             List<String> listOfIsHasParentsTrue = new ArrayList<>();
@@ -92,7 +101,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             for ( DatasetFieldType dt : requiredFields ) {
                 requiredFieldNames.add( dt.getName() );
             }
-            return ok( Json.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
+            return ok( JsonUtil.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
                     .add("noParents", asJsonArray(listOfIsHasParentsFalse))
                     .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
                     .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
@@ -118,7 +127,11 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @GET
     @Path("{name}")
-    public Response getByName(@PathParam("name") String name) {
+    @Operation(summary = "Returns a dataset field type",
+            description = "Returns a dataset field type with metadata block, Solr field names, parent relationship, multiplicity, required state, URI, and controlled vocabulary values.")
+    public Response getByName(
+            @Parameter(description = "Dataset field type name to return.", required = true)
+            @PathParam("name") String name) {
         try {
             DatasetFieldType dsf = datasetFieldService.findByName(name);
             Long id = dsf.getId();
@@ -138,7 +151,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 parentAllowsMultiplesDisplay = Boolean.toString(parentAllowsMultiplesBoolean);
             }
-            JsonArrayBuilder controlledVocabularyValues = Json.createArrayBuilder();
+            JsonArrayBuilder controlledVocabularyValues = JsonUtil.createArrayBuilder();
             for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
                 controlledVocabularyValues.add(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("id", controlledVocabularyValue.getId())
@@ -190,9 +203,11 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      */
     @GET
     @Path("controlledVocabulary/subject")
+    @Operation(summary = "Lists subject vocabulary values",
+            description = "Returns the configured controlled vocabulary display values for the subject dataset field.")
     public Response showControlledVocabularyForSubject() {
         DatasetFieldType subjectDatasetField = datasetFieldService.findByName(DatasetFieldConstant.subject);
-        JsonArrayBuilder possibleSubjects = Json.createArrayBuilder();
+        JsonArrayBuilder possibleSubjects = JsonUtil.createArrayBuilder();
         for (ControlledVocabularyValue subjectValue : controlledVocabularyValueService.findByDatasetFieldTypeId(subjectDatasetField.getId())) {
             String subject = subjectValue.getStrValue();
             if (subject != null) {
@@ -206,6 +221,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     // TODO consider replacing with a @Startup method on the datasetFieldServiceBean
     @GET
     @Path("loadNAControlledVocabularyValue")
+    @Operation(summary = "Creates the N/A controlled vocabulary value",
+            description = "Creates the global N/A controlled vocabulary value when it is missing and reports whether it was created or already existed.")
     public Response loadNAControlledVocabularyValue() {
         // the find will throw a NoResultException if no values are in db
 //            datasetFieldService.findNAControlledVocabularyValue();
@@ -230,7 +247,11 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @POST
     @Consumes("text/tab-separated-values")
     @Path("load")
-    public Response loadDatasetFields(File file) {
+    @Operation(summary = "Loads dataset field definitions",
+            description = "Reads tab-separated metadata block, dataset field, and controlled vocabulary definitions from the uploaded file path and creates or updates those definitions.")
+    public Response loadDatasetFields(
+            @RequestBody(description = "Tab-separated definitions for metadata blocks, dataset fields, and controlled vocabulary values.")
+            File file) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "loadDatasetFields");
         alr.setInfo( file.getName() );
         BufferedReader br = null;
@@ -238,7 +259,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         String splitBy = "\t";
         int lineNumber = 0;
         HeaderType header = null;
-        JsonArrayBuilder responseArr = Json.createArrayBuilder();
+        JsonArrayBuilder responseArr = JsonUtil.createArrayBuilder();
         String[] values = null;
         try {
             br = new BufferedReader(new FileReader("/" + file));
@@ -264,19 +285,19 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 } else {
                     switch (header) {
                         case METADATABLOCK:
-                            responseArr.add( Json.createObjectBuilder()
+                            responseArr.add( JsonUtil.createObjectBuilder()
                                                     .add("name", parseMetadataBlock(values))
                                                     .add("type", "MetadataBlock"));
                             break;
                             
                         case DATASETFIELD:
-                            responseArr.add( Json.createObjectBuilder()
+                            responseArr.add( JsonUtil.createObjectBuilder()
                                                     .add("name", parseDatasetField(values))
                                                     .add("type", "DatasetField") );
                             break;
                             
                         case CONTROLLEDVOCABULARY:
-                            responseArr.add( Json.createObjectBuilder()
+                            responseArr.add( JsonUtil.createObjectBuilder()
                                                     .add("name", parseControlledVocabulary(values))
                                                     .add("type", "Controlled Vocabulary") );
                             break;
@@ -317,7 +338,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             actionLogSvc.log(alr);
         }
 
-        return ok( Json.createObjectBuilder().add("added", responseArr) );
+        return ok( JsonUtil.createObjectBuilder().add("added", responseArr) );
     }
 
     /**
@@ -489,7 +510,11 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @POST
     @Consumes("application/zip")
     @Path("loadpropertyfiles")
-    public Response loadLanguagePropertyFile(File inputFile) {
+    @Operation(summary = "Loads language property files",
+            description = "Extracts uploaded language property files into the configured Dataverse language directory while rejecting ZIP entries outside that directory.")
+    public Response loadLanguagePropertyFile(
+            @RequestBody(description = "ZIP archive containing language property files to extract.")
+            File inputFile) {
         try (ZipFile file = new ZipFile(inputFile)) {
             //Get file entries
             Enumeration<? extends ZipEntry> entries = file.entries();
@@ -551,7 +576,13 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      */
     @POST
     @Path("/setDisplayOnCreate")
-    public Response setDisplayOnCreate(@QueryParam("datasetFieldType") String datasetFieldTypeIn, @QueryParam("setDisplayOnCreate") Boolean setDisplayOnCreateIn) {
+    @Operation(summary = "Sets dataset field create-page display",
+            description = "Updates whether the specified dataset field type is displayed on the dataset creation page.")
+    public Response setDisplayOnCreate(
+            @Parameter(description = "Dataset field type name to update.", required = true)
+            @QueryParam("datasetFieldType") String datasetFieldTypeIn,
+            @Parameter(description = "New display-on-create setting for the dataset field type.", required = true)
+            @QueryParam("setDisplayOnCreate") Boolean setDisplayOnCreateIn) {
         DatasetFieldType dft = datasetFieldService.findByName(datasetFieldTypeIn);
         if (dft == null) {
             return error(Status.NOT_FOUND, "Cound not find a DatasetFieldType by looking up " + datasetFieldTypeIn);

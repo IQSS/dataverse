@@ -20,6 +20,7 @@ You should be conscious of the following when running multiple app servers.
 - If Make Data Count is used, its raw logs must be copied from each app server to single instance of Counter Processor. See also :ref:`:MDCLogPath` section in the Configuration section of this guide and the :doc:`/admin/make-data-count` section of the Admin Guide.
 - Dataset draft version logging occurs separately on each app server. See :ref:`edit-draft-versions-logging` section in Monitoring of the Admin Guide for details.
 - Password aliases (``dataverse.db.password``, etc.) are stored per app server.
+- Each app server generates its own signing secret at startup unless one is configured, so a signed URL created on one server cannot be validated on another (and no signed URL survives a restart). Set :ref:`dataverse.api.signing-secret` to the same value (at least 36 characters) on every app server if you use signed URLs.
 
 Detecting Which App Server a User Is On
 +++++++++++++++++++++++++++++++++++++++

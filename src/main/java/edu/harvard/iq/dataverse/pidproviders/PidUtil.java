@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import org.apache.commons.lang3.StringUtils;
+
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.BadRequestException;
@@ -85,7 +87,7 @@ public class PidUtil {
                 logger.severe("Received " + status + " error from DataCite for DOI: " + globalId);
                 InputStream errorStream = connection.getErrorStream();
                 if (errorStream != null) {
-                    JsonObject out = Json.createReader(connection.getErrorStream()).readObject();
+                    JsonObject out = JsonUtil.getJsonObjectFromInputStream(errorStream);
                     logger.severe("DataCite error response: " + out.toString());
                 } else {
                     logger.severe("No error stream from DataCite");
@@ -94,15 +96,15 @@ public class PidUtil {
             }
             JsonObject out;
             try {
-                out = Json.createReader(connection.getInputStream()).readObject();
+                out = JsonUtil.getJsonObjectFromInputStream(connection.getInputStream());
             } catch (IOException ex) {
-                return Json.createObjectBuilder().add("response", ex.getLocalizedMessage());
+                return JsonUtil.createObjectBuilder().add("response", ex.getLocalizedMessage());
             }
             JsonObject data = out.getJsonObject("data");
             String id = data.getString("id");
             JsonObject attributes = data.getJsonObject("attributes");
             String state = attributes.getString("state");
-            JsonObjectBuilder ret = Json.createObjectBuilder().add("id", id).add("state", state);
+            JsonObjectBuilder ret = JsonUtil.createObjectBuilder().add("id", id).add("state", state);
             return ret;
         } catch (IllegalArgumentException ex) {
             throw new BadRequestException(ex.getLocalizedMessage());
@@ -139,6 +141,9 @@ public class PidUtil {
      * @throws IllegalArgumentException if the passed string cannot be parsed.
      */
     public static GlobalId parseAsGlobalID(String identifier) {
+        if(StringUtils.isBlank(identifier)) {
+            throw new IllegalArgumentException("Blank identifier");
+        }
         logger.fine("In parseAsGlobalId: " + providerMap.size());
         for (PidProvider pidProvider : providerMap.values()) {
             logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
@@ -281,7 +286,7 @@ public class PidUtil {
     }
     
     public static JsonObject getProviders() {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         for (PidProvider pidProvider : providerMap.values()) {
             builder.add(pidProvider.getId(), pidProvider.getProviderSpecification());
         }

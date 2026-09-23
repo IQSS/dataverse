@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.export.ExportService;
 
 import java.util.Date;
 import java.util.logging.Logger;
@@ -17,6 +18,14 @@ import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  *
@@ -25,6 +34,7 @@ import edu.harvard.iq.dataverse.harvest.server.OAISet;
  */
 
 @Path("admin/metadata")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class Metadata extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Metadata.class.getName());
 
@@ -45,6 +55,8 @@ public class Metadata extends AbstractApiBean {
     @GET
     @Path("/exportAll")
     @Produces("application/json")
+    @Operation(summary = "Starts metadata export jobs",
+            description = "Starts background exports for published local datasets that have not been exported since their last publication.")
     public Response exportAll() {
         datasetService.exportAllAsync();
         return this.accepted();
@@ -55,7 +67,12 @@ public class Metadata extends AbstractApiBean {
     @GET
     @Path("/reExportAll")
     @Produces("application/json")
-    public Response reExportAll(@QueryParam(value = "olderThan") String olderThan) {
+    @Operation(summary = "Starts metadata re-export jobs",
+            description = "Starts background re-export jobs for published local datasets, optionally limited to datasets older than a supplied date.")
+    public Response reExportAll(
+            @Parameter(description = "Optional cutoff date in YYYY-MM-DD format for selecting datasets to re-export.")
+            @QueryParam(value = "olderThan") String olderThan, 
+            @QueryParam("formats") String formats) {
         Date reExportDate = null;
         if (olderThan != null && !olderThan.isEmpty()) {
             try {
@@ -66,16 +83,30 @@ public class Metadata extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Invalid date format for olderThan parameter. Expected format: YYYY-MM-DD");
             }
         }
-        datasetService.reExportAllAsync(reExportDate);
+        
+        // validate the format names argument supplied (or obtain an empty list 
+        // that the method will produce if null is supplied):
+        List<String> formatNames = validateFormatNames(formats);
+
+        datasetService.reExportAllAsync(reExportDate, formatNames);
         return this.accepted();
     }
 
     @GET
     @Path("{id}/reExportDataset")
-    public Response indexDatasetByPersistentId(@PathParam("id") String id) {
+    @Operation(summary = "Starts a dataset metadata re-export",
+            description = "Starts a background metadata re-export for the specified dataset.")
+    public Response exportDatasetByPersistentId(
+            @Parameter(description = "Dataset id or persistent identifier to re-export.", required = true)
+            @PathParam("id") String id,
+            @QueryParam("formats") String formats) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            datasetService.reExportDatasetAsync(dataset);
+            // validate the format names argument supplied (or obtain an empty list 
+            // that the method will produce if null is supplied):
+            List<String> formatNames = validateFormatNames(formats);
+
+            datasetService.reExportDatasetAsync(dataset, formatNames);
             return ok("export started");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -84,6 +115,8 @@ public class Metadata extends AbstractApiBean {
 
     @GET
     @Path("clearExportTimestamps")
+    @Operation(summary = "Clears metadata export timestamps",
+            description = "Clears stored metadata export timestamps for all datasets without deleting cached metadata export files.")
     public Response clearExportTimestamps() {
         // only clear the timestamp in the database, cached metadata export files are not deleted
         int numItemsCleared = datasetService.clearAllExportTimes();
@@ -96,8 +129,11 @@ public class Metadata extends AbstractApiBean {
      */
     @PUT
     @Path("/exportOAI/{specname}")
-    public Response exportOaiSet( @PathParam("specname") String spec )
-    {
+    @Operation(summary = "Starts an OAI set export",
+            description = "Marks the specified OAI set as updating and starts its metadata export in the background.")
+    public Response exportOaiSet(
+            @Parameter(description = "OAI set specification name to export.", required = true)
+            @PathParam("specname") String spec) {
 	    // assuming this belongs here (because it's a metadata export), but open to moving it elsewhere
 	    OAISet set = null;
 	    try
@@ -122,5 +158,24 @@ public class Metadata extends AbstractApiBean {
 	    {
 		    return error(Response.Status.BAD_REQUEST, "problem exporting OAI set");
 	    }
+    }
+     
+    private List<String> validateFormatNames(String formats) {
+        if (formats == null) {
+            return List.of();
+        }
+        
+        List<String> formatNames = new ArrayList<>(Arrays.asList(formats.split(",")));
+        
+        Set<String> supportedFormatNames = new HashSet<>();
+        for (String[] providerLabels : ExportService.getInstance().getExportersLabels()) {
+            supportedFormatNames.add(providerLabels[1]);
+        }
+
+        if (!supportedFormatNames.containsAll(formatNames)) {
+            throw new BadRequestException("Invalid/unsupported format name(s)");
+        }
+        
+        return formatNames;
     }
 }

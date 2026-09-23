@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import java.io.File;
@@ -51,9 +52,9 @@ public class InvalidCharactersIT {
         String badCharacter = "(\f)"; // form feed (also \u000C)
 //        badCharacter = "{\u0002}"; // start of text, reported problem with exports.
 
-        JsonObjectBuilder jsonUpdateObject = Json.createObjectBuilder().add("fields",
-                Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+        JsonObjectBuilder jsonUpdateObject = JsonUtil.createObjectBuilder().add("fields",
+                JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("typeName", "title")
                                 .add("value", "MyTitle " + badCharacter)
                         ));

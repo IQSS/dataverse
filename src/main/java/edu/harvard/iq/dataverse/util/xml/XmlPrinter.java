@@ -18,7 +18,7 @@ public class XmlPrinter {
 
     static public String prettyPrintXml(String xml) {
         try {
-            TransformerFactory tf = TransformerFactory.newInstance();
+            TransformerFactory tf = TransformerFactory.newDefaultInstance();
             // Set secure processing feature
             tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             

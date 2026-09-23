@@ -5,12 +5,10 @@ import com.github.scribejava.core.builder.api.DefaultApi20;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.StringReader;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.Arrays;
 import java.util.UUID;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 
 /**
  *
@@ -36,11 +34,9 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
-        try ( StringReader rdr = new StringReader(responseBody);
-              JsonReader jrdr = Json.createReader(rdr) )  {
-            JsonObject response = jrdr.readObject();
-            
-            AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
+        JsonObject response = JsonUtil.getJsonObject(responseBody);
+
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
                     response.getString("given_name",""),
                     response.getString("family_name",""),
                     response.getString("email",""),
@@ -63,6 +59,5 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
                 }
             }
             return new ParsedUserResponse(displayInfo, persistentUserId, username);
-        }
     }
 }
