@@ -167,7 +167,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         version.setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
-        theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
+        theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfAccess().isFileAccessRequest());
         
         //Use dataset pub date (which may not be the current date for migrated datasets)
         updateFiles(new Timestamp(version.getReleaseTime().getTime()), ctxt);

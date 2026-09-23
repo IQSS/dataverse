@@ -239,8 +239,8 @@ public class FilePage implements java.io.Serializable {
                 }
             }
             
-            //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
-            //fileAccessRequest = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
+            //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfAccess().getTermsOfAccess();
+            //fileAccessRequest = fileMetadata.getDatasetVersion().getTermsOfAccess().isFileAccessRequest();
 
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
 
@@ -513,8 +513,8 @@ public class FilePage implements java.io.Serializable {
         String fileNames = null;
         editDataset = this.file.getOwner();
         if (restricted) { // get values from access popup
-            editDataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-            editDataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);   
+            editDataset.getOrCreateEditVersion().getTermsOfAccess().setTermsOfAccess(termsOfAccess);
+            editDataset.getOrCreateEditVersion().getTermsOfAccess().setFileAccessRequest(fileAccessRequest);
         }
         //using this method to update the terms for datasets that are out of compliance 
         // with Terms of Access requirement - may get her with a file that is already restricted
@@ -913,7 +913,7 @@ public class FilePage implements java.io.Serializable {
                hasValidTermsOfAccess = true;
                return hasValidTermsOfAccess;
             } else {
-                hasValidTermsOfAccess = TermsOfUseAndAccessValidator.isTOUAValid(fileMetadata.getDatasetVersion().getTermsOfUseAndAccess(), null);
+                hasValidTermsOfAccess = TermsOfAccessValidator.isTOUAValid(fileMetadata.getDatasetVersion().getTermsOfAccess(), null);
                 return hasValidTermsOfAccess;
             }
         }    

@@ -9,7 +9,8 @@ import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.EmbargoServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfAccess;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -73,8 +74,11 @@ public class DatasetsEmbargoAPITest {
     private DatasetVersion datasetVersion;
     
     @Mock
-    private TermsOfUseAndAccess termsOfUseAndAccess;
-    
+    private TermsOfAccess termsOfAccess;
+
+    @Mock
+    private TermsOfUseOrLicense termsOfUseAndLicense;
+
     @Mock
     private StaticPermissionQuery permissionQuery;
     
@@ -101,10 +105,12 @@ public class DatasetsEmbargoAPITest {
         // Mock dataset version chain
         when(dataset.getLatestVersion()).thenReturn(datasetVersion);
         when(dataset.getFiles()).thenReturn(List.of(file));
-        when(datasetVersion.getTermsOfUseAndAccess()).thenReturn(termsOfUseAndAccess);
+        when(datasetVersion.getTermsOfAccess()).thenReturn(termsOfAccess);
+        when(datasetVersion.getTermsOfUseOrLicense()).thenReturn(termsOfUseAndLicense);
         when(datasetVersion.getVersionState()).thenReturn(DatasetVersion.VersionState.DRAFT);
-        when(termsOfUseAndAccess.getDatasetVersion()).thenReturn(datasetVersion);
-        
+        when(termsOfAccess.getDatasetVersion()).thenReturn(datasetVersion);
+        when(termsOfUseAndLicense.getDatasetVersion()).thenReturn(datasetVersion);
+
         // Mock file lookup
         when(fileService.find(2L)).thenReturn(file);
         when(fileService.save(any(DataFile.class))).thenAnswer(invocation -> invocation.getArgument(0));

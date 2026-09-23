@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -8,11 +9,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
-
 import jakarta.persistence.OptimisticLockException;
 
 import java.util.List;
@@ -89,8 +90,8 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             
         } else {
             // major, non-first release
-            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
+            theDataset.getLatestVersion().setVersionNumber(theDataset.getVersionNumber() + 1L);
+            theDataset.getLatestVersion().setMinorVersionNumber(0L);
         }
         
         // Perform any optional validation steps, if defined:
@@ -192,10 +193,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         if ( ! getUser().isAuthenticated() ) {
             throw new IllegalCommandException("Only authenticated users can release a Dataset. Please authenticate and try again.", this);
         }
-        
-        if (getDataset().getLatestVersion().getTermsOfUseAndAccess() == null
-                || (getDataset().getLatestVersion().getTermsOfUseAndAccess().getLicense() == null 
-                && StringUtil.isEmpty(getDataset().getLatestVersion().getTermsOfUseAndAccess().getTermsOfUse()))) {
+
+        var termsOfUseOrLicense = getDataset().getLatestVersion().getTermsOfUseOrLicense();
+        if (termsOfUseOrLicense == null || (
+                termsOfUseOrLicense.getLicense() == null
+                && StringUtil.isEmpty(termsOfUseOrLicense.getTermsOfUse())
+        )) {
             throw new IllegalCommandException("Dataset must have a valid license or Custom Terms Of Use configured before it can be published.", this);
         }
         
