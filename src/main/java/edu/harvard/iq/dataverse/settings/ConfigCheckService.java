@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MailSessionProducer;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.DependsOn;
 import jakarta.ejb.Singleton;
@@ -50,6 +51,41 @@ public class ConfigCheckService {
         
         // Only checks resulting in warnings, nothing critical that needs to stop deployment
         checkSystemMailSetup();
+        checkReusableComponentsSetup();
+    }
+
+    /**
+     * The React components call the API with the JSF session cookie, so they
+     * need {@code api-session-auth} and a base URL to load from. Both are
+     * easy to miss, so warn at startup.
+     */
+    public void checkReusableComponentsSetup() {
+        boolean reactComponentEnabled = FeatureFlags.REACT_UPLOADER.enabled() || FeatureFlags.REACT_TREE_VIEW.enabled();
+        if (reactComponentEnabled && !FeatureFlags.API_SESSION_AUTH.enabled()) {
+            logger.warning(() -> String.format(
+                    "Feature flag %s and/or %s is enabled, but %s is not. The React components authenticate via the "
+                            + "user's session and their API calls will run as :guest until you enable dataverse.feature.%s.",
+                    FeatureFlags.REACT_UPLOADER.flag, FeatureFlags.REACT_TREE_VIEW.flag,
+                    FeatureFlags.API_SESSION_AUTH.flag, FeatureFlags.API_SESSION_AUTH.flag));
+        }
+        if (!reactComponentEnabled) {
+            return;
+        }
+        Optional<String> configuredBaseUrl = JvmSettings.REUSABLE_COMPONENTS_BASE_URL.lookupOptional();
+        if (configuredBaseUrl.isEmpty()) {
+            logger.warning(() -> String.format(
+                    "Feature flag %s and/or %s is enabled, but %s is not set. The component bundles are not shipped "
+                            + "in the WAR, so there is nothing to load and the React components will not be rendered. "
+                            + "Build them from dataverse-frontend, serve them as static content, and point the setting "
+                            + "at that location.",
+                    FeatureFlags.REACT_UPLOADER.flag, FeatureFlags.REACT_TREE_VIEW.flag,
+                    JvmSettings.REUSABLE_COMPONENTS_BASE_URL.getScopedKey()));
+        } else if (!SystemConfig.isSafeReusableComponentsBaseUrl(configuredBaseUrl.get())) {
+            logger.warning(() -> String.format(
+                    "Configured %s value \"%s\" is not a same-origin path or an absolute http(s) URL. "
+                            + "It will be ignored and the React components will not be rendered.",
+                    JvmSettings.REUSABLE_COMPONENTS_BASE_URL.getScopedKey(), configuredBaseUrl.get()));
+        }
     }
 
     /**

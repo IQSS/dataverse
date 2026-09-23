@@ -23,5 +23,6 @@ Installation Guide
    oidc
    orcid
    external-tools
+   reusable-components
    localcontexts
    advanced
