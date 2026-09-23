@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 21 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 7.2026.8 is recommended. Newer versions might work fine. Regular updates are recommended.
+Payara 7.2026.8 is recommended. Payara 7.2026.9 doesn't "just work". See https://github.com/IQSS/dataverse/issues/12715 for details.
 
 Installing Payara
 =================
