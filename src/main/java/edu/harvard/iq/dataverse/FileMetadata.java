@@ -271,6 +271,7 @@ public class FileMetadata implements Serializable {
     }
 
     @OneToMany(mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private List<VarGroup> varGroups;
 
     public Collection<VariableMetadata> getVariableMetadatas() {
@@ -296,6 +297,7 @@ public class FileMetadata implements Serializable {
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     @OrderBy("name")
+    @BatchFetch(BatchFetchType.IN)
     private List<DataFileCategory> fileCategories;
     
     public List<DataFileCategory> getCategories() {

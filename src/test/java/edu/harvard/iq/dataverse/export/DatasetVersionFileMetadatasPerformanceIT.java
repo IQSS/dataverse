@@ -1,0 +1,115 @@
+package edu.harvard.iq.dataverse.export;
+
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.testing.fixtures.DatasetFixtureBuilder;
+import edu.harvard.iq.dataverse.util.testing.performance.JpaEntityManagerService;
+import edu.harvard.iq.dataverse.util.testing.performance.JpaPerformanceTest;
+import edu.harvard.iq.dataverse.util.testing.recipes.DatasetRecipe;
+import edu.harvard.iq.dataverse.util.testing.recipes.DatasetTypeRecipe;
+import edu.harvard.iq.dataverse.util.testing.recipes.FileRecipe;
+import edu.harvard.iq.dataverse.util.testing.recipes.VariableSetRecipe;
+import edu.harvard.iq.dataverse.util.testing.recipes.VersionRecipe;
+import net.ttddyy.dsproxy.QueryCountHolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.function.Consumer;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Working with the files of a dataset version must not run database queries per file or per variable:
+ * for datasets with tens of thousands of files that takes many seconds (see #12739). Each test runs an
+ * operation on a smaller and a larger dataset; the number of queries must not grow with the dataset.
+ */
+@JpaPerformanceTest
+class DatasetVersionFileMetadatasPerformanceIT {
+
+    /** Extra select queries allowed for the larger dataset; batches hold 500 items, more than these datasets have */
+    static final long MAX_EXTRA_QUERIES = 5;
+
+    static JpaEntityManagerService jpa;
+
+    static DatasetType datasetType;
+    static Long smallRegularVersion;
+    static Long largeRegularVersion;
+    static Long smallTabularVersion;
+    static Long largeTabularVersion;
+
+    @BeforeAll
+    static void setUp() {
+        jpa.start();
+        // the schema.org JSON-LD includes the installation name
+        BrandingUtilTest.setupMocks();
+        smallRegularVersion = persistVersion(FileRecipe.regular(50));
+        largeRegularVersion = persistVersion(FileRecipe.regular(100));
+        smallTabularVersion = persistVersion(FileRecipe.tabular(5, VariableSetRecipe.uniform(10)));
+        largeTabularVersion = persistVersion(FileRecipe.tabular(10, VariableSetRecipe.uniform(20)));
+    }
+
+    static Long persistVersion(FileRecipe files) {
+        DatasetTypeRecipe typeRecipe = datasetType == null ? DatasetTypeRecipe.dataset() : DatasetTypeRecipe.of(datasetType);
+        var fixture = DatasetFixtureBuilder.builder().recipe(DatasetRecipe.of(typeRecipe, VersionRecipe.of(files))).build();
+        if (datasetType == null) {
+            datasetType = fixture.datasetType();
+            jpa.inTransactionVoid(em -> em.persist(datasetType));
+        }
+        Dataset dataset = fixture.dataset();
+        jpa.inTransactionVoid(em -> {
+            // DataFile has no cascade path from Dataset
+            for (DataFile dataFile : fixture.dataFiles()) {
+                em.persist(dataFile);
+            }
+            em.persist(dataset);
+        });
+        return dataset.getVersions().get(0).getId();
+    }
+
+    /** Select queries of the operation on the version as a page gets it: its files are not loaded yet */
+    static long selectQueries(Long versionId, Consumer<DatasetVersion> operation) {
+        QueryCountHolder.clear();
+        jpa.inTransactionVoid(em -> operation.accept(em.find(DatasetVersion.class, versionId)));
+        return QueryCountHolder.getGrandTotal().getSelect();
+    }
+
+    static void assertNoQueriesPerItem(String name, Long smallVersion, Long largeVersion, Consumer<DatasetVersion> operation) {
+        long small = selectQueries(smallVersion, operation);
+        long large = selectQueries(largeVersion, operation);
+        System.out.println(name + ": " + small + " select queries for the smaller dataset, " + large + " for the larger one");
+        assertTrue(large - small <= MAX_EXTRA_QUERIES,
+            name + ": select queries grow with the number of files or variables (" + small + " for the smaller dataset, " + large + " for the larger one)");
+    }
+
+    @Test
+    void checkingForRestrictedFiles() {
+        assertNoQueriesPerItem("restricted files", smallRegularVersion, largeRegularVersion, DatasetVersion::isHasRestrictedFile);
+    }
+
+    @Test
+    void exportingFileDetails() {
+        assertNoQueriesPerItem("export file details", smallRegularVersion, largeRegularVersion,
+            version -> new InternalExportDataProvider(version).getDatasetFileDetails());
+    }
+
+    @Test
+    void exportingTabularFileDetails() {
+        assertNoQueriesPerItem("export tabular file details", smallTabularVersion, largeTabularVersion,
+            version -> new InternalExportDataProvider(version).getDatasetFileDetails());
+    }
+
+    @Test
+    void listingFilesAsJson() {
+        assertNoQueriesPerItem("file listing json", smallTabularVersion, largeTabularVersion,
+            version -> JsonPrinter.jsonFileMetadatas(version.getFileMetadatas()).build());
+    }
+
+    @Test
+    void buildingSchemaDotOrgJsonLd() {
+        assertNoQueriesPerItem("schema.org json-ld", smallRegularVersion, largeRegularVersion, DatasetVersion::getJsonLd);
+    }
+}

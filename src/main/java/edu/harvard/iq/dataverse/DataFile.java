@@ -222,6 +222,7 @@ public class DataFile extends DvObject implements Comparable {
     */
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private List<DataTable> dataTables;
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -235,6 +236,7 @@ public class DataFile extends DvObject implements Comparable {
     private IngestRequest ingestRequest;
     
     @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private List<DataFileTag> dataFileTags;
     
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
