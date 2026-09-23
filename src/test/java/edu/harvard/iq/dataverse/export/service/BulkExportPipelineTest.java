@@ -17,6 +17,7 @@ import java.util.function.LongFunction;
 import java.util.stream.StreamSupport;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -61,18 +62,12 @@ class BulkExportPipelineTest {
     class Construction {
         
         @Test
-        void rejectsNullTargets() {
-            assertThrows(NullPointerException.class, () -> new BulkExportPipeline(null, resolver, CORRELATION_ID));
-        }
-        
-        @Test
-        void rejectsNullResolver() {
-            assertThrows(NullPointerException.class, () -> new BulkExportPipeline(List.of(FIRST), null, CORRELATION_ID));
-        }
-        
-        @Test
-        void rejectsNullCorrelationId() {
-            assertThrows(NullPointerException.class, () -> new BulkExportPipeline(List.of(FIRST), resolver, null));
+        void rejectsInvalidArguments() {
+            assertAll(
+                () -> assertThrows(NullPointerException.class, () -> new BulkExportPipeline(null, resolver, CORRELATION_ID)),
+                () -> assertThrows(NullPointerException.class, () -> new BulkExportPipeline(List.of(FIRST), null, CORRELATION_ID)),
+                () -> assertThrows(NullPointerException.class, () -> new BulkExportPipeline(List.of(FIRST), resolver, null))
+            );
         }
         
         @Test
