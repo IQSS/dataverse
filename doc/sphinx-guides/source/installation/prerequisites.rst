@@ -97,7 +97,7 @@ Also note that Payara may utilize more than the default number of file descripto
 PostgreSQL
 ----------
 
-PostgreSQL 17 is the version we test against and, with the v6.12 release, 17+ is required.
+PostgreSQL 17 is the version we test against and, with the v6.12 release, 17+ is required for new installations.
 
 Installing PostgreSQL
 =====================
