@@ -303,6 +303,7 @@ There are a broad range of options (that are not turned on by default) for impro
 - :ref:`:DisableUncheckedTypesFacet` - only disables the facet showing the number of collections, datasets, files matching the query (this facet is potentially less useful than others)
 - :ref:`:StoreIngestedTabularFilesWithVarHeaders` - by default, Dataverse stores ingested files without headers and dynamically adds them back at download time. Once this setting is enabled, Dataverse will leave the headers in place (for newly ingested files), reducing the cost of downloads
 - :ref:`dataverse.bagit.zip.max-file-size`, :ref:`dataverse.bagit.zip.max-data-size`, and :ref:`dataverse.bagit.zip.holey` - options to control the size and temporary storage requirements when generating archival Bags - see :ref:`BagIt Export`
+- :ref:`dataverse.exports.schema-dot-org.max-files-for-download-entries` - if you use :ref:`dataverse.legacy.schemaorg-in-html-head` to include file-level information in the dataset page header (versus using Croissant which does not, and which is now the default), you can use this setting to reduce the size of the output for datasets with many files which can fix some search engine indexing issues.
 
 
 Scaling Infrastructure
