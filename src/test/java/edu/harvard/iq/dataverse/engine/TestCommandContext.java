@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationTypeServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -241,6 +243,16 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DatasetTypeServiceBean datasetTypes() {
+        return null;
+    }
+
+    @Override
+    public DatasetRelationServiceBean datasetRelations() {
+        return null;
+    }
+
+    @Override
+    public DatasetRelationTypeServiceBean datasetRelationTypes() {
         return null;
     }
 

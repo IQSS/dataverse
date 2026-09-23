@@ -53,7 +53,8 @@ public enum Permission implements java.io.Serializable {
     LinkDataset(BundleUtil.getStringFromBundle("permission.linkDataset"), true, Dataset.class, Dataverse.class),
     // Delete
     DeleteDataverse(BundleUtil.getStringFromBundle("permission.deleteDataverse"), true, Dataverse.class),
-    DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class);
+    DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class),
+    EditDatasetRelations(BundleUtil.getStringFromBundle("permission.editDatasetRelations"), true, Dataset.class);
 
 
     // FUTURE:

@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupTest;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -24,6 +25,7 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.api.dto.DatasetRelationDTO;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,6 +60,7 @@ public class JsonParserTest {
     LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     DatasetTypeServiceBean datasetTypeService = Mockito.mock(DatasetTypeServiceBean.class);
     TemplateServiceBean templateService = Mockito.mock(TemplateServiceBean.class);
+    DatasetRelationServiceBean datasetRelationService = Mockito.mock(DatasetRelationServiceBean.class);
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -173,7 +176,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, datasetRelationService, templateService);
     }
     
     @Test 
@@ -769,7 +772,7 @@ public class JsonParserTest {
         Mockito.when(licenseService.getDefault()).thenReturn(defaultLicense);
 
         String baseJson = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}}";
-        
+
         // Case 1: Flag false (default), terms NOT provided -> should pick default
         System.setProperty("dataverse.feature.do-not-assume-default-license", "false");
         DatasetVersion dsv1 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
@@ -785,14 +788,14 @@ public class JsonParserTest {
         System.setProperty("dataverse.feature.do-not-assume-default-license", "true");
         DatasetVersion dsv3 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
         assertNull(dsv3.getTermsOfUseAndAccess().getLicense());
-        
+
         // Cleanup
         System.clearProperty("dataverse.feature.do-not-assume-default-license");
     }
 
     private static class MockSettingsSvc extends SettingsServiceBean {
         private boolean allowCustomTermsOfUse = false;
-        
+
         public void setAllowCustomTermsOfUse(boolean allow) {
             this.allowCustomTermsOfUse = allow;
         }
@@ -841,6 +844,19 @@ public class JsonParserTest {
         assertEquals(4, gb.getCustomQuestions().get(2).getCustomQuestionValues().size());
         assertEquals("Purple", gb.getCustomQuestions().get(2).getCustomQuestionValues().get(3).getValueString());
         assertEquals(3, gb.getCustomQuestions().get(2).getCustomQuestionValues().get(3).getDisplayOrder());
+    }
+
+    @Test
+    public void testParseExternalDatasetRelationDTOWithDatasetType() throws JsonParseException {
+        String json = "{\"externalIdentifier\":\"10.1234/ext-1\", \"identifierScheme\":\"doi\", \"relatedDatasetType\":{\"displayName\":\"Journal Article\"}, \"relationType\":{\"name\":\"isReferencedBy\"}}";
+        JsonObject jsonObject = JsonUtil.getJsonObject(json);
+        DatasetRelationDTO dto = sut.parseDatasetRelationDTO(jsonObject);
+
+        assertNotNull(dto);
+        assertEquals("10.1234/ext-1", dto.getExternalIdentifier());
+        assertEquals("doi", dto.getIdentifierScheme());
+        assertEquals("Journal Article", dto.getDatasetType());
+        assertEquals("isReferencedBy", dto.getRelationTypeName());
     }
 
     @Test
@@ -983,7 +999,7 @@ public class JsonParserTest {
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
         datasetType.setId(1l);
         Mockito.when(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE)).thenReturn(datasetType);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, templateService);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService, datasetTypeService, datasetRelationService, templateService);
 
         Dataset ds = new Dataset();
         DatasetVersion dsv1 = new DatasetVersion();
