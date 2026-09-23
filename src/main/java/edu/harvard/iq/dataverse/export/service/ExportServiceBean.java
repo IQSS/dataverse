@@ -5,16 +5,20 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.caps.bulk.BulkDatasetExporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
+import org.apache.commons.io.output.CloseShieldOutputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -32,6 +36,14 @@ public class ExportServiceBean {
 
     @EJB
     ExporterRegistryBean registry;
+    
+    /**
+     * Self-reference used to re-enter this bean through its proxy.
+     * Required wherever a transaction attribute must actually take effect: a plain {@code this.method()} call is
+     * a self-invocation that bypasses the container's interceptor chain, silently ignoring {@code REQUIRES_NEW}.
+     */
+    @EJB
+    ExportServiceBean self;
     
     @EJB
     DatasetVersionServiceBean versionService;
@@ -152,6 +164,81 @@ public class ExportServiceBean {
         }
     }
     
+    /**
+     * Writes a combined export of the given dataset versions to the {@code output} stream.
+     * The format's {@link BulkDatasetExporter} capability decides how individual exports are framed and joined.
+     * <p>
+     * Each item is resolved lazily and in its own transaction, so at most one single-dataset export is
+     * materialized at any time and memory stays independent of the batch size.
+     * The caller (most notably a JAX-RS Response) owns {@code output} and is responsible for closing it.
+     * <p>
+     * It runs without a transaction of its own, and it holds no entities.
+     * All Bytes are written while the response is streamed, which must not pin a database connection.
+     * All entity work happens per item, behind the resolver, in {@link #getExportInNewTransaction(long, String)}.
+     *
+     * @apiNote The {@code targets} batch is not a consistent snapshot.
+     *          <p>
+     *          Items are re-fetched by id when their export is imminent, so a draft may have been edited,
+     *          a version deaccessioned, permissions revoked, or (for superusers) a dataset destroyed
+     *          since the caller vetted the list.
+     *          <p>
+     *          The window is small, and vanished or failing items appear as a per-item error rather than
+     *          failing the whole batch. Callers requiring a true snapshot must not use this method.
+     *
+     * @param targets the dataset versions to include, in output order
+     * @param formatName the export format; must be registered and support {@link BulkDatasetExporter}
+     * @param output the stream to write the combined document to
+     * @param correlationId short id echoed to the client and included in all log records of this batch
+     * @throws InvalidRequest if the arguments are invalid, or the format is unknown or lacks the bulk capability
+     * @throws InternalFailure if the bulk exporter fails
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void bulkExport(List<ExportTarget> targets, String formatName, OutputStream output, String correlationId) {
+        if (targets == null || targets.isEmpty()) {
+            throw new InvalidRequest("At least one export target is required");
+        }
+        if (output == null) {
+            throw new InvalidRequest("Output stream must not be null");
+        }
+        if (correlationId == null || correlationId.isBlank()) {
+            throw new InvalidRequest("Correlation id must not be null or empty");
+        }
+        // Throws InvalidRequest if the format is unknown or its exporter lacks the capability
+        Details exporterDetail = registry.requireExistsAndSupports(formatName, BulkDatasetExporter.class);
+        BulkDatasetExporter exporter = (BulkDatasetExporter) registry.get(exporterDetail);
+        
+        logger.log(Level.FINE, () -> "[" + correlationId + "] Bulk export of " + targets.size()
+            + " items to format " + formatName + " started");
+        
+        // The idea:
+        // 1. Collect resolvable entities for all the requested target dataset version in a "context".
+        // 2. When resolving, use distinct transactions to avoid long-running transactions, blocking a DB connection.
+        // 3. Make the resolving itself another layer of indirection by using a functional interface.
+        //    Only once consumption starts, any of this will be executed, resulting in simple IO on a cache hit,
+        //    computed cache-write-through on a miss, and on-the-fly generation for non-cacheable versions.
+        //    Using a resolvable functional interface also enables re-reading the same resource if necessary.
+        // 4. The export plugin receives the context and can choose how to consume it (see {@link BulkDatasetContext.Item})
+        // 5. As the output stream is provided by the caller, it's their responsibility to close it.
+        
+        // Note: The resolver goes through the "self" proxy: a plain this.getExportInNewTransaction(...) would be a
+        //       self-invocation, REQUIRES_NEW would be ignored, and every item would run detached.
+        try (BulkExportPipeline context = new BulkExportPipeline(
+            targets,
+            // Note: Using a lambda and functional interface here to stall execution,
+            //       saving on DB connections, memory, and open handles.
+            versionId -> self.getExportInNewTransaction(versionId, formatName),
+            correlationId)
+        ) {
+            // Close-shielded: a plugin must not close the response stream out from under the caller!
+            exporter.exportBulk(context, CloseShieldOutputStream.wrap(output));
+            output.flush();
+        } catch (ExportSystemException ex) {
+            throw ex;
+        } catch (IOException | RuntimeException ex) {
+            throw new InternalFailure("[" + correlationId + "] Bulk export to format " + formatName + " failed", ex);
+        }
+    }
+    
     
     
     // ++++ ++++ ++++ METHODS FOR CACHE MANAGEMENT ++++ ++++ ++++
@@ -243,7 +330,7 @@ public class ExportServiceBean {
         
         // If the list of format names is empty, retrieve all format names from the registry and evict all.
         if (formatNames.isEmpty()) {
-            formatNames = registry.getDetails().stream().map(ExporterRegistryBean.Details::formatName).toList();
+            formatNames = registry.getDetails().stream().map(Details::formatName).toList();
         // If not empty, make sure to add transitive dependents to the evict list
         } else {
             formatNames = withTransitiveDependents(formatNames);
@@ -365,7 +452,7 @@ public class ExportServiceBean {
         
         // If the list of format names is empty, retrieve all format names from the registry.
         if (formatNames.isEmpty()) {
-            formatNames = registry.getDetails().stream().map(ExporterRegistryBean.Details::formatName).toList();
+            formatNames = registry.getDetails().stream().map(Details::formatName).toList();
         // Otherwise, make sure to add all formats relying on the requested ones, as they need to be regenerated, too.
         } else {
             formatNames = withTransitiveDependents(formatNames);
