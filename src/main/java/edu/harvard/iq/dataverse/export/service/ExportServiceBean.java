@@ -2,12 +2,15 @@ package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.Exporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
 
 import java.io.IOException;
@@ -29,6 +32,9 @@ public class ExportServiceBean {
 
     @EJB
     ExporterRegistryBean registry;
+    
+    @EJB
+    DatasetVersionServiceBean versionService;
     
     // We must use (frowned upon) field injection here, as EJB requires a no-args constructor.
     // When the codebase transitions to use CDI only, this shall be changed to constructor injection.
@@ -73,6 +79,34 @@ public class ExportServiceBean {
             throw new InternalFailure("Export to String failed for dataset version " + datasetVersion.getId() +
                                       " to format " + formatName, ex);
         }
+    }
+    
+    /**
+     * Looks up a dataset version by id and returns its metadata export, in a transaction of its own.
+     * <p>
+     * The new transaction is essential rather than incidental:
+     * a) the returned stream is consumed after the caller's transaction has ended, and
+     * b) both production paths (to cache or temp file) need a live persistence context while they run.
+     * What they return however, does not: a cached export is a storage object and a freshly produced one is a temp file.
+     * Both remain readable long after the entity has been detached.
+     * <p>
+     * Must be invoked through an EJB bean proxy (either via {@link #self} or otherwise injected),
+     * never as a plain self-invocation (the transaction annotation would be ignored).
+     *
+     * @param datasetVersionId the id of the dataset version to export
+     * @param formatName the name of the export format to retrieve
+     * @return an {@link InputStream} over the export; the caller is responsible for closing it
+     * @throws InvalidRequest if no version with that id exists (it may have been destroyed meanwhile)
+     * @throws InternalFailure if the export cannot be produced or read
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public InputStream getExportInNewTransaction(long datasetVersionId, String formatName) {
+        DatasetVersion version = versionService.find(datasetVersionId);
+        if (version == null) {
+            throw new InvalidRequest("No dataset version found with id=" + datasetVersionId);
+        }
+        // Self-invocation on purpose: this must run inside the transaction opened above, not a further one.
+        return getExport(version, formatName);
     }
     
     /**

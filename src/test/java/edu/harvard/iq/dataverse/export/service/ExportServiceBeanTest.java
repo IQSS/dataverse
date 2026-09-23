@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export.service;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
@@ -44,15 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * The service is a thin orchestration layer over registry, cache, and pipeline. All three are mocked:
@@ -74,6 +67,7 @@ class ExportServiceBeanTest {
     @Mock ExporterRegistryBean registry;
     @Mock ExportCache cache;
     @Mock ExportPipelineBean pipeline;
+    @Mock DatasetVersionServiceBean versionService;
     // TODO: make this an actual object and not a mock?
     @Mock Dataset dataset;
     
@@ -86,6 +80,7 @@ class ExportServiceBeanTest {
         service.registry = registry;
         service.cache = cache;
         service.pipeline = pipeline;
+        service.versionService = versionService;
         
         lenient().when(dataset.getId()).thenReturn(DATASET_ID);
     }
@@ -137,6 +132,40 @@ class ExportServiceBeanTest {
             return Stream.of(
                 Named.of("IOException", new IOException("disk gone")),
                 Named.of("RuntimeException", new IllegalArgumentException("boom"))
+            );
+        }
+    }
+    
+    /**
+     * Only the lookup and the error contract are testable here: whether the container actually opens a new
+     * transaction cannot be observed outside a EJB/CDI container deployment!
+     */
+    @Nested
+    class GetExportInNewTransaction {
+        
+        private static final long VERSION_ID = 7L;
+        
+        @Test
+        void resolvesVersionByIdThenExportsIt() throws IOException {
+            DatasetVersion version = releasedVersion();
+            version.setId(VERSION_ID);
+            InputStream cached = utf8("cached");
+            when(versionService.find(VERSION_ID)).thenReturn(version);
+            when(pipeline.readFreshCachedExport(version, keyOf(version, BASE))).thenReturn(Optional.of(cached));
+            
+            assertSame(cached, service.getExportInNewTransaction(VERSION_ID, BASE));
+        }
+        
+        @Test
+        void rejectsVanishedVersionWithoutTouchingThePipeline() {
+            when(versionService.find(VERSION_ID)).thenReturn(null);
+            
+            InvalidRequest ex = assertThrows(InvalidRequest.class,
+                () -> service.getExportInNewTransaction(VERSION_ID, BASE));
+            
+            assertAll(
+                () -> assertTrue(ex.getMessage().contains(String.valueOf(VERSION_ID))),
+                () -> verifyNoInteractions(pipeline)
             );
         }
     }
@@ -612,4 +641,57 @@ class ExportServiceBeanTest {
             when(registry.get(formatName)).thenReturn(Optional.of(exporter));
         }
     }
+    
+    private static Details detailsOf(String formatName) {
+        return new ExporterDetails(formatName.toUpperCase(Locale.ROOT), formatName,
+            "application/" + formatName, true, true);
+    }
+    
+    // TODO: using this in multiple places now, add as test utility?
+    /** Caller-owned response stream: records whether the service (or a plugin) flushed or closed it. */
+    private static final class RecordingOutputStream extends ByteArrayOutputStream {
+        private boolean closed;
+        private boolean flushed;
+        
+        @Override
+        public void flush() {
+            flushed = true;
+        }
+        
+        @Override
+        public void close() {
+            closed = true;
+        }
+    }
+    
+    // TODO: using this in multiple places now, add as test utility?
+    /** Stands in for a disconnected client. */
+    private static final class FailingOutputStream extends OutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            throw new IOException("broken pipe");
+        }
+        
+        @Override
+        public void flush() throws IOException {
+            throw new IOException("broken pipe");
+        }
+    }
+    
+    // TODO: using this in multiple places now, add as test utility?
+    /** Export stream that remembers being closed, to prove the context releases what a plugin abandons. */
+    private static final class TrackingInputStream extends ByteArrayInputStream {
+        private boolean closed;
+        
+        private TrackingInputStream(String content) {
+            super(content.getBytes(UTF_8));
+        }
+        
+        @Override
+        public void close() throws IOException {
+            closed = true;
+            super.close();
+        }
+    }
+    
 }
