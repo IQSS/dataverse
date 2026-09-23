@@ -97,7 +97,7 @@ Also note that Payara may utilize more than the default number of file descripto
 PostgreSQL
 ----------
 
-PostgreSQL 17 is recommended because it's the version we test against, though newer versions should work as well.
+PostgreSQL 17 is the version we test against and 17+ is required.
 
 Please note that as of PostgreSQL 15, permissions have been restricted on the ``public`` schema (`release notes <https://www.postgresql.org/docs/release/15.0/>`_, `EDB blog post <https://www.enterprisedb.com/blog/new-public-schema-permissions-postgresql-15>`_, `Crunchy Data blog post <https://www.crunchydata.com/blog/be-ready-public-schema-changes-in-postgres-15>`_). The Dataverse installer has been updated to restore the old permissions, but this may not be a long term solution.
 
