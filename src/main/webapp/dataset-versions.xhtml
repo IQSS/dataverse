@@ -164,22 +164,22 @@
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.archived']}" class="col-sm-1"  rendered="#{!empty(DatasetPage.dataset.id) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset') and !versionTab.isDraft() and (DatasetPage.archivable  or DatasetPage.someVersionArchived or not empty(versionTab.archivalCopyLocation))}">
             <ui:fragment>
               <ui:fragment rendered="#{'success' eq versionTab.archivalCopyLocationStatus}">
-                <h:outputLink id="archived" value="#{versionTab.archivalCopyLocationMessage}" target="_blank" rendered="#{DatasetPage.isSuperUser()}">
+                <h:outputLink id="archived" value="#{versionTab.archivalCopyLocationMessage}" target="_blank" rendered="#{DatasetPage.powerUserOnDataset()}">
                     <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.success']}" />
                 </h:outputLink>
-                <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.success']}" rendered="#{!DatasetPage.isSuperUser()}"/>
+                <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.success']}" rendered="#{!DatasetPage.powerUserOnDataset()}"/>
               </ui:fragment>
               <ui:fragment rendered="#{'obsolete' eq versionTab.archivalCopyLocationStatus}">
-                <h:outputLink id="oldarchived" value="#{versionTab.archivalCopyLocationMessage}" target="_blank" rendered="#{DatasetPage.isSuperUser()}">
+                <h:outputLink id="oldarchived" value="#{versionTab.archivalCopyLocationMessage}" target="_blank" rendered="#{DatasetPage.powerUserOnDataset()}">
                     <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.obsolete']}" />
                 </h:outputLink>
-                <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.obsolete']}" rendered="#{!DatasetPage.isSuperUser()}"/>
+                <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.obsolete']}" rendered="#{!DatasetPage.powerUserOnDataset()}"/>
               </ui:fragment>
-              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.pending']}" rendered="#{'pending' eq versionTab.archivalCopyLocationStatus}" title="#{DatasetPage.isSuperUser() ? versionTab.archivalCopyLocationMessage : ''}"/>
-              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.failure']}" rendered="#{'failure' eq versionTab.archivalCopyLocationStatus}" title="#{DatasetPage.isSuperUser() ? versionTab.archivalCopyLocationMessage : ''}"/>
-              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{ empty(versionTab.archivalCopyLocation) and ((not DatasetPage.isSuperUser() and DatasetPage.someVersionArchived) or DatasetPage.isSuperUser())}"/>
-              <p:commandLink styleClass="archive-submit-link" rendered="#{DatasetPage.isSuperUser() and DatasetPage.isVersionArchivable(versionTab.id)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel" 
-                                                   action="#{DatasetPage.archiveVersion(versionTab.id, !empty(versionTab.archivalCopyLocationStatus))}">
+              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.pending']}" rendered="#{'pending' eq versionTab.archivalCopyLocationStatus}" title="#{DatasetPage.powerUserOnDataset() ? versionTab.archivalCopyLocationMessage : ''}"/>
+              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.failure']}" rendered="#{'failure' eq versionTab.archivalCopyLocationStatus}" title="#{DatasetPage.powerUserOnDataset() ? versionTab.archivalCopyLocationMessage : ''}"/>
+              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{ empty(versionTab.archivalCopyLocation) and ((not DatasetPage.powerUserOnDataset() and DatasetPage.someVersionArchived) or DatasetPage.powerUserOnDataset())}"/>
+              <p:commandLink styleClass="archive-submit-link" rendered="#{DatasetPage.powerUserOnDataset() and DatasetPage.isVersionArchivable(versionTab.id)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel"
+                             action="#{DatasetPage.archiveVersion(versionTab.id, !empty(versionTab.archivalCopyLocationStatus))}">
                   <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.archived.submit']}"/>
               </p:commandLink>
               
