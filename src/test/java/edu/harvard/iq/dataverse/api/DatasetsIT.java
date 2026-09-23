@@ -94,6 +94,7 @@ public class DatasetsIT {
     @AfterEach
     public void afterEach() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.DisplayMDCMetrics);
     }
 
     @AfterAll
@@ -6177,15 +6178,33 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         UtilIT.downloadFile(fileId, apiToken2);
 
         UtilIT.setSetting(":MDCStartDate", "2019-10-01");
+        UtilIT.setSetting(":DisplayMDCMetrics", "true");
+        // Test with setting value
         Response countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, null);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("downloadCount", equalTo(0))
+                .body("viewCount", equalTo(0))
+                .body("citations", equalTo(0))
                 .body("MDCStartDate", equalTo("2019-10-01"));
+        // Test by overriding the includeMDC parameter with 'false'
+        countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, false);
+        countResponse.prettyPrint();
+        countResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("downloadCount", equalTo(1))
+                .body("viewCount", is(nullValue()))
+                .body("citations", is(nullValue()))
+                .body("MDCStartDate", is(nullValue()));
+        // Test by overriding the includeMDC parameter with 'true' and also test with no start date setting
+        UtilIT.setSetting(":DisplayMDCMetrics", "false");
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MDCStartDate);
         countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, true);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
-                .body("downloadCount", equalTo(1));
+                .body("downloadCount", equalTo(0))
+                .body("viewCount", equalTo(0))
+                .body("citations", equalTo(0))
+                .body("MDCStartDate", is(nullValue()));
     }
 
     @Test
