@@ -25,13 +25,21 @@ import java.util.List;
  *                 The list is defensively copied into an unmodifiable snapshot.
  */
 public record MultiDatasetExportRequest(
-    @NotBlank String exporter,
+    @NotBlank
+    @Schema(
+        description = "The name of the metadata exporter to use. Must not be blank.",
+        examples = {"dataverse_json"},
+        required = true
+    )
+    String exporter,
     
     @Valid
     @NotNull
     @Size(min = 1)
     @Schema(description = "The list of dataset (versions) to export. One dataset minimum. " +
-                          "Maximum is controlled by server configuration, default is " + ApiConstants.DEFAULT_MAX_EXPORT_REQUEST_SIZE)
+                          "Maximum is controlled by server configuration, default is " + ApiConstants.DEFAULT_MAX_EXPORT_REQUEST_SIZE,
+        required = true
+    )
     List<ExportItem> datasets
 ) {
     /**
