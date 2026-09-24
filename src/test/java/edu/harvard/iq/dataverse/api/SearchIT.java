@@ -569,6 +569,9 @@ public class SearchIT {
         uploadSecondImage.prettyPrint();
         uploadSecondImage.then().assertThat()
                 .statusCode(200);
+        // Let the upload's index job record its index time first: switching the thumbnail below saves the dataset as it
+        // was loaded, and would restore the older index time (see DatasetThumbnailIndexTimeIT).
+        UtilIT.sleepForDatasetIndex(datasetId.toString(), apiToken);
 
         Response getDatasetJson2 = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, apiToken);
         //odd that [0] gets the second uploaded file... replace with a find for dataverseproject.png
