@@ -38,4 +38,5 @@ public final class ApiConstants {
     
     // Export
     public static final String EXPORT_CORRELATION_ID = "X-Dataverse-Export-ID";
+    public static final int DEFAULT_MAX_EXPORT_REQUEST_SIZE = 32;
 }

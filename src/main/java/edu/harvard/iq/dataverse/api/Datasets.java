@@ -375,7 +375,14 @@ public class Datasets extends AbstractApiBean {
             exporterDetail = exporterRegistrySvc.requireExistsAndSupports(request.exporter(), BulkDatasetExporter.class);
         }
         
-        // TODO: Enforce configurable upper limit with sane default, maybe per format limits?
+        // Enforce upper limit on request size to avoid simple DoS attacks
+        int maxRequestSize = JvmSettings.API_EXPORT_BULK_MAX_REQUEST_SIZE.lookupOptional(Integer.class)
+                                                                         .orElse(ApiConstants.DEFAULT_MAX_EXPORT_REQUEST_SIZE);
+        if (request.datasets().size() > maxRequestSize) {
+            return JsonResponseBuilder.error(BAD_REQUEST)
+                .message("Too many dataset versions requested for export (exceeds maximum of " + maxRequestSize + ")")
+                .build();
+        }
         
         // Lookup the HTTP request enhanced with the authenticated user from context (resolved by the AuthFilter/AuthRequired mechanism)
         DataverseRequest userScopedHttpRequest = createDataverseRequest(getRequestUser(crc));
