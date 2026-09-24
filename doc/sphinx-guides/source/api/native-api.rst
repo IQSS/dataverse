@@ -3668,7 +3668,7 @@ Get the Download count of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows the total number of downloads requested for a dataset. If MDC is enabled the count will be limited to the time before MDC start if the optional `includeMDC` parameter is not included or set to False.
-Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count.
+Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count along with the specific MDC counts under the JSON object ("MDC":{}). Subtracting the MDC.downloadCount from the top level "downloadCount" will give you the download count from pre MDC.
 
 .. code-block:: bash
 

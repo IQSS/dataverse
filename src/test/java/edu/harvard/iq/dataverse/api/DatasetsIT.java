@@ -6177,33 +6177,53 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
         UtilIT.downloadFile(fileId, apiToken2);
 
-        UtilIT.setSetting(":MDCStartDate", "2019-10-01");
-        UtilIT.setSetting(":DisplayMDCMetrics", "true");
-        // Test with setting value
+        // Test metrics with no MDC
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MDCStartDate);
         Response countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, null);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
-                .body("downloadCount", equalTo(0))
-                .body("viewCount", equalTo(0))
-                .body("citations", equalTo(0))
-                .body("MDCStartDate", equalTo("2019-10-01"));
-        // Test by overriding the includeMDC parameter with 'false'
+                .body("downloadCount", equalTo(1))
+                .body("MDCStartDate", is(nullValue()))
+                .body("MDC", is(nullValue()));
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String tomorrow = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String lastweek = LocalDate.now().minusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        // Test by setting the includeMDC parameter to 'false'
+        UtilIT.setSetting(":MDCStartDate", tomorrow);
         countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, false);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("downloadCount", equalTo(1))
-                .body("viewCount", is(nullValue()))
-                .body("citations", is(nullValue()))
-                .body("MDCStartDate", is(nullValue()));
-        // Test by overriding the includeMDC parameter with 'true' and also test with no start date setting
-        UtilIT.setSetting(":DisplayMDCMetrics", "false");
-        UtilIT.deleteSetting(SettingsServiceBean.Key.MDCStartDate);
+                .body("MDCStartDate", equalTo(tomorrow))
+                .body("MDC", is(nullValue()));
+        // Test by setting the includeMDC parameter to 'true' (include is true so ignore MDC start date and return total count)
         countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, true);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("downloadCount", equalTo(1))
+                .body("MDCStartDate", is(nullValue()))
+                .body("MDC", not(nullValue()))
+                .body("MDC.downloadCount", equalTo(0))
+                .body("MDC.viewCount", equalTo(0))
+                .body("MDC.citations", equalTo(0));
+        // Test MDC started today (include is false so total count does not include MDC, start date is returned, and count is 0 because the downloads happened after MDC start date)
+        UtilIT.setSetting(":MDCStartDate", today);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.DisplayMDCMetrics);
+        countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, false);
+        countResponse.prettyPrint();
+        countResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("downloadCount", equalTo(0))
-                .body("viewCount", equalTo(0))
-                .body("citations", equalTo(0))
+                .body("displayMDCMetrics", is(nullValue()))
+                .body("MDCStartDate", equalTo(today));
+        // Test MDC started yesterday (include is true so ignore MDC start date and return total count)
+        UtilIT.setSetting(":MDCStartDate", lastweek);
+        UtilIT.setSetting(":DisplayMDCMetrics", "false");
+        countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, true);
+        countResponse.prettyPrint();
+        countResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("downloadCount", equalTo(1))
+                .body("displayMDCMetrics", equalTo("false"))
                 .body("MDCStartDate", is(nullValue()));
     }
 

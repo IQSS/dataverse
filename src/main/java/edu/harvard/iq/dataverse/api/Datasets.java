@@ -668,27 +668,34 @@ public class Datasets extends AbstractApiBean {
                                      @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                      @Parameter(description = "Whether Make Data Count values are included.") @QueryParam("includeMDC") Boolean includeMDC) {
         Dataset ds;
+        Long count;
+        Long mdcCount = 0L;
+        boolean includeMDCResponse = Boolean.TRUE.equals(includeMDC);
+        // Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count
+        LocalDate date = includeMDCResponse ? null : getMDCStartDate();
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             ds = findDatasetUserCanSeeOrDie(datasetId, req, false);
+            count = guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), date);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
         JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("id", ds.getId());
-        boolean includeMDCResponse = includeMDC == null ? settingsService.isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, false) : includeMDC;
+        if (date != null) {
+            job.add("MDCStartDate", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        String displayMDCMetrics = settingsService.getValueForKey(SettingsServiceBean.Key.DisplayMDCMetrics);
+        if (displayMDCMetrics != null) {
+            job.add("displayMDCMetrics", displayMDCMetrics);
+        }
         if (includeMDCResponse) {
             DatasetMetrics metrics = datasetMetricsService.getMetrics(ds); // metrics is never null
-            job.add("downloadCount", metrics.getDownloadsTotal());
-            job.add("viewCount", metrics.getViewsTotal());
-            job.add("citations", datasetExternalCitationsService.getDatasetExternalCitationsByDataset(ds).size()); // list is never null
-            LocalDate date = getMDCStartDate();
-            if (date != null) {
-                job.add("MDCStartDate", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            }
-        } else {
-            job.add("downloadCount", guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), null));
+            mdcCount = metrics.getDownloadsTotal();
+            job.add("MDC", JsonPrinter.json(metrics));
         }
+        // total download count from guestbookResponseService and datasetMetricsService(if included)
+        job.add("downloadCount", count + mdcCount);
 
         return Response.ok(job.build())
                 .type(MediaType.APPLICATION_JSON)
