@@ -221,6 +221,7 @@ public class SearchIT {
 
         // search descending will get the latest 100.
         // This could fail if more than 100 get created between our update and the search. Highly unlikely
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         searchResponse = UtilIT.search("*&type=file&sort=date&order=desc&per_page=100&start=0&subtree=root" , apiToken);
         searchResponse.prettyPrint();
 
@@ -1085,6 +1086,8 @@ public class SearchIT {
         publishDataset2.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(datasetPid, apiToken);
+        UtilIT.sleepForDatasetIndex(datasetPid2, apiToken);
         Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchPublishedSubtree.prettyPrint();
         searchPublishedSubtree.then().assertThat()
@@ -2008,6 +2011,7 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         Response searchResp = UtilIT.search("dataverseproject", apiToken);
         searchResp.prettyPrint();
         searchResp.then().assertThat()
@@ -2294,6 +2298,7 @@ public class SearchIT {
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         // Test that the Dataverse collection that the dataset was created in is returned
         Response searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
         searchResponse.prettyPrint();
@@ -2362,6 +2367,7 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         // Verify no files in search results initially
         Response searchBeforeFileUpload = UtilIT.search("parentId:" + datasetId, apiToken);
         searchBeforeFileUpload.prettyPrint();

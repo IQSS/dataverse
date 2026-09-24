@@ -3516,12 +3516,22 @@ public class UtilIT {
     // docker-compose-dev.yml (run the tests with -Ddataverse.test.solr.softcommit.millis=100 to match).
     private static final int SOLR_SOFT_COMMIT_MILLIS = Integer.getInteger("dataverse.test.solr.softcommit.millis", 1000);
 
+    // Before the index was polled, the tests always waited this long for the background job. It is still
+    // used when the wait cannot be tied to a dataset: searches for "*" or a text go through here too.
+    private static final int UNKNOWN_DATASET_INDEX_MILLIS = 1500;
+
     static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
         long start = System.currentTimeMillis();
         long deadline = start + durationInSeconds * 1000L;
-        boolean stale = hasStaleIndex(idOrPersistentId, apiToken);
+        Boolean stale = hasStaleIndex(idOrPersistentId, apiToken);
+        if (stale == null) {
+            // not a dataset the caller can see: nothing to poll, so give the background job the time it always had
+            sleepMillis(UNKNOWN_DATASET_INDEX_MILLIS);
+            System.out.println("Waited " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds (no dataset to poll for " + idOrPersistentId + ")");
+            return true;
+        }
         while (stale && System.currentTimeMillis() < deadline && sleepMillis(100)) {
-            stale = hasStaleIndex(idOrPersistentId, apiToken);
+            stale = Boolean.TRUE.equals(hasStaleIndex(idOrPersistentId, apiToken));
         }
         if (stale) {
             System.out.println(UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken).body().asString());
@@ -3532,13 +3542,15 @@ public class UtilIT {
         return !stale;
     }
 
-    private static boolean hasStaleIndex(String idOrPersistentId, String apiToken) {
+    /** Whether the index of the dataset is stale; null when the id is not a dataset the caller can see */
+    private static Boolean hasStaleIndex(String idOrPersistentId, String apiToken) {
         Response timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
         try {
-            return Boolean.parseBoolean(timestampResponse.body().jsonPath().getString("data.hasStaleIndex"));
-        } catch (IllegalArgumentException ex) {
+            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+            return hasStaleIndex == null ? null : Boolean.parseBoolean(hasStaleIndex);
+        } catch (RuntimeException ex) {
             Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
-            return false;
+            return null;
         }
     }
 
