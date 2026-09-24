@@ -3,6 +3,9 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.FileSearchCriteria;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import jakarta.persistence.EntityManager;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -176,5 +180,22 @@ class DatasetVersionFileMetadatasPerformanceIT {
         };
         assertNoQueriesPerItem("dataset deep", smallRegularVersion, largeRegularVersion, findDeep, readFiles);
         assertNoQueriesPerItem("dataset deep tabular", smallTabularVersion, largeTabularVersion, findDeep, readFiles);
+    }
+
+    /**
+     * The file listing API (GET /api/datasets/{id}/versions/{v}/files) loads the file metadatas with this query
+     * and prints them as JSON: the batch fetching applies to any query that returns file metadatas.
+     */
+    @Test
+    void listingFilesForApi() {
+        BiFunction<EntityManager, Long, List<FileMetadata>> listFiles = (em, id) -> {
+            DatasetVersionFilesServiceBean files = new DatasetVersionFilesServiceBean();
+            files.injectEntityManager(em);
+            return files.getFileMetadatas(em.find(DatasetVersion.class, id), null, null,
+                new FileSearchCriteria(null, null, null, null, null), DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ);
+        };
+        Consumer<List<FileMetadata>> printJson = fileMetadatas -> JsonPrinter.jsonFileMetadatas(fileMetadatas).build();
+        assertNoQueriesPerItem("file listing api", smallRegularVersion, largeRegularVersion, listFiles, printJson);
+        assertNoQueriesPerItem("file listing api tabular", smallTabularVersion, largeTabularVersion, listFiles, printJson);
     }
 }
