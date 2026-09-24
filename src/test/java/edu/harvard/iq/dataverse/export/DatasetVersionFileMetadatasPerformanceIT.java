@@ -97,8 +97,29 @@ class DatasetVersionFileMetadatasPerformanceIT {
 
     static <T> void assertNoQueriesPerItem(String name, Long smallVersion, Long largeVersion,
             BiFunction<EntityManager, Long, T> load, Consumer<T> operation) {
-        long small = selectQueries(smallVersion, load, operation);
-        long large = selectQueries(largeVersion, load, operation);
+        assertNoQueriesPerItem(name, selectQueries(smallVersion, load, operation), selectQueries(largeVersion, load, operation));
+    }
+
+    /**
+     * Select queries of the operation on the object after the transaction that loaded it has ended and its entity
+     * manager is closed, as onSuccess methods, background jobs and the pages get it
+     */
+    static <T> long selectQueriesAfterTheTransaction(Long versionId, BiFunction<EntityManager, Long, T> load, Consumer<T> operation) {
+        T detached = jpa.inTransaction(em -> load.apply(em, versionId));
+        QueryCountHolder.clear();
+        operation.accept(detached);
+        long queries = QueryCountHolder.getGrandTotal().getSelect();
+        assertTrue(queries > 0, "the relations were loaded before the transaction ended, the operation read nothing");
+        return queries;
+    }
+
+    static <T> void assertNoQueriesPerItemAfterTheTransaction(String name, Long smallVersion, Long largeVersion,
+            BiFunction<EntityManager, Long, T> load, Consumer<T> operation) {
+        assertNoQueriesPerItem(name, selectQueriesAfterTheTransaction(smallVersion, load, operation),
+            selectQueriesAfterTheTransaction(largeVersion, load, operation));
+    }
+
+    static void assertNoQueriesPerItem(String name, long small, long large) {
         System.out.println(name + ": " + small + " select queries for the smaller dataset, " + large + " for the larger one");
         assertTrue(large - small <= MAX_EXTRA_QUERIES,
             name + ": select queries grow with the number of files or variables (" + small + " for the smaller dataset, " + large + " for the larger one)");
@@ -138,11 +159,47 @@ class DatasetVersionFileMetadatasPerformanceIT {
      */
     @Test
     void loadingVersionForDatasetPage() {
-        BiFunction<EntityManager, Long, DatasetVersion> findDeep = (em, id) -> em
-            .createNamedQuery("DatasetVersion.findById", DatasetVersion.class).setParameter("id", id).getSingleResult();
-        Consumer<DatasetVersion> readFiles = version -> version.getFileMetadatas().forEach(fmd -> {
-            DataFile dataFile = fmd.getDataFile();
-            fmd.getCategories().size();
+        assertNoQueriesPerItem("dataset page version", smallRegularVersion, largeRegularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
+        assertNoQueriesPerItem("dataset page tabular version", smallTabularVersion, largeTabularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
+    }
+
+    /** The query DatasetVersionServiceBean.findDeep runs */
+    static final BiFunction<EntityManager, Long, DatasetVersion> FIND_VERSION_DEEP = (em, id) -> em
+        .createNamedQuery("DatasetVersion.findById", DatasetVersion.class).setParameter("id", id).getSingleResult();
+
+    /** The relations of every file the dataset page reads */
+    static final Consumer<DatasetVersion> READ_FILES_OF_VERSION = version -> version.getFileMetadatas().forEach(fmd -> {
+        DataFile dataFile = fmd.getDataFile();
+        fmd.getCategories().size();
+        dataFile.getIngestRequest();
+        dataFile.getThumbnailForDataset();
+        dataFile.getEmbargo();
+        dataFile.getRetention();
+        dataFile.getReleaseUser();
+        dataFile.getCreator();
+        dataFile.getDataTables().size();
+        dataFile.getTags().size();
+    });
+
+    /**
+     * The dataset API loads a dataset with DatasetServiceBean.findDeep, which runs this query; some callers then read
+     * these relations of every file. Joining the files in the query fails with batch fetching (EclipseLink 6169).
+     */
+    @Test
+    void loadingDatasetDeep() {
+        assertNoQueriesPerItem("dataset deep", smallRegularVersion, largeRegularVersion, FIND_DATASET_DEEP, READ_FILES_OF_DATASET);
+        assertNoQueriesPerItem("dataset deep tabular", smallTabularVersion, largeTabularVersion, FIND_DATASET_DEEP, READ_FILES_OF_DATASET);
+    }
+
+    /** The query DatasetServiceBean.findDeep runs, for the dataset of the version */
+    static final BiFunction<EntityManager, Long, Dataset> FIND_DATASET_DEEP = (em, versionId) -> em
+        .createNamedQuery("Dataset.findById", Dataset.class).setParameter("id", datasetIds.get(versionId)).getSingleResult();
+
+    /** The relations of every file some callers of findDeep read */
+    static final Consumer<Dataset> READ_FILES_OF_DATASET = dataset -> {
+        assertTrue(!dataset.getFiles().isEmpty(), "the dataset has no files");
+        dataset.getFiles().forEach(dataFile -> {
+            dataFile.getStorageQuota();
             dataFile.getIngestRequest();
             dataFile.getThumbnailForDataset();
             dataFile.getEmbargo();
@@ -152,34 +209,17 @@ class DatasetVersionFileMetadatasPerformanceIT {
             dataFile.getDataTables().size();
             dataFile.getTags().size();
         });
-        assertNoQueriesPerItem("dataset page version", smallRegularVersion, largeRegularVersion, findDeep, readFiles);
-        assertNoQueriesPerItem("dataset page tabular version", smallTabularVersion, largeTabularVersion, findDeep, readFiles);
-    }
+    };
 
     /**
-     * The dataset API loads a dataset with DatasetServiceBean.findDeep, which runs this query; some callers then read
-     * these relations of every file. Joining the files in the query fails with batch fetching (EclipseLink 6169).
+     * The pages, onSuccess methods and background jobs read the files after the transaction that loaded the version
+     * or dataset has ended: the relations must still load, and still in batches.
      */
     @Test
-    void loadingDatasetDeep() {
-        BiFunction<EntityManager, Long, Dataset> findDeep = (em, versionId) -> em
-            .createNamedQuery("Dataset.findById", Dataset.class).setParameter("id", datasetIds.get(versionId)).getSingleResult();
-        Consumer<Dataset> readFiles = dataset -> {
-            assertTrue(!dataset.getFiles().isEmpty(), "the dataset has no files");
-            dataset.getFiles().forEach(dataFile -> {
-                dataFile.getStorageQuota();
-                dataFile.getIngestRequest();
-                dataFile.getThumbnailForDataset();
-                dataFile.getEmbargo();
-                dataFile.getRetention();
-                dataFile.getReleaseUser();
-                dataFile.getCreator();
-                dataFile.getDataTables().size();
-                dataFile.getTags().size();
-            });
-        };
-        assertNoQueriesPerItem("dataset deep", smallRegularVersion, largeRegularVersion, findDeep, readFiles);
-        assertNoQueriesPerItem("dataset deep tabular", smallTabularVersion, largeTabularVersion, findDeep, readFiles);
+    void readingFilesAfterTheTransaction() {
+        assertNoQueriesPerItemAfterTheTransaction("detached version", smallRegularVersion, largeRegularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
+        assertNoQueriesPerItemAfterTheTransaction("detached tabular version", smallTabularVersion, largeTabularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
+        assertNoQueriesPerItemAfterTheTransaction("detached dataset", smallRegularVersion, largeRegularVersion, FIND_DATASET_DEEP, READ_FILES_OF_DATASET);
     }
 
     /**
