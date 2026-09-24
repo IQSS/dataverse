@@ -164,19 +164,12 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
     
     public DatasetVersion findDeep(Object pk) {
+        // No join fetching of the files: they are loaded when first used, with their relations batch
+        // fetched (@BatchFetch on FileMetadata and DataFile), a few queries per 500 files. Joining them all
+        // in one query made EclipseLink build every file from one huge result, slow for versions with many
+        // files. (Batch fetching also needs the files not to be join fetched: EclipseLink error 6169.)
         return (DatasetVersion) em.createNamedQuery("DatasetVersion.findById")
             .setParameter("id", pk)
-            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestRequest")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.thumbnailForDataset")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.retention")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
             .getSingleResult();
     }
 

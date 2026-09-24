@@ -303,6 +303,7 @@ public class DataFile extends DvObject implements Comparable {
 
     @ManyToOne
     @JoinColumn(name="embargo_id")
+    @BatchFetch(BatchFetchType.IN)
     private Embargo embargo;
 
     public Embargo getEmbargo() {
@@ -315,6 +316,7 @@ public class DataFile extends DvObject implements Comparable {
 
     @ManyToOne
     @JoinColumn(name="retention_id")
+    @BatchFetch(BatchFetchType.IN)
     private Retention retention;
 
     public Retention getRetention() {
