@@ -1,0 +1,2 @@
+## Bug Fix
+The behavior of the DELETE "/api/datasets/{id}" endpoint has changed. The call succeeds only if the dataset is unpublished (only the draft version exists). This is a change for superusers as the call will no longer be 'upgraded' to a dataset destroy action and will instead suggest using the /destroy endpoint to delete the published version. The error code returned when used on a published dataset is now 400/ 'Bad Request'. 
