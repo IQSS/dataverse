@@ -18,6 +18,9 @@ import net.ttddyy.dsproxy.QueryCountHolder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import jakarta.persistence.EntityManager;
+
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,15 +74,20 @@ class DatasetVersionFileMetadatasPerformanceIT {
     }
 
     /** Select queries of the operation on the version as a page gets it: its files are not loaded yet */
-    static long selectQueries(Long versionId, Consumer<DatasetVersion> operation) {
+    static long selectQueries(Long versionId, BiFunction<EntityManager, Long, DatasetVersion> load, Consumer<DatasetVersion> operation) {
         QueryCountHolder.clear();
-        jpa.inTransactionVoid(em -> operation.accept(em.find(DatasetVersion.class, versionId)));
+        jpa.inTransactionVoid(em -> operation.accept(load.apply(em, versionId)));
         return QueryCountHolder.getGrandTotal().getSelect();
     }
 
     static void assertNoQueriesPerItem(String name, Long smallVersion, Long largeVersion, Consumer<DatasetVersion> operation) {
-        long small = selectQueries(smallVersion, operation);
-        long large = selectQueries(largeVersion, operation);
+        assertNoQueriesPerItem(name, smallVersion, largeVersion, (em, id) -> em.find(DatasetVersion.class, id), operation);
+    }
+
+    static void assertNoQueriesPerItem(String name, Long smallVersion, Long largeVersion,
+            BiFunction<EntityManager, Long, DatasetVersion> load, Consumer<DatasetVersion> operation) {
+        long small = selectQueries(smallVersion, load, operation);
+        long large = selectQueries(largeVersion, load, operation);
         System.out.println(name + ": " + small + " select queries for the smaller dataset, " + large + " for the larger one");
         assertTrue(large - small <= MAX_EXTRA_QUERIES,
             name + ": select queries grow with the number of files or variables (" + small + " for the smaller dataset, " + large + " for the larger one)");
@@ -111,5 +119,29 @@ class DatasetVersionFileMetadatasPerformanceIT {
     @Test
     void buildingSchemaDotOrgJsonLd() {
         assertNoQueriesPerItem("schema.org json-ld", smallRegularVersion, largeRegularVersion, DatasetVersion::getJsonLd);
+    }
+
+    /**
+     * The dataset page loads its version with DatasetVersionServiceBean.findDeep, which runs this query, and then
+     * reads these relations of every file. Joining the files in the query fails with batch fetching (EclipseLink 6169).
+     */
+    @Test
+    void loadingVersionForDatasetPage() {
+        BiFunction<EntityManager, Long, DatasetVersion> findDeep = (em, id) -> em
+            .createNamedQuery("DatasetVersion.findById", DatasetVersion.class).setParameter("id", id).getSingleResult();
+        Consumer<DatasetVersion> readFiles = version -> version.getFileMetadatas().forEach(fmd -> {
+            DataFile dataFile = fmd.getDataFile();
+            fmd.getCategories().size();
+            dataFile.getIngestRequest();
+            dataFile.getThumbnailForDataset();
+            dataFile.getEmbargo();
+            dataFile.getRetention();
+            dataFile.getReleaseUser();
+            dataFile.getCreator();
+            dataFile.getDataTables().size();
+            dataFile.getTags().size();
+        });
+        assertNoQueriesPerItem("dataset page version", smallRegularVersion, largeRegularVersion, findDeep, readFiles);
+        assertNoQueriesPerItem("dataset page tabular version", smallTabularVersion, largeTabularVersion, findDeep, readFiles);
     }
 }
