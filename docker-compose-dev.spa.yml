@@ -1,0 +1,38 @@
+# Optional override to run the SPA (dataverse-frontend) against the backend dev env.
+#
+# Swaps the stock Keycloak for the image in conf/keycloak (Dataverse builtin users SPI +
+# test-realm-include-spi.json) and mounts an exploded SPA build at /modern.
+#
+# Usage:
+#   docker compose -f docker-compose-dev.yml -f docker-compose-dev.spa.yml up
+#
+# Log in with Dataverse builtin users (e.g. dataverseAdmin), not the users of test-realm.json.
+
+services:
+
+  dev_dataverse:
+    environment:
+      DATAVERSE_FEATURE_API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH: "1"
+    volumes:
+      # Exploded SPA build (dataverse-frontend dist/ plus WEB-INF/web.xml from its deployment/payara),
+      # auto-deployed to context root /modern
+      - ./docker-dev-volumes/app/spa:/opt/payara/deployments/modern:ro
+
+  dev_keycloak:
+    build:
+      context: ./conf/keycloak
+      dockerfile: Dockerfile
+    image: gdcc/keycloak-dev
+    command: start-dev --import-realm --http-port=8090
+    depends_on:
+      - dev_postgres
+    environment:
+      # Fixed frontchannel issuer, so tokens from the browser match what Dataverse validates
+      KC_HOSTNAME: http://localhost:8090
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      # Used by the SPI "user-store" datasource (conf/keycloak/builtin-users-spi/conf/quarkus.properties)
+      DATAVERSE_DB_HOST: postgres
+      DATAVERSE_DB_PORT: "5432"
+      DATAVERSE_DB_USER: ${DATAVERSE_DB_USER}
+      DATAVERSE_DB_PASSWORD: secret
+    volumes: !reset []
