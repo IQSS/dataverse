@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,24 +18,22 @@ import java.util.List;
  * Without this, the background job could read the database before the changes it should
  * index were visible to it: a dataset created in the same transaction got a permission
  * document without its creator and never had its index time recorded.
+ *
+ * The records carry ids, not entities. The background job loads what it indexes in a
+ * persistence context of its own: an entity shared with the requesting thread is read by
+ * both threads at the same time, and EclipseLink's unit of work is not thread-safe.
  */
 public sealed interface IndexingRequest {
 
     /** Index a dataset in the background. */
-    record IndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) implements IndexingRequest {}
-
-    /** Index a dataset in the background, looking it up by id first. */
-    record IndexDatasetById(Long datasetId, boolean doNormalSolrDocCleanUp) implements IndexingRequest {}
+    record IndexDataset(Long datasetId, boolean doNormalSolrDocCleanUp) implements IndexingRequest {}
 
     /** Index datasets in the background, one after the other. */
-    record IndexDatasets(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) implements IndexingRequest {}
+    record IndexDatasets(List<Long> datasetIds, boolean doNormalSolrDocCleanUp) implements IndexingRequest {}
 
     /** Record that a dataset has just been indexed. */
     record RecordIndexTime(Long datasetId) implements IndexingRequest {}
 
-    /** Reindex the permissions of the definition point of a role assignment. */
-    record IndexRole(RoleAssignment roleAssignment) implements IndexingRequest {}
-
-    /** Reindex the permissions of several definition points. */
-    record IndexRoles(Collection<DvObject> dvObjects) implements IndexingRequest {}
+    /** Reindex the permissions of these collections, datasets or files and of their children. */
+    record IndexPermissions(Collection<Long> dvObjectIds) implements IndexingRequest {}
 }

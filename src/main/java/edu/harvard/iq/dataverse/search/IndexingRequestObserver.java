@@ -24,12 +24,10 @@ public class IndexingRequestObserver {
 
     public void afterCommit(@Observes(during = TransactionPhase.AFTER_SUCCESS) IndexingRequest request) {
         switch (request) {
-            case IndexingRequest.IndexDataset(var dataset, var cleanUp) -> indexService.indexDatasetInBackground(dataset, cleanUp);
-            case IndexingRequest.IndexDatasetById(var datasetId, var cleanUp) -> indexService.indexDatasetInBackground(datasetId, cleanUp);
-            case IndexingRequest.IndexDatasets(var datasets, var cleanUp) -> indexService.indexDatasetListInBackground(datasets, cleanUp);
+            case IndexingRequest.IndexDataset(var datasetId, var cleanUp) -> indexService.indexDatasetInBackground(datasetId, cleanUp);
+            case IndexingRequest.IndexDatasets(var datasetIds, var cleanUp) -> indexService.indexDatasetListInBackground(datasetIds, cleanUp);
             case IndexingRequest.RecordIndexTime(var datasetId) -> indexService.updateLastIndexedTime(datasetId);
-            case IndexingRequest.IndexRole(var roleAssignment) -> indexAsync.indexRoleInBackground(roleAssignment);
-            case IndexingRequest.IndexRoles(var dvObjects) -> indexAsync.indexRolesInBackground(dvObjects);
+            case IndexingRequest.IndexPermissions(var dvObjectIds) -> indexAsync.indexPermissionsInBackground(dvObjectIds);
         }
     }
 }

@@ -17,15 +17,19 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * Indexing is requested from inside the transaction that changes a dataset or its
  * permissions. The background job must not start before that transaction has
  * committed, otherwise it reads the database before the new rows are visible
  * (missing permissions, missing index time). The beans therefore only fire an
- * {@link IndexingRequest}; the observer starts the work after the commit.
+ * {@link IndexingRequest}; the observer starts the work after the commit. The
+ * requests carry ids: the background job must not share entities with the
+ * requesting thread.
  */
 class IndexingAfterCommitTest {
 
@@ -52,68 +56,65 @@ class IndexingAfterCommitTest {
         dataset = new Dataset();
         dataset.setId(42L);
         roleAssignment = new RoleAssignment();
+        roleAssignment.setDefinitionPoint(dataset);
     }
 
     @Test
     void asyncIndexDatasetOnlyRequestsTheIndexing() {
         indexService.asyncIndexDataset(dataset, true);
 
-        assertEquals(new IndexingRequest.IndexDataset(dataset, true), firedRequest());
+        assertEquals(new IndexingRequest.IndexDataset(42L, true), firedRequest());
     }
 
     @Test
     void asyncIndexDatasetByIdOnlyRequestsTheIndexing() {
         indexService.asyncIndexDataset(42L, false);
 
-        assertEquals(new IndexingRequest.IndexDatasetById(42L, false), firedRequest());
+        assertEquals(new IndexingRequest.IndexDataset(42L, false), firedRequest());
+    }
+
+    @Test
+    void asyncIndexDatasetRejectsADatasetWithoutId() {
+        assertThrows(NullPointerException.class, () -> indexService.asyncIndexDataset(new Dataset(), true));
+
+        verifyNoInteractions(indexingRequests);
     }
 
     @Test
     void asyncIndexDatasetListOnlyRequestsTheIndexing() {
-        List<Dataset> datasets = List.of(dataset);
+        indexService.asyncIndexDatasetList(List.of(dataset), true);
 
-        indexService.asyncIndexDatasetList(datasets, true);
-
-        assertEquals(new IndexingRequest.IndexDatasets(datasets, true), firedRequest());
+        assertEquals(new IndexingRequest.IndexDatasets(List.of(42L), true), firedRequest());
     }
 
     @Test
-    void indexRoleOnlyRequestsTheIndexing() {
+    void indexRoleOnlyRequestsThePermissionIndexing() {
         indexAsync.indexRole(roleAssignment);
 
-        assertEquals(new IndexingRequest.IndexRole(roleAssignment), firedRequest());
+        assertEquals(new IndexingRequest.IndexPermissions(List.of(42L)), firedRequest());
     }
 
     @Test
-    void indexRolesOnlyRequestsTheIndexing() {
+    void indexRolesOnlyRequestsThePermissionIndexing() {
         Collection<DvObject> dvObjects = List.of(dataset);
 
         indexAsync.indexRoles(dvObjects);
 
-        assertEquals(new IndexingRequest.IndexRoles(dvObjects), firedRequest());
+        assertEquals(new IndexingRequest.IndexPermissions(List.of(42L)), firedRequest());
     }
 
     @Test
     void observerStartsIndexingADataset() {
-        observer.afterCommit(new IndexingRequest.IndexDataset(dataset, true));
+        observer.afterCommit(new IndexingRequest.IndexDataset(42L, true));
 
-        verify(backgroundIndexService).indexDatasetInBackground(dataset, true);
-    }
-
-    @Test
-    void observerStartsIndexingADatasetById() {
-        observer.afterCommit(new IndexingRequest.IndexDatasetById(42L, false));
-
-        verify(backgroundIndexService).indexDatasetInBackground(42L, false);
+        verify(backgroundIndexService).indexDatasetInBackground(42L, true);
     }
 
     @Test
     void observerStartsIndexingADatasetList() {
-        List<Dataset> datasets = List.of(dataset);
+        observer.afterCommit(new IndexingRequest.IndexDatasets(List.of(42L), true));
 
-        observer.afterCommit(new IndexingRequest.IndexDatasets(datasets, true));
-
-        verify(backgroundIndexService).indexDatasetListInBackground(datasets, true);
+        verify(backgroundIndexService).indexDatasetListInBackground(List.of(42L), true);
     }
 
     @Test
@@ -124,19 +125,10 @@ class IndexingAfterCommitTest {
     }
 
     @Test
-    void observerReindexesTheRolePermissions() {
-        observer.afterCommit(new IndexingRequest.IndexRole(roleAssignment));
+    void observerReindexesThePermissions() {
+        observer.afterCommit(new IndexingRequest.IndexPermissions(List.of(42L)));
 
-        verify(backgroundIndexAsync).indexRoleInBackground(roleAssignment);
-    }
-
-    @Test
-    void observerReindexesSeveralPermissions() {
-        Collection<DvObject> dvObjects = List.of(dataset);
-
-        observer.afterCommit(new IndexingRequest.IndexRoles(dvObjects));
-
-        verify(backgroundIndexAsync).indexRolesInBackground(dvObjects);
+        verify(backgroundIndexAsync).indexPermissionsInBackground(List.of(42L));
     }
 
     @Test
