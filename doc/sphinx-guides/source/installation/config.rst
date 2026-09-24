@@ -3452,6 +3452,21 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
    This setting will be ignored unless the :ref:`dataverse.api.blocked.policy` is set to ``unblock-key``.  Otherwise the deprecated :ref:`:BlockedApiKey` will be used
 
 
+.. _dataverse.api.export.bulk.max-request-size:
+
+dataverse.api.export.bulk.max-request-size
++++++++++++++++++++++++++++++++++++++++++++
+
+Limits the maximum number of dataset versions that may be requested in a single bulk metadata export request (see :ref:`bulk-metadata-export-api` in the API Guide).
+Requests naming more dataset versions than this limit are rejected with an HTTP 400 response.
+
+Default: ``32``
+
+``./asadmin create-jvm-options '-Ddataverse.api.export.bulk.max-request-size=16'``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_EXPORT_BULK_MAX_REQUEST_SIZE``.
+
+
 .. _dataverse.legacy.api-response-message-style:
 
 dataverse.legacy.api-response-message-style
