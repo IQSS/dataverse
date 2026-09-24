@@ -116,37 +116,16 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     /**
-     * Retrieve a dataset with the deep underlying structure in one query execution.
-     * This is a more optimal choice when accessing files of a dataset.
-     * In a contrast, the find() method does not pre-fetch the file objects and results in point queries when accessing these objects.
-     * Since the files have a deep structure, many queries can be prevented by using the findDeep() method, especially for large datasets
-     * containing many files, and when iterating over all the files.
-     * When you are not going to access the file objects, the default find() method is better because of the lazy loading.
-     * @return a dataset with pre-fetched file objects
+     * Retrieve a dataset for iterating over its files. The files are loaded when first used, with their
+     * relations batch fetched (@BatchFetch on DataFile, DvObject and FileMetadata), a few queries per 500 files.
+     * Joining them all in one query made EclipseLink build every file from one huge result, and it fails with
+     * batch fetching (EclipseLink error 6169).
+     * @return the dataset
      */
     public Dataset findDeep(Object pk) {
         try {
             return (Dataset) em.createNamedQuery("Dataset.findById")
                     .setParameter("id", pk)
-                    // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
-                    .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
-                    .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
-                    .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
-                    .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
-                    .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
-                    .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
-                    //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
-                    .setHint("eclipselink.left-join-fetch", "o.files.embargo")
-                    .setHint("eclipselink.left-join-fetch", "o.files.retention")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
-                    .setHint("eclipselink.left-join-fetch", "o.files.owner")
-                    .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
-                    .setHint("eclipselink.left-join-fetch", "o.files.creator")
-                    .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
-                    .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
                     .getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;

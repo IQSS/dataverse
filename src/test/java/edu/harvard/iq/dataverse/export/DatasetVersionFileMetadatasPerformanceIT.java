@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.persistence.EntityManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -43,6 +45,8 @@ class DatasetVersionFileMetadatasPerformanceIT {
     static Long largeRegularVersion;
     static Long smallTabularVersion;
     static Long largeTabularVersion;
+    /** Dataset id of each version */
+    static final Map<Long, Long> datasetIds = new HashMap<>();
 
     @BeforeAll
     static void setUp() {
@@ -66,15 +70,18 @@ class DatasetVersionFileMetadatasPerformanceIT {
         jpa.inTransactionVoid(em -> {
             // DataFile has no cascade path from Dataset
             for (DataFile dataFile : fixture.dataFiles()) {
+                dataFile.setOwner(dataset);
                 em.persist(dataFile);
             }
             em.persist(dataset);
         });
-        return dataset.getVersions().get(0).getId();
+        Long versionId = dataset.getVersions().get(0).getId();
+        datasetIds.put(versionId, dataset.getId());
+        return versionId;
     }
 
-    /** Select queries of the operation on the version as a page gets it: its files are not loaded yet */
-    static long selectQueries(Long versionId, BiFunction<EntityManager, Long, DatasetVersion> load, Consumer<DatasetVersion> operation) {
+    /** Select queries of the operation on the object as a page gets it: its files are not loaded yet */
+    static <T> long selectQueries(Long versionId, BiFunction<EntityManager, Long, T> load, Consumer<T> operation) {
         QueryCountHolder.clear();
         jpa.inTransactionVoid(em -> operation.accept(load.apply(em, versionId)));
         return QueryCountHolder.getGrandTotal().getSelect();
@@ -84,8 +91,8 @@ class DatasetVersionFileMetadatasPerformanceIT {
         assertNoQueriesPerItem(name, smallVersion, largeVersion, (em, id) -> em.find(DatasetVersion.class, id), operation);
     }
 
-    static void assertNoQueriesPerItem(String name, Long smallVersion, Long largeVersion,
-            BiFunction<EntityManager, Long, DatasetVersion> load, Consumer<DatasetVersion> operation) {
+    static <T> void assertNoQueriesPerItem(String name, Long smallVersion, Long largeVersion,
+            BiFunction<EntityManager, Long, T> load, Consumer<T> operation) {
         long small = selectQueries(smallVersion, load, operation);
         long large = selectQueries(largeVersion, load, operation);
         System.out.println(name + ": " + small + " select queries for the smaller dataset, " + large + " for the larger one");
@@ -143,5 +150,31 @@ class DatasetVersionFileMetadatasPerformanceIT {
         });
         assertNoQueriesPerItem("dataset page version", smallRegularVersion, largeRegularVersion, findDeep, readFiles);
         assertNoQueriesPerItem("dataset page tabular version", smallTabularVersion, largeTabularVersion, findDeep, readFiles);
+    }
+
+    /**
+     * The dataset API loads a dataset with DatasetServiceBean.findDeep, which runs this query; some callers then read
+     * these relations of every file. Joining the files in the query fails with batch fetching (EclipseLink 6169).
+     */
+    @Test
+    void loadingDatasetDeep() {
+        BiFunction<EntityManager, Long, Dataset> findDeep = (em, versionId) -> em
+            .createNamedQuery("Dataset.findById", Dataset.class).setParameter("id", datasetIds.get(versionId)).getSingleResult();
+        Consumer<Dataset> readFiles = dataset -> {
+            assertTrue(!dataset.getFiles().isEmpty(), "the dataset has no files");
+            dataset.getFiles().forEach(dataFile -> {
+                dataFile.getStorageQuota();
+                dataFile.getIngestRequest();
+                dataFile.getThumbnailForDataset();
+                dataFile.getEmbargo();
+                dataFile.getRetention();
+                dataFile.getReleaseUser();
+                dataFile.getCreator();
+                dataFile.getDataTables().size();
+                dataFile.getTags().size();
+            });
+        };
+        assertNoQueriesPerItem("dataset deep", smallRegularVersion, largeRegularVersion, findDeep, readFiles);
+        assertNoQueriesPerItem("dataset deep tabular", smallTabularVersion, largeTabularVersion, findDeep, readFiles);
     }
 }
