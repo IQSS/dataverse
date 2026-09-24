@@ -436,7 +436,7 @@ public class Datasets extends AbstractApiBean {
         StreamingOutput output = outputStream -> exportSvc.bulkExport(
             targets.stream().toList(), request.exporter(), outputStream, correlationId);
         return Response.ok(output)
-            .header(EXPORT_CORRELATION_ID, correlationId)
+            .header(EXPORT_CORRELATION_ID_HEADER, correlationId)
             .type(exporterDetail.mediaType())
             .build();
     }
