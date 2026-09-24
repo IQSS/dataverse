@@ -133,6 +133,21 @@ If you know of a way to easily share Netbeans configuration across a team, pleas
 To avoid exposing potentially sensitive information in temporary files stored on the file system, use the
 `edu.harvard.iq.dataverse.util.SecureTempFiles` utility instead of Java mechanics as `Files.createTempFile` directly.
 
+### Tracking Streams Handed Out Beyond the Core's Control
+
+When handing out streams to dataverse-spi based plugins, do not rely on them closing the streams.
+The same is true for any library we use and hand streams to, as we cannot guarantee their diligence.
+Use the `edu.harvard.iq.dataverse.util.StreamRegistry` utility to avoid leaking stream.
+Hand out `registry.track(inputStream)` and close the registry in `try-with-resources` (or `finally`) when your operation is done.
+
+With a registry in place, the caller may close the stream, close it more than once, or not close it at all, without leaking file descriptors or storage connections.
+The registry closes whatever is left over when it closes, and logs a warning if more streams than the configured threshold are held open at once.
+The registry's bookkeeping is thread-safe, but the individual tracked streams are *not* made thread-safe by tracking, so they must not be shared between threads.
+
+The bulk metadata export pipeline (see `BulkExportPipeline`) is an example of this convention in action:
+it lends each dataset version's export stream to exporter plugins through a `StreamRegistry`, 
+so plugins are free to process items in whatever order they like across threads.
+
 ## Bash
 
 Generally, Google's Shell Style Guide at <https://google.github.io/styleguide/shell.xml> seems to have good advice.
