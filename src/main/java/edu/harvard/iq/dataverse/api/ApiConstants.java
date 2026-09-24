@@ -37,6 +37,6 @@ public final class ApiConstants {
     public static final String API_ADD_FILES_COUNT_SUCCESSFUL = "Number of files successfully added";
     
     // Export
-    public static final String EXPORT_CORRELATION_ID = "X-Dataverse-Export-ID";
+    public static final String EXPORT_CORRELATION_ID_HEADER = "X-Dataverse-Export-ID";
     public static final int DEFAULT_MAX_EXPORT_REQUEST_SIZE = 32;
 }
