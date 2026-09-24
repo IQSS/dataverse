@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * index is up to date, and nothing records a newer time, because changing the thumbnail does not reindex.
  */
 @JpaPerformanceTest
-@Disabled("Known bug: setting a thumbnail can restore an older index time. Enable once it is fixed.")
+@Disabled("Known bug #12744: setting a thumbnail can restore an older index time. Enable once it is fixed.")
 class DatasetThumbnailIndexTimeIT {
 
     static JpaEntityManagerService jpa;
