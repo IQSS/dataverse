@@ -91,7 +91,9 @@ public class Info extends AbstractApiBean {
         String version = comps[0].trim();
         JsonValue build = comps.length > 1 ? JsonUtil.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
         return ok(JsonUtil.createObjectBuilder()
-                .add("version", version)
+                // TODO: REMOVE BEFORE MERGE. Temporary marker to check that a backend redeploy shows up
+                // in the SPA footer (which reads /api/info/version). See "How to test" in the PR description.
+                .add("version", version + " This-is-a-test-version")
                 .add("build", build));
     }
 
