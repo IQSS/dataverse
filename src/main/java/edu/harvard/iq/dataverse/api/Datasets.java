@@ -252,10 +252,10 @@ public class Datasets extends AbstractApiBean {
     @Operation(summary = "Export dataset metadata",
             description = "Exports dataset metadata by persistent id using the requested version and exporter.")
     public Response exportDataset(
-        @Context ContainerRequestContext crc, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
         @QueryParam("persistentId") @Parameter(description = "Persistent identifier.") String persistentId,
         @QueryParam("version") @Parameter(description = "Dataset version selector.") String versionId,
-        @QueryParam("exporter") @Parameter(description = "Exporter option.") String exporter) {
+        @QueryParam("exporter") @Parameter(description = "Exporter option.") String exporter,
+        @Context ContainerRequestContext crc, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
 
         try {
             Dataset dataset = datasetService.findByGlobalId(persistentId);
