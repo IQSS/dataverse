@@ -26,7 +26,13 @@ import java.util.List;
  */
 public record MultiDatasetExportRequest(
     @NotBlank String exporter,
-    @Valid @NotNull @Size(min = 1) List<ExportItem> datasets
+    
+    @Valid
+    @NotNull
+    @Size(min = 1)
+    @Schema(description = "The list of dataset (versions) to export. One dataset minimum. " +
+                          "Maximum is controlled by server configuration, default is " + ApiConstants.DEFAULT_MAX_EXPORT_REQUEST_SIZE)
+    List<ExportItem> datasets
 ) {
     /**
      * Creates a new multi-dataset export request. The supplied dataset list is copied to preserve
