@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.util.List;
+
 public final class ApiConstants {
 
     private ApiConstants() {
@@ -28,6 +30,7 @@ public final class ApiConstants {
     public static final String DS_VERSION_LATEST = ":latest";
     public static final String DS_VERSION_DRAFT = ":draft";
     public static final String DS_VERSION_LATEST_PUBLISHED = ":latest-published";
+    public static final String DS_VERSION_IDENTIFIER_REGEX = "^("+DS_VERSION_LATEST+"|"+DS_VERSION_DRAFT+"|"+DS_VERSION_LATEST_PUBLISHED+"|\\d+\\.\\d+)$";
     
     // addFiles call
     public static final String API_ADD_FILES_COUNT_PROCESSED = "Total number of files";
