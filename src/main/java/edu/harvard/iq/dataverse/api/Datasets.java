@@ -246,7 +246,7 @@ public class Datasets extends AbstractApiBean {
             final JsonObjectBuilder jsonbuilder = json(retrieved, returnOwners);
             //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
             if((latest != null) && latest.isReleased()) {
-                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
+                MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
                 mdcLogService.logEntry(entry);
             }
             return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest, true) : null));
@@ -315,7 +315,7 @@ public class Datasets extends AbstractApiBean {
             }
             
             if (datasetVersion.isReleased()) {
-                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
+                MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
                 mdcLogService.logEntry(entry);
             }
             
@@ -394,6 +394,8 @@ public class Datasets extends AbstractApiBean {
         // Note: The set automatically avoids duplicate requests, linked set preserves insertion order.
         //       (As an API user may rely on keeping the order as given in the request.)
         LinkedHashSet<ExportTarget> targets = new LinkedHashSet<>();
+        // Registry of MDC log entries to send to the MDC service once exports are all done.
+        Set<MakeDataCountEntry> makeDataCountLogEntries = new HashSet<>();
         
         // Get all the requested DatasetVersions (requiring permission checks)
         int index = 0;
@@ -409,6 +411,11 @@ public class Datasets extends AbstractApiBean {
                 //       lookup during request validation and lookup during processing are, there is a small timeframe
                 //       allowing permission changes and metadata changes to happen. This is likely negligible.
                 targets.add(ExportTarget.from(version));
+                
+                // Take an MDC note of this dataset being downloaded. It will be applied later, after exporting is done.
+                if (version.isReleased()) {
+                    makeDataCountLogEntries.add(new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset));
+                }
             } catch (WrappedResponse e) {
                 // Record if absent and move on to next request. Note: coarse message here to prevent leaking existance information
                 errors.add(new JsonResponseBuilder.Violation(
@@ -430,11 +437,12 @@ public class Datasets extends AbstractApiBean {
         // Create an ID that allows admins to trace failing export requests in logs
         String correlationId = UUID.randomUUID().toString();
         
-        // TODO: Make Data Count still needs a notification for released datasets
-        
         // Lambda to trigger creation of output, as designed for JAX-RS
-        StreamingOutput output = outputStream -> exportSvc.bulkExport(
-            targets.stream().toList(), request.exporter(), outputStream, correlationId);
+        StreamingOutput output = outputStream -> {
+            exportSvc.bulkExport(targets.stream().toList(), request.exporter(), outputStream, correlationId);
+            // Once all the exports are written to the output stream successfully, log all the MDC entries.
+            makeDataCountLogEntries.forEach(mdcLogService::logEntry);
+        };
         return Response.ok(output)
             .header(EXPORT_CORRELATION_ID_HEADER, correlationId)
             .type(exporterDetail.mediaType())
@@ -3719,7 +3727,7 @@ public class Datasets extends AbstractApiBean {
                     notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found"));
         }
         if (dsv.isReleased()&& uriInfo!=null) {
-            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
+            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
             mdcLogService.logEntry(entry);
         }
         return dsv;
