@@ -314,13 +314,10 @@ public class IndexServiceBean {
         asyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
     }
     
-    // The following two variables are only used in the synchronized startIndexing and indexAgain methods and do not need to be synchronized themselves
-
-    // nextToIndex holds the ids of the datasets that were requested for indexing while an indexing job for them was ongoing
-    // (that job indexes them once more when it is done; it loads the dataset again, so it indexes the newest state)
-    private static final Set<Long> NEXT_TO_INDEX = ConcurrentHashMap.newKeySet();
-    // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
-    private static final Set<Long> INDEXING_NOW = ConcurrentHashMap.newKeySet();
+    // Ids of the datasets being indexed asynchronously right now. The value records whether indexing was requested
+    // again while the job was ongoing: that job then indexes the dataset once more when it is done (it loads the
+    // dataset again, so it indexes the newest state). An EJB must not use synchronized, hence the atomic map operations.
+    private static final ConcurrentHashMap<Long, Boolean> INDEXING = new ConcurrentHashMap<>();
     // semaphore for async indexing
     private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
     
@@ -349,25 +346,18 @@ public class IndexServiceBean {
      * Claims the indexing of a dataset for the calling thread. Returns false when a job for the dataset is
      * already ongoing: that job indexes the dataset once more when it is done (see {@link #indexAgain}).
      */
-    synchronized private static boolean startIndexing(Long id) {
-        if (INDEXING_NOW.contains(id)) {
-            NEXT_TO_INDEX.add(id);
-            return false;
-        }
-        INDEXING_NOW.add(id);
-        return true;
+    private static boolean startIndexing(Long id) {
+        // absent: start a job, nothing requested again yet; present: note the new request for the ongoing job
+        return Boolean.FALSE.equals(INDEXING.compute(id, (datasetId, requestedAgain) -> requestedAgain != null));
     }
 
     /**
      * Called by a job that has finished indexing a dataset. Returns true when the dataset must be indexed
      * again, because indexing was requested while the job was ongoing.
      */
-    synchronized private static boolean indexAgain(Long id) {
-        if (NEXT_TO_INDEX.remove(id)) {
-            return true;
-        }
-        INDEXING_NOW.remove(id); // the job can be stopped now
-        return false;
+    private static boolean indexAgain(Long id) {
+        // requested again: keep the job and clear the request; otherwise the job is done and removed
+        return INDEXING.computeIfPresent(id, (datasetId, requestedAgain) -> requestedAgain ? Boolean.FALSE : null) != null;
     }
 
     /**
@@ -440,7 +430,7 @@ public class IndexServiceBean {
     public void indexDatasetNow(Long datasetId, boolean doNormalSolrDocCleanUp) throws SolrServerException, IOException {
         Dataset dataset = datasetService.find(datasetId);
         if (dataset == null) {
-            logger.info("Dataset " + datasetId + " no longer exists, nothing to index");
+            logger.log(Level.INFO, "Dataset {0} no longer exists, nothing to index", datasetId);
             return;
         }
         doIndexDataset(dataset, doNormalSolrDocCleanUp);

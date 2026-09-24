@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
@@ -43,11 +44,11 @@ public class IndexAsync {
         for (Long dvObjectId : dvObjectIds) {
             DvObject dvObject = dvObjectService.findDvObject(dvObjectId);
             if (dvObject == null) {
-                logger.fine("dvObject " + dvObjectId + " no longer exists, no permissions to index");
+                logger.log(Level.FINE, "dvObject {0} no longer exists, no permissions to index", dvObjectId);
                 continue;
             }
             IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dvObject);
-            logger.fine("output from permission indexing operations (dvobject " + dvObjectId + "): " + indexResponse);
+            logger.log(Level.FINE, "output from permission indexing operations (dvobject {0}): {1}", new Object[]{dvObjectId, indexResponse});
         }
     }
 

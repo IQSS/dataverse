@@ -3531,7 +3531,8 @@ public class UtilIT {
             return true;
         }
         while (stale && System.currentTimeMillis() < deadline && sleepMillis(100)) {
-            stale = Boolean.TRUE.equals(hasStaleIndex(idOrPersistentId, apiToken));
+            // an unknown answer (a transient error) does not mean done: keep polling until the deadline
+            stale = !Boolean.FALSE.equals(hasStaleIndex(idOrPersistentId, apiToken));
         }
         if (stale) {
             System.out.println(UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken).body().asString());

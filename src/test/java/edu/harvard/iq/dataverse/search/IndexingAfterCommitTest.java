@@ -75,7 +75,9 @@ class IndexingAfterCommitTest {
 
     @Test
     void asyncIndexDatasetRejectsADatasetWithoutId() {
-        assertThrows(NullPointerException.class, () -> indexService.asyncIndexDataset(new Dataset(), true));
+        Dataset unsaved = new Dataset();
+
+        assertThrows(NullPointerException.class, () -> indexService.asyncIndexDataset(unsaved, true));
 
         verifyNoInteractions(indexingRequests);
     }
