@@ -1,0 +1,1 @@
+The loading time for the dataset metadata and template editing pages has been significantly improved relative to the v 6.4+ performance when support for ~8K ISO 63903 langauge codes were added to the citation metadatablock.
