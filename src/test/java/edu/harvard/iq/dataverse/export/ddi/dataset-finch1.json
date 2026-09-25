@@ -304,8 +304,8 @@
                   "typeClass": "primitive",
                   "value": "TC Vocabulary"
                 },
-                "topicClassVocabURI": {
-                  "typeName": "topicClassVocabURI",
+                "topicClassTermURI": {
+                  "typeName": "topicClassTermURI",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://www.topicClass.com/one"
