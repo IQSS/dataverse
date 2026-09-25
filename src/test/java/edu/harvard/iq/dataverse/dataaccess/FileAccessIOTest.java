@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.function.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -316,5 +318,46 @@ public class FileAccessIOTest {
         System.clearProperty("dataverse.files.filetest.type");
         System.clearProperty("dataverse.files.filetest.label");
         System.clearProperty("dataverse.files.filetest.directory");
+    }
+
+    private File stageOrphan(String name, Duration age) throws IOException {
+        File f = new File("/tmp/files/tmp/dataset/" + name);
+        f.createNewFile();
+        assertTrue(f.setLastModified(System.currentTimeMillis() - age.toMillis()));
+        return f;
+    }
+
+    private static final Predicate<String> ORPHANS = name -> name.startsWith("orphan");
+
+    @Test
+    public void testCleanUp_leavesRecentlyModifiedFilesAlone() throws IOException {
+        File old = stageOrphan("orphan-old", Duration.ofDays(30));
+        File fresh = stageOrphan("orphan-fresh", Duration.ofHours(2));
+
+        List<String> deleted = datasetAccess.cleanUp(ORPHANS, Duration.ofDays(7), false);
+
+        assertEquals(List.of("orphan-old"), deleted);
+        assertFalse(old.exists());
+        assertTrue(fresh.exists(), "an upload that has not been registered yet must survive");
+    }
+
+    @Test
+    public void testCleanUp_dryRunReportsWithoutDeleting() throws IOException {
+        File old = stageOrphan("orphan-old", Duration.ofDays(30));
+
+        List<String> reported = datasetAccess.cleanUp(ORPHANS, Duration.ofDays(7), true);
+
+        assertEquals(List.of("orphan-old"), reported);
+        assertTrue(old.exists(), "a dry run must not delete anything");
+    }
+
+    @Test
+    public void testCleanUp_filterKeepsReferencedFiles() throws IOException {
+        File referenced = stageOrphan("kept-old", Duration.ofDays(30));
+
+        List<String> deleted = datasetAccess.cleanUp(ORPHANS, Duration.ofDays(7), false);
+
+        assertTrue(deleted.isEmpty());
+        assertTrue(referenced.exists());
     }
 }

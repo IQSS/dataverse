@@ -97,6 +97,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -3410,11 +3411,14 @@ public class Datasets extends AbstractApiBean {
      * @param idSupplied
      * @return
      */
-    @GET
+    @PUT
     @AuthRequired
     @Path("{id}/cleanStorage")
     @Operation(summary = "Cleans dataset storage",
-            description = "Finds and optionally deletes storage objects that are no longer referenced by files in a dataset.")
+            description = "Finds and optionally deletes storage objects that are no longer referenced by files in a dataset. "
+                    + "Reports without deleting unless dryrun is explicitly set to false. Objects modified more recently than "
+                    + "dataverse.files.clean-storage-min-age-days are never removed, so that an upload which has completed but "
+                    + "has not been registered yet is not mistaken for an abandoned one.")
     public Response cleanStorage(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Whether to validate the request without applying changes.") @QueryParam("dryrun") Boolean dryrun) {
         // get user and dataset
         User authUser = getRequestUser(crc);
@@ -3428,10 +3432,11 @@ public class Datasets extends AbstractApiBean {
 
         // check permissions
         if (!permissionSvc.permissionsFor(req, dataset).contains(Permission.EditDataset)) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Access denied!");
+            return error(Response.Status.FORBIDDEN, "Access denied!");
         }
 
-        boolean doDryRun = dryrun != null && dryrun.booleanValue();
+        // Reporting is the default: deleting requires asking for it explicitly.
+        boolean doDryRun = dryrun == null || dryrun.booleanValue();
 
         // check if no legacy files are present
         Set<String> datasetFilenames = getDatasetFilenames(dataset);
@@ -3443,7 +3448,7 @@ public class Datasets extends AbstractApiBean {
         List<String> deleted;
         try {
             StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
-            deleted = datasetIO.cleanUp(filter, doDryRun);
+            deleted = datasetIO.cleanUp(filter, getCleanStorageMinimumAge(), doDryRun);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "IOException! Serious Error! See administrator!");
@@ -3497,6 +3502,10 @@ public class Datasets extends AbstractApiBean {
                 return wr.getResponse();
             }
         }, getRequestUser(crc));
+    }
+
+    private static Duration getCleanStorageMinimumAge() {
+        return Duration.ofDays(JvmSettings.CLEAN_STORAGE_MIN_AGE_DAYS.lookup(Integer.class));
     }
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {

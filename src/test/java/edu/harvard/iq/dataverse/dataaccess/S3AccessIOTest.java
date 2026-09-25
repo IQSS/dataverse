@@ -25,6 +25,15 @@ import static org.mockito.BDDMockito.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
@@ -128,5 +137,33 @@ public class S3AccessIOTest {
         assertFalse(DataAccess.isValidDirectStorageIdentifier("s3://thebucket:" + FileUtil.generateStorageIdentifier()));
         //bad bucket
         assertFalse(DataAccess.isValidDirectStorageIdentifier("s3test://bucket:" + FileUtil.generateStorageIdentifier()));
+    }
+
+    private static final Predicate<String> ORPHANS = name -> name.startsWith("orphan");
+
+    private S3Object storedObject(String name, Duration age) {
+        String prefix = dataSet.getAuthorityForFileStorage() + "/" + dataSet.getIdentifierForFileStorage() + "/";
+        return S3Object.builder().key(prefix + name).lastModified(Instant.now().minus(age)).build();
+    }
+
+    private void givenBucketContains(S3Object... objects) {
+        given(s3client.listObjectsV2(any(ListObjectsV2Request.class)))
+                .willReturn(CompletableFuture.completedFuture(
+                        ListObjectsV2Response.builder().contents(List.of(objects)).build()));
+    }
+
+    @Test
+    public void testCleanUp_dryRunSkipsRecentlyModifiedObjects() throws IOException {
+        // Skip open(): the injected client is already the one under test.
+        dataSetAccess.isWriteAccess = true;
+        givenBucketContains(
+                storedObject("orphan-old", Duration.ofDays(30)),
+                storedObject("orphan-fresh", Duration.ofHours(2)),
+                storedObject("referenced-old", Duration.ofDays(30)));
+
+        List<String> reported = dataSetAccess.cleanUp(ORPHANS, Duration.ofDays(7), true);
+
+        assertEquals(List.of("orphan-old"), reported);
+        verify(s3client, never()).deleteObject(any(DeleteObjectRequest.class));
     }
 }

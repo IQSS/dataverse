@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -213,8 +214,8 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
-        return baseStore.cleanUp(filter, dryRun);
+    public List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException {
+        return baseStore.cleanUp(filter, minimumAge, dryRun);
     }
     
     @Override
