@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!--
+  Minimal static homepage served directly by the reverse proxy.
+  This must be a complete, standalone HTML document (unlike the content-block
+  fragment used with the :HomePageCustomizationFile database setting).
+  All URLs are absolute so they work no matter how the page is reached.
+  No JavaScript is required to render it.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Example Research Data Repository</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; color: #333; }
+        header { background: #1a4c7c; color: #fff; padding: 1rem 2rem; }
+        header h1 { margin: 0; font-size: 1.4rem; }
+        main { max-width: 46rem; margin: 3rem auto; padding: 0 1rem; text-align: center; }
+        form { margin: 2rem 0; }
+        input[type="text"] { width: 60%; padding: 0.6rem; font-size: 1rem; border: 1px solid #999; border-radius: 4px 0 0 4px; }
+        button, .button { display: inline-block; padding: 0.6rem 1.2rem; font-size: 1rem; border: 0; border-radius: 4px;
+                 background: #1a4c7c; color: #fff; text-decoration: none; cursor: pointer; }
+        .actions .button { margin: 0 0.5rem; }
+        .announcement { margin-top: 3rem; padding: 1rem; background: #f5f0dc; border: 1px solid #e0d8b0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<header>
+    <!-- Replace with your installation's name and/or logo, e.g. <img src="/images/logo.svg" alt="..."> -->
+    <h1>Example Research Data Repository</h1>
+</header>
+<main>
+    <p>Find, share, and cite research data.</p>
+    <form action="/dataverse/root/" method="get">
+        <input type="text" name="q" placeholder="Search datasets...">
+        <button type="submit">Search</button>
+    </form>
+    <p class="actions">
+        <a class="button" href="/dataverse/root">Browse Data</a>
+        <a class="button" href="/loginpage.xhtml">Log In</a>
+    </p>
+    <div class="announcement">
+        <!-- Announcements go here; the proxy serves this page with Cache-Control: no-cache
+             so returning visitors see updates immediately. -->
+        Welcome! Log in with your institutional account to deposit data.
+    </div>
+</main>
+</body>
+</html>
