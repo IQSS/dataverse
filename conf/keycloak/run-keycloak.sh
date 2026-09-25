@@ -11,7 +11,7 @@ if [ ! "$(docker ps -q -f name=^/keycloak$)" ]; then
     docker start keycloak
     echo "INFO - Keycloak container restarted"
   else
-    docker run -d --name keycloak -p $KEYCLOAK_PORT:8080 -e KEYCLOAK_USER=$KEYCLOAK_USER -e KEYCLOAK_PASSWORD=$KEYCLOAK_PASSWORD -e KEYCLOAK_IMPORT=/tmp/test-realm.json -v "$(pwd)"/test-realm.json:/tmp/test-realm.json $DOCKER_IMAGE
+    docker run -d --name keycloak -p $KEYCLOAK_PORT:8080 -e KEYCLOAK_USER=$KEYCLOAK_USER -e KEYCLOAK_PASSWORD=$KEYCLOAK_PASSWORD -e KEYCLOAK_IMPORT=/tmp/test-realm-include-spi.json -v "$(pwd)"/test-realm-include-spi.json:/tmp/test-realm-include-spi.json $DOCKER_IMAGE
     echo "INFO - Keycloak container created and running"
   fi
 else
