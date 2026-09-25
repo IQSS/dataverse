@@ -1673,19 +1673,6 @@
         "config": {}
       }
     ],
-    "org.keycloak.storage.UserStorageProvider": [
-      {
-        "id": "6b14f48d-4b83-4d6e-bd8d-dc7541124927",
-        "name": "Dataverse built-in users authentication",
-        "providerId": "dv-builtin-users-authenticator",
-        "subComponents": {},
-        "config": {
-          "datasource": [
-            "user-store"
-          ]
-        }
-      }
-    ],
     "org.keycloak.userprofile.UserProfileProvider": [
       {
         "id": "cf47a21f-c8fb-42f2-9bff-feca967db183",

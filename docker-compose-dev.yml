@@ -229,6 +229,22 @@ services:
     ports:
       - "8090:8090"
 
+  # Registers the builtin users SPI in the test realm (kept out of the realm JSON so a stock Keycloak can import it)
+  dev_keycloak_initializer:
+    container_name: "dev_keycloak_initializer"
+    image: alpine:latest
+    restart: "no"
+    depends_on:
+      - dev_keycloak
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
+    volumes:
+      - ./conf/keycloak/setup-spi.sh:/usr/local/bin/setup-spi.sh:ro
+    command: [ "/bin/sh", "-c", "apk add --no-cache curl jq && /usr/local/bin/setup-spi.sh" ]
+    networks:
+      - dataverse
+
   # Reverse proxy on port 8000 for the SPA (dataverse-frontend running "npm start -- --host" on the host)
   dev_nginx:
     container_name: "dev_nginx"
