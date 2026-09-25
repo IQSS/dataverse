@@ -1517,9 +1517,16 @@ public class UtilIT {
     }
 
     static Response getFileCitationFormat(String dataFileId, String format, String apiToken) {
+        return getFileCitationFormat(dataFileId, format, apiToken, null);
+    }
+
+    static Response getFileCitationFormat(String dataFileId, String format, String apiToken, String version) {
         RequestSpecification request = given();
         if (apiToken != null) {
             request.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (version != null) {
+            request.queryParam("version", version);
         }
         return request.get("/api/access/datafile/" + dataFileId +  "/citation/" + format);
     }
