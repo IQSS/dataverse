@@ -87,7 +87,7 @@
                             </p:column>
                         </p:dataTable>
                     </div>
-                    <p:dialog id="deleteGroupConfirm" header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog id="deleteGroupConfirm" header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true" dynamic="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
@@ -96,7 +96,7 @@
                             <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()"/>
                         </div>
                     </p:dialog>
-                    <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true">
+                    <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true" dynamic="true">
                         <p:focus context="viewGroup"/>
                         <div class="form-horizontal">
                             <div class="form-group">
