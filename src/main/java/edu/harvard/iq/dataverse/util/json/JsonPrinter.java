@@ -1984,11 +1984,9 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetMetrics metrics) {
-        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
+        return jsonObjectBuilder()
                 .add("downloadCount", metrics.getDownloadsTotal())
                 .add("viewCount", metrics.getViewsTotal())
                 .add("citations", datasetExternalCitationsService.getDatasetExternalCitationsByDataset(metrics.getDataset()).size()); // List is never null
-
-        return jsonObjectBuilder;
     }
 }
