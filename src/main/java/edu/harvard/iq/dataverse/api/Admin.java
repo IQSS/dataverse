@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsValidationException;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
@@ -116,6 +115,7 @@ import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -157,6 +157,8 @@ public class Admin extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
+    @EJB
+    ApiSigningSecretServiceBean signingSecretService;
     @EJB
     AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
     @EJB
@@ -2721,36 +2723,57 @@ public class Admin extends AbstractApiBean {
         if (superuser == null || !superuser.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
         }
-        
-        String userId = urlInfo.getString("user");
-        String key=null;
-        if (userId != null) {
-            AuthenticatedUser user = authSvc.getAuthenticatedUser(userId);
-            // If a user param was sent, we sign the URL for them, otherwise on behalf of
-            // the superuser who made this api call
-            if (user != null) {
-                ApiToken apiToken = authSvc.findApiTokenByUser(user);
-                if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
-                    key = apiToken.getTokenString();
-                }
-            } else {
-                userId = superuser.getUserIdentifier();
-                // We ~know this exists - the superuser just used it and it was unexpired/not
-                // disabled. (ToDo - if we want this to work with workflow tokens (or as a
-                // signed URL), we should do more checking as for the user above))
-                key = authSvc.findApiTokenByUser(superuser).getTokenString();
-            }
-            if (key == null) {
-                return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
-            }
-            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
+
+        // "url" is required; "user" defaults to the superuser making the call (see the docs for this
+        // endpoint). Use the defaulted accessors: JsonObject.getString(name) throws NullPointerException
+        // when the key is absent.
+        String baseUrl = urlInfo.getString("url", null);
+        if (baseUrl == null) {
+            return error(Response.Status.BAD_REQUEST, "Required parameter 'url' is missing.");
         }
-        
-        String baseUrl = urlInfo.getString("url");
+        // Reject rather than silently rewrite (in 6.10 reserved params were quietly stripped, so the
+        // caller got back a signature for a different URL than requested). The four signing params
+        // are added by the signing itself; "key" and "signed" are reserved at the request level: a
+        // signed "key" would bake a credential param into the URL and "signed=true" would make the
+        // signed URL return yet another signed URL instead of the resource.
+        String reserved = UrlSignerUtil.findReservedParameter(baseUrl, UrlSignerUtil.reservedParameters);
+        if (reserved != null) {
+            return error(Response.Status.BAD_REQUEST,
+                    "The url to sign must not contain the reserved query parameter '" + reserved + "'.");
+        }
+        String userId = urlInfo.getString("user", null);
+
+        String key = null;
+        if (userId != null) {
+            // An explicitly requested user must exist - a typo must not silently fall back to
+            // minting a URL with the superuser's privileges (which signing with the superuser's
+            // token below would do).
+            AuthenticatedUser signingUser = authSvc.getAuthenticatedUser(userId);
+            if (signingUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User '" + userId + "' not found.");
+            }
+            ApiToken apiToken = authSvc.findApiTokenByUser(signingUser);
+            if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+                key = apiToken.getTokenString();
+            }
+        } else {
+            // No user param: sign on behalf of the superuser who made this API call.
+            userId = superuser.getUserIdentifier();
+            // The superuser just authenticated, but that does not guarantee an API token exists (e.g.
+            // bearer-token or session auth), so null-check rather than dereference blindly.
+            ApiToken apiToken = authSvc.findApiTokenByUser(superuser);
+            if (apiToken != null) {
+                key = apiToken.getTokenString();
+            }
+        }
+        if (key == null) {
+            return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
+        }
+
         int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
         String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
-        
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
+
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, signingSecretService.getSigningKey(key));
         
         return ok(JsonUtil.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }

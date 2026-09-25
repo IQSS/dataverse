@@ -407,3 +407,53 @@ function addMenuDelays() {
         });
     });
 }
+
+function scrollToFirstError() {
+    // delay to let other oncomplete scripts finish (like scrollTop(0))
+    setTimeout(function () {
+        // Find all potential error indicators, including PrimeFaces and Bootstrap classes
+        var $errors = $('.ui-message-error, .ui-state-error, .has-error, .ui-message-fatal');
+        
+        // Filter out the main alert at the top if there are field-specific errors
+        var $fieldErrors = $errors.not('.alert-danger .ui-message-error').not('.alert-danger');
+        var $target = $fieldErrors.length > 0 ? $fieldErrors.first() : $errors.first();
+
+        if ($target.length > 0) {
+            // Check if it's inside a collapsed panel
+            var $panel = $target.closest('.collapse:not(.in)');
+            if ($panel.length > 0) {
+                // Find the heading that controls this panel and click it to expand
+                // or just use bootstrap's collapse method
+                $panel.collapse('show');
+                $panel.one('shown.bs.collapse', function () {
+                    $('html, body').animate({
+                        scrollTop: $target.offset().top - 150
+                    }, 500);
+                });
+            } else {
+                $('html, body').animate({
+                    scrollTop: $target.offset().top - 150
+                }, 500);
+            }
+        }
+    }, 250);
+}
+
+$(document).on('pfAjaxComplete', function (e, xhr, settings) {
+    var validationFailed = false;
+    if (xhr && xhr.pfArgs && xhr.pfArgs.validationFailed) {
+        validationFailed = true;
+    } else if (xhr && xhr.responseText && xhr.responseText.indexOf('validationFailed":true') !== -1) {
+        validationFailed = true;
+    }
+
+    if (validationFailed) {
+        scrollToFirstError();
+    }
+});
+
+$(document).ready(function () {
+    if ($('.alert-danger').length > 0 && $('.ui-message-error, .ui-state-error, .has-error').length > 0) {
+        scrollToFirstError();
+    }
+});

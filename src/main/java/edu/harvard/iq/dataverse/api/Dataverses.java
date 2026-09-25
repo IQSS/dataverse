@@ -950,7 +950,7 @@ public class Dataverses extends AbstractApiBean {
 
     @DELETE
     @AuthRequired
-    @Path("{linkedDataverseId}/deleteLink/{linkingDataverseId}")
+    @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
     @Operation(summary = "Remove a dataverse link",
             description = "Deletes a link from one dataverse to another linked dataverse.")
     public Response deleteDataverseLinkingDataverse(@Context ContainerRequestContext crc,
@@ -960,7 +960,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
         return response(req -> {
-            execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
+            execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkedDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
             return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         }, getRequestUser(crc));
     }

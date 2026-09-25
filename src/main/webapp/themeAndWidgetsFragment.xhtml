@@ -6,7 +6,7 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:of="http://omnifaces.org/functions">
     <!-- Theme and Widgets Edit Tabs -->
-        <p:tabView id="themeWidgetsTabView" rendered="#{themeWidgetFragment.editDv!=null}" widgetVar="content">
+        <p:tabView id="themeWidgetsTabView" rendered="#{themeWidgetFragment.editDv!=null}" widgetVar="content" dynamic="true">
             <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}" rendered="#{not settingsWrapper.rootDataverseThemeDisabled or themeWidgetFragment.editDv.owner != null}">
                 <p:fragment>
                     <p:autoUpdate/>

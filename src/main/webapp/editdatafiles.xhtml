@@ -91,7 +91,7 @@
                                     <p:commandButton id="savebutton" class="btn btn-default" value="#{bundle.saveChanges}"
                                                      update=":datasetForm,:messagePanel"
                                                      onclick="PF('blockFileForm').show();"
-                                                     oncomplete="$(document).scrollTop(0);"
+                                                     oncomplete="if (args &amp;&amp; !args.validationFailed) {$(document).scrollTop(0);}"
                                                      action="#{EditDatafilesPage.save}"/>
                                     <p:commandButton styleClass="btn btn-link" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form"/>
                                 </div>

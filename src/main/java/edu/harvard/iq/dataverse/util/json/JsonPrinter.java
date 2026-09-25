@@ -34,7 +34,12 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import jakarta.json.*;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -45,11 +50,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Singleton;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import java.math.BigDecimal;
 import static edu.harvard.iq.dataverse.util.json.FileVersionDifferenceJsonPrinter.jsonFileVersionDifference;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static java.util.stream.Collectors.toList;
@@ -359,8 +359,12 @@ public class JsonPrinter {
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
         }
+        bld.add("guestbookRoot", dv.isGuestbookRoot());
         bld.add("effectiveRequiresFilesToPublishDataset", dv.getEffectiveRequiresFilesToPublishDataset());
         bld.add("isReleased", dv.isReleased());
+        if (dv.isLinked()) {
+            bld.add("isLinked", true);
+        }
 
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
         if (!inputLevels.isEmpty()) {
@@ -618,6 +622,9 @@ public class JsonPrinter {
             bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
         bld.add("datasetType", ds.getDatasetType().getName());
+        if (ds.isLinked()) {
+            bld.add("isLinked", true);
+        }
 
         JsonArrayBuilder locksArrayBuilder = JsonUtil.createArrayBuilder();
         for (DatasetLock lock : ds.getLocks()) {
@@ -691,6 +698,9 @@ public class JsonPrinter {
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote());
+        if (dsv.getDataset().isLinked()) {
+            bld.add("isLinked", true);
+        }
         if (dataset.getGuestbook() != null) {
             bld.add("guestbookId", dataset.getGuestbook().getId());
         }
