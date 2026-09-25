@@ -19,6 +19,7 @@ services:
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
       DATAVERSE_FEATURE_INDEX_HARVESTED_METADATA_SOURCE: "1"
       DATAVERSE_FEATURE_API_BEARER_AUTH_PROVIDE_MISSING_CLAIMS: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH: "1"
       DATAVERSE_MAIL_SYSTEM_EMAIL: "dataverse@localhost"
       DATAVERSE_MAIL_MTA_HOST: "smtp"
       DATAVERSE_AUTH_OIDC_ENABLED: "1"
@@ -199,13 +200,27 @@ services:
 
   dev_keycloak:
     container_name: "dev_keycloak"
-    image: 'quay.io/keycloak/keycloak:26.7.2'
+    # Custom image with the Dataverse builtin users SPI; imports test-realm-include-spi.json
+    build:
+      context: ./conf/keycloak
+      dockerfile: Dockerfile
+    image: gdcc/keycloak
     hostname: keycloak
+    depends_on:
+      - dev_postgres
     environment:
       - KEYCLOAK_ADMIN=kcadmin
       - KEYCLOAK_ADMIN_PASSWORD=kcpassword
       - KEYCLOAK_LOGLEVEL=DEBUG
       - KC_HOSTNAME_STRICT=false
+      # Browser-facing URL is the nginx proxy (dev_nginx) so the SPA and Dataverse agree on the issuer
+      - KC_HOSTNAME=http://localhost:8000
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
+      # Used by the builtin users SPI to read the Dataverse database
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_PORT=5432
+      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
+      - DATAVERSE_DB_PASSWORD=secret
     networks:
       dataverse:
         aliases:
@@ -213,8 +228,20 @@ services:
     command: start-dev --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
     ports:
       - "8090:8090"
+
+  # Reverse proxy on port 8000 for the SPA (dataverse-frontend running "npm start -- --host" on the host)
+  dev_nginx:
+    container_name: "dev_nginx"
+    image: nginx:stable
+    ports:
+      - "8000:80"
+    depends_on:
+      - dev_dataverse
+      - dev_keycloak
+    networks:
+      - dataverse
     volumes:
-      - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
+      - ./conf/nginx-spa/nginx.conf:/etc/nginx/nginx.conf:ro
 
   # This proxy configuration is only intended to be used for development purposes!
   # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
