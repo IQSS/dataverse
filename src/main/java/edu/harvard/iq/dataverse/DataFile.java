@@ -35,6 +35,8 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.*;
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.NotBlank;
 
@@ -220,6 +222,7 @@ public class DataFile extends DvObject implements Comparable {
     */
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private List<DataTable> dataTables;
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -229,9 +232,11 @@ public class DataFile extends DvObject implements Comparable {
     private List<IngestReport> ingestReports;
     
     @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private IngestRequest ingestRequest;
     
     @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private List<DataFileTag> dataFileTags;
     
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -293,10 +298,12 @@ public class DataFile extends DvObject implements Comparable {
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
+    @BatchFetch(BatchFetchType.IN)
     private Dataset thumbnailForDataset;
 
     @ManyToOne
     @JoinColumn(name="embargo_id")
+    @BatchFetch(BatchFetchType.IN)
     private Embargo embargo;
 
     public Embargo getEmbargo() {
@@ -309,6 +316,7 @@ public class DataFile extends DvObject implements Comparable {
 
     @ManyToOne
     @JoinColumn(name="retention_id")
+    @BatchFetch(BatchFetchType.IN)
     private Retention retention;
 
     public Retention getRetention() {
