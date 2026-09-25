@@ -22,6 +22,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionComman
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
@@ -246,6 +248,12 @@ public abstract class AbstractApiBean {
 
     @EJB
     TemplateServiceBean templateSvc;
+    
+    @EJB
+    ExportServiceBean exportSvc;
+    
+    @EJB
+    ExporterRegistryBean exporterRegistrySvc;
 
     @Inject
     FailedPIDResolutionLoggingServiceBean fprLogService;

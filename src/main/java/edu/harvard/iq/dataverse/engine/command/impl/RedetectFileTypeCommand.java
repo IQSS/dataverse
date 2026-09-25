@@ -9,8 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.export.ExportService;
-import io.gdcc.spi.export.ExportException;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
@@ -19,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJBException;
 
@@ -86,11 +86,10 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
             try {
-                ExportService instance = ExportService.getInstance();
-                instance.exportAllFormats(dataset);
-            } catch (ExportException ex) {
+                ctxt.exportService().exportAllFormats(dataset);
+            } catch (ExportSystemException ex) {
                 // Just like with indexing, a failure to export is not a fatal condition.
-                logger.info("Exception while exporting metadata files during file type redetection: " + ex.getLocalizedMessage());
+                logger.log(Level.INFO, ex, () -> "Exception while exporting metadata files during file type redetection on dataset " + dataset.getId());
             }
         }
         return filetoReturn;

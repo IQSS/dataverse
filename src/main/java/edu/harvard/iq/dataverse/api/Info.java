@@ -2,20 +2,17 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import io.gdcc.spi.export.Exporter;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.XMLExporter;
 import jakarta.ejb.EJB;
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.core.MediaType;
@@ -149,24 +146,21 @@ public class Info extends AbstractApiBean {
             description = "Returns dataset export formats with display name, media type, harvestability, user-interface visibility, and XML metadata when available.")
     public Response getExportFormats() {
         JsonObjectBuilder responseModel = JsonUtil.createObjectBuilder();
-        ExportService instance = ExportService.getInstance();
-        for (String[] labels : instance.getExportersLabels()) {
-            try {
-                Exporter exporter = instance.getExporter(labels[1]);
-                JsonObjectBuilder exporterObject = JsonUtil.createObjectBuilder().add("displayName", labels[0])
-                        .add("mediaType", exporter.getMediaType()).add("isHarvestable", exporter.isHarvestable())
-                        .add("isVisibleInUserInterface", exporter.isAvailableToUsers());
-                if (exporter instanceof XMLExporter xmlExporter) {
-                    exporterObject.add("XMLNameSpace", xmlExporter.getXMLNameSpace())
-                            .add("XMLSchemaLocation", xmlExporter.getXMLSchemaLocation())
-                            .add("XMLSchemaVersion", xmlExporter.getXMLSchemaVersion());
-                }
-                responseModel.add(labels[1], exporterObject);
+        
+        for (ExporterRegistryBean.Details exporterDetail : exporterRegistrySvc.getDetails()) {
+            JsonObjectBuilder exporterObject = JsonUtil.createObjectBuilder()
+                .add("displayName", exporterDetail.localizedDisplayName())
+                .add("mediaType", exporterDetail.mediaType())
+                .add("isHarvestable", exporterDetail.isHarvestable())
+                .add("isVisibleInUserInterface", exporterDetail.isAvailableToUsers());
+            
+            if (exporterRegistrySvc.get(exporterDetail) instanceof XMLExporter xmlExporter) {
+                exporterObject.add("XMLNameSpace", xmlExporter.getXMLNameSpace())
+                    .add("XMLSchemaLocation", xmlExporter.getXMLSchemaLocation())
+                    .add("XMLSchemaVersion", xmlExporter.getXMLSchemaVersion());
             }
-            catch (ExportException ex){
-                logger.warning("Failed to get: " + labels[1]);
-                logger.warning(ex.getLocalizedMessage());
-            }
+            
+            responseModel.add(exporterDetail.formatName(), exporterObject);
         }
         return ok(responseModel);
     }
