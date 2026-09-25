@@ -6,6 +6,26 @@ A Dataverse installation requires Solr to be operational at all times. If you st
 .. contents:: Contents:
 	:local:
 
+.. _directory-name-search-index:
+
+Directory Name Search
+---------------------
+
+File directory paths are indexed in ``fileDirectoryLabel`` and copied into the ``_text_`` field used by basic search. When upgrading an installation that does not yet index directory paths, add the following definitions from ``conf/solr/schema.xml`` to the active core's ``schema.xml``, preserving any local metadata customizations:
+
+.. code-block:: xml
+
+    <field name="fileDirectoryLabel" type="text_general" stored="true" indexed="true" multiValued="false"/>
+    <copyField source="fileDirectoryLabel" dest="_text_"/>
+
+Reload the Solr core before deploying the application code that indexes directory paths. For the default core name:
+
+.. code-block:: bash
+
+    curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"
+
+After deploying the application, follow `Reindex in Place`_ below to index directory paths for existing files without clearing the search index. Reloading the schema alone does not add directory terms to existing documents; those files become searchable by directory name as they are reindexed. No PostgreSQL schema migration is required for this change.
+
 Full Reindex
 -------------
 
