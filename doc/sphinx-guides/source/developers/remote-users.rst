@@ -35,11 +35,13 @@ Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be p
 OpenID Connect (OIDC)
 ---------------------
 
+OIDC is used by the SPA (https://github.com/IQSS/dataverse-frontend) to authenticate to the backend. You don't need touch /etc/hosts, as described below.
+
 STOP! ``oidc-keycloak-auth-provider.json`` was changed from http://localhost:8090 to http://keycloak.mydomain.com:8090 to test :ref:`bearer-tokens`. In addition, ``docker-compose-dev.yml`` in the root of the repo was updated to start up Keycloak. To use these, you should add ``127.0.0.1 keycloak.mydomain.com`` to your ``/etc/hosts file``. If you'd like to use the docker compose as described below (``conf/keycloak/docker-compose.yml``), you should revert the change to ``oidc-keycloak-auth-provider.json``.
 
 If you are working on the OpenID Connect (OIDC) user authentication flow, you do not need to connect to a remote provider (as explained in :doc:`/installation/oidc`) to test this feature. Instead, you can use the available configuration that allows you to run a test Keycloak OIDC identity management service locally through a Docker container.
 
-(Please note! The client secret (``94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8``) is hard-coded in ``test-realm.json`` and ``oidc-keycloak-auth-provider.json``. Do not use this config in production! This is only for developers.)
+(Please note! The client secret (``94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8``) is hard-coded in ``test-realm-include-spi.json`` and ``oidc-keycloak-auth-provider.json``. Do not use this config in production! This is only for developers.)
 
 You can find this configuration in ``conf/keycloak``. There are two options available in this directory to run a Keycloak container: bash script or docker-compose.
 

@@ -65,6 +65,8 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
+    // See KC_HOSTNAME in docker-compose-dev.yml
+    private static final String KEYCLOAK_URL = "http://localhost:8090";
     public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 20;
     public static final int GENERAL_LONG_DURATION = 45; //Useful when multiple adds/publishes, etc/ all get done in sequence
@@ -5070,7 +5072,7 @@ public class UtilIT {
                 .contentType(ContentType.JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
                 .body(userJson)
-                .post("http://keycloak.mydomain.com:8090/admin/realms/test/users");
+                .post(KEYCLOAK_URL + "/admin/realms/test/users");
     }
 
     /**
@@ -5095,7 +5097,7 @@ public class UtilIT {
                 .formParam("password", password)
                 .formParam("grant_type", "password")
                 .formParam("scope", "openid")
-                .post("http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token");
+                .post(KEYCLOAK_URL + "/realms/test/protocol/openid-connect/token");
     }
 
     static Response createDataverseFeaturedItem(String dataverseAlias,
