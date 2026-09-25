@@ -55,6 +55,16 @@ services:
         -Ddataverse.files.localstack_noredirect.download-redirect=false
         -Ddataverse.files.localstack_noredirect.access-key=default
         -Ddataverse.files.localstack_noredirect.secret-key=default
+        -Ddataverse.files.s3.type=s3
+        -Ddataverse.files.s3.label=S3
+        -Ddataverse.files.s3.custom-endpoint-url=http://s3.localhost:4566
+        -Ddataverse.files.s3.custom-endpoint-region=us-east-2
+        -Ddataverse.files.s3.bucket-name=mybucket
+        -Ddataverse.files.s3.path-style-access=true
+        -Ddataverse.files.s3.upload-redirect=true
+        -Ddataverse.files.s3.download-redirect=true
+        -Ddataverse.files.s3.access-key=default
+        -Ddataverse.files.s3.secret-key=default
         -Ddataverse.pid.providers=fake
         -Ddataverse.pid.default-provider=fake
         -Ddataverse.pid.fake.type=FAKE
@@ -289,7 +299,10 @@ services:
       - DOCKER_HOST=unix:///var/run/docker.sock
       - HOSTNAME_EXTERNAL=localstack
     networks:
-      - dataverse
+      dataverse:
+        # Same hostname from browsers (*.localhost resolves to loopback) and containers, so presigned URLs from the "s3" store work in both
+        aliases:
+          - s3.localhost
     volumes:
       - ./conf/localstack:/etc/localstack/init/ready.d
     tmpfs:
