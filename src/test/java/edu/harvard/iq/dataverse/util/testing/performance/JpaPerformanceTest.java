@@ -28,6 +28,7 @@ import java.lang.annotation.Target;
 @Tag(Tags.USES_TESTCONTAINERS)
 @Testcontainers(disabledWithoutDocker = true)
 @ExtendWith(JpaPerformanceTestExtension.class)
+@org.quickperf.junit5.QuickPerfTest
 // Make sure the test methods are never run in parallel - this would be bad for a performance test...
 @Execution(ExecutionMode.SAME_THREAD)
 public @interface JpaPerformanceTest {
