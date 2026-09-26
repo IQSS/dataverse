@@ -8,8 +8,10 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -96,21 +98,36 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
         guestbooks = new LinkedList<>();
         setInheritGuestbooksValue(!dataverse.isGuestbookRoot());
+        List<Guestbook> allGuestbooks = new ArrayList<>();
+        if (inheritGuestbooksValue && dataverse.getOwner() != null) {
+            allGuestbooks.addAll(dataverse.getParentGuestbooks());
+        }
+        allGuestbooks.addAll(dataverse.getGuestbooks());
+        // Count usages and responses for every guestbook on the page with 4
+        // grouped queries instead of up to 4 queries per guestbook.
+        List<Long> allGuestbookIds = new ArrayList<>();
+        for (Guestbook guestbook : allGuestbooks) {
+            allGuestbookIds.add(guestbook.getId());
+        }
+        Map<Long, Long> usages = guestbookService.findCountUsagesByGuestbookIds(allGuestbookIds, dataverseId);
+        Map<Long, Long> usagesGlobal = guestbookService.findCountUsagesByGuestbookIds(allGuestbookIds, null);
+        Map<Long, Long> responses = guestbookResponseService.findCountsByGuestbookIds(allGuestbookIds, dataverseId);
+        Map<Long, Long> responsesGlobal = guestbookResponseService.findCountsByGuestbookIds(allGuestbookIds, null);
         if (inheritGuestbooksValue && dataverse.getOwner() != null) {
             for (Guestbook pg : dataverse.getParentGuestbooks()) {
-                pg.setUsageCount(guestbookService.findCountUsages(pg.getId(), dataverseId));
-                pg.setResponseCount(guestbookResponseService.findCountByGuestbookId(pg.getId(), dataverseId));
+                pg.setUsageCount(usages.getOrDefault(pg.getId(), 0L));
+                pg.setResponseCount(responses.getOrDefault(pg.getId(), 0L));
                 guestbooks.add(pg);
             }
         }
         for (Guestbook cg : dataverse.getGuestbooks()) {
             cg.setDeletable(true);
-            cg.setUsageCount(guestbookService.findCountUsages(cg.getId(), dataverseId));
-            if (!(guestbookService.findCountUsages(cg.getId(), null) == 0)) {
+            cg.setUsageCount(usages.getOrDefault(cg.getId(), 0L));
+            if (!(usagesGlobal.getOrDefault(cg.getId(), 0L) == 0)) {
                 cg.setDeletable(false);
             }
-            cg.setResponseCount(guestbookResponseService.findCountByGuestbookId(cg.getId() , dataverseId));
-            if (!(guestbookResponseService.findCountByGuestbookId(cg.getId() , null) == 0)) {
+            cg.setResponseCount(responses.getOrDefault(cg.getId(), 0L));
+            if (!(responsesGlobal.getOrDefault(cg.getId(), 0L) == 0)) {
                 cg.setDeletable(false);
             }
             cg.setDataverse(dataverse);

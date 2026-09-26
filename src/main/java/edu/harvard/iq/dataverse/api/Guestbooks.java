@@ -23,7 +23,10 @@ import jakarta.ws.rs.core.Response;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,12 +89,25 @@ public class Guestbooks extends AbstractApiBean {
                     guestbookService.findEffectiveGuestbooksForGivenDataverse(dataverse):
                     guestbookService.findGuestbooksForGivenDataverse(dataverse);
 
+            // Count usages and responses for every guestbook with 2 grouped
+            // queries instead of 2 queries per guestbook.
+            List<Long> guestbookIds = new ArrayList<>();
+            for (Guestbook gb : guestbooks) {
+                guestbookIds.add(gb.getId());
+            }
+            Map<Long, Long> usages = includeStats
+                    ? guestbookService.findCountUsagesByGuestbookIds(guestbookIds, dataverseId)
+                    : Collections.emptyMap();
+            Map<Long, Long> responses = includeStats
+                    ? guestbookResponseService.findCountsByGuestbookIds(guestbookIds, dataverseId)
+                    : Collections.emptyMap();
+
             JsonArrayBuilder guestbookArray = JsonUtil.createArrayBuilder();
             JsonPrinter jsonPrinter = new JsonPrinter();
             for (Guestbook gb : guestbooks) {
                 if (includeStats) {
-                    gb.setUsageCount(guestbookService.findCountUsages(gb.getId(), dataverseId));
-                    gb.setResponseCount(guestbookResponseService.findCountByGuestbookId(gb.getId(), dataverseId));
+                    gb.setUsageCount(usages.getOrDefault(gb.getId(), 0L));
+                    gb.setResponseCount(responses.getOrDefault(gb.getId(), 0L));
                 }
                 guestbookArray.add(jsonPrinter.json(gb));
             }

@@ -439,9 +439,54 @@ public class GuestbookResponseServiceBean {
         } else  {
             String queryString = "select count(o) from GuestbookResponse as o, Dataset d, DvObject obj where o.dataset_id = d.id and d.id = obj.id and obj.owner_id = " + dataverseId + " and o.guestbook_id = " + guestbookId;
             Query query = em.createNativeQuery(queryString);
-            return (Long) query.getSingleResult();            
+            return (Long) query.getSingleResult();
         }
 
+    }
+
+    /**
+     * Batch version of {@link #findCountByGuestbookId(Long, Long)}: counts
+     * responses for many guestbooks with a single {@code GROUP BY} query
+     * instead of one query per guestbook. Parameters are bound (unlike the
+     * concatenated single-row query above).
+     *
+     * @param guestbookIds guestbook ids; empty or null yields an empty map
+     * @param dataverseId optional owner scope, as in the single-row method
+     * @return response counts by guestbook id (zero-count ids are absent)
+     */
+    @SuppressWarnings("unchecked")
+    public Map<Long, Long> findCountsByGuestbookIds(Collection<Long> guestbookIds, Long dataverseId) {
+        Map<Long, Long> counts = new HashMap<>();
+        if (guestbookIds == null || guestbookIds.isEmpty()) {
+            return counts;
+        }
+        List<Long> ids = new ArrayList<>();
+        for (Long id : guestbookIds) {
+            if (id != null) {
+                ids.add(id);
+            }
+        }
+        if (ids.isEmpty()) {
+            return counts;
+        }
+        String queryString;
+        if (dataverseId == null) {
+            queryString = "SELECT r.guestbook.id, COUNT(r) FROM GuestbookResponse r "
+                    + "WHERE r.guestbook.id IN :ids GROUP BY r.guestbook.id";
+        } else {
+            queryString = "SELECT r.guestbook.id, COUNT(r) FROM GuestbookResponse r "
+                    + "WHERE r.guestbook.id IN :ids AND r.dataset.owner.id = :dvId GROUP BY r.guestbook.id";
+        }
+        Query query = em.createQuery(queryString);
+        query.setParameter("ids", ids);
+        if (dataverseId != null) {
+            query.setParameter("dvId", dataverseId);
+        }
+        for (Object row : query.getResultList()) {
+            Object[] columns = (Object[]) row;
+            counts.put(((Number) columns[0]).longValue(), ((Number) columns[1]).longValue());
+        }
+        return counts;
     }
 
     public List<Long> findAllIds30Days() {
