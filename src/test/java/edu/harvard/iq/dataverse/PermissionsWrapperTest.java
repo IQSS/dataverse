@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -24,11 +25,36 @@ public class PermissionsWrapperTest {
         this.permissionWrapper = new PermissionsWrapper();
         this.permissionWrapper.permissionService = mock(PermissionServiceBean.class);
         this.permissionWrapper.dvRequestService = mock(DataverseRequestServiceBean.class);
+        this.permissionWrapper.session = mock(DataverseSession.class);
     }
 
     @AfterEach
     public void tearDown() {
         this.permissionWrapper = null;
+    }
+
+    @Test
+    public void testIsPowerUserOn() {
+        Dataverse dv = new Dataverse();
+        dv.setId(1L);
+        AuthenticatedUser user = mock(AuthenticatedUser.class);
+        
+        Mockito.when(this.permissionWrapper.session.getUser()).thenReturn(user);
+        Mockito.when(this.permissionWrapper.permissionService.isPowerUserOn(user, dv)).thenReturn(true);
+        
+        assertTrue(this.permissionWrapper.isPowerUserOn(dv));
+    }
+
+    @Test
+    public void testIsPowerUserOnSomeDvObject() {
+        AuthenticatedUser user = mock(AuthenticatedUser.class);
+        Mockito.when(user.isSuperuser()).thenReturn(false);
+        Mockito.when(user.isAuthenticated()).thenReturn(true);
+        
+        Mockito.when(this.permissionWrapper.session.getUser()).thenReturn(user);
+        Mockito.when(this.permissionWrapper.permissionService.isPowerUserOnSomeDvObject(user)).thenReturn(true);
+        
+        assertTrue(this.permissionWrapper.isPowerUserOnSomeDvObject());
     }
 
     @Test

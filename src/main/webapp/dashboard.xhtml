@@ -25,7 +25,7 @@
                 <div id="dashboard-block" class="content">
                     <div class="container">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-4" jsf:rendered="#{dataverseSession.user.superuser}">
                                 <div class="card-box">
                                     <h4 class="header-title">#{bundle['dashboard.card.harvestingclients.header']}</h4>
                                     <div class="row text-center">
@@ -58,7 +58,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4" jsf:rendered="#{dataverseSession.user.superuser}">
                                 <div class="card-box">
                                     <h4 class="header-title">#{bundle['dashboard.card.harvestingserver.header']}</h4>
                                     <div class="row text-center">
@@ -103,7 +103,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4" jsf:rendered="#{dataverseSession.user.superuser}">
                                 <div class="card-box">
                                     <h4 class="header-title">#{bundle['dashboard.card.users']}</h4>
                                     <div class="row text-center">

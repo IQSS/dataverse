@@ -96,7 +96,7 @@ public class DashboardMoveDataversePage implements java.io.Serializable {
 
     public String init() {
 
-        if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
+        if (permissionsWrapper.isPowerUserOnSomeDvObject()) {
            authUser = (AuthenticatedUser) session.getUser();
             // initialize components, if any need it
         } else {

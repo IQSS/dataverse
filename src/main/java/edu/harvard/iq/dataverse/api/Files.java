@@ -42,7 +42,6 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +60,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -701,7 +699,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/uningest")
     @Operation(summary = "Uningests a data file",
-            description = "Converts an ingested tabular data file back to a regular file when the requester is a superuser.")
+            description = "Converts an ingested tabular data file back to a regular file when there was a failure or the requester is a power user.")
     public Response uningestDatafile(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         DataFile dataFile;
@@ -761,24 +759,24 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/reingest")
     @Operation(summary = "Reingests a data file",
-            description = "Starts ingest processing for a data file when the requester is a superuser.")
+            description = "Starts ingest processing for a data file when the requester is a power user.")
     public Response reingest(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
-
         AuthenticatedUser u;
         try {
             u = getRequestAuthenticatedUserOrDie(crc);
-            if (!u.isSuperuser()) {
-                return error(FORBIDDEN, "This API call can be used by superusers only");
-            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
+
         DataFile dataFile;
         try {
             dataFile = findDataFileOrDie(id);
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+
+        if (!permissionSvc.isPowerUserOn(u, dataFile)) {
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
         Dataset dataset = dataFile.getOwner();
@@ -862,16 +860,14 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/extractNcml")
     @Operation(summary = "Extracts NcML metadata",
-            description = "Extracts NcML metadata from a data file when the requester is a superuser.")
+            description = "Extracts NcML metadata from a data file when the requester is a power user.")
     public Response extractNcml(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
-            if (!au.isSuperuser()) {
-                // We can always make a command in the future if there's a need
-                // for non-superusers to call this API.
-                return error(FORBIDDEN, "This API call can be used by superusers only");
-            }
             DataFile dataFileIn = findDataFileOrDie(id);
+            if (!permissionSvc.isPowerUserOn(au, dataFileIn)) {
+                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            }
             java.nio.file.Path tempLocationPath = null;
             boolean successOrFail = ingestService.extractMetadataNcml(dataFileIn, tempLocationPath);
             NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()

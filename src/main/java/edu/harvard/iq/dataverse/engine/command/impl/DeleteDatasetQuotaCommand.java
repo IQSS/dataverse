@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author landreev
  *
- * A superuser-only command:
+ * A power-user-only command:
  */
 @RequiredPermissions({})
 public class DeleteDatasetQuotaCommand extends AbstractVoidCommand {
@@ -33,9 +33,9 @@ public class DeleteDatasetQuotaCommand extends AbstractVoidCommand {
         
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
-        // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException(BundleUtil.getStringFromBundle("dataset.storage.quota.superusersonly"),
+        // first check if user is a power user
+        if ( (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), targetDataset) ) ) {
+            throw new PermissionException(BundleUtil.getStringFromBundle("dataset.storage.quota.powerusersonly"),
                 this,  null, targetDataset);                
         }
         

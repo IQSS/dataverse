@@ -15,7 +15,7 @@ Dataverse collections have to be empty to delete them. Navigate to the Dataverse
 Move a Dataverse Collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Moves a Dataverse collection whose id is passed to an existing Dataverse collection whose id is passed. The Dataverse collection alias also may be used instead of the id. If the moved Dataverse collection has a guestbook, template, metadata block, link, or featured Dataverse collection that is not compatible with the destination Dataverse collection, you will be informed and given the option to force the move and remove the association. Only accessible to superusers. ::
+Moves a Dataverse collection whose id is passed to an existing Dataverse collection whose id is passed. The Dataverse collection alias also may be used instead of the id. If the moved Dataverse collection has a guestbook, template, metadata block, link, or featured Dataverse collection that is not compatible with the destination Dataverse collection, you will be informed and given the option to force the move and remove the association. Only accessible to superusers or users with the ScopedPowerUser permission on the Dataverse collection. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/dataverses/$id/move/$destination-id
 
@@ -36,14 +36,14 @@ Removes a link between a Dataverse collection and another Dataverse collection. 
 List Dataverse Collection Links
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Provides information about whether a certain Dataverse collection ($dataverse-alias) is linked to or links to another collection. Only accessible to superusers. ::
+Provides information about whether a certain Dataverse collection ($dataverse-alias) is linked to or links to another collection. Only accessible to superusers or power users. ::
 
     curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/links
 
 Add Dataverse Collection RoleAssignments to Dataverse Subcollections
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Recursively assigns the users and groups having a role(s),that are in the set configured to be inheritable via the :InheritParentRoleAssignments setting, on a specified Dataverse collections to have the same role assignments on all of the Dataverse collections that have been created within it. The response indicates success or failure and lists the individuals/groups and Dataverse collections involved in the update. Only accessible to superusers. ::
+Recursively assigns the users and groups having a role(s),that are in the set configured to be inheritable via the :InheritParentRoleAssignments setting, on a specified Dataverse collections to have the same role assignments on all of the Dataverse collections that have been created within it. The response indicates success or failure and lists the individuals/groups and Dataverse collections involved in the update. Only accessible to superusers or power users. ::
  
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/addRoleAssignmentsToChildren
     
@@ -85,7 +85,7 @@ Datasets within a given Dataverse collection can be annotated with a Curation La
 
 The label is applied to a draft Dataset version via the user interface or API and the available label sets are defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. Internally, the labels have no effect, and at publication, any existing label will be removed. A reporting API call allows admins to get a list of datasets and their curation statuses.
 
-The label set used for a collection can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers.
+The label set used for a collection can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers or power users.
 
 The curationLabelSet to use within a given collection can be set by specifying its name using::
  
@@ -178,7 +178,7 @@ Datasets
 Move a Dataset
 ^^^^^^^^^^^^^^
 
-Superusers can move datasets using the dashboard. See also :doc:`dashboard`.
+Superusers and power users can move datasets using the dashboard. See also :doc:`dashboard`.
 
 Moves a dataset whose id is passed to a Dataverse collection whose alias is passed. If the moved dataset has a guestbook or a Dataverse collection link that is not compatible with the destination Dataverse collection, you will be informed and given the option to force the move (with ``forceMove=true`` as a query parameter) and remove the guestbook or link (or both). Only accessible to users with permission to publish the dataset in the original and destination Dataverse collection. Note: any roles granted to users on the dataset will continue to be in effect after the dataset has been moved. ::
 
@@ -266,7 +266,7 @@ The application will attempt to sleep for 1 second between registration attempts
 Mint a New DOI for a Dataset with a Handle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Mints a new identifier for a dataset previously registered with a handle. Only accessible to superusers. ::
+Mints a new identifier for a dataset previously registered with a handle. Only accessible to superusers or power users. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/admin/$dataset-id/reregisterHDLToPID
     
@@ -276,7 +276,7 @@ Update Target URL for a Published Dataset at the PID provider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forces update to the target URL provided to the PID provider of a published dataset and assures the PID is findable.
-Only accessible to superusers. ::
+Only accessible to superusers or power users. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistration
     
@@ -293,7 +293,7 @@ Update Metadata for a Published Dataset at the PID provider
 
 Checks to see that the PID metadata for a published dataset (and any released files in it using file PIDs)
 is up-to-date at the provider and updates the metadata if necessary.
-Only accessible to superusers. ::
+Only accessible to superusers or power users. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistrationMetadata
     
@@ -316,7 +316,7 @@ See :ref:`pids-api` in the API Guide for details.
 Make Metadata Updates Without Changing Dataset Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As a superuser, click "Update Current Version" when publishing. (This option is only available when a 'Minor' update would be allowed.)
+As a superuser or power user, click "Update Current Version" when publishing. (This option is only available when a 'Minor' update would be allowed.)
 
 Diagnose Constraint Violations Issues in Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -326,7 +326,7 @@ To identify invalid data values in specific datasets (if, for example, an attemp
 Configure a Dataset to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Configure an individual dataset to use a specific file store (this API can only be used by a superuser) ::
+Configure an individual dataset to use a specific file store (this API can only be used by a superuser or power user) ::
  
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/datasets/$dataset-id/storageDriver
     
@@ -336,7 +336,7 @@ The effective store can be seen using::
 
 The output of the API will include the id, label, type (for example, "file" or "s3") as well as the support for direct download and upload.
 
-To remove an assigned store, and allow the dataset to inherit the store from it's parent collection, use the following (only a superuser can do this) ::
+To remove an assigned store, and allow the dataset to inherit the store from it's parent collection, use the following (only a superuser or power user can do this) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
     
@@ -351,7 +351,7 @@ A dataset can be annotated with a Curation Label to indicate the status of the d
 
 The label is applied to a draft Dataset version via the user interface or API and the available label sets are defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. Internally, the labels have no effect, and at publication, any existing label will be removed. A reporting API call allows admins to get a list of datasets and their curation statuses.
 
-The label set used for a dataset can be specified via the API as shown below. Only accessible to superusers.
+The label set used for a dataset can be specified via the API as shown below. Only accessible to superusers or power users.
  
 The curationLabelSet to use within a given dataset can be set by specifying its name using::
  
@@ -363,7 +363,7 @@ The name of the current curationLabelSet can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/datasets/$dataset-id/curationLabelSet
 
-and can be reset to the default (inherited from the parent collection) with (only a superuser can do this) ::
+and can be reset to the default (inherited from the parent collection) with (only a superuser or power user can do this) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/curationLabelSet
     

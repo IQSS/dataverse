@@ -149,7 +149,7 @@
                                     <p:message for="identifier" display="text"/>
                                 </div>
                             </div>
-                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser}">
+                            <div class="col-md-6 form-group" jsf:rendered="#{permissionsWrapper.isPowerUserOn(dataverse)}">
                                 <h:outputLabel for="dataverseStorage" styleClass="control-label">
                                     #{bundle.storage} 
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -162,7 +162,7 @@
                                             <p:message for="dataverseStorage" display="text"/>
                                 </div>
                             </div>
-                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser and DataversePage.getCurationLabelSetOptions().size() >0}">
+                            <div class="col-md-6 form-group" jsf:rendered="#{permissionsWrapper.isPowerUserOn(dataverse) and DataversePage.getCurationLabelSetOptions().size() >0}">
                                 <h:outputLabel for="dataverseCurationLabels" styleClass="control-label">
                                     #{bundle.curationLabels} 
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -286,7 +286,7 @@
                                             <p:message for="dsGuestbookEntryOption" display="text"/>
                                         </div>
                                     </div>
-                                    <div class="col-xs-12 form-group" jsf:rendered="#{dataverseSession.user.superuser and DataversePage.getPidProviderOptions().size()>2}">
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{permissionsWrapper.isPowerUserOn(dataverse) and DataversePage.getPidProviderOptions().size()>2}">
                                         <h:outputLabel for="dsPidProviderOption" styleClass="control-label">
                                             #{bundle.pidProviderOption} 
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -301,7 +301,7 @@
                                     </div>
                                     <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
                                     <ui:param name="allowLocallyFAIR" value="#{FeatureFlags.ALLOW_LOCALLY_FAIR_DATA.enabled()}"/>
-                                    <div class="col-xs-12 form-group" jsf:rendered="#{dataverseSession.user.superuser and (allowLocallyFAIR or not empty DataversePage.locallyFAIRRoleAssigneesList)}">
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{permissionsWrapper.isPowerUserOn(dataverse) and (allowLocallyFAIR or not empty DataversePage.locallyFAIRRoleAssigneesList)}">
                                         <h:outputLabel for="locallyFAIRRoleAssignees" styleClass="control-label">
                                             #{bundle['dataverse.locallyfair.label']}
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"

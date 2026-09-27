@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -50,6 +51,16 @@ public class CreateRoleCommandTest {
         public EntityManager em() {
             return new LocalTestEntityManager();
             
+        }
+
+        @Override
+        public PermissionServiceBean permissions() {
+            return new PermissionServiceBean() {
+                @Override
+                public boolean isPowerUserOn(AuthenticatedUser user, edu.harvard.iq.dataverse.DvObject dvo) {
+                    return user != null && user.isSuperuser();
+                }
+            };
         }
     });
     

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.Template;
@@ -271,6 +272,15 @@ public class MoveDataverseCommandTest {
             public DataverseLinkingServiceBean dvLinking() {
                 return new DataverseLinkingServiceBean() {
                     
+                };
+            }
+            @Override
+            public PermissionServiceBean permissions() {
+                return new PermissionServiceBean() {
+                    @Override
+                    public boolean isPowerUserOn(AuthenticatedUser user, edu.harvard.iq.dataverse.DvObject dvo) {
+                        return user != null && user.isSuperuser();
+                    }
                 };
             }
         });

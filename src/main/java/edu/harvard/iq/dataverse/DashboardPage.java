@@ -15,8 +15,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -42,6 +40,8 @@ public class DashboardPage implements java.io.Serializable {
     DataverseSession session;
     @Inject
     NavigationWrapper navigationWrapper;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     /*
      in breadcrumbs the dashboard page always appears as if it belongs to the 
@@ -57,7 +57,7 @@ public class DashboardPage implements java.io.Serializable {
     public String init() {
         if (!isSessionUserAuthenticated()) {
             return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
-        } else if (!isSuperUser()) {
+        } else if (!(isSuperUser() || permissionsWrapper.isPowerUserOnSomeDvObject())) {
             return navigationWrapper.notAuthorized();
         }
 
