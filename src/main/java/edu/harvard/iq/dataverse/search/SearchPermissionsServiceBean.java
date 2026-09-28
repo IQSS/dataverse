@@ -184,6 +184,13 @@ public String convertToIndexableString(String identifier) {
             value = value.substring("explicit/".length());
         }
         return IndexServiceBean.getGroupPrefix() + value;
+    } else if (prefix == ':') {
+        //No db lookup here
+        RoleAssignee ra = roleAssigneeService.getRoleAssignee(identifier);
+        if (ra instanceof Group) {
+            return IndexServiceBean.getGroupPrefix() + ((Group) ra).getAlias();
+        }
+        return null;
     } else {
         logger.warning("Unknown role assignee identifier format: " + identifier);
         return null;
