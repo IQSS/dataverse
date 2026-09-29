@@ -146,7 +146,9 @@ public class Access extends AbstractApiBean {
                                      @Parameter(description = "Data file id or persistent identifier.", required = true)
                                      @PathParam("fileId") String fileId,
                                      @Parameter(description = "Citation format to return.")
-                                     @PathParam("format") String formatString) {
+                                     @PathParam("format") String formatString,
+                                     @Parameter(description = "Dataset version, such as 1.0, :draft, :latest, or :latest-published. If omitted, uses :latest.", required = false)
+                                     @QueryParam("version") String version) {
 
         DataCitation.Format format = DataCitation.getFormat(formatString);
         if (format == null) {
@@ -158,7 +160,23 @@ public class Access extends AbstractApiBean {
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
 
-        String dataCitationFormatted = (new DataCitation(df.getFileMetadata())).toString(format, true, false);
+        // Default to latest file metadata.
+        FileMetadata fileMetadata = df.getFileMetadata();
+        if (version != null) {
+            try {
+                DatasetVersion datasetVersion = getDatasetVersionFromVersion(crc, df.getOwner().getId().toString(), version);
+                if (datasetVersion == null) {
+                    return badRequest("Dataset version not found: " + version);
+                }
+                fileMetadata = dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersion.getId(), df.getId());
+                if (fileMetadata == null) {
+                    return badRequest("File not found in dataset version: " + version);
+                }
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+        }
+        String dataCitationFormatted = (new DataCitation(fileMetadata)).toString(format, true, false);
 
         return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(dataCitationFormatted).build();
     }

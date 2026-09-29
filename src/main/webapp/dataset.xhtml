@@ -1454,7 +1454,7 @@
                     <p:fragment>
                         <p:autoUpdate />
                         <p:outputPanel>
-                            <p:dialog id="deaccessionBlock" rendered="#{DatasetPage.renderDeaccessionPopup}" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true" visible="#{facesContext.validationFailed}">
+                            <p:dialog id="deaccessionBlock" rendered="#{DatasetPage.renderDeaccessionPopup}" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true" visible="#{facesContext.validationFailed}" dynamic="true">
                                 <p:focus for="selectVersionChk"/>
                                 <div class="alert alert-warning">
                                     <span class="glyphicon glyphicon-warning-sign">&#160;</span><h:outputFormat value="#{bundle['file.deaccessionDialog.tip.permanent']}" escape="false" />
