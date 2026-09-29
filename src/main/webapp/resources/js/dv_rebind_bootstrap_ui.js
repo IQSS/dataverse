@@ -91,6 +91,23 @@ function bind_autocomplete_dropdowns() {
     }
     document.dataverseAutocompleteMouseUpCapture = autocompleteMouseUpCapture;
     document.addEventListener('mouseup', autocompleteMouseUpCapture, true);
+
+    $(document)
+        .off('click.dataverseAutocompleteSelection', '.ui-autocomplete-panel .ui-autocomplete-item')
+        .on('click.dataverseAutocompleteSelection', '.ui-autocomplete-panel .ui-autocomplete-item', function() {
+            var panel = $(this).closest('.ui-autocomplete-panel');
+
+            $('.ui-autocomplete').each(function() {
+                var autocomplete = $(this);
+                var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
+
+                if (widget && widget.panel && widget.panel[0] === panel[0]) {
+                    autocomplete.find('.ui-autocomplete-dropdown .ui-icon')
+                        .removeClass('ui-icon-triangle-1-n')
+                        .addClass('ui-icon-triangle-1-s');
+                }
+            });
+        });
 }
 
 function bind_tooltip_popover(){
