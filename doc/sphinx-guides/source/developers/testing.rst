@@ -295,6 +295,10 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
++ Solr only makes new documents visible after its next soft commit, so the tests wait ``solr.autoSoftCommit.maxTime`` (1000 ms by default) after indexing. The Docker dev stack sets it to 100 ms; tell the tests to match it and they run faster:
+
+  ``mvn test -Dtest=SearchIT -Ddataverse.test.solr.softcommit.millis=100``
+
 If you are adding a new test class, be sure to add it to :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>` so that our automated testing knows about it.
 
 
