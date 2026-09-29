@@ -133,6 +133,9 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
         if (dto.getDatasetFileCountLimit() != null) {
             dataverse.setDatasetFileCountLimit(dto.getDatasetFileCountLimit());
         }
+        if (dto.getGuestbookRoot() != null) {
+            dataverse.setGuestbookRoot(dto.getGuestbookRoot());
+        }
     }
 
     @Override

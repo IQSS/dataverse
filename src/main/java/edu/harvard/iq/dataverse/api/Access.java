@@ -26,9 +26,9 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.mydata.Pager;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
+import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -93,6 +93,8 @@ public class Access extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
         
     @EJB
+    ApiSigningSecretServiceBean signingSecretService;
+    @EJB
     DataFileServiceBean dataFileService;
     @EJB 
     DatasetServiceBean datasetService; 
@@ -144,7 +146,9 @@ public class Access extends AbstractApiBean {
                                      @Parameter(description = "Data file id or persistent identifier.", required = true)
                                      @PathParam("fileId") String fileId,
                                      @Parameter(description = "Citation format to return.")
-                                     @PathParam("format") String formatString) {
+                                     @PathParam("format") String formatString,
+                                     @Parameter(description = "Dataset version, such as 1.0, :draft, :latest, or :latest-published. If omitted, uses :latest.", required = false)
+                                     @QueryParam("version") String version) {
 
         DataCitation.Format format = DataCitation.getFormat(formatString);
         if (format == null) {
@@ -156,7 +160,23 @@ public class Access extends AbstractApiBean {
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
 
-        String dataCitationFormatted = (new DataCitation(df.getFileMetadata())).toString(format, true, false);
+        // Default to latest file metadata.
+        FileMetadata fileMetadata = df.getFileMetadata();
+        if (version != null) {
+            try {
+                DatasetVersion datasetVersion = getDatasetVersionFromVersion(crc, df.getOwner().getId().toString(), version);
+                if (datasetVersion == null) {
+                    return badRequest("Dataset version not found: " + version);
+                }
+                fileMetadata = dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersion.getId(), df.getId());
+                if (fileMetadata == null) {
+                    return badRequest("File not found in dataset version: " + version);
+                }
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+        }
+        String dataCitationFormatted = (new DataCitation(fileMetadata)).toString(format, true, false);
 
         return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(dataCitationFormatted).build();
     }
@@ -585,6 +605,10 @@ public class Access extends AbstractApiBean {
     }
 
     private Response returnSignedDownloadUrl(ContainerRequestContext crc, UriInfo uriInfo, User user, String id, String gbrids) {
+        // Record the guestbook-response id for the side-effect-only callers
+        // (datafileBundleWithGuestbookResponse, postDownloadDatafiles) that discard the Response we
+        // return and then read this property to drive the actual download.
+        crc.setProperty("gbrids", gbrids);
         // Create the signed URL
         String userIdentifier = null;
         String key = null;
@@ -616,12 +640,27 @@ public class Access extends AbstractApiBean {
             builder.replaceQueryParam("gbrids", gbrids);
         }
         builder.replaceQueryParam("persistentId"); // remove this as a parm and add the id to the path
-        crc.setProperty("gbrids", gbrids);
+        // URL construction, not caller input: the incoming request legitimately carries these
+        // params ("signed" selected this flow, "key"/signing params may have authenticated it),
+        // and they must not be carried into the new URL being built. Caller-provided URLs
+        // (requestSignedUrl, tool manifests) are rejected instead - and signUrl still refuses
+        // to sign if a signing param slips through here.
+        for (String reserved : UrlSignerUtil.reservedParameters) {
+            builder.replaceQueryParam(reserved);
+        }
         String baseUrlEncoded = builder.build().toString();
         String baseUrl = URLDecoder.decode(baseUrlEncoded, StandardCharsets.UTF_8);
         baseUrl = baseUrl.replace(":persistentId", id);
-        key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
-        String signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET", key);
+        String signedUrl;
+        try {
+            signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET",
+                    signingSecretService.getSigningKey(key));
+        } catch (IllegalArgumentException e) {
+            // A reserved param can be smuggled past the builder-level removal above inside a
+            // percent-encoded value and only materialize in the URL-decoded form signed here.
+            // Such a request is crafted: refuse it instead of signing a URL we did not build.
+            return error(BAD_REQUEST, "The request contains a reserved query parameter.");
+        }
         return ok(JsonUtil.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
 

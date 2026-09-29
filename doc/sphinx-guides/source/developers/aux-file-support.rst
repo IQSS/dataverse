@@ -64,6 +64,6 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
   
-  curl -H X-Dataverse-key:$API_TOKEN DELETE -X "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
   
   
