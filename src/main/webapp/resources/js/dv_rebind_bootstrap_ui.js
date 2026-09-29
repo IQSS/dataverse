@@ -55,6 +55,37 @@ function bind_bsui_components(){
 
 function bind_autocomplete_dropdowns() {
     var dropdownSelector = '.ui-autocomplete .ui-autocomplete-dropdown';
+    var autocompleteClickCapture = function(event) {
+        var button = $(event.target).closest(dropdownSelector);
+
+        if (!button.length) {
+            return;
+        }
+
+        if (button.data('dataverse-autocomplete-close')) {
+            button.removeData('dataverse-autocomplete-close');
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+
+        setTimeout(function() {
+            var autocomplete = button.closest('.ui-autocomplete');
+            var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
+            var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
+            var isOpen = panel.is(':visible');
+
+            button.find('.ui-icon')
+                .toggleClass('ui-icon-triangle-1-s', !isOpen)
+                .toggleClass('ui-icon-triangle-1-n', isOpen);
+        }, 0);
+    };
+
+    if (document.dataverseAutocompleteClickCapture) {
+        document.removeEventListener('click', document.dataverseAutocompleteClickCapture, true);
+    }
+    document.dataverseAutocompleteClickCapture = autocompleteClickCapture;
+    document.addEventListener('click', autocompleteClickCapture, true);
 
     $(document)
         .off('mousedown.dataverseAutocompleteToggle', dropdownSelector)
@@ -62,28 +93,19 @@ function bind_autocomplete_dropdowns() {
             var autocomplete = $(this).closest('.ui-autocomplete');
             var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
             var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
-            $(this).data('dataverse-autocomplete-was-open', panel.is(':visible'));
-        })
-        .off('click.dataverseAutocompleteToggle', dropdownSelector)
-        .on('click.dataverseAutocompleteToggle', dropdownSelector, function() {
-            var button = $(this);
-            var autocomplete = button.closest('.ui-autocomplete');
-            var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
-            var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
-            var wasOpen = button.data('dataverse-autocomplete-was-open');
 
-            if (wasOpen) {
+            if (panel.is(':visible')) {
                 if (widget && widget.hide) {
                     widget.hide();
                 } else {
                     panel.hide();
                 }
+                $(this).data('dataverse-autocomplete-close', true);
             }
 
-            button.find('.ui-icon')
-                .toggleClass('ui-icon-triangle-1-s', !wasOpen)
-                .toggleClass('ui-icon-triangle-1-n', wasOpen);
-            button.removeData('dataverse-autocomplete-was-open');
+            $(this).find('.ui-icon')
+                .toggleClass('ui-icon-triangle-1-s', !panel.is(':visible'))
+                .toggleClass('ui-icon-triangle-1-n', panel.is(':visible'));
         });
 }
 
