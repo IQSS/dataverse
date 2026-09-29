@@ -55,6 +55,16 @@ Steps don't get their own dedicated issue if it would be confusing to have multi
 
 For the next release in our list of [milestones](https://github.com/IQSS/dataverse/milestones), pass the release date to {download}`generate_release_dates.py <../../../../scripts/dev/release-dates/generate_release_dates.py>`. Put these dates on the milestone and accounce them. See examples from the [Google Group](https://groups.google.com/g/dataverse-community/c/kKh4YUBzU9I/m/7wF1048PCgAJ) and [Zulip](https://dataverse.zulipchat.com/#narrow/channel/375707-community/topic/Release.206.2E12.20Timeline/near/615705804).
 
+## Check If Payara, Solr, or PostgreSQL Should Be Updated
+
+Some upgrades are easy. Others require significant code changes, especially for Payara and Solr. Try to strike a balance between giving the team enough time to make code changes and being up-to-date with the latest release.
+
+Check <https://github.com/payara/Payara/releases> to see if there has been a new Payara release. If so, for any security vulnerabilities, try to figure out (with the team's help) if they are serious enough that we should update Payara as part of the release. If so, create an issue, give it the next milestone, and put it in "ready for triage" so the team can size it.
+
+Do the same for Solr by checking <https://solr.apache.org/downloads.html>. That page also shows when versions go EOL, which is good to check.
+
+For PostgreSQL, sysadmins running Dataverse are usually not prevented from upgrading to the latest minor PostgreSQL version. Often, they receive updates through a Linux package manager. That said, it's good to check <https://www.postgresql.org/support/versioning/> from time to time to see when the major version is going EOL.
+
 ## Push Back Milestones on Pull Requests That Missed the Train
 
 As the code freeze date approaches, work with the team to decided which pull requests won't make the cut, and bump them to the next release. Don't worry. There will be [another train](https://github.com/IQSS/dataverse/milestones). 🚂
