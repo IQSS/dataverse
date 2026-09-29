@@ -1350,6 +1350,11 @@ public class OpenAireExportUtil {
                                 description_check = writeOpenTag(xmlw, "descriptions", description_check);
                                 writeDescriptionElement(xmlw, "TechnicalInfo", softwareName + ", " + softwareVersion, language);
                             }
+                            //12310 add software even if version is blank...
+                            if (StringUtils.isNotBlank(softwareName) && StringUtils.isAllBlank(softwareVersion)) {
+                                description_check = writeOpenTag(xmlw, "descriptions", description_check);
+                                writeDescriptionElement(xmlw, "TechnicalInfo", softwareName, language);
+                            }
                         }
                     }
                 }
