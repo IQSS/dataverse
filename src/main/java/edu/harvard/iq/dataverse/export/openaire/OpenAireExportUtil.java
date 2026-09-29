@@ -1134,15 +1134,19 @@ public class OpenAireExportUtil {
             relatedIdentifier_map.put("relationType", "HasPart");
             for (FileDTO fileDTO : datasetVersionDTO.getFiles()) {
                 String pidURL = fileDTO.getDataFile().getPidURL();
-                String protocol = PidUtil.parseAsGlobalID(pidURL).getProtocol();
-                if (pidURL != null && protocol != null) {
+
+                if (pidURL != null) {
+                    String protocol = PidUtil.parseAsGlobalID(pidURL).getProtocol();
                     String relatedIdentifierType = protocol;
-                    if (relatedIdentifierTypeMap.containsKey(relatedIdentifierType)) {
-                        relatedIdentifierType = (String) relatedIdentifierTypeMap.get(relatedIdentifierType);
+                    if (relatedIdentifierType != null) {
+                        if (relatedIdentifierTypeMap.containsKey(relatedIdentifierType)) {
+                            relatedIdentifierType = (String) relatedIdentifierTypeMap.get(relatedIdentifierType);
+                        }
+                        relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
+                        relatedIdentifier_check = writeOpenTag(xmlw, "relatedIdentifiers", relatedIdentifier_check);
+                        writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, pidURL, language);
+
                     }
-                    relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
-                    relatedIdentifier_check = writeOpenTag(xmlw, "relatedIdentifiers", relatedIdentifier_check);
-                    writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, pidURL, language);
                 }
             }
         }
