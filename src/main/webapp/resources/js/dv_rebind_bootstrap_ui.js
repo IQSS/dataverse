@@ -55,58 +55,42 @@ function bind_bsui_components(){
 
 function bind_autocomplete_dropdowns() {
     var dropdownSelector = '.ui-autocomplete .ui-autocomplete-dropdown';
-    var autocompleteClickCapture = function(event) {
+    var autocompleteMouseUpCapture = function(event) {
         var button = $(event.target).closest(dropdownSelector);
 
         if (!button.length) {
             return;
         }
 
-        if (button.data('dataverse-autocomplete-close')) {
-            button.removeData('dataverse-autocomplete-close');
+        var autocomplete = button.closest('.ui-autocomplete');
+        var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
+        var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
+
+        if (panel.is(':visible')) {
+            if (widget && widget.hide) {
+                widget.hide();
+            } else {
+                panel.hide();
+            }
+
+            button.find('.ui-icon')
+                .removeClass('ui-icon-triangle-1-n')
+                .addClass('ui-icon-triangle-1-s');
             event.preventDefault();
             event.stopImmediatePropagation();
             return;
         }
 
-        setTimeout(function() {
-            var autocomplete = button.closest('.ui-autocomplete');
-            var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
-            var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
-            var isOpen = panel.is(':visible');
-
-            button.find('.ui-icon')
-                .toggleClass('ui-icon-triangle-1-s', !isOpen)
-                .toggleClass('ui-icon-triangle-1-n', isOpen);
-        }, 0);
+        button.find('.ui-icon')
+            .removeClass('ui-icon-triangle-1-s')
+            .addClass('ui-icon-triangle-1-n');
     };
 
-    if (document.dataverseAutocompleteClickCapture) {
-        document.removeEventListener('click', document.dataverseAutocompleteClickCapture, true);
+    if (document.dataverseAutocompleteMouseUpCapture) {
+        document.removeEventListener('mouseup', document.dataverseAutocompleteMouseUpCapture, true);
     }
-    document.dataverseAutocompleteClickCapture = autocompleteClickCapture;
-    document.addEventListener('click', autocompleteClickCapture, true);
-
-    $(document)
-        .off('mousedown.dataverseAutocompleteToggle', dropdownSelector)
-        .on('mousedown.dataverseAutocompleteToggle', dropdownSelector, function() {
-            var autocomplete = $(this).closest('.ui-autocomplete');
-            var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
-            var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
-
-            if (panel.is(':visible')) {
-                if (widget && widget.hide) {
-                    widget.hide();
-                } else {
-                    panel.hide();
-                }
-                $(this).data('dataverse-autocomplete-close', true);
-            }
-
-            $(this).find('.ui-icon')
-                .toggleClass('ui-icon-triangle-1-s', !panel.is(':visible'))
-                .toggleClass('ui-icon-triangle-1-n', panel.is(':visible'));
-        });
+    document.dataverseAutocompleteMouseUpCapture = autocompleteMouseUpCapture;
+    document.addEventListener('mouseup', autocompleteMouseUpCapture, true);
 }
 
 function bind_tooltip_popover(){
