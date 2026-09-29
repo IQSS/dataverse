@@ -66,6 +66,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * AuthenticationService is for general authentication-related operations.
@@ -1024,24 +1025,106 @@ public class AuthenticationServiceBean {
             authenticatedUser = lookupUser(ShibAuthenticationProvider.PROVIDER_ID, userPersistentId);
             if (authenticatedUser != null) {
                 logger.log(Level.FINE, "Shibboleth user found for the given bearer token");
-                return authenticatedUser;
+                return syncUserProperties(authenticatedUser, oAuth2UserRecord);
             }
         } else if (FeatureFlags.API_BEARER_AUTH_USE_OAUTH_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasOAuthAttributes()) {
             OAuthUserLookupParams userLookupParams = OAuthUserLookupParamsFactory.getOAuthUserLookupParams(oAuth2UserRecord.getIdp(), oAuth2UserRecord.getOidcUserId());
             authenticatedUser = lookupUser(userLookupParams.getProviderId(), userLookupParams.getLookupUserId());
             if (authenticatedUser != null) {
                 logger.log(Level.FINE, "OAuth user found for the given bearer token");
-                return authenticatedUser;
+                return syncUserProperties(authenticatedUser, oAuth2UserRecord);
             }
         } else if (FeatureFlags.API_BEARER_AUTH_USE_BUILTIN_USER_ON_ID_MATCH.enabled() && oAuth2UserRecord.hasBuiltinAttributes()) {
             authenticatedUser = lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, oAuth2UserRecord.getUsername());
             if (authenticatedUser != null) {
                 logger.log(Level.FINE, "Builtin user found for the given bearer token");
-                return authenticatedUser;
+                return syncUserProperties(authenticatedUser, oAuth2UserRecord);
             }
         }
 
-        return lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+        authenticatedUser = lookupUser(oAuth2UserRecord.getUserRecordIdentifier());
+        // fallback
+        if (authenticatedUser != null) {
+            authenticatedUser = syncUserProperties(authenticatedUser, oAuth2UserRecord);
+        }
+        return authenticatedUser;
+    }
+
+    private AuthenticatedUser syncUserProperties(AuthenticatedUser user, OAuth2UserRecord record) {
+        if (!FeatureFlags.OIDC_USER_PROPERTY_SYNC.enabled()) {
+            logger.fine("OIDC user property sync is disabled (feature flag not raised)");
+            return user;
+        }
+
+        boolean changed = false;
+
+        if (record.getDisplayInfo() != null) {
+            String newFirstName = StringUtils.trimToNull(record.getDisplayInfo().getFirstName());
+            String newLastName = StringUtils.trimToNull(record.getDisplayInfo().getLastName());
+
+            if (newFirstName != null && !newFirstName.equals(user.getFirstName())) {
+                user.setFirstName(newFirstName);
+                changed = true;
+            }
+
+            if (newLastName != null && !newLastName.equals(user.getLastName())) {
+                user.setLastName(newLastName);
+                changed = true;
+            }
+        }
+
+        String newEmail = StringUtils.trimToNull(resolveEmail(record));
+        if (newEmail != null && !equalsIgnoreCaseSafe(newEmail, user.getEmail())) {
+            user.setEmail(newEmail);
+            changed = true;
+        }
+
+        Boolean emailVerified = record.getEmailVerified();
+        if (emailVerified != null) {
+            if (emailVerified && user.getEmailConfirmed() == null) {
+                user.setEmailConfirmed(new Timestamp(System.currentTimeMillis()));
+                changed = true;
+            } else if (!emailVerified && user.getEmailConfirmed() != null) {
+                user.setEmailConfirmed(null);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            return userService.save(user);
+        }
+
+        return user;
+    }
+
+    private String resolveEmail(OAuth2UserRecord record) {
+        if (record.getDisplayInfo() != null) {
+            String displayEmail = StringUtils.trimToNull(record.getDisplayInfo().getEmailAddress());
+            if (displayEmail != null) {
+                return displayEmail;
+            }
+        }
+        // fallback
+        return StringUtils.trimToNull(getFirstEmail(record));
+    }
+
+
+    private String getFirstEmail(OAuth2UserRecord record) {
+        List<String> emails = record.getAvailableEmailAddresses();
+        if (emails == null || emails.isEmpty()) {
+            return null;
+        }
+        return emails.get(0);
+    }
+
+    /**
+     * Null-safe, case-insensitive comparison for email addresses.
+     */
+    private boolean equalsIgnoreCaseSafe(String a, String b) {
+        if (a == null || b == null) {
+            return a == b;
+        }
+        return a.equalsIgnoreCase(b);
     }
 
     /**
