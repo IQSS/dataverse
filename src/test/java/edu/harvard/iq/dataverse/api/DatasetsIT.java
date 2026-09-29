@@ -7551,8 +7551,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         );
         Response invalidResponse = UtilIT.createDataset(dataverseAlias, invalidBboxDataset, apiToken);
         invalidResponse.prettyPrint();
+        // Metadata validation failures on dataset creation are returned as 403 (IllegalCommandException).
         invalidResponse.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", startsWith("Validation Failed: "))
                 .body("message", containsString("invalid coordinates"));
 
         // Positive test: High-precision coordinates with valid ordering (South <= North, West <= East)
