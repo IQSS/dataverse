@@ -305,7 +305,7 @@
                                                         <div class="form-col-container col-sm-9 edit-field">
                                                                 <h:panelGroup id="vocab_widget_container" layout="block">
                                                                 <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                                                                                 id="unique1" rendered="#{!dsf.datasetFieldType.allowMultiples and (vocabSize lt 501 or ControlledVocabularyAutocompleteBean.isSlowMode(dsf.datasetFieldType.id))}" filter="#{(vocabSize ge 10 and vocabSize le 500) ? 'true':'false'}" filterMatchMode="contains">
+                                                                                 id="unique1" rendered="#{!dsf.datasetFieldType.allowMultiples and (vocabSize lt 501 or ControlledVocabularyAutocompleteBean.isSlowMode(dsf.datasetFieldType.id))}" filter="#{vocabSize ge 10 ? 'true':'false'}" filterMatchMode="contains">
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                                 </p:selectOneMenu>
@@ -319,7 +319,7 @@
                                                                     <f:attribute name="dsf" value="#{dsf}"/>
                                                                 </p:autoComplete>
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                      filter="#{(vocabSize ge 10 and vocabSize le 500) ? 'true':'false'}" filterMatchMode="contains" label="#{bundle.select}"  multiple="true" showHeader="#{(vocabSize ge 10) ? 'true':'false'}"
+                                                                                      filter="#{vocabSize ge 10 ? 'true':'false'}" filterMatchMode="contains" label="#{bundle.select}"  multiple="true" showHeader="#{(vocabSize ge 10) ? 'true':'false'}"
                                                                                       panelStyleClass="#{vocabSize gt 500 ? 'no-selectall' : ''}"
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples and (vocabSize lt 501 or ControlledVocabularyAutocompleteBean.isSlowMode(dsf.datasetFieldType.id))}">
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
