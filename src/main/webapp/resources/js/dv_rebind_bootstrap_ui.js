@@ -6,6 +6,8 @@ function bind_bsui_components(){
     $(document).on('click', '[data-toggle=offcanvas]', function() {
         $('.row-offcanvas').toggleClass('active', 200);
     });
+
+    bind_autocomplete_dropdowns();
     
     // Collapse Header Icons
     $('div[id^="panelCollapse"]').on('shown.bs.collapse', function () {
@@ -49,6 +51,40 @@ function bind_bsui_components(){
     
     //Fly-out sub-menu accessibility
     enableSubMenus();
+}
+
+function bind_autocomplete_dropdowns() {
+    var dropdownSelector = '.ui-autocomplete .ui-autocomplete-dropdown';
+
+    $(document)
+        .off('mousedown.dataverseAutocompleteToggle', dropdownSelector)
+        .on('mousedown.dataverseAutocompleteToggle', dropdownSelector, function() {
+            var autocomplete = $(this).closest('.ui-autocomplete');
+            var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
+            var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
+            $(this).data('dataverse-autocomplete-was-open', panel.is(':visible'));
+        })
+        .off('click.dataverseAutocompleteToggle', dropdownSelector)
+        .on('click.dataverseAutocompleteToggle', dropdownSelector, function() {
+            var button = $(this);
+            var autocomplete = button.closest('.ui-autocomplete');
+            var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
+            var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
+            var wasOpen = button.data('dataverse-autocomplete-was-open');
+
+            if (wasOpen) {
+                if (widget && widget.hide) {
+                    widget.hide();
+                } else {
+                    panel.hide();
+                }
+            }
+
+            button.find('.ui-icon')
+                .toggleClass('ui-icon-triangle-1-s', !wasOpen)
+                .toggleClass('ui-icon-triangle-1-n', wasOpen);
+            button.removeData('dataverse-autocomplete-was-open');
+        });
 }
 
 function bind_tooltip_popover(){
