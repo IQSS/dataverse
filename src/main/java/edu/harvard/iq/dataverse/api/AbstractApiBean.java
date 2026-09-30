@@ -485,11 +485,10 @@ public abstract class AbstractApiBean {
      *
      * @param id - the dataset identifier
      * @param req - the DataverseRequest
-     * @param deep - whether to perform a deep search
      * @return the dataset if found and visible, otherwise throws WrappedResponse
      * @throws WrappedResponse if dataset is not found (in findDatasetOrDie()) or not visible
      */
-    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req, boolean deep) throws WrappedResponse {
+    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req) throws WrappedResponse {
         Dataset dataset = findDatasetOrDie(id);
         if (dataset.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataset)) {
             throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
