@@ -216,6 +216,7 @@ jobs:
             -Dtest="$TEST_SUITE" \
             -Dmaven.test.failure.ignore=true \
             -Ddataverse.test.baseurl=http://localhost:8080 \
+            -Ddataverse.test.solr.softcommit.millis=100 \
             -DcompilerArgument=-Xlint:unchecked
         
       # ---------------------------

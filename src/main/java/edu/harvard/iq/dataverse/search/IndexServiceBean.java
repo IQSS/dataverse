@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.*;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
@@ -116,6 +117,8 @@ public class IndexServiceBean {
 
     @EJB
     IndexServiceBean self;
+    @Inject
+    Event<IndexingRequest> indexingRequests;
     
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
@@ -311,13 +314,10 @@ public class IndexServiceBean {
         asyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
     }
     
-    // The following two variables are only used in the synchronized getNextToIndex method and do not need to be synchronized themselves
-
-    // nextToIndex contains datasets mapped by dataset id that were added for future indexing while the indexing was already ongoing for a given dataset
-    // (if there already was a dataset scheduled for indexing, it is overwritten and only the most recently requested version is kept in the map)
-    private static final Map<Long, Dataset> NEXT_TO_INDEX = new ConcurrentHashMap<>();
-    // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
-    private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
+    // Ids of the datasets being indexed asynchronously right now. The value records whether indexing was requested
+    // again while the job was ongoing: that job then indexes the dataset once more when it is done (it loads the
+    // dataset again, so it indexes the newest state). An EJB must not use synchronized, hence the atomic map operations.
+    private static final ConcurrentHashMap<Long, Boolean> INDEXING = new ConcurrentHashMap<>();
     // semaphore for async indexing
     private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
     
@@ -342,29 +342,28 @@ public class IndexServiceBean {
         }
     }
 
-    // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
-    // Pass non-null Dataset to schedule it for indexing
-    synchronized private static Dataset getNextToIndex(Long id, Dataset d) {
-        if (d == null) { // -> indexing of the dataset with id has finished
-            Dataset next = NEXT_TO_INDEX.remove(id);
-            if (next == null) { // -> no new indexing jobs were requested while indexing was ongoing
-                // the job can be stopped now
-                INDEXING_NOW.remove(id);
-            }
-            return next;
-        }
-        // index job is requested for a non-null dataset
-        if (INDEXING_NOW.containsKey(id)) { // -> indexing job is already ongoing, and a new job should not be started by the current thread -> return null
-            NEXT_TO_INDEX.put(id, d);
-            return null;
-        }
-        // otherwise, start a new job
-        INDEXING_NOW.put(id, true);
-        return d;
+    /**
+     * Claims the indexing of a dataset for the calling thread. Returns false when a job for the dataset is
+     * already ongoing: that job indexes the dataset once more when it is done (see {@link #indexAgain}).
+     */
+    private static boolean startIndexing(Long id) {
+        // absent: start a job, nothing requested again yet; present: note the new request for the ongoing job
+        return Boolean.FALSE.equals(INDEXING.compute(id, (datasetId, requestedAgain) -> requestedAgain != null));
     }
 
     /**
-     * Indexes a dataset asynchronously.
+     * Called by a job that has finished indexing a dataset. Returns true when the dataset must be indexed
+     * again, because indexing was requested while the job was ongoing.
+     */
+    private static boolean indexAgain(Long id) {
+        // requested again: keep the job and clear the request; otherwise the job is done and removed
+        return INDEXING.computeIfPresent(id, (datasetId, requestedAgain) -> requestedAgain ? Boolean.FALSE : null) != null;
+    }
+
+    /**
+     * Indexes a dataset asynchronously, once the transaction that requested it has
+     * committed. Starting the background job earlier lets it read the database
+     * before the requesting changes are visible to it (see {@link IndexingRequest}).
      * 
      * Note that this method implement a synchronized skipping mechanism. When an
      * indexing job is already running for a given dataset in the background, the
@@ -383,66 +382,82 @@ public class IndexServiceBean {
      * @param dataset                The dataset to be indexed.
      * @param doNormalSolrDocCleanUp Flag for normal Solr doc clean up.
      */
-    @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+        asyncIndexDataset(idOf(dataset), doNormalSolrDocCleanUp);
+    }
+
+    public void asyncIndexDataset(Long datasetId, boolean doNormalSolrDocCleanUp) {
+        Objects.requireNonNull(datasetId, "the dataset has no id yet, persist it before requesting its indexing");
+        indexingRequests.fire(new IndexingRequest.IndexDataset(datasetId, doNormalSolrDocCleanUp));
+    }
+
+    private static Long idOf(Dataset dataset) {
+        return Objects.requireNonNull(dataset.getId(), "the dataset has no id yet, persist it before requesting its indexing");
+    }
+
+    @Asynchronous
+    public void indexDatasetInBackground(Long datasetId, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
-            doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            doAsyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
         } catch (InterruptedException e) {
-            String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+            logIndexingFailure(datasetId, "Indexing failed: interrupted.", e);
         } finally {
             ASYNC_INDEX_SEMAPHORE.release();
         }
     }
 
-    @Asynchronous
-    public void asyncIndexDataset(Long datasetId, boolean doNormalSolrDocCleanUp) {
-        //Initialize dataset here for logging (LoggingUtil) purposes
-        Dataset dataset = null;
-        try {
-            acquirePermitFromSemaphore();
-            dataset = datasetService.find(datasetId);
-            doAsyncIndexDataset(dataset, doNormalSolrDocCleanUp);
-        } catch (InterruptedException e) {
-            String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetId.toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            if(dataset==null) {
-                dataset = new Dataset();
-                dataset.setId(datasetId);
-            }
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
-        } finally {
-            ASYNC_INDEX_SEMAPHORE.release();
-        }
-    }
-    private void doAsyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        Long id = dataset.getId();
-        Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
-        while (next != null) {
+    private void doAsyncIndexDataset(Long datasetId, boolean doNormalSolrDocCleanUp) {
+        // when a job for this dataset is ongoing, that job indexes the dataset once more when it is done
+        boolean index = startIndexing(datasetId);
+        while (index) {
             // Time context will automatically start on creation and stop when leaving the try block
             try (var timeContext = indexTimer.time()) {
-                indexDataset(next, doNormalSolrDocCleanUp);
+                self.indexDatasetNow(datasetId, doNormalSolrDocCleanUp);
             } catch (Exception e) { // catch all possible exceptions; otherwise when something unexpected happes the dataset wold remain locked and impossible to reindex
-                String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-                failureLogText += "\r\n" + e.getLocalizedMessage();
-                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+                logIndexingFailure(datasetId, "Indexing failed.", e);
             }
-            next = getNextToIndex(id, null); // if dataset was not changed during the indexing (and no new job was requested), next is null and loop can be stopped
+            index = indexAgain(datasetId); // indexing was requested again while this job ran: index the newest state
         }
     }
 
-    @Asynchronous
+    /**
+     * Loads the dataset and indexes it. Runs in a transaction of its own, so that a job which runs again
+     * after a new request reads the dataset afresh instead of the copy its persistence context already holds.
+     * The requesting transaction has committed by the time the job starts (see {@link IndexingRequest}).
+     */
+    @TransactionAttribute(REQUIRES_NEW)
+    public void indexDatasetNow(Long datasetId, boolean doNormalSolrDocCleanUp) throws SolrServerException, IOException {
+        Dataset dataset = datasetService.find(datasetId);
+        if (dataset == null) {
+            logger.log(Level.INFO, "Dataset {0} no longer exists, nothing to index", datasetId);
+            return;
+        }
+        doIndexDataset(dataset, doNormalSolrDocCleanUp);
+        // the background job started after the requesting transaction had committed, so the index time can be recorded right away
+        self.updateLastIndexedTime(datasetId);
+    }
+
+    private static void logIndexingFailure(Long datasetId, String reason, Exception e) {
+        String failureLogText = reason + " You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetId;
+        failureLogText += "\r\n" + e.getLocalizedMessage();
+        Dataset dataset = new Dataset();
+        dataset.setId(datasetId);
+        LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+    }
+
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
-        for(Dataset dataset : datasets) {
+        indexingRequests.fire(new IndexingRequest.IndexDatasets(datasets.stream().map(IndexServiceBean::idOf).toList(), doNormalSolrDocCleanUp));
+    }
+
+    @Asynchronous
+    public void indexDatasetListInBackground(List<Long> datasetIds, boolean doNormalSolrDocCleanUp) {
+        for (Long datasetId : datasetIds) {
             try {
                 acquirePermitFromSemaphore();
-                doAsyncIndexDataset(dataset, true);
+                doAsyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
             } catch (InterruptedException e) {
-                String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-                failureLogText += "\r\n" + e.getLocalizedMessage();
-                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+                logIndexingFailure(datasetId, "Indexing failed: interrupted.", e);
             } finally {
                 ASYNC_INDEX_SEMAPHORE.release();
             }
@@ -459,7 +474,9 @@ public class IndexServiceBean {
 
     public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
-        self.updateLastIndexedTime(dataset.getId());
+        // the caller may still be inside the transaction that created the dataset (harvesting),
+        // and the index time is written in a new transaction that would not find it yet
+        indexingRequests.fire(new IndexingRequest.RecordIndexTime(dataset.getId()));
     }
     
     private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
