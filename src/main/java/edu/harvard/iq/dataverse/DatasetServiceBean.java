@@ -47,7 +47,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -115,23 +114,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.find(Dataset.class, pk);
     }
 
-    /**
-     * Retrieve a dataset for iterating over its files. The files are loaded when first used, with their
-     * relations batch fetched (@BatchFetch on DataFile, DvObject and FileMetadata), a few queries per 500 files.
-     * Joining them all in one query made EclipseLink build every file from one huge result, and it fails with
-     * batch fetching (EclipseLink error 6169).
-     * @return the dataset
-     */
-    public Dataset findDeep(Object pk) {
-        try {
-            return (Dataset) em.createNamedQuery("Dataset.findById")
-                    .setParameter("id", pk)
-                    .getSingleResult();
-        } catch (NoResultException | NonUniqueResultException ex) {
-            return null;
-        }
-    }
-    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }

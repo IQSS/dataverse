@@ -163,16 +163,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return em.find(DatasetVersion.class, pk);
     }
     
-    public DatasetVersion findDeep(Object pk) {
-        // No join fetching of the files: they are loaded when first used, with their relations batch
-        // fetched (@BatchFetch on FileMetadata and DataFile), a few queries per 500 files. Joining them all
-        // in one query made EclipseLink build every file from one huge result, slow for versions with many
-        // files. (Batch fetching also needs the files not to be join fetched: EclipseLink error 6169.)
-        return (DatasetVersion) em.createNamedQuery("DatasetVersion.findById")
-            .setParameter("id", pk)
-            .getSingleResult();
-    }
-
     /**
      * Performs the same database lookup as the one behind {@code Dataset.getVersions()}.
      * <p>

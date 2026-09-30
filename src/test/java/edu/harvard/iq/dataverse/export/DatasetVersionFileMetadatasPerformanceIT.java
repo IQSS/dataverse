@@ -153,19 +153,14 @@ class DatasetVersionFileMetadatasPerformanceIT {
         assertNoQueriesPerItem("schema.org json-ld", smallRegularVersion, largeRegularVersion, DatasetVersion::getJsonLd);
     }
 
-    /**
-     * The dataset page loads its version with DatasetVersionServiceBean.findDeep, which runs this query, and then
-     * reads these relations of every file. Joining the files in the query fails with batch fetching (EclipseLink 6169).
-     */
+    /** The dataset page loads its version with DatasetVersionServiceBean.find and then reads these relations of every file */
     @Test
     void loadingVersionForDatasetPage() {
-        assertNoQueriesPerItem("dataset page version", smallRegularVersion, largeRegularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
-        assertNoQueriesPerItem("dataset page tabular version", smallTabularVersion, largeTabularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
+        assertNoQueriesPerItem("dataset page version", smallRegularVersion, largeRegularVersion, FIND_VERSION, READ_FILES_OF_VERSION);
+        assertNoQueriesPerItem("dataset page tabular version", smallTabularVersion, largeTabularVersion, FIND_VERSION, READ_FILES_OF_VERSION);
     }
 
-    /** The query DatasetVersionServiceBean.findDeep runs */
-    static final BiFunction<EntityManager, Long, DatasetVersion> FIND_VERSION_DEEP = (em, id) -> em
-        .createNamedQuery("DatasetVersion.findById", DatasetVersion.class).setParameter("id", id).getSingleResult();
+    static final BiFunction<EntityManager, Long, DatasetVersion> FIND_VERSION = (em, id) -> em.find(DatasetVersion.class, id);
 
     /** The relations of every file the dataset page reads */
     static final Consumer<DatasetVersion> READ_FILES_OF_VERSION = version -> version.getFileMetadatas().forEach(fmd -> {
@@ -181,21 +176,17 @@ class DatasetVersionFileMetadatasPerformanceIT {
         dataFile.getTags().size();
     });
 
-    /**
-     * The dataset API loads a dataset with DatasetServiceBean.findDeep, which runs this query; some callers then read
-     * these relations of every file. Joining the files in the query fails with batch fetching (EclipseLink 6169).
-     */
+    /** The dataset API loads a dataset with DatasetServiceBean.find; some callers then read these relations of every file */
     @Test
-    void loadingDatasetDeep() {
-        assertNoQueriesPerItem("dataset deep", smallRegularVersion, largeRegularVersion, FIND_DATASET_DEEP, READ_FILES_OF_DATASET);
-        assertNoQueriesPerItem("dataset deep tabular", smallTabularVersion, largeTabularVersion, FIND_DATASET_DEEP, READ_FILES_OF_DATASET);
+    void loadingDatasetFiles() {
+        assertNoQueriesPerItem("dataset files", smallRegularVersion, largeRegularVersion, FIND_DATASET, READ_FILES_OF_DATASET);
+        assertNoQueriesPerItem("dataset files tabular", smallTabularVersion, largeTabularVersion, FIND_DATASET, READ_FILES_OF_DATASET);
     }
 
-    /** The query DatasetServiceBean.findDeep runs, for the dataset of the version */
-    static final BiFunction<EntityManager, Long, Dataset> FIND_DATASET_DEEP = (em, versionId) -> em
-        .createNamedQuery("Dataset.findById", Dataset.class).setParameter("id", datasetIds.get(versionId)).getSingleResult();
+    /** Finds the dataset of the version */
+    static final BiFunction<EntityManager, Long, Dataset> FIND_DATASET = (em, versionId) -> em.find(Dataset.class, datasetIds.get(versionId));
 
-    /** The relations of every file some callers of findDeep read */
+    /** The relations of every file some callers read */
     static final Consumer<Dataset> READ_FILES_OF_DATASET = dataset -> {
         assertTrue(!dataset.getFiles().isEmpty(), "the dataset has no files");
         dataset.getFiles().forEach(dataFile -> {
@@ -217,9 +208,9 @@ class DatasetVersionFileMetadatasPerformanceIT {
      */
     @Test
     void readingFilesAfterTheTransaction() {
-        assertNoQueriesPerItemAfterTheTransaction("detached version", smallRegularVersion, largeRegularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
-        assertNoQueriesPerItemAfterTheTransaction("detached tabular version", smallTabularVersion, largeTabularVersion, FIND_VERSION_DEEP, READ_FILES_OF_VERSION);
-        assertNoQueriesPerItemAfterTheTransaction("detached dataset", smallRegularVersion, largeRegularVersion, FIND_DATASET_DEEP, READ_FILES_OF_DATASET);
+        assertNoQueriesPerItemAfterTheTransaction("detached version", smallRegularVersion, largeRegularVersion, FIND_VERSION, READ_FILES_OF_VERSION);
+        assertNoQueriesPerItemAfterTheTransaction("detached tabular version", smallTabularVersion, largeTabularVersion, FIND_VERSION, READ_FILES_OF_VERSION);
+        assertNoQueriesPerItemAfterTheTransaction("detached dataset", smallRegularVersion, largeRegularVersion, FIND_DATASET, READ_FILES_OF_DATASET);
     }
 
     /**

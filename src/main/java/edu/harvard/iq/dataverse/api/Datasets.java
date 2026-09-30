@@ -515,7 +515,7 @@ public class Datasets extends AbstractApiBean {
             Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
             Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit) )
                                 .stream()
                                 .map( d -> json(d, deepLookup, includeMetadataBlocks) )
                                 .collect(toJsonArray()));
@@ -556,9 +556,6 @@ public class Datasets extends AbstractApiBean {
 
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
-            }
-            if (includeFiles) {
-                requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
             }
 
             // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting in the metadata block and that they have permission to do so

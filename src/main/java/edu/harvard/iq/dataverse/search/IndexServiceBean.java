@@ -2091,7 +2091,7 @@ public class IndexServiceBean {
 
             Dataset dataset = null;
             if (object.isInstanceofDataset()) {
-                dataset = datasetService.findDeep(object.getId());
+                dataset = datasetService.find(object.getId());
             }
             List<String> paths = object.isInstanceofDataset() ? retrieveDVOPaths(dataset)
                     : retrieveDVOPaths(dataverseService.find(object.getId()));

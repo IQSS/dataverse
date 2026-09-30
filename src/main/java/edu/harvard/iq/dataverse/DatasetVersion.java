@@ -38,8 +38,6 @@ import java.util.stream.Collectors;
     @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
                query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
     ), 
-    @NamedQuery(name = "DatasetVersion.findById", 
-                query = "SELECT o FROM DatasetVersion o WHERE o.id=:id"), 
     @NamedQuery(name = "DatasetVersion.findByDataset",
                 query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"),
     @NamedQuery(name = "DatasetVersion.findByDesiredStatesAndDataset",
