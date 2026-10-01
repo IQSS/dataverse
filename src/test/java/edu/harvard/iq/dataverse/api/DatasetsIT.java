@@ -3655,6 +3655,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Get the metadata with the semantic api
         Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.prettyPrint();
         response.then().assertThat().statusCode(OK.getStatusCode());
         // Compare the metadata with an expected value - the metadatablock entries
         // should be the same but there will be additional fields with values related to
@@ -3819,6 +3820,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Get the semantic metadata
         Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.prettyPrint();
         response.then().assertThat().statusCode(OK.getStatusCode());
         response.prettyPeek();
         String expectedString = getData(response.getBody().asString());
