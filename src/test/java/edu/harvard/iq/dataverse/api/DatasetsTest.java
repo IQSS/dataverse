@@ -3,16 +3,38 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.*;
 import org.junit.jupiter.api.Test;
+
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class DatasetsTest {
+
+    private static DatasetVersion emptyVersion() {
+        DatasetVersion v = new DatasetVersion();
+        v.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        return v;
+    }
+
+    private static DatasetField field(String typeName, String value) {
+        DatasetFieldType type = new DatasetFieldType();
+        type.setName(typeName);
+        // Make the field primitive by setting empty child-type list
+        type.setChildDatasetFieldTypes(List.of());
+
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(type);
+        field.setDatasetFieldValues(List.of(new DatasetFieldValue(field, value)));
+        return field;
+    }
 
     /**
      * Test cleanup filter
@@ -72,5 +94,42 @@ public class DatasetsTest {
 
         assertEquals("Dataset doi:10.5072/FK2/ABCDEF destroyed",
                 Datasets.getDatasetDestroyedMessage(AbstractApiBean.PERSISTENT_ID_KEY, dataset));
+    }
+
+    @Test
+    public void testDatasetVersionUpdateDifferenceForMetadata() {
+        DatasetVersion incoming = emptyVersion();
+        DatasetVersion latest = emptyVersion();
+        assertTrue(new DatasetVersionUpdateDifference(incoming, latest).isEmpty());
+
+        incoming.setDatasetFields(List.of(field("title", "Changed title")));
+
+        assertFalse(new DatasetVersionUpdateDifference(incoming, latest).isEmpty());
+    }
+
+    @Test
+    public void testDatasetVersionUpdateDifferenceForTerms() {
+        DatasetVersion incoming = emptyVersion();
+        DatasetVersion latest = emptyVersion();
+        incoming.getTermsOfUseAndAccess().setTermsOfAccess("Changed terms");
+
+        assertFalse(new DatasetVersionUpdateDifference(incoming, latest).isEmpty());
+    }
+
+    @Test
+    public void testDatasetVersionUpdateDifferenceForVersionFields() {
+        DatasetVersion incoming = emptyVersion();
+        DatasetVersion latest = emptyVersion();
+        incoming.setVersionNote("Changed note");
+
+        // Updating an existing draft replaces only metadata and terms/license, so
+        // a version-level difference must still be treated as a no-op
+        latest.setVersionState(DatasetVersion.VersionState.DRAFT);
+        assertTrue(new DatasetVersionUpdateDifference(incoming, latest).isEmpty());
+
+        // When the latest version is published, the same request creates a new
+        // draft and the version-level difference must prevent a no-op
+        latest.setVersionState(DatasetVersion.VersionState.RELEASED);
+        assertFalse(new DatasetVersionUpdateDifference(incoming, latest).isEmpty());
     }
 }
