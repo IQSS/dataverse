@@ -109,13 +109,21 @@ class IndexingAfterCommitTest {
 
     @Test
     void batchReindexIndexesTheDatasetRightAway() throws Exception {
-        indexService.self = mock(IndexServiceBean.class);
-        indexService.indexPermitWaitTimer = noOpTimer();
-        indexService.indexTimer = noOpTimer();
+        mockIndexing();
 
         indexService.indexDatasetInNewTransaction(42L);
 
         verify(indexService.self).indexDatasetNow(42L, false);
+        verifyNoInteractions(indexingRequests);
+    }
+
+    @Test
+    void backgroundJobIndexesTheDataset() throws Exception {
+        mockIndexing();
+
+        indexService.indexDatasetInBackground(42L, true);
+
+        verify(indexService.self).indexDatasetNow(42L, true);
         verifyNoInteractions(indexingRequests);
     }
 
@@ -154,6 +162,12 @@ class IndexingAfterCommitTest {
         Observes observes = request.getAnnotation(Observes.class);
         assertNotNull(observes, "the observer must observe IndexingRequest events");
         assertEquals(TransactionPhase.AFTER_SUCCESS, observes.during());
+    }
+
+    private void mockIndexing() {
+        indexService.self = mock(IndexServiceBean.class);
+        indexService.indexPermitWaitTimer = noOpTimer();
+        indexService.indexTimer = noOpTimer();
     }
 
     private static Timer noOpTimer() {
