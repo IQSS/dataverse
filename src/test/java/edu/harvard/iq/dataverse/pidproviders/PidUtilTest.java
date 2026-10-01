@@ -498,7 +498,7 @@ public class PidUtilTest {
                   if (mdsUrl != null && restUrl != null && dcUsername != null && dcPassword != null) {
                       legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
                               identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
-                              dcPassword);
+                              dcPassword, "expanded");
                   }
                   break;
               case "FAKE":
