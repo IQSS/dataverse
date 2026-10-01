@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
+import org.eclipse.microprofile.metrics.Timer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Indexing is requested from inside the transaction that changes a dataset or its
@@ -106,6 +108,18 @@ class IndexingAfterCommitTest {
     }
 
     @Test
+    void batchReindexIndexesTheDatasetRightAway() throws Exception {
+        indexService.self = mock(IndexServiceBean.class);
+        indexService.indexPermitWaitTimer = noOpTimer();
+        indexService.indexTimer = noOpTimer();
+
+        indexService.indexDatasetInNewTransaction(42L);
+
+        verify(indexService.self).indexDatasetNow(42L, false);
+        verifyNoInteractions(indexingRequests);
+    }
+
+    @Test
     void observerStartsIndexingADataset() {
         observer.afterCommit(new IndexingRequest.IndexDataset(42L, true));
 
@@ -140,6 +154,12 @@ class IndexingAfterCommitTest {
         Observes observes = request.getAnnotation(Observes.class);
         assertNotNull(observes, "the observer must observe IndexingRequest events");
         assertEquals(TransactionPhase.AFTER_SUCCESS, observes.during());
+    }
+
+    private static Timer noOpTimer() {
+        Timer timer = mock(Timer.class);
+        when(timer.time()).thenReturn(mock(Timer.Context.class));
+        return timer;
     }
 
     private IndexingRequest firedRequest() {
