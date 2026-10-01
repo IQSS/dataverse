@@ -31,7 +31,8 @@ import static org.mockito.Mockito.when;
  * (missing permissions, missing index time). The beans therefore only fire an
  * {@link IndexingRequest}; the observer starts the work after the commit. The
  * requests carry ids: the background job must not share entities with the
- * requesting thread.
+ * requesting thread. Batch reindexes are the exception: they index one dataset
+ * at a time, right away, as there is no transaction to wait for.
  */
 class IndexingAfterCommitTest {
 
