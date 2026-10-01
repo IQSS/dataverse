@@ -84,8 +84,12 @@ services:
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
-    mem_limit: 2684354560 # 2.5 GiB
-    mem_reservation: 1024m
+    # A reasonable default for local development and CI.
+    # For personal tweaks, use a local (gitignored) docker-compose.override.yml:
+    # https://docs.docker.com/compose/how-tos/multiple-compose-files/merge
+    # Note: keep these as raw byte values - the Docker Maven Plugin cannot parse "6g" etc.
+    mem_limit: 6442450944 # 6 GiB
+    mem_reservation: 2147483648 # 2 GiB
     privileged: false
 
   dev_bootstrap:
@@ -99,6 +103,27 @@ services:
       - dataverse
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
+      # Use the metadata block TSV files from your working tree (instead of the ones baked into
+      # the image), so a fresh instance is bootstrapped with your current state.
+      - ./scripts/api/data/metadatablocks:/scripts/bootstrap/base/data/metadatablocks:ro
+
+  # On every "up", this one-shot service refreshes the standard metadata blocks and the Solr
+  # schema of an already bootstrapped instance from the TSV files in your working tree.
+  # (On a fresh instance it is a no-op - dev_bootstrap takes care of the initial load.)
+  # It can also be run on demand against a running stack, without a restart - this works no
+  # matter whether the stack was started via Maven or via Compose:
+  # docker start -a dev_metadata_update
+  dev_metadata_update:
+    container_name: "dev_metadata_update"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - update-metadata.sh
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./scripts/api/data/metadatablocks:/scripts/bootstrap/base/data/metadatablocks:ro
 
   dev_dv_initializer:
     container_name: "dev_dv_initializer"

@@ -121,6 +121,18 @@ this console unopened.
 Note that data is persisted in ``./docker-dev-volumes`` in the root of the Git repo. For a clean start, you should
 remove this directory before running the ``mvn`` commands above.
 
+The application container runs with a memory limit of 6 GiB by default (see ``docker-compose-dev.yml``). This is
+sized for iterative development: every hot redeploy of the application retains some memory in the running server
+(roughly 150-200 MiB each, mostly classloader leftovers - a long-known Jakarta EE issue), and with the previous
+2.5 GiB limit the container got OOM-killed by the kernel after only about 3 redeploys. With 6 GiB, well over 20
+redeploys in a row have been verified. Note that a limit is not a reservation: an idle instance uses about 1.5 GiB,
+and usage only grows toward the limit during long redeploy sessions or heavy load. If you need to tweak this (or
+anything else) for your local setup, put your personal overrides into a (gitignored)
+``docker-compose.override.yml`` file and add it to your Compose commands:
+``docker compose -f docker-compose-dev.yml -f docker-compose.override.yml up``. Note that because we are not using
+the default Compose file name, the override file is *not* picked up automatically - neither by
+``docker compose -f docker-compose-dev.yml ...`` nor by the Maven commands above.
+
 
 .. _dev-logs:
 
@@ -198,10 +210,11 @@ The safest and most reliable way to redeploy code is to stop the running contain
 Safe, but also slowing down the development cycle a lot.
 
 Triggering redeployment of changes using an IDE can greatly improve your feedback loop when changing code.
-You have at least two options:
+You have at least three options:
 
 #. Use builtin features of IDEs or `IDE plugins from Payara <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
 #. Use a paid product like `JRebel <https://www.jrebel.com/>`_.
+#. Use the IDE independent, command-line based :ref:`dev-fast-redeploy` workflow.
 
 The main differences between the first and the second options are support for hot deploys of non-class files and limitations in what the JVM HotswapAgent can do for you.
 Find more details in a `blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
@@ -408,23 +421,20 @@ The steps below describe options to enable the later in different IDEs.
 Fast Redeploy (Command-Line)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For developers who prefer command-line workflows over IDE integration, Dataverse provides scripts for fast iterative development without full container rebuilds.
+For developers who prefer command-line workflows over IDE integration, the ``frd`` ("fast redeploy") Maven profile
+enables fast iterative development without full container rebuilds. It is IDE and editor independent and platform
+independent - the only requirements are Maven and the Docker CLI.
 
 **Initial Setup**
 
-Run once per development session:
+Start the dev environment the usual way (see :ref:`dev-run`):
 
 .. code-block:: bash
 
-   ./scripts/dev/dev-start-frd.sh
+   mvn -Pct clean package docker:run
 
-This command:
-
-- Builds the full Dataverse WAR with ``mvn package``
-- Extracts it into ``target/dataverse/`` as an exploded WAR
-- Configures JPA settings for development (``ddl-generation=none``)
-- Starts the dev stack with ``SKIP_DEPLOY=1``
-- Manually deploys the application via ``asadmin``
+The application container deploys the application from the exploded WAR at ``target/dataverse``, which
+``docker-compose-dev.yml`` bind mounts into the container - this is what makes the fast redeploy below possible.
 
 **Iterative Development**
 
@@ -432,48 +442,54 @@ After making code changes, run:
 
 .. code-block:: bash
 
-   ./scripts/dev/dev-frd.sh
+   mvn -Pfrd package
 
-This script:
+This command:
 
-- Compiles Java sources incrementally (``mvn compile``, ~5-10s)
-- Syncs updated classes and webapp resources into the mounted exploded WAR
-- Forces Payara to redeploy the application without restarting containers
-- Key features:
-  - Skips full Maven rebuilds (only compiles changed Java files)
-  - Avoids container restarts (uses hot-redeployment)
-  - Completes in ~12 seconds vs. ~54s for traditional full rebuild workflow (4.5x faster)
-  - Preserves database state between deployments
+- Compiles Java sources incrementally (only changed files)
+- Refreshes the exploded WAR at ``target/dataverse`` with compiled classes and webapp resources (XHTML etc.)
+- Makes Payara hot-redeploy the application inside the running container (via ``docker exec dev_dataverse redeploy.sh``), without restarting any containers
 
-**Typical Workflow**
+A redeploy completes in roughly 10-15 seconds, compared to about a minute for stopping the containers, rebuilding the
+images and starting them again. (Performance varies a lot between machines, treat these numbers as a relative
+comparison only.)
+
+Database state is preserved between redeploys. And because a redeployment restarts the application, everything that
+usually happens on application startup happens on every redeploy, too: new Flyway migration scripts under
+``src/main/resources/db/migration`` are applied and tables for newly added JPA entities are created automatically.
+
+**Updating Metadata Blocks**
+
+Changes to the standard metadata block TSV files under ``scripts/api/data/metadatablocks`` are not part of the
+deployed application. Instead, the one-shot service ``dev_metadata_update`` loads them into the running instance and
+updates the Solr schema accordingly, straight from your working tree. It runs automatically on every start of the
+stack (both the Maven and the Compose variants) and can also be run on demand, without restarting anything:
 
 .. code-block:: bash
 
-   # Start dev environment once
-   ./scripts/dev/dev-start-frd.sh
+   docker start -a dev_metadata_update
 
-   # Edit Java or XHTML files...
+If the changed fields affect data you already created, trigger a reindex with
+``curl http://localhost:8080/api/admin/index`` afterwards.
 
-   # Fast redeploy
-   ./scripts/dev/dev-frd.sh
+**Stopping**
 
-   # Repeat as needed
-
-   # When finished, stop containers
-   ./scripts/dev/dev-down-frd.sh
-
-**Memory Configuration**
-
-The fast-redeploy workflow includes ``docker-compose.override.yml`` that increases the memory limit to 8GB 
-(from the default 2GB limit set for GitHub Actions CI) which is insufficient for local Dataverse development. 
-The override file is automatically used by the scripts.
+Stop the environment as usual with ``mvn -Pct docker:stop`` or ``docker compose -f docker-compose-dev.yml down``.
+Your data is kept in ``docker-dev-volumes/`` either way.
 
 **Limitations**
 
-- Does not update dependencies (run full ``mvn package`` + restart if ``pom.xml`` changes)
-- Static resources (CSS, JS) may require browser cache clear
-- For database schema changes, use ``dev-rebuild.sh`` instead
-- Performance timings may vary depending on your hardware configuration
+- Dependency changes in ``pom.xml`` require a full image rebuild and restart: ``mvn -Pct clean package docker:run``.
+- Deleted source and webapp files linger in the exploded WAR until a full rebuild and restart (files are only added
+  and updated, never removed).
+- Hot-redeployment reuses the running JVM, and each redeploy retains some memory (roughly 150-200 MiB, mostly
+  classloader leftovers). With the default 6 GiB memory limit there is room for roughly 25-30 redeploys - if the
+  application becomes slow or unresponsive after a long session, simply restart the stack.
+- The OpenAPI schema is not regenerated on fast redeploys (the one from the last full build is kept).
+
+**Tip**: most of a no-change cycle is Payara's own redeployment (~8-10s); the Maven part is only 1-2 seconds. If you
+want to shave off the JVM startup overhead of Maven itself, the ``frd`` profile works fine with the
+`Maven daemon <https://maven.apache.org/tools/mvnd.html>`_: ``mvnd -Pfrd package``.
 
 **Note**: This workflow complements IDE-based redeployment. Use whichever fits your development style.
 
