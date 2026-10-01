@@ -1,15 +1,20 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
@@ -18,6 +23,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -140,6 +146,21 @@ class IndexingAfterCommitTest {
         Observes observes = request.getAnnotation(Observes.class);
         assertNotNull(observes, "the observer must observe IndexingRequest events");
         assertEquals(TransactionPhase.AFTER_SUCCESS, observes.during());
+    }
+
+    @Test
+    void backgroundJobDoesNotFlushBeforeQueries() throws Exception {
+        EntityManager em = mock(EntityManager.class);
+        Field emField = IndexServiceBean.class.getDeclaredField("em");
+        emField.setAccessible(true);
+        emField.set(indexService, em);
+        indexService.datasetService = mock(DatasetServiceBean.class);
+
+        indexService.indexDatasetNow(42L, false);
+
+        InOrder inOrder = inOrder(em, indexService.datasetService);
+        inOrder.verify(em).setFlushMode(FlushModeType.COMMIT);
+        inOrder.verify(indexService.datasetService).find(42L);
     }
 
     private IndexingRequest firedRequest() {
