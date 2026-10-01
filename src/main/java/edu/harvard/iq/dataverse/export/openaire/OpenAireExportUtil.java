@@ -41,6 +41,7 @@ import jakarta.mail.internet.InternetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.apache.commons.text.StringEscapeUtils;
+import org.ocpsoft.common.util.Strings;
 
 public class OpenAireExportUtil {
 
@@ -143,7 +144,7 @@ public class OpenAireExportUtil {
         writeResourceTypeElement(xmlw, version, language);
 
         // 11. AlternateIdentifier (with type sub-property) (O)
-        writeAlternateIdentifierElement(xmlw, version, datasetDto,  language);
+        writeAlternateIdentifierElement(xmlw, version, datasetDto, language);
 
         // 12, RelatedIdentifier (with type and relation type sub-properties) (R)
         writeRelatedIdentifierElement(xmlw, version, language);
@@ -169,12 +170,11 @@ public class OpenAireExportUtil {
         // 19 FundingReference (with name, identifier, and award related sub- properties) (O)
         writeFundingReferencesElement(xmlw, version, language);
     }
-    
+
     private static JsonObject getExternalVocabularyValue(String id) {
         return CDI.current().select(DatasetFieldServiceBean.class).get().getExternalVocabularyValue(id);
     }
-    
-    
+
     private static String getIdentifierAsUrl(String idType, String idValue) {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
             try {
@@ -296,7 +296,7 @@ public class OpenAireExportUtil {
                             if (StringUtils.isNotBlank(creatorName)) {
                                 creator_check = writeOpenTag(xmlw, "creators", creator_check);
                                 xmlw.writeStartElement("creator"); // <creator>
-                                
+
                                 Map<String, String> creator_map = new HashMap<String, String>();
                                 JsonObject creatorObj = PersonOrOrgUtil.getPersonOrOrganization(creatorName, false,
                                         StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"));
@@ -341,7 +341,7 @@ public class OpenAireExportUtil {
                                         writeFullElement(xmlw, "nameIdentifier", null, attributeMap, nameIdentifier, language);
                                     }
                                 }
-                                
+
                                 //12297 get full info on ROR affiliation
                                 if (StringUtils.isNotBlank(affiliation)) {
                                     Map<String, String> attributeMap = new HashMap<>();
@@ -406,7 +406,7 @@ public class OpenAireExportUtil {
         MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
         if (block != null) {
             logger.fine("Block is not empty");
-            List<FieldDTO> fieldsBlock =  block.getFields();
+            List<FieldDTO> fieldsBlock = block.getFields();
             if (fieldsBlock != null) {
                 for (FieldDTO fieldDTO : fieldsBlock) {
                     logger.fine(titleType + " " + fieldDTO.getTypeName());
@@ -414,8 +414,9 @@ public class OpenAireExportUtil {
                         logger.fine("Found Alt title");
                         List<String> fields = fieldDTO.getMultiplePrimitive();
                         for (String value : fields) {
-                            if (!writeTitleElement(xmlw, titleType, value, title_check, language))
+                            if (!writeTitleElement(xmlw, titleType, value, title_check, language)) {
                                 title_check = false;
+                            }
                         }
                         break;
                     }
@@ -534,12 +535,12 @@ public class OpenAireExportUtil {
 
                                 if (DatasetFieldConstant.keywordTermURI.equals(next.getTypeName())) {
                                     keywordTermURI = next.getSinglePrimitive();
-                                }  
+                                }
 
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
-                                
+
                                 if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
                                     keywordVocabURI = next.getSinglePrimitive();
                                 }
@@ -774,7 +775,7 @@ public class OpenAireExportUtil {
         JsonObject contributorObj = PersonOrOrgUtil.getPersonOrOrganization(contributorName,
                 false, false);
         if (contributorObj.getBoolean("isPerson")) {
-            if(contributorObj.containsKey("givenName")) {
+            if (contributorObj.containsKey("givenName")) {
                 contributor_map.put("nameType", "Personal");
             }
         } else {
@@ -836,7 +837,7 @@ public class OpenAireExportUtil {
         String dateOfVersion = datasetVersionDTO.getReleaseTime();
         //12294 set date type depending whether the version is republished
         String dateType = (datasetVersionDTO.getMinorVersionNumber() > 0 || datasetVersionDTO.getVersionNumber() > 1) ? "Updated" : "Available";
-         
+
         if (StringUtils.isNotBlank(dateOfVersion)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
 
@@ -894,13 +895,13 @@ public class OpenAireExportUtil {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
                                 Map<String, String> date_map = new HashMap<String, String>();
                                 date_map.put("dateType", "Other");
-                                date_map.put("dateInformation", "Time period covered by the data");                                       
+                                date_map.put("dateInformation", "Time period covered by the data");
                                 writeFullElement(xmlw, null, "date", date_map, timePeriodCoveredStart + "/" + timePeriodCoveredEnd, language);
                             }
                         }
                     }
                 }
-                
+
             }
         }
         writeEndTag(xmlw, date_check);
@@ -1025,8 +1026,6 @@ public class OpenAireExportUtil {
 
         writeEndTag(xmlw, alternateIdentifier_check);
     }
- 
-
 
     /**
      * 12, RelatedIdentifier (with type and relation type sub-properties) (R)
@@ -1101,7 +1100,7 @@ public class OpenAireExportUtil {
                                 }
 
                                 relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
-                                if(relationType== null) {
+                                if (relationType == null) {
                                     //12305 change to match DataCite
                                     relationType = "IsSupplementTo";
                                 }
@@ -1150,7 +1149,7 @@ public class OpenAireExportUtil {
                 }
             }
         }
-        
+
         writeEndTag(xmlw, relatedIdentifier_check);
     }
 
@@ -1453,8 +1452,6 @@ public class OpenAireExportUtil {
                 writeGeolocationPlace(xmlw, geoLocationPlace, language);
             }
         }
-                
-        // get DatasetFieldConstant.geographicBoundingBox
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             MetadataBlockDTO value = entry.getValue();
             for (FieldDTO fieldDTO : value.getFields()) {
@@ -1471,6 +1468,23 @@ public class OpenAireExportUtil {
             }
         }
 
+        //12311 add geographic coverage elements to export...
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockDTO value = entry.getValue();
+            for (FieldDTO fieldDTO : value.getFields()) {
+                if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
+                    geoLocations_check = writeOpenTag(xmlw, "geoLocations", geoLocations_check);
+                    if (fieldDTO.getMultiple()) {
+                        for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
+                            writeGeographicCoverageElement(xmlw, fieldDTOs, language);
+                        }
+                    } else {
+                        writeGeographicCoverageElement(xmlw, fieldDTO.getSingleCompound(), language);
+                    }
+                }
+            }
+        }
+
         writeEndTag(xmlw, geoLocations_check);
     }
 
@@ -1478,7 +1492,7 @@ public class OpenAireExportUtil {
      * 18 GeoLocation (R)
      *
      * Write geoLocationPlace inside geoLocation element
-     * 
+     *
      * @param xmlw The Steam writer
      * @param geoLocationPlace Geo location place
      * @param language current language
@@ -1486,14 +1500,14 @@ public class OpenAireExportUtil {
      */
     public static void writeGeolocationPlace(XMLStreamWriter xmlw, String geoLocationPlace, String language) throws XMLStreamException {
         boolean geoLocation_check = false;
-        
+
         if (StringUtils.isNotBlank(geoLocationPlace)) {
             geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
             writeFullElement(xmlw, null, "geoLocationPlace", null, geoLocationPlace, language);
         }
         writeEndTag(xmlw, geoLocation_check);
     }
-    
+
     /**
      * 18 GeoLocation (R)
      *
@@ -1540,6 +1554,50 @@ public class OpenAireExportUtil {
         }
         writeEndTag(xmlw, geoLocationbox_check);
         writeEndTag(xmlw, geoLocation_check);
+    }
+
+    /**
+     * 18 GeoLocation for coverage (R)
+     *
+     * @param xmlw The Steam writer
+     * @param fieldDTOs
+     * @param language current language
+     * @throws XMLStreamException
+     */
+    public static void writeGeographicCoverageElement(XMLStreamWriter xmlw, Set<FieldDTO> fieldDTOs, String language) throws XMLStreamException {
+
+        writeOpenTag(xmlw, "geoLocation", false);
+
+        String country = null;
+        String state = null;
+        String city = null;
+        String other = null;
+        String[] coverageItem;
+        for (FieldDTO child : fieldDTOs) {
+            if (child.getTypeName().equals(DatasetFieldConstant.country)) {
+                country = child.getSinglePrimitive();
+            }
+            if (child.getTypeName().equals(DatasetFieldConstant.state)) {
+                state = child.getSinglePrimitive();
+            }
+            if (child.getTypeName().equals(DatasetFieldConstant.city)) {
+                city = child.getSinglePrimitive();
+            }
+            if (child.getTypeName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                other = child.getSinglePrimitive();
+            }
+        }
+        coverageItem = new String[]{country, state, city, other};
+
+        ArrayList<String> placeList = new ArrayList<>();
+        for (String placePart : coverageItem) {
+            if (!StringUtils.isBlank(placePart)) {
+                placeList.add(placePart);
+            }
+        }
+
+        writeFullElement(xmlw, null, "geoLocationPlace", null, Strings.join(placeList, ", "), language);
+        xmlw.writeEndElement(); // </geoLocation>
     }
 
     /**
@@ -1619,7 +1677,6 @@ public class OpenAireExportUtil {
         writeEndTag(xmlw, fundingReference_check);
     }
 
-    
     //Duplicates XmlWriterUtil.dto2Primitive
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         // give the single value of the given metadata
@@ -1633,13 +1690,13 @@ public class OpenAireExportUtil {
         }
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @param datasetVersionDTO
      * @param datasetFieldTypeName
      * @return List<String> Multiple Primitive
-     * 
+     *
      */
     private static List<String> dto2MultiplePrimitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         // give the single value of the given metadata
