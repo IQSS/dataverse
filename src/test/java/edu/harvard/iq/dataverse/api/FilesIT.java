@@ -16,7 +16,6 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
@@ -37,7 +36,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.time.Year;
 import java.util.*;
 import java.util.logging.Logger;
@@ -3934,8 +3935,76 @@ public class FilesIT {
         Response guestbookListResponses = UtilIT.getGuestbooksResponses(parentGuestbook.getId(), 0, 100, ownerApiToken);
         guestbookListResponses.prettyPrint();
         int responseListSize = guestbookListResponses.jsonPath().getList("data.responses").size();
-        int totalCountFromJson = guestbookListResponses.jsonPath().getInt("data.pagination.totalResponses");
+        int totalCountFromJson = guestbookListResponses.jsonPath().getInt("data.guestbook.responseCount");
         assertEquals(responseListSize, totalCountFromJson);
+    }
+
+    @Test
+    public void testSortGuestbookResponsesByFilename() throws IOException, JsonParseException {
+        msgt("testSortGuestbookResponsesByFilename");
+
+        // Create superuser
+        Response createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String ownerApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String superusername = UtilIT.getUsernameFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
+        // Create user with no permission
+        createUserResponse = UtilIT.createRandomUser();
+        assertEquals(200, createUserResponse.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(ownerApiToken);
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        assertEquals(200, publishResponse.getStatusCode());
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, ownerApiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String directoryLabel = "data/store/" + persistentId.substring(4);
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, ownerApiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+        // Create a Guestbook and add it to the Dataset
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, ownerApiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "desc1").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId1 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        JsonObjectBuilder json2 = JsonUtil.createObjectBuilder().add("description", "desc2").add("directoryLabel", directoryLabel).add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/orcid_16x16.png", json2.build(), ownerApiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
+
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
+        Response downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getSignedUrlFromResponse(downloadResponse);
+        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId2, apiToken, guestbookResponse);
+        downloadResponse.prettyPrint();
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.getSignedUrlFromResponse(downloadResponse);
+
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
+                .add("label", "dv.png")
+                .add("description", "This file is awesome.");
+        Response moveFileResponse = UtilIT.updateFileMetadata(fileId1.toString(), updateFileMetadata.build().toString(), ownerApiToken);
+        moveFileResponse.prettyPrint();
+
+        Response guestbookListResponses = testSortByField(guestbook.getId(), "file", "asc", 0, Integer.MAX_VALUE, null, ownerApiToken);
+        guestbookListResponses.prettyPrint();
+        JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        int totalCount = jsonPath.getList("data.responses").size();
+        assertEquals(2, totalCount);
     }
 
     @Test
@@ -3953,7 +4022,7 @@ public class FilesIT {
         Response publishResponse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, ownerApiToken);
         assertEquals(200, publishResponse.getStatusCode());
         // Create a Parent Guestbook
-        Guestbook parentGuestbook = UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
+        UtilIT.createRandomGuestbook(parentDataverseAlias, null, ownerApiToken);
 
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
@@ -4181,26 +4250,71 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
         int totalCount = jsonPath.getList("data.responses").size();
+        int totalCountFromJson = jsonPath.getInt("data.guestbook.responseCount");
         assertTrue(totalCount > 0);
         assertNotNull(jsonPath.getString("data.responses[0].name"));
+
+        // Test Get All Responses Sorted
+        testSortByField(guestbook.getId(), "file", "asc", 0, Integer.MAX_VALUE, null, ownerApiToken);
+        testSortByField(guestbook.getId(), "name", "asc", null, null, null, ownerApiToken);
+        testSortByField(guestbook.getId(), "name", "desc",null, null, null, ownerApiToken);
+        testSortByField(guestbook.getId(), "date", "asc", null, null, null, ownerApiToken);
+        testSortByField(guestbook.getId(), "date", "desc",null, null, null, ownerApiToken);
+        // Test Get All Responses Sorted with errors
+        testSortByField(guestbook.getId(), "bad", null, null, null, BundleUtil.getStringFromBundle("guestbookResponses.invalidSortField"), ownerApiToken);
+        testSortByField(guestbook.getId(), null, "bad", null, null, BundleUtil.getStringFromBundle("guestbookResponses.invalidSortOrder"), ownerApiToken);
+        testSortByField(guestbook.getId(), null, null, -1, null, BundleUtil.getStringFromBundle("guestbookResponses.invalidOffset"), ownerApiToken);
+        testSortByField(guestbook.getId(), null, null, null, 0, BundleUtil.getStringFromBundle("guestbookResponses.invalidLimit"), ownerApiToken);
 
         // Test Get Responses with pagination
         int pages = 4; // total should be 17. set to 4 pages
         int limit = (totalCount / pages) + 1; // should be 5 per page. we should see 5, 5, 5, 2
         int pagedTotalCount = 0;
-        int totalCountFromJson = 0;
         for (int i = 0; i < pages; i++) {
             int offset = limit * i;
-            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), offset, limit, ownerApiToken);
+            guestbookListResponses = UtilIT.getGuestbooksResponses(guestbook.getId(), "date", null, offset, limit, ownerApiToken);
             guestbookListResponses.prettyPrint();
             jsonPath = JsonPath.from(guestbookListResponses.body().asString());
             pagedTotalCount += jsonPath.getList("data.responses").size();
-            totalCountFromJson = jsonPath.getInt("data.pagination.totalResponses");
             // 'No duplicate ids' was manually verified. Just make sure the count is good. If there were duplicates the count would be high
         }
         // verify all counts are good and equal
         assertEquals(totalCount, pagedTotalCount);
         assertEquals(pagedTotalCount, totalCountFromJson);
+    }
+
+    private Response testSortByField(Long id, String sortField, String order, Integer offset, Integer limit, String errorMsg, String token) {
+        Response guestbookListResponses = UtilIT.getGuestbooksResponses(id, sortField, order, offset, limit, token);
+        boolean isDescending = order != null && order.equalsIgnoreCase("desc");
+        guestbookListResponses.prettyPrint();
+        if (errorMsg == null) {
+            guestbookListResponses.then().assertThat().statusCode(OK.getStatusCode());
+            JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+            int totalCount = jsonPath.getList("data.responses").size();
+            assertTrue(totalCount > 0);
+            String lastFieldValue = jsonPath.getString("data.responses[0]." + sortField).toLowerCase(); // The sort seems to be case-insensitive
+            if (sortField.equalsIgnoreCase("date") && totalCount > 1) {
+                try {
+                    // test the date order by converting the formatted date back to a Date: "date": "Sep 18, 2026, 1:55:45 PM",
+                    DateFormat df = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.getDefault());
+                    Date date1 = df.parse(jsonPath.getString("data.responses[0]." + sortField));
+                    Date date2 = df.parse(jsonPath.getString("data.responses[" + (totalCount - 1) + "]." + sortField));
+                    assertTrue(isDescending ? date1.after(date2) : date1.before(date2));
+                } catch (ParseException e) {
+                    fail(e.getMessage());
+                }
+            }
+            for (int i = 1; i < totalCount; i++) {
+                String fieldValue = jsonPath.getString("data.responses[" + i + "]." + sortField).toLowerCase();
+                assertTrue(isDescending ? fieldValue.compareTo(lastFieldValue) <= 0 : fieldValue.compareTo(lastFieldValue) >= 0);
+                lastFieldValue = fieldValue;
+            }
+        } else {
+            guestbookListResponses.then().assertThat()
+                    .statusCode(BAD_REQUEST.getStatusCode())
+                    .body("message", equalTo(errorMsg));
+        }
+        return guestbookListResponses;
     }
 
     @Test
