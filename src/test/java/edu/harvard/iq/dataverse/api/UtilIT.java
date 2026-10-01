@@ -450,7 +450,7 @@ public class UtilIT {
                                     String apiToken) {
 
         return updateDataverse(alias, newAlias, newName, newAffiliation, newDataverseType, newContactEmails,
-                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null, null);
+                newInputLevelNames, newFacetIds, newMetadataBlockNames, apiToken, null, null, null, null);
     }
 
     static Response updateDataverse(String alias,
@@ -465,7 +465,8 @@ public class UtilIT {
                                     String apiToken,
                                     Boolean inheritMetadataBlocksFromParent,
                                     Boolean inheritFacetsFromParent,
-                                    Integer datasetFileCountLimit) {
+                                    Integer datasetFileCountLimit,
+                                    Boolean guestbookRoot) {
         JsonArrayBuilder contactArrayBuilder = JsonUtil.createArrayBuilder();
         for(String contactEmail : newContactEmails) {
             contactArrayBuilder.add(JsonUtil.createObjectBuilder().add("contactEmail", contactEmail));
@@ -480,6 +481,9 @@ public class UtilIT {
                 ;
         if (datasetFileCountLimit != null) {
             jsonBuilder.add("datasetFileCountLimit", datasetFileCountLimit);
+        }
+        if (guestbookRoot != null) {
+            jsonBuilder.add("guestbookRoot", guestbookRoot);
         }
 
         updateDataverseRequestJsonWithMetadataBlocksConfiguration(newInputLevelNames, newFacetIds, newMetadataBlockNames,
@@ -505,7 +509,8 @@ public class UtilIT {
                 apiToken,
                 null,
                 null,
-                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1);
+                dv.isDatasetFileCountLimitSet(dv.getDatasetFileCountLimit()) ? dv.getDatasetFileCountLimit() : -1,
+                null);
     }
 
     private static void updateDataverseRequestJsonWithMetadataBlocksConfiguration(String[] inputLevelNames,
@@ -1503,9 +1508,16 @@ public class UtilIT {
     }
 
     static Response getFileCitationFormat(String dataFileId, String format, String apiToken) {
+        return getFileCitationFormat(dataFileId, format, apiToken, null);
+    }
+
+    static Response getFileCitationFormat(String dataFileId, String format, String apiToken, String version) {
         RequestSpecification request = given();
         if (apiToken != null) {
             request.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (version != null) {
+            request.queryParam("version", version);
         }
         return request.get("/api/access/datafile/" + dataFileId +  "/citation/" + format);
     }
@@ -2706,8 +2718,8 @@ public class UtilIT {
                 id = splitted[1];
             }
         }
-        if (!UtilIT.sleepForReindex(id, apiToken, 10)) {
-            logger.warning("Still indexing after 10 seconds");
+        if (!UtilIT.sleepForReindex(id, apiToken, 20)) {
+            fail("Dataset " + id + " is still indexing after 20 seconds");
         }
     }
 
@@ -3499,42 +3511,61 @@ public class UtilIT {
 
     }
     
+    // Solr only makes new documents visible on its next soft commit. This mirrors
+    // solr.autoSoftCommit.maxTime: 1000 ms in the stock solrconfig.xml, 100 ms in
+    // docker-compose-dev.yml (run the tests with -Ddataverse.test.solr.softcommit.millis=100 to match).
+    private static final int SOLR_SOFT_COMMIT_MILLIS = Integer.getInteger("dataverse.test.solr.softcommit.millis", 1000);
+
+    // Before the index was polled, the tests always waited this long for the background job. It is still
+    // used when the wait cannot be tied to a dataset: searches for "*" or a text go through here too.
+    private static final int UNKNOWN_DATASET_INDEX_MILLIS = 1500;
+
     static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
-        int i = 0;
-        Response timestampResponse;
-        int sleepStep = 500;
-        int repeats = durationInSeconds * (1000 / sleepStep);
-        boolean stale=true;
-        do {
-            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
-            System.out.println(timestampResponse.body().asString());
-            try {
-                String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
-                System.out.println(hasStaleIndex);
-                stale = Boolean.parseBoolean(hasStaleIndex);
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
-                stale = false;
-            }
-            try {
-                Thread.sleep(sleepStep);
-                i++;
-            } catch (InterruptedException ex) {
-                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
-                i = repeats + 1;
-            }
-        } while ((i <= repeats) && stale);
+        long start = System.currentTimeMillis();
+        long deadline = start + durationInSeconds * 1000L;
+        Boolean stale = hasStaleIndex(idOrPersistentId, apiToken);
+        if (stale == null) {
+            // not a dataset the caller can see: nothing to poll, so give the background job the time it always had
+            sleepMillis(UNKNOWN_DATASET_INDEX_MILLIS);
+            System.out.println("Waited " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds (no dataset to poll for " + idOrPersistentId + ")");
+            return true;
+        }
+        while (stale && System.currentTimeMillis() < deadline && sleepMillis(100)) {
+            // an unknown answer (a transient error) does not mean done: keep polling until the deadline
+            stale = !Boolean.FALSE.equals(hasStaleIndex(idOrPersistentId, apiToken));
+        }
+        if (stale) {
+            System.out.println(UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken).body().asString());
+        }
+        // the documents have been sent to Solr, give it time to soft commit them
+        sleepMillis(SOLR_SOFT_COMMIT_MILLIS + 100);
+        System.out.println("Waited " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
+        return !stale;
+    }
+
+    /** Whether the index of the dataset is stale; null when the id is not a dataset the caller can see */
+    private static Boolean hasStaleIndex(String idOrPersistentId, String apiToken) {
+        Response timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
         try {
-            Thread.sleep(1000);  //Current autoSoftIndexTime - which adds a delay to when the new docs are visible 
-            i++;
+            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+            return hasStaleIndex == null ? null : Boolean.parseBoolean(hasStaleIndex);
+        } catch (RuntimeException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
+            return null;
+        }
+    }
+
+    private static boolean sleepMillis(long millis) {
+        try {
+            Thread.sleep(millis);
+            return true;
         } catch (InterruptedException ex) {
             Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
-            i = repeats + 1;
+            Thread.currentThread().interrupt();
+            return false;
         }
-        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
-        return i <= repeats;
-
     }
+
     static boolean sleepForReexport(String idOrPersistentId, String apiToken, int durationInSeconds) {
         int i = 0;
         Response timestampResponse;
