@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
+import edu.harvard.iq.dataverse.export.service.fixtures.TestPlugin;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.caps.bulk.BulkDatasetExporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Nested;
@@ -177,6 +179,33 @@ class ExporterRegistryBeanTest {
         @ValueSource(strings = {"", "unknown"})
         void requireExistsRejectsNullOrUnknown(String formatName) {
             assertThrows(ExportSystemException.InvalidRequest.class, () -> registry.requireExists(formatName));
+        }
+        
+        @ParameterizedTest
+        @NullSource
+        @ValueSource(strings = {"", "unknown"})
+        void requireExistsAndSupportsRejectsNullOrUnknown(String formatName) {
+            assertThrows(ExportSystemException.InvalidRequest.class, () -> registry.requireExistsAndSupports(formatName, null));
+        }
+        
+        @Test
+        void requireExistsAndSupportsRejectsNullPluginInterface() {
+            assertThrows(ExportSystemException.InvalidRequest.class, () -> registry.requireExistsAndSupports(STANDALONE, null));
+        }
+        
+        @Test
+        void requireExistsAndSupportsRejectsUnsupportedPluginInterface() {
+            // Use custom registry here, as we cannot manipulate the default one after it was built
+            var localRegistry = new ExporterRegistryBean(Map.of("test", new TestPlugin.TestExporter()));
+            var ex = assertThrows(ExportSystemException.InvalidRequest.class, () -> localRegistry.requireExistsAndSupports("test", BulkDatasetExporter.class));
+            assertTrue(ex.getMessage().contains("BulkDatasetExporter"));
+        }
+        
+        @Test
+        void requireExistsAndSupportsPluginInterface() {
+            // Use custom registry here, as we cannot manipulate the default one after it was built
+            var localRegistry = new ExporterRegistryBean(Map.of("test", new TestPlugin.TestExporter()));
+            assertDoesNotThrow(() -> localRegistry.requireExistsAndSupports("test", TestPlugin.class));
         }
         
         @Test
