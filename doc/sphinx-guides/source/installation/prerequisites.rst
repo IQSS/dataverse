@@ -66,10 +66,7 @@ If you intend to install and run Payara under a service account (and we hope you
 - Set service account permissions::
 
 	# chown -R root:root /usr/local/payara7
-	# chown dataverse /usr/local/payara7/glassfish/lib
 	# chown -R dataverse:dataverse /usr/local/payara7/glassfish/domains/domain1
-
-After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
