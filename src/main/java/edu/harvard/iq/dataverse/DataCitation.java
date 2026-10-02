@@ -52,6 +52,7 @@ public class DataCitation {
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
     private List<String> authors = List.of();
+    @JsonbTypeAdapter(CSLNameListAdapter.class)
     private List<CSLName> cslAuthors = List.of();
     private List<String> producers = List.of();
     private String title;
@@ -75,7 +76,7 @@ public class DataCitation {
     private List<String> languages = List.of();
     private List<String> spatialCoverages = List.of();
 
-    private DatasetType type; 
+    private String datasetType;
 
     public enum Format {
         Internal,
@@ -167,7 +168,7 @@ public class DataCitation {
         spatialCoverages = dsv.getSpatialCoverages();
         publisher = getPublisherFrom(dsv);
         version = getVersionFrom(dsv);
-        type = getTypeFrom(dsv);
+        datasetType = getTypeFrom(dsv).getName();
     }
 
     private DatasetType getTypeFrom(DatasetVersion dsv) {
@@ -858,10 +859,10 @@ public class DataCitation {
     }
 
     private void getAuthorsAndProducersFrom(DatasetVersion dsv) {
-        dsv.getDatasetAuthors().stream().forEach((author) -> {
         List<String> authors = new ArrayList<>();
         List<CSLName> cslAuthors = new ArrayList<>();
         
+        dsv.getDatasetAuthors().forEach(author -> {
             if (!author.isEmpty()) {
                 String an = author.getName().getDisplayValue().trim();
                 authors.add(an);
