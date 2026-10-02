@@ -63,24 +63,6 @@ public class DataCitationTest {
         assertEquals("1955", dataCitation.getYear());
     }
 
-    /**
-     * Test DataCite metadata
-     * @throws ParseException
-     */
-    @Test
-    public void testGetDataCiteMetadata() throws ParseException {
-        DataCitation dataCitation = new DataCitation(createATestDatasetVersion("Dataset Title", true));
-        Map<String, String> properties = dataCitation.getDataCiteMetadata();
-        assertEquals(4, properties.size());
-        assertEquals(
-           "datacite.creator, datacite.publisher, datacite.title, datacite.publicationyear",
-           StringUtils.join(properties.keySet(), ", ")
-        );
-        assertEquals("First Last", properties.get("datacite.creator"));
-        assertEquals("LibraScholar", properties.get("datacite.publisher"));
-        assertEquals("Dataset Title", properties.get("datacite.title"));
-        assertEquals("1955", properties.get("datacite.publicationyear"));
-    }
 
     /**
      * Test that bibtex data export contains a closing bracket

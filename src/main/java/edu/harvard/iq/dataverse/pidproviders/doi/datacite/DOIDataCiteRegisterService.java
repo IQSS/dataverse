@@ -7,26 +7,21 @@ package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.text.StringEscapeUtils;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.DoiMetadata;
 import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 
 import org.xmlunit.builder.DiffBuilder;
-import org.xmlunit.builder.Input;
-import org.xmlunit.builder.Input.Builder;
 import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.Difference;
 
@@ -131,7 +126,103 @@ public class DOIDataCiteRegisterService {
 
         return retString;
     }
-    
+
+
+    private static String getPublisherFrom(DatasetVersion dsv) {
+        if (!dsv.getDataset().isHarvested()) {
+            return BrandingUtil.getInstallationBrandName();
+        } else {
+            return dsv.getDistributorName();
+            // remove += [distributor] SEK 8-18-2016
+        }
+    }
+    private static Date getDateFrom(DatasetVersion dsv) {
+        Date citationDate = null;
+
+        if (dsv.getDataset().isHarvested()) {
+            citationDate = DateUtil.parseDate(dsv.getProductionDate());
+            if (citationDate == null) {
+                citationDate = DateUtil.parseDate(dsv.getDistributionDate());
+            }
+        }
+
+        if (citationDate == null) {
+            if (dsv.getCitationDate() != null) {
+                citationDate = dsv.getCitationDate();
+            } else if (dsv.getDataset().getCitationDate() != null) {
+                citationDate = dsv.getDataset().getCitationDate();
+            } else { // for drafts
+                citationDate = dsv.getLastUpdateTime();
+            }
+        }
+
+        if (citationDate == null) {
+            //As a last resort, pick the current date
+            logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
+            citationDate = new Date();
+        }
+        return citationDate;
+    }
+
+    private static String getAuthorsString(DatasetVersion dsv) {
+        List<String> authors = new ArrayList<String>();
+        dsv.getDatasetAuthors().stream().forEach((author) -> {
+            if (!author.isEmpty()) {
+                String an = author.getName().getDisplayValue().trim();
+                authors.add(an);
+            }
+        });
+        return String.join("; ", authors);
+    }
+
+    /**
+     * Builds the basic DataCite metadata required for DOI registration.
+     *
+     * <p>This logic belongs to the DataCite registration flow rather than (here it is was before the refactoring)
+     * {@link DataCitation}, which is responsible for citation rendering.</p>
+     *
+     * @param datasetVersion the dataset version to extract metadata from
+     * @return DataCite metadata keyed by the internal {@code datacite.*} property names
+     */
+    public static Map<String, String> getDataCiteMetadata(DatasetVersion dvObject) {
+        Map<String, String> metadata = new HashMap<>();
+        String authorString = getAuthorsString(dvObject);
+
+        if (authorString== null || authorString.isEmpty()) {
+            authorString = AbstractPidProvider.UNAVAILABLE;
+        }
+        String producerString = getPublisherFrom(dvObject);
+
+        if (producerString== null || producerString.isEmpty()) {
+            producerString =  AbstractPidProvider.UNAVAILABLE;
+        }
+
+        metadata.put("datacite.creator", authorString);
+        metadata.put("datacite.title", dvObject.getTitle());
+        metadata.put("datacite.publisher", producerString);
+        metadata.put("datacite.publicationdate", getDateFrom(dvObject).toInstant().toString());
+        metadata.put("datacite.publicationyear",  new SimpleDateFormat("yyyy").format(getDateFrom(dvObject)));
+        return metadata;
+    }
+
+
+    /**
+     * Generates DataCite XML metadata for the given Dataverse object.
+     *
+     * <p>For datasets, the required DataCite metadata is derived from the latest
+     * dataset version before delegating to the metadata generation logic. Same behavior as before the code move from {@link DataCitation} </p>
+     *
+     * @param identifier the persistent identifier
+     * @param dvObject the Dataverse object to generate metadata for
+     * @return DataCite XML metadata
+     */
+    public static String getMetadataFromDvObject(String identifier, DvObject dvObject) {
+        Map<String, String> metadata = new HashMap<>();
+        if(dvObject.isInstanceofDataset()) {
+            metadata = getDataCiteMetadata( ((Dataset) dvObject).getLatestVersion());
+        }
+        return getMetadataFromDvObject(identifier,metadata, dvObject);
+    }
         public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         Dataset dataset = null;

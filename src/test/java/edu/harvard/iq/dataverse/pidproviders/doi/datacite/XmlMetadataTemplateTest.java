@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -340,8 +339,7 @@ public class XmlMetadataTemplateTest {
         DatasetType dType = new DatasetType();
         dType.setName(DatasetType.DATASET_TYPE_DATASET);
         d.setDatasetType(dType);
-        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
-                new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString() , dv.getDataset());
         assertTrue(xml.contains("valueURI=\"http://keywordTermURI1.org\""));
         assertTrue(xml.contains("valueURI=\"http://keywordTermURI2.org\""));
         try {
@@ -406,8 +404,7 @@ public class XmlMetadataTemplateTest {
         DatasetType dType = new DatasetType();
         dType.setName(DatasetType.DATASET_TYPE_DATASET);
         d.setDatasetType(dType);
-        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
-                new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), dv.getDataset());
         System.out.println("Output from dataset-all-defaults-multiple-geo is " + xml);
         try {
             StreamSource source = new StreamSource(new StringReader(xml));
@@ -492,8 +489,7 @@ public class XmlMetadataTemplateTest {
         dType.setName(DatasetType.DATASET_TYPE_DATASET);
         d.setDatasetType(dType);
         
-        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
-                new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), dv.getDataset());
         
         assertTrue(xml.contains("dateType=\"Collected\">2020-01-01/</date>"));
         assertTrue(xml.contains("dateType=\"Collected\">/2020-02-02</date>"));
