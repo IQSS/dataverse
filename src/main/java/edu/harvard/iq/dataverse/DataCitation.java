@@ -165,7 +165,7 @@ public class DataCitation {
         spatialCoverages = dsv.getSpatialCoverages();
         publisher = getPublisherFrom(dsv);
         version = getVersionFrom(dsv);
-        datasetType = getTypeFrom(dsv).getName();
+        datasetType = Optional.ofNullable(getTypeFrom(dsv)).map(DatasetType::getName).orElse(DatasetType.DEFAULT_DATASET_TYPE);
     }
 
     private DatasetType getTypeFrom(DatasetVersion dsv) {
@@ -718,8 +718,8 @@ public class DataCitation {
         try {
             // Fits most types like dataset, software, review, ...
             itemBuilder.type(CSLType.fromString(datasetType));
-        } catch (IllegalArgumentException e) {
-            // If no match was found, declare as generic "entry"
+        } catch (IllegalArgumentException | NullPointerException e) {
+            // If no match was found or datasetType was null, declare as generic "entry"
             itemBuilder.type(CSLType.ENTRY);
         }
         
