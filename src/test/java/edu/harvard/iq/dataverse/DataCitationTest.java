@@ -37,7 +37,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -225,6 +228,8 @@ class DataCitationTest {
             assertEquals("2024", metadata.get("datacite.publicationyear"));
         }
         
+        String clsIdPattern = "(.*)(-GEN-\\w+)(.*)";
+        
         @Test
         void testToStringDispatchesToTheMatchingWriter() {
             DataCitation c = citation();
@@ -232,7 +237,13 @@ class DataCitationTest {
             assertEquals(c.toRISString(), c.toString(DataCitation.Format.RIS, false, false));
             assertEquals(c.toEndNoteString(), c.toString(DataCitation.Format.EndNote, false, false));
             assertEquals(c.toString(true), c.toString(DataCitation.Format.Internal, true, false));
-            assertEquals(JsonUtil.prettyPrint(c.getCSLJsonFormat()), c.toString(DataCitation.Format.CSL, false, false));
+            
+            // For CSL format, make sure there is the random -GEN-<id> present in both, remove it, then compare for equality
+            String direct = JsonUtil.prettyPrint(c.getCSLJsonFormat());
+            String toString = c.toString(DataCitation.Format.CSL, false, false);
+            assertThat(direct, matchesPattern(Pattern.compile(clsIdPattern, Pattern.DOTALL)));
+            assertThat(toString, matchesPattern(Pattern.compile(clsIdPattern, Pattern.DOTALL)));
+            assertEquals(direct.replaceFirst(clsIdPattern, "$1$3"), direct.replaceFirst(clsIdPattern, "$1$3"));
         }
     }
     
