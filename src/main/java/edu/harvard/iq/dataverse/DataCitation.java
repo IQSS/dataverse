@@ -51,9 +51,9 @@ public class DataCitation {
 
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
-    private List<String> authors = new ArrayList<String>();
-    private List<CSLName> cslAuthors = new ArrayList<CSLName>();
-    private List<String> producers = new ArrayList<String>();
+    private List<String> authors = List.of();
+    private List<CSLName> cslAuthors = List.of();
+    private List<String> producers = List.of();
     private String title;
     private String fileTitle = null;
     private String year;
@@ -63,17 +63,17 @@ public class DataCitation {
     private String UNF = null;
     private String publisher;
     private boolean direct;
-    private List<String> funders;
-    private List<String> seriesTitles;
+    private List<String> funders = List.of();
+    private List<String> seriesTitles = List.of();
     private String description;
-    private List<String> datesOfCollection;
-    private List<String> keywords;
-    private List<String> kindsOfData;
-    private List<String> languages;
-    private List<String> spatialCoverages;
 
     private List<DatasetField> optionalValues = new ArrayList<>();
     private int optionalURLcount = 0;
+    private List<String> datesOfCollection = List.of();
+    private List<String> keywords = List.of();
+    private List<String> kindsOfData = List.of();
+    private List<String> languages = List.of();
+    private List<String> spatialCoverages = List.of();
 
     private DatasetType type; 
 
@@ -858,8 +858,10 @@ public class DataCitation {
     }
 
     private void getAuthorsAndProducersFrom(DatasetVersion dsv) {
-
         dsv.getDatasetAuthors().stream().forEach((author) -> {
+        List<String> authors = new ArrayList<>();
+        List<CSLName> cslAuthors = new ArrayList<>();
+        
             if (!author.isEmpty()) {
                 String an = author.getName().getDisplayValue().trim();
                 authors.add(an);
@@ -879,7 +881,12 @@ public class DataCitation {
                 }
             }
         });
-        producers = dsv.getDatasetProducerNames();
+        
+        // Assign defensive copies for immutability
+        this.authors = List.copyOf(authors);
+        this.cslAuthors = List.copyOf(cslAuthors);
+        
+        this.producers = dsv.getDatasetProducerNames();
     }
 
     private String getPublisherFrom(DatasetVersion dsv) {
