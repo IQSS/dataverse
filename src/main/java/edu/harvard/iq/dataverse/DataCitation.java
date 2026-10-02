@@ -427,7 +427,8 @@ public class DataCitation {
         }
 
         if (persistentId != null) {
-            out.write("DO  - " + persistentId.toString() + "\r\n");
+            out.write("DO  - " + persistentId + "\r\n");
+            out.write("UR  - " + persistentId.asURL() + "\r\n");
         }
         out.write("ET  - " + version + "\r\n");
         for (String keyword : keywords) {

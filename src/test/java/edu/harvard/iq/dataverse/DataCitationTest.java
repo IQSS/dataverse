@@ -218,10 +218,10 @@ public class DataCitationTest {
            "T1  - Dataset Title\r\n" +
            "AU  - First Last\r\n" +
            "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
+           "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
            "ET  - V1\r\n" +
            "PY  - 1955\r\n" +
            "SE  - 1955-11-05 00:00:00.0\r\n" +
-           "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
            "PB  - LibraScholar\r\n" +
            "ER  - \r\n",
            dataCitation.toRISString()
@@ -239,10 +239,10 @@ public class DataCitationTest {
            "TY  - DATA\r\n" +
            "T1  - \r\n" +
            "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
+           "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
            "ET  - V1\r\n" +
            "PY  - 1955\r\n" +
            "SE  - 1955-11-05 00:00:00.0\r\n" +
-           "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
            "PB  - LibraScholar\r\n" +
            "ER  - \r\n",
            dataCitation.toRISString()
