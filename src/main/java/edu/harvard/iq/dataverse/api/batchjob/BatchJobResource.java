@@ -18,8 +18,12 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 
@@ -37,6 +41,10 @@ public class BatchJobResource extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Lists batch jobs",
             description = "Returns JSON containing the execution records for all known batch job instances.")
+    @APIResponse(responseCode = "200", description = "Batch job execution records.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Batch execution records grouped under a jobs array.")))
     public Response listBatchJobs() {
         try {
             final List<JobExecutionEntity> executionEntities = new ArrayList<>();
@@ -63,6 +71,10 @@ public class BatchJobResource extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Lists batch jobs by name",
             description = "Returns JSON containing execution records for batch job instances with the specified job name.")
+    @APIResponse(responseCode = "200", description = "Batch job execution records for the selected job name.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "JSON object containing a jobs array of batch execution records.")))
     public Response listBatchJobsByName(
             @Parameter(description = "Batch job name used to select job instances.", required = true)
             @PathParam("jobName") String jobName) {
@@ -89,6 +101,10 @@ public class BatchJobResource extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns a batch job execution",
             description = "Returns the execution record for the specified batch job execution id as JSON.")
+    @APIResponse(responseCode = "200", description = "Batch job execution record.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "JSON object containing one batch execution record.")))
     public Response listBatchJobById(
             @Parameter(description = "Numeric batch job execution id.", required = true)
             @PathParam("jobId") String jobId) {
