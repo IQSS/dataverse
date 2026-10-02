@@ -27,6 +27,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -428,6 +429,8 @@ public class IndexServiceBean {
      */
     @TransactionAttribute(REQUIRES_NEW)
     public void indexDatasetNow(Long datasetId, boolean doNormalSolrDocCleanUp) throws SolrServerException, IOException {
+        // Indexing only reads: skip the change check over all loaded entities before each query.
+        em.setFlushMode(FlushModeType.COMMIT);
         Dataset dataset = datasetService.find(datasetId);
         if (dataset == null) {
             logger.log(Level.INFO, "Dataset {0} no longer exists, nothing to index", datasetId);
