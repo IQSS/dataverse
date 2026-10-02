@@ -665,24 +665,21 @@ public class Datasets extends AbstractApiBean {
                                      @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                      @Parameter(description = "Whether Make Data Count values are included.") @QueryParam("includeMDC") Boolean includeMDC) {
         Dataset ds;
-        boolean includeMDCResponse = Boolean.TRUE.equals(includeMDC);
-        // Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count
-        LocalDate date = includeMDCResponse ? null : getMDCStartDate();
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             ds = findDatasetUserCanSeeOrDie(datasetId, req);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-
+        // Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count
+        LocalDate date = Boolean.TRUE.equals(includeMDC) ? null : getMDCStartDate();
         JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("id", ds.getId());
         job.add("downloadCount", guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), date));
         if (date != null) {
             job.add("MDCStartDate", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
-        boolean displayMDCMetrics = settingsService.isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, false);
-        if (displayMDCMetrics) {
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, false)) {
             DatasetMetrics metrics = datasetMetricsService.getMetrics(ds); // metrics is never null
             job.add("MDC", JsonPrinter.json(metrics));
         }
