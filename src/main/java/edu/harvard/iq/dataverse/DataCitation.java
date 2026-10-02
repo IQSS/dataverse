@@ -285,7 +285,7 @@ public class DataCitation {
                 .collect(Collectors.joining(separator)));
 
         if ((fileTitle != null) && !isDirect()) {
-            citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
+            citation.append("; ").append(formatString(fileTitle, html, "")).append(" [fileName]");
         }
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
@@ -315,7 +315,7 @@ public class DataCitation {
         try {
             writeAsBibtexCitation(buffer);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Error writing Bibtex citation: ", e);
         }
         //Use UTF-8?
         return buffer.toString();
