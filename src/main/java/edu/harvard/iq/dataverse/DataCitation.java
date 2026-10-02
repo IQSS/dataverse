@@ -59,9 +59,40 @@ import static edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider.HDL
 import static edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider.PERMA_PROTOCOL;
 
 /**
+ * The DataCitation class represents a citation object for datasets and files, offering detailed functionality for
+ * formatting citations in various output formats. It supports metadata retrieval, citation export, and string
+ * formatting for presentation purposes.
  *
- * @author gdurand, qqmyers
+ * @deprecated since 6.13. This class has been around since Dataverse 4.3.1. Today, it suffers from being a POJO
+ * which also
+ * a) serves business logic for DOI registration (getDataCiteMetadata),
+ * b) is a non-configurable and hardcoded way of creating citation formats, and
+ * c) contains mapping logic from a DB entity to it (models are not supposed to do this, that's the job of a mapping service).
+ * <p>
+ * As a consequence, this class shall be gradually replaced by a more flexible, configurable and pluggable solution.
+ * Ideally, citation formats are not recreated on-the-fly, but are created once and then reused from a cache.
+ * This is precisely the functionality provided by the export subsystem. The plan to get there:
+ * <ol>
+ * <li>As the first step, this class is made immutable, no longer holding JPA entity objects.
+ *     This enables clean serialization to JSON, allowing to move a data citation across service border without
+ *     risking thread-safety or consistency issues. (IQSS/dataverse#12747)</li>
+ * <li>As the second step, JSON-serialized DataCitations is made available to any {@link io.gdcc.spi.export.Exporter}.
+ *     The easiest way to do this is by adding it to Dataverse JSON in {@code util.json.JsonPrinter#versionAsJsonForDTO(DatasetVersion,boolean)}.
+ *     Exporters appear to create the citation formats of dataset versions and are usable via the Datasets API.
+ *     (IQSS/dataverse#12747)</li>
+ * <li>As the third step, the business logic for DOI registration moves to that subsystem.</li>
+ * <li>As the fourth step, the creation of citations formats of dataset versions is moved to exporters completely,
+ *     and requires no longer the usage of a serialized DataCitation. This must include implementing mapping the
+ *     metadata in ways it makes it easy for an exporter to consume it. The current Dataverse JSON is not efficient
+ *     to be used for this. Ideally, a data contract is used and the {@code ExportDataProvider} can offer a DTO.
+ *     Eventually, this will allow pluggable exports to fully support citations without parsing the JSON,
+ *     as they have no access to the DataCitation class for deserialization.</li>
+ * <li>As the fifth step, the Exporter subsystem is extended to support the creation of citations formats of files.</li>
+ * <li>As the sixth step, every use of DataCitation is replaced by reaching out to the export subsystem.</li>
+ * <li>As the last step, DataCitation is removed.</li>
+ * </ol>
  */
+@Deprecated(since = "6.13", forRemoval = true)
 @JsonbVisibility(DataCitation.FieldsOnly.class)
 public class DataCitation {
 
