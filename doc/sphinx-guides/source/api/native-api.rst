@@ -3667,8 +3667,9 @@ Usage example:
 Get the Download count of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows the total number of downloads requested for a dataset. If MDC is enabled the count will be limited to the time before MDC start if the optional `includeMDC` parameter is not included or set to False.
-Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count.
+Shows the total number of downloads requested for a dataset. If MDC is enabled (`:MDCStartDate` setting set) the count will be limited to the time before MDC start if the optional `includeMDC` parameter is not included or set to False.
+Setting the setting `:DisplayMDCMetrics` to true will include the specific MDC counts under the JSON object ("MDC":{}).
+Setting the api parameter `includeMDC` to true will ignore the `:MDCStartDate` setting and return a total count and block the MDC counts under the JSON object ("MDC":{}).
 
 .. code-block:: bash
 

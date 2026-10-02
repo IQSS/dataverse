@@ -26,6 +26,8 @@ import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -74,6 +76,9 @@ public class JsonPrinter {
     static DatasetServiceBean datasetService;
 
     @EJB
+    static DatasetExternalCitationsServiceBean datasetExternalCitationsService;
+
+    @EJB
     static MailServiceBean mailService;
 
     @EJB
@@ -88,13 +93,15 @@ public class JsonPrinter {
                                              DatasetServiceBean ds,
                                              MailServiceBean ms,
                                              InAppNotificationsJsonPrinter njp,
-                                             RoleAssigneeServiceBean ras) {
+                                             RoleAssigneeServiceBean ras,
+                                             DatasetExternalCitationsServiceBean ecs) {
             settingsService = ssb;
             datasetFieldService = dfsb;
             datasetService = ds;
             mailService = ms;
             inAppNotificationsJsonPrinter = njp;
             roleAssigneeService = ras;
+            datasetExternalCitationsService = ecs;
     }
 
     public JsonPrinter() {
@@ -1974,5 +1981,12 @@ public class JsonPrinter {
                 .forEach(arrayBuilder::add);
 
         return arrayBuilder;
+    }
+
+    public static JsonObjectBuilder json(DatasetMetrics metrics) {
+        return jsonObjectBuilder()
+                .add("downloadCount", metrics.getDownloadsTotal())
+                .add("viewCount", metrics.getViewsTotal())
+                .add("citations", datasetExternalCitationsService.getDatasetExternalCitationsByDataset(metrics.getDataset()).size()); // List is never null
     }
 }

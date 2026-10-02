@@ -664,27 +664,31 @@ public class Datasets extends AbstractApiBean {
     public Response getDownloadCountByDatasetId(@Context ContainerRequestContext crc,
                                      @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                      @Parameter(description = "Whether Make Data Count values are included.") @QueryParam("includeMDC") Boolean includeMDC) {
-        Long id;
-        Long count;
-        LocalDate date = includeMDC == null || !includeMDC ? getMDCStartDate() : null;
+        Dataset ds;
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset ds = findDatasetUserCanSeeOrDie(datasetId, req);
-            id = ds.getId();
-            count = guestbookResponseService.getDownloadCountByDatasetId(id, date);
+            ds = findDatasetUserCanSeeOrDie(datasetId, req);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        JsonObjectBuilder job = JsonUtil.createObjectBuilder()
-                .add("id", id)
-                .add("downloadCount", count);
+        // Setting `includeMDC` to True will ignore the `:MDCStartDate` setting and return a total count
+        LocalDate date = Boolean.TRUE.equals(includeMDC) ? null : getMDCStartDate();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+        job.add("id", ds.getId());
+        job.add("downloadCount", guestbookResponseService.getDownloadCountByDatasetId(ds.getId(), date));
         if (date != null) {
-            job.add("MDCStartDate" , date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            job.add("MDCStartDate", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, false)) {
+            DatasetMetrics metrics = datasetMetricsService.getMetrics(ds); // metrics is never null
+            job.add("MDC", JsonPrinter.json(metrics));
+        }
+
         return Response.ok(job.build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
+
     private LocalDate getMDCStartDate() {
         String date = settingsService.getValueForKey(SettingsServiceBean.Key.MDCStartDate);
         LocalDate ld=null;
