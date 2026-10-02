@@ -715,13 +715,13 @@ public class DataCitation {
 
     public JsonObject getCSLJsonFormat() {
         CSLItemDataBuilder itemBuilder = new CSLItemDataBuilder();
-        // TODO consider making this a switch
-        if (type.getName().equals(DatasetType.DATASET_TYPE_SOFTWARE)) {
-            itemBuilder.type(CSLType.SOFTWARE);
-        } else if (type.getName().equals(DatasetType.DATASET_TYPE_REVIEW)) {
-            itemBuilder.type(CSLType.REVIEW);
-        } else {
-            itemBuilder.type(CSLType.DATASET);
+        
+        try {
+            // Fits most types like dataset, software, review, ...
+            itemBuilder.type(CSLType.fromString(datasetType));
+        } catch (IllegalArgumentException e) {
+            // If no match was found, declare as generic "entry"
+            itemBuilder.type(CSLType.ENTRY);
         }
         itemBuilder.title(formatString(title,true)).author((CSLName[]) cslAuthors.toArray(new CSLName[0])).issued(Integer.parseInt(year));
         if (seriesTitles != null) {
