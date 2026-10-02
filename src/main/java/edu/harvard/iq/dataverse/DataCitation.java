@@ -83,16 +83,17 @@ public class DataCitation {
         EndNote,
         RIS,
         BibTeX,
-        CSL
-    }
-
-    public static Format getFormat(String name) {
-        for (Format format : Format.values()) {
-            if (format.name().equalsIgnoreCase(name)) {
-                return format;
+        CSL;
+        
+        public static Format lookup(String name) {
+            for (Format format : values()) {
+                if (format.name().equalsIgnoreCase(name)) {
+                    return format;
+                }
             }
+            return null;
         }
-        return null;
+    }
     }
     
     public DataCitation(DatasetVersion dsv) {
