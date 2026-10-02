@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -412,12 +413,16 @@ public class DataCitationTest {
         
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
+        
+        DatasetType datasetType = new DatasetType();
+        datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
 
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("LK0D1H");
         dataset.setOwner(dataverse);
+        dataset.setDatasetType(datasetType);
 
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(dataset);
