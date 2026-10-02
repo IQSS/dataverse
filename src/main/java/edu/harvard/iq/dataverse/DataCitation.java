@@ -22,6 +22,12 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJBException;
 import jakarta.json.JsonObject;
+import jakarta.json.bind.adapter.JsonbAdapter;
+import jakarta.json.bind.annotation.JsonbDateFormat;
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.json.bind.annotation.JsonbVisibility;
+import jakarta.json.bind.config.PropertyVisibilityStrategy;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -30,6 +36,9 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -47,6 +56,7 @@ import static edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider.P
  *
  * @author gdurand, qqmyers
  */
+@JsonbVisibility(DataCitation.FieldsOnly.class)
 public class DataCitation {
 
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
@@ -58,9 +68,11 @@ public class DataCitation {
     private String title;
     private String fileTitle = null;
     private String year;
+    @JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
     private Date date;
     private GlobalId persistentId;
     private String version;
+    @JsonbProperty("unf")
     private String UNF = null;
     private String publisher;
     private boolean direct;
@@ -93,6 +105,9 @@ public class DataCitation {
             return null;
         }
     }
+    
+    /** For JSON-B deserialization only. */
+    protected DataCitation() {
     }
     
     public DataCitation(DatasetVersion dsv) {
@@ -761,7 +776,37 @@ public class DataCitation {
                 type.getFieldType() == DatasetFieldType.FieldType.URL);
         }
     }
-
+    
+    /** Serialize instance fields only, so derived getters are never exposed. */
+    public static final class FieldsOnly implements PropertyVisibilityStrategy {
+        @Override
+        public boolean isVisible(Field field) {
+            return !Modifier.isStatic(field.getModifiers()) && !field.isSynthetic();
+        }
+        
+        @Override
+        public boolean isVisible(Method method) {
+            return false;
+        }
+    }
+    
+    /** Reuses citeproc's CSL JSON mapping for the author list. */
+    public static final class CSLNameListAdapter implements JsonbAdapter<List<CSLName>, List<Map<String, Object>>> {
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<Map<String, Object>> adaptToJson(List<CSLName> names) {
+            return names.stream()
+                // We know from Citeproc's API docs that toJson(MapJsonBuilder) results in a Map<String, Object>
+                .map(name -> (Map<String, Object>) name.toJson(new MapJsonBuilderFactory().createJsonBuilder()))
+                .toList();
+        }
+        
+        @Override
+        public List<CSLName> adaptFromJson(List<Map<String, Object>> json) {
+            return json.stream().map(CSLName::fromJson).toList();
+        }
+    }
+    
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
