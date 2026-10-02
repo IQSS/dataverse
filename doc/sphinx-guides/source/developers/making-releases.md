@@ -317,7 +317,7 @@ This step could be done before publishing the release if you'd like to double ch
 
 ## Test Docker Images
 
-Publishing the release should have trigged the "Container Images Scheduled Maintenance" GitHub Action. Allow it to finish and then go to <https://hub.docker.com/u/gdcc> and navigate to "gdcc/dataverse".
+Publishing the release should have trigged the ["Container Images Scheduled Maintenance" GitHub Action](https://github.com/IQSS/dataverse/actions/workflows/container_maintenance.yml). Allow it to finish and then go to <https://hub.docker.com/u/gdcc> and navigate to "gdcc/dataverse".
 
 Click on "tags" and look at the "latest" tag. Was it just updated? Good! If not, we plan to address this is <https://github.com/IQSS/dataverse/issues/12514> but for now, as a workaround, run the action again. Go to <https://github.com/IQSS/dataverse/actions/workflows/container_maintenance.yml> and click the "run workflow" dropdown. Make sure the branch is set to "develop" and click "run workflow" button.
 
