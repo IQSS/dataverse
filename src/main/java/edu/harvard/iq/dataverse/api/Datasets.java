@@ -670,9 +670,7 @@ public class Datasets extends AbstractApiBean {
         LocalDate date = includeMDCResponse ? null : getMDCStartDate();
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset ds = findDatasetUserCanSeeOrDie(datasetId, req, false);
-            id = ds.getId();
-            count = guestbookResponseService.getDownloadCountByDatasetId(id, date);
+            ds = findDatasetUserCanSeeOrDie(datasetId, req);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
