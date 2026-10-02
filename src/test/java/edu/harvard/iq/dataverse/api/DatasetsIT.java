@@ -6179,6 +6179,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Test metrics with no MDC
         UtilIT.deleteSetting(SettingsServiceBean.Key.MDCStartDate);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.DisplayMDCMetrics);
         Response countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, null);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
@@ -6197,25 +6198,24 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("downloadCount", equalTo(1))
                 .body("MDCStartDate", equalTo(tomorrow))
                 .body("MDC", is(nullValue()));
-        // Test by setting the includeMDC parameter to 'true' (include is true so ignore MDC start date and return total count)
+        // Test by setting the includeMDC parameter to 'true' (include is true so ignore MDC start date and return total count. also DisplayMDCMetrics is not set)
         countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, true);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("downloadCount", equalTo(1))
                 .body("MDCStartDate", is(nullValue()))
-                .body("MDC", not(nullValue()))
-                .body("MDC.downloadCount", equalTo(0))
-                .body("MDC.viewCount", equalTo(0))
-                .body("MDC.citations", equalTo(0));
-        // Test MDC started today (include is false so total count does not include MDC, start date is returned, and count is 0 because the downloads happened after MDC start date)
+                .body("MDC", is(nullValue()));
+        // Test MDC started today (include is false so total count does not include MDC, and count is 0 because the downloads happened after MDC start date)
         UtilIT.setSetting(":MDCStartDate", today);
-        UtilIT.deleteSetting(SettingsServiceBean.Key.DisplayMDCMetrics);
+        UtilIT.setSetting(":DisplayMDCMetrics", "true");
         countResponse = UtilIT.getDownloadCountByDatasetId(datasetId, apiToken2, false);
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("downloadCount", equalTo(0))
-                .body("displayMDCMetrics", is(nullValue()))
-                .body("MDCStartDate", equalTo(today));
+                .body("MDCStartDate", equalTo(today))
+                .body("MDC.downloadCount", equalTo(0))
+                .body("MDC.viewCount", equalTo(0))
+                .body("MDC.citations", equalTo(0));
         // Test MDC started yesterday (include is true so ignore MDC start date and return total count)
         UtilIT.setSetting(":MDCStartDate", lastweek);
         UtilIT.setSetting(":DisplayMDCMetrics", "false");
@@ -6223,8 +6223,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("downloadCount", equalTo(1))
-                .body("displayMDCMetrics", equalTo("false"))
-                .body("MDCStartDate", is(nullValue()));
+                .body("MDCStartDate", is(nullValue()))
+                .body("MDC", is(nullValue()));
     }
 
     @Test
