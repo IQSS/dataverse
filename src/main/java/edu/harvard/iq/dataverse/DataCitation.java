@@ -45,17 +45,6 @@ import static edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider.P
 
 /**
  *
- * This files generates citations for DataSets and DataFiles.
- * Citation can be represented in different formats (INTERN, BIBtex, Endnote, RIS, and so on) See enum Formats
- *
- * This behavior is about to be moved the Export package and work already started for DataSets. So whenever you interact with
- * this class to generate Citation/Citation formats. Please call the ExportService and request the format through that codepath and do not interact with the POJO.
- *
- *  For DataFiles the same should happen, but the Export does not support DataFiles yet. This is an open task.
- *
- *
- * Besides the obvious direct usage to generate Citation for external systems, this POJO is used by Dataset and DatasetVersion to describe themselfs.
-
  * @author gdurand, qqmyers
  */
 public class DataCitation {
