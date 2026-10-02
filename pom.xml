@@ -709,17 +709,17 @@
         <dependency>
             <groupId>de.undercouch</groupId>
             <artifactId>citeproc-java</artifactId>
-            <version>3.1.0</version>
+            <version>3.5.2</version>
         </dependency>
         <dependency>
             <groupId>org.citationstyles</groupId>
             <artifactId>styles</artifactId>
-            <version>24.3</version>
+            <version>26.8</version>
         </dependency>
         <dependency>
             <groupId>org.citationstyles</groupId>
             <artifactId>locales</artifactId>
-            <version>24.3</version>
+            <version>26.8</version>
         </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
