@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
@@ -208,6 +210,12 @@ public class EjbDataverseEngine {
 
     @EJB
     CacheFactoryBean cacheFactory;
+    
+    @EJB
+    ExportServiceBean exportService;
+    
+    @EJB
+    ExporterRegistryBean exporterRegistry;
     
     @Resource
     EJBContext ejbCtxt;
@@ -664,7 +672,17 @@ public class EjbDataverseEngine {
                 public DatasetTypeServiceBean datasetTypes() {
                     return datasetTypeService;
                 }
-
+                
+                @Override
+                public ExportServiceBean exportService() {
+                    return exportService;
+                }
+                
+                @Override
+                public ExporterRegistryBean exporterRegistry() {
+                    return exporterRegistry;
+                }
+                
                 @Override
                 public void beginCommandSequence() {
                     this.commandsCalled = new Stack();
