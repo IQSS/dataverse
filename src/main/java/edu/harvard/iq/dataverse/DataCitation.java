@@ -722,17 +722,24 @@ public class DataCitation {
             // If no match was found, declare as generic "entry"
             itemBuilder.type(CSLType.ENTRY);
         }
-        itemBuilder.title(formatString(title,true)).author((CSLName[]) cslAuthors.toArray(new CSLName[0])).issued(Integer.parseInt(year));
-        if (seriesTitles != null) {
-            itemBuilder.containerTitle(formatString(seriesTitles.get(0), true));
-        }
-        itemBuilder.version(version).DOI(persistentId.asRawIdentifier());
-        if (keywords != null) {
-            itemBuilder
-                    .categories(keywords.stream().map(keyword -> formatString(keyword, true)).toArray(String[]::new));
-        }
-        itemBuilder.abstrct(formatString(description, true)).publisher(formatString(publisher, true))
-                .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
+        
+        itemBuilder
+            .title(formatString(title,true))
+            .author(cslAuthors.toArray(new CSLName[0]))
+            .issued(Integer.parseInt(year))
+            .version(version)
+            .DOI(persistentId.asRawIdentifier())
+            .abstrct(formatString(description, true))
+            .publisher(formatString(publisher, true))
+            .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
+        
+        if (!seriesTitles.isEmpty())
+            itemBuilder.containerTitle(formatString(seriesTitles.getFirst(), true));
+        
+        itemBuilder.categories(keywords.stream()
+                                       .map(keyword -> formatString(keyword, true))
+                                       .toArray(String[]::new)
+        );
         
         // We know from Citeproc's API docs that the result of itemBuilder.build().toJson(MapJsonBuilder) is a Map<String, Object>
         @SuppressWarnings("unchecked")
