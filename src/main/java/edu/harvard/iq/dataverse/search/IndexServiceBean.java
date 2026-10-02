@@ -309,10 +309,13 @@ public class IndexServiceBean {
 
     }
     
+    /**
+     * Indexes right away: batch reindexes go one dataset at a time instead of queueing them all at once.
+     */
     @TransactionAttribute(REQUIRES_NEW)
     public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
-        asyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
+        indexDatasetWithPermit(datasetId, doNormalSolrDocCleanUp);
     }
     
     // Ids of the datasets being indexed asynchronously right now. The value records whether indexing was requested
@@ -398,6 +401,10 @@ public class IndexServiceBean {
 
     @Asynchronous
     public void indexDatasetInBackground(Long datasetId, boolean doNormalSolrDocCleanUp) {
+        indexDatasetWithPermit(datasetId, doNormalSolrDocCleanUp);
+    }
+
+    private void indexDatasetWithPermit(Long datasetId, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
             doAsyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
