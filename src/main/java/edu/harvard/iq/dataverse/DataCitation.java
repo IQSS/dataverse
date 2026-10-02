@@ -10,6 +10,7 @@ import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLNameBuilder;
 import de.undercouch.citeproc.csl.CSLType;
 import de.undercouch.citeproc.helper.json.MapJsonBuilderFactory;
+import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -741,10 +742,12 @@ public class DataCitation {
                                        .toArray(String[]::new)
         );
         
-        // We know from Citeproc's API docs that the result of itemBuilder.build().toJson(MapJsonBuilder) is a Map<String, Object>
+        // We know from Citeproc's API docs that the result of itemBuilder.build().toJson(StringJsonBuilder) is a String.
+        // In addition, we cannot use Citeproc's MapJsonBuilder because it adds JSON-P incompatible types to the resulting map.
+        // As a consequence, CPU cycles must be spent converting to String with citeproc and back with JSON-P.
         @SuppressWarnings("unchecked")
-        Map<String, ?> jsonMap = (Map<String, ?>) itemBuilder.build().toJson((new MapJsonBuilderFactory()).createJsonBuilder());
-        return JsonUtil.createObjectBuilder(jsonMap).build();
+        String json = (String) itemBuilder.build().toJson((new StringJsonBuilderFactory()).createJsonBuilder());
+        return JsonUtil.getJsonObject(json);
     }
 
     /** Optional metadata as displayed when the citation was captured. */
