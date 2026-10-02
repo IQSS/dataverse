@@ -179,6 +179,11 @@ public class DataCitation {
         languages = dsv.getLanguages();
         spatialCoverages = dsv.getSpatialCoverages();
         publisher =dataciteMetadata.get("datacite.publisher");
+        if (publisher == null
+                || publisher.isBlank()
+                || AbstractPidProvider.UNAVAILABLE.equals(publisher)) {
+            publisher=AbstractPidProvider.UNAVAILABLE;
+        }
         producers = dsv.getDatasetProducerNames();
         version = getVersionFrom(dsv);
         type = getTypeFrom(dsv);

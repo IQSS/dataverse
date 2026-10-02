@@ -188,12 +188,12 @@ public class DOIDataCiteRegisterService {
         Map<String, String> metadata = new HashMap<>();
         String authorString = getAuthorsString(dvObject);
 
-        if (authorString.isEmpty()) {
+        if (authorString== null || authorString.isEmpty()) {
             authorString = AbstractPidProvider.UNAVAILABLE;
         }
         String producerString = getPublisherFrom(dvObject);
 
-        if (producerString.isEmpty()) {
+        if (producerString== null || producerString.isEmpty()) {
             producerString =  AbstractPidProvider.UNAVAILABLE;
         }
 
