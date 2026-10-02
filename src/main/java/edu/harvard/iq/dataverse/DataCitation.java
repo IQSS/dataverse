@@ -460,8 +460,6 @@ public class DataCitation {
         out.flush();
     }
 
-    private XMLOutputFactory xmlOutputFactory = null;
-
     public String toEndNoteString() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         writeAsEndNoteCitation(outStream);
@@ -471,7 +469,7 @@ public class DataCitation {
     
     public void writeAsEndNoteCitation(OutputStream os) {
 
-        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
+        XMLOutputFactory xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
         XMLStreamWriter xmlw = null;
         try {
             xmlw = xmlOutputFactory.createXMLStreamWriter(os);
