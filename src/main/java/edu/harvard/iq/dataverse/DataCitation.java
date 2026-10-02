@@ -9,8 +9,7 @@ import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLNameBuilder;
 import de.undercouch.citeproc.csl.CSLType;
-import de.undercouch.citeproc.helper.json.JsonBuilder;
-import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
+import de.undercouch.citeproc.helper.json.MapJsonBuilderFactory;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -734,8 +733,11 @@ public class DataCitation {
         }
         itemBuilder.abstrct(formatString(description, true)).publisher(formatString(publisher, true))
                 .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
-        JsonBuilder b = (new StringJsonBuilderFactory()).createJsonBuilder();
-        return JsonUtil.getJsonObject((String) itemBuilder.build().toJson(b));
+        
+        // We know from Citeproc's API docs that the result of itemBuilder.build().toJson(MapJsonBuilder) is a Map<String, Object>
+        @SuppressWarnings("unchecked")
+        Map<String, ?> jsonMap = (Map<String, ?>) itemBuilder.build().toJson((new MapJsonBuilderFactory()).createJsonBuilder());
+        return JsonUtil.createObjectBuilder(jsonMap).build();
     }
 
     /** Optional metadata as displayed when the citation was captured. */
