@@ -13,6 +13,7 @@ import de.undercouch.citeproc.helper.json.JsonBuilder;
 import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
@@ -29,6 +30,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
@@ -156,11 +158,18 @@ public class DataCitation {
         dataciteMetadata= DOIDataCiteRegisterService.getDataCiteMetadata(dsv);
         getAuthorsAndProducersFrom(dsv);
         authorsString=dataciteMetadata.get("datacite.creator");
-        authors= List.of(authorsString.split("; "));
+        if (authorsString == null
+                || authorsString.isBlank()
+                || AbstractPidProvider.UNAVAILABLE.equals(authorsString)) {
+            authorsString="";
+            authors = List.of();
+        } else {
+            authors = List.of(authorsString.split("; "));
+        }
         funders = dsv.getUniqueGrantAgencyValues();
         kindsOfData = dsv.getKindOfData();
         // publication year
-        date =  Date.from(Instant.parse(dataciteMetadata.get("datacite.publicationdate")));
+        date =  Timestamp.from(Instant.parse(dataciteMetadata.get("datacite.publicationdate")));
         year = dataciteMetadata.get("datacite.publicationyear");
 
         datesOfCollection = dsv.getDatesOfCollection();
