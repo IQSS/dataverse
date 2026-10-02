@@ -141,7 +141,7 @@ for BRANCH in "$@"; do
   NEWER_IMAGE=0
   if (( NEWER_BASE_IMAGE + FIXES_AVAILABLE + FORCE_BUILD > 0 )); then
     if ! (( DRY_RUN )); then
-      # Build the application image, but skip the configbaker image (that's a different job)!
+      # Build the configbaker image, but skip the application image (that's a different job)!
       # shellcheck disable=SC2046
       mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
         -Dapp.skipBuild -Dconf.image.base="${BASE_IMAGE_REF}" \
