@@ -11,12 +11,11 @@ import de.undercouch.citeproc.csl.CSLNameBuilder;
 import de.undercouch.citeproc.csl.CSLType;
 import de.undercouch.citeproc.helper.json.JsonBuilder;
 import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
-import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -32,6 +31,7 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +45,17 @@ import static edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider.P
 
 /**
  *
+ * This files generates citations for DataSets and DataFiles.
+ * Citation can be represented in different formats (INTERN, BIBtex, Endnote, RIS, and so on) See enum Formats
+ *
+ * This behavior is about to be moved the Export package and work already started for DataSets. So whenever you interact with
+ * this class to generate Citation/Citation formats. Please call the ExportService and request the format through that codepath and do not interact with the POJO.
+ *
+ *  For DataFiles the same should happen, but the Export does not support DataFiles yet. This is an open task.
+ *
+ *
+ * Besides the obvious direct usage to generate Citation for external systems, this POJO is used by Dataset and DatasetVersion to describe themselfs.
+
  * @author gdurand, qqmyers
  */
 public class DataCitation {
@@ -52,6 +63,8 @@ public class DataCitation {
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
     private List<String> authors = new ArrayList<String>();
+    private String authorsString;
+    private  Map<String, String> dataciteMetadata = new HashMap<String,String>();
     private List<CSLName> cslAuthors = new ArrayList<CSLName>();
     private List<String> producers = new ArrayList<String>();
     private String title;
@@ -152,20 +165,24 @@ public class DataCitation {
 
     private void getCommonValuesFrom(DatasetVersion dsv) {
 
+        dataciteMetadata= DOIDataCiteRegisterService.getDataCiteMetadata(dsv);
         getAuthorsAndProducersFrom(dsv);
+        authorsString=dataciteMetadata.get("datacite.creator");
+        authors= List.of(authorsString.split("; "));
         funders = dsv.getUniqueGrantAgencyValues();
         kindsOfData = dsv.getKindOfData();
         // publication year
-        date = getDateFrom(dsv);
-        year = new SimpleDateFormat("yyyy").format(date);
+        date =  Date.from(Instant.parse(dataciteMetadata.get("datacite.publicationdate")));
+        year = new SimpleDateFormat("yyyy").format(dataciteMetadata.get("datacite.publicationyear"));
 
         datesOfCollection = dsv.getDatesOfCollection();
-        title = dsv.getTitle();
+        title = dataciteMetadata.get("datacite.title");
         seriesTitles = dsv.getSeriesTitles();
         keywords = dsv.getKeywords();
         languages = dsv.getLanguages();
         spatialCoverages = dsv.getSpatialCoverages();
-        publisher = getPublisherFrom(dsv);
+        publisher =dataciteMetadata.get("datacite.publisher");
+        producers = dsv.getDatasetProducerNames();
         version = getVersionFrom(dsv);
         type = getTypeFrom(dsv);
     }
@@ -176,7 +193,7 @@ public class DataCitation {
 
 
     public String getAuthorsString() {
-        return String.join("; ", authors);
+        return authorsString;
     }
 
     public String getTitle() {
@@ -712,24 +729,14 @@ public class DataCitation {
 
     }
 
+    /**
+     * @deprecated DataCite metadata generation is the responsibility of
+     * {@link DOIDataCiteRegisterService}. Use
+     * {@link DOIDataCiteRegisterService#getDataCiteMetadata(DatasetVersion)} instead.
+     */
+    @Deprecated
 	public Map<String, String> getDataCiteMetadata() {
-        Map<String, String> metadata = new HashMap<>();
-        String authorString = getAuthorsString();
-
-        if (authorString.isEmpty()) {
-            authorString = AbstractPidProvider.UNAVAILABLE;
-    }
-        String producerString = getPublisher();
-
-        if (producerString.isEmpty()) {
-            producerString =  AbstractPidProvider.UNAVAILABLE;
-        }
-
-        metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", getTitle());
-        metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", getYear());
-        return metadata;
+        return dataciteMetadata;
     }
 
     public JsonObject getCSLJsonFormat() {
@@ -829,40 +836,13 @@ public class DataCitation {
         return html;
     }
 
-    private Date getDateFrom(DatasetVersion dsv) {
-        Date citationDate = null;
 
-        if (dsv.getDataset().isHarvested()) {
-            citationDate = DateUtil.parseDate(dsv.getProductionDate());
-            if (citationDate == null) {
-                citationDate = DateUtil.parseDate(dsv.getDistributionDate());
-            }
-        }
-
-        if (citationDate == null) {
-            if (dsv.getCitationDate() != null) {
-                citationDate = dsv.getCitationDate();
-            } else if (dsv.getDataset().getCitationDate() != null) {
-                citationDate = dsv.getDataset().getCitationDate();
-            } else { // for drafts
-                citationDate = dsv.getLastUpdateTime();
-            }
-        }
-
-        if (citationDate == null) {
-            //As a last resort, pick the current date
-            logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
-            citationDate = new Date();
-        }
-        return citationDate;
-    }
 
     private void getAuthorsAndProducersFrom(DatasetVersion dsv) {
 
         dsv.getDatasetAuthors().stream().forEach((author) -> {
             if (!author.isEmpty()) {
                 String an = author.getName().getDisplayValue().trim();
-                authors.add(an);
                 boolean isOrg = "ROR".equals(author.getIdType());
                 JsonObject authorJson = PersonOrOrgUtil.getPersonOrOrganization(an, false, !isOrg);
                 if (!authorJson.getBoolean("isPerson")) {
@@ -879,17 +859,9 @@ public class DataCitation {
                 }
             }
         });
-        producers = dsv.getDatasetProducerNames();
     }
 
-    private String getPublisherFrom(DatasetVersion dsv) {
-        if (!dsv.getDataset().isHarvested()) {
-            return BrandingUtil.getInstallationBrandName();
-        } else {
-            return dsv.getDistributorName();
-            // remove += [distributor] SEK 8-18-2016
-        }
-    }
+
 
     private String getVersionFrom(DatasetVersion dsv) {
         String version = "";
