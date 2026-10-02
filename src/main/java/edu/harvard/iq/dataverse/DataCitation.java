@@ -13,7 +13,6 @@ import de.undercouch.citeproc.helper.json.JsonBuilder;
 import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
-import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
@@ -162,7 +161,7 @@ public class DataCitation {
         kindsOfData = dsv.getKindOfData();
         // publication year
         date =  Date.from(Instant.parse(dataciteMetadata.get("datacite.publicationdate")));
-        year = new SimpleDateFormat("yyyy").format(dataciteMetadata.get("datacite.publicationyear"));
+        year = dataciteMetadata.get("datacite.publicationyear");
 
         datesOfCollection = dsv.getDatesOfCollection();
         title = dataciteMetadata.get("datacite.title");
