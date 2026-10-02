@@ -67,9 +67,8 @@ public class DataCitation {
     private List<String> funders = List.of();
     private List<String> seriesTitles = List.of();
     private String description;
-
-    private List<DatasetField> optionalValues = new ArrayList<>();
-    private int optionalURLcount = 0;
+    
+    private List<OptionalValue> optionalValues = List.of();
     private List<String> datesOfCollection = List.of();
     private List<String> keywords = List.of();
     private List<String> kindsOfData = List.of();
@@ -100,7 +99,6 @@ public class DataCitation {
         this(dsv, false);
     }
 
-
     public DataCitation(DatasetVersion dsv, boolean direct) {
         this.direct = direct;
         getCommonValuesFrom(dsv);
@@ -112,18 +110,17 @@ public class DataCitation {
 
         // UNF
         UNF = dsv.getUNF();
-
-        // optional values
+        
+        // Optional values (citation relevant metadata)
+        List<OptionalValue> optionalValues = new ArrayList<>();
         for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
             DatasetField dsf = dsv.getDatasetField(dsfType);
             if (dsf != null) {
-                optionalValues.add(dsf);
-                
-                if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
-                    optionalURLcount++;
-                }
+                optionalValues.add(OptionalValue.from(dsf));
             }
         }
+        // Save defensive, immutable copy.
+        this.optionalValues = List.copyOf(optionalValues);
     }
     
     public DataCitation(FileMetadata fm) {
@@ -294,18 +291,19 @@ public class DataCitation {
         if (!StringUtils.isEmpty(UNF)) {
             citation.append(separator).append(UNF).append(" [fileUNF]");
         }
-
-        for (DatasetField dsf : optionalValues) {
-            String displayName = dsf.getDatasetFieldType().getDisplayName();
+        
+        long optionalURLcount = optionalValues.stream().filter(OptionalValue::url).count();
+        for (OptionalValue value : optionalValues) {
+            String displayName = value.displayName();
             String displayValue;
             
-            if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
-                displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
+            if (value.url()) {
+                displayValue = formatURL(value.displayValue(), value.displayValue(), html);
                 if (optionalURLcount == 1) {
                     displayName = "URL";
                 }
             } else {
-                displayValue = formatString(dsf.getDisplayValue(), html);
+                displayValue = formatString(value.displayValue(), html);
             }
             citation.append(" [").append(displayName).append(": ").append(displayValue).append("]");
         }
@@ -757,6 +755,18 @@ public class DataCitation {
                 .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
         JsonBuilder b = (new StringJsonBuilderFactory()).createJsonBuilder();
         return JsonUtil.getJsonObject((String) itemBuilder.build().toJson(b));
+    }
+
+    /** Optional metadata as displayed when the citation was captured. */
+    public record OptionalValue(String displayName, String displayValue, boolean url) {
+        public static OptionalValue from(DatasetField field) {
+            Objects.requireNonNull(field, "field");
+            DatasetFieldType type = field.getDatasetFieldType();
+            return new OptionalValue(
+                type.getDisplayName(),
+                field.getDisplayValue(),
+                type.getFieldType() == DatasetFieldType.FieldType.URL);
+        }
     }
 
     // helper methods   
