@@ -123,3 +123,116 @@ jobs:
           path: dataverse-build/
           compression-level: 0
           retention-days: 1
+
+  # =====================================================================
+  # JSF FRONTEND TESTS: one fresh stack per browser
+  # =====================================================================
+  jsf-tests:
+    name: JSF Tests (${{ matrix.browser }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    env:
+      BASE_URL:       "http://localhost:8080"
+      LOGIN_ADAPTER:  "builtin"
+      DV_USERNAME:    "dataverseAdmin"
+      DV_PASSWORD:    "admin1"
+      DV_FULL_NAME:   "Dataverse Admin"
+      ROOT_DATAVERSE: "/dataverse/root"
+      SKIP_PREFLIGHT: "true"
+      LOCALLY_FAIR_ENABLED: "false"
+      DOTENV_CONFIG_QUIET: "true"
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # ---------------------------
+      # START + CONFIGURE DATAVERSE
+      # ---------------------------
+      - name: Start Dataverse stack
+        uses: ./.github/actions/start-dataverse-stack
+
+      # ---------------------------
+      # SETUP NODE.JS
+      # ---------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      # ---------------------------
+      # CHECKOUT dataverse-jsf-tests
+      # ---------------------------
+      - name: Checkout dataverse-jsf-tests
+        uses: actions/checkout@v7
+        with:
+          repository: gdcc/dataverse-jsf-tests
+          path: dataverse-jsf-tests
+
+      - name: Install dataverse-jsf-tests dependencies
+        run: npm ci
+        working-directory: dataverse-jsf-tests
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+        working-directory: dataverse-jsf-tests
+
+      # ---------------------------
+      # RUN PLAYWRIGHT FRONTEND TESTS
+      # ---------------------------
+      # The Playwright projects chain the browsers (chromium -> firefox -> webkit),
+      # so --no-deps is needed to run a single browser. Without dependencies the
+      # setup -> suite ordering is no longer guaranteed, so authentication runs first
+      # as its own invocation. It reports to the console only, so it doesn't
+      # overwrite the HTML report of the test run.
+      - name: Authenticate (${{ matrix.browser }})
+        run: |
+          npx playwright test --no-deps --reporter=list \
+            --project=setup-${{ matrix.browser }} \
+            --project=regression-setup-${{ matrix.browser }}
+        working-directory: dataverse-jsf-tests
+
+      - name: Run Playwright frontend tests (${{ matrix.browser }})
+        run: |
+          npx playwright test --no-deps \
+            --project=suite-${{ matrix.browser }} \
+            --project=regression-${{ matrix.browser }}
+        working-directory: dataverse-jsf-tests
+
+      # ---------------------------
+      # UPLOAD PLAYWRIGHT REPORT
+      # ---------------------------
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: dataverse-jsf-tests/playwright-report/
+          retention-days: 14
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: always()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-jsf-${{ matrix.browser }}
