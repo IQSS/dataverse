@@ -686,18 +686,45 @@ public class Dataset extends DvObjectContainer {
         return 0;
     }
 
+    /**
+     * Returns the citation for the latest dataset version.
+     *
+     * @deprecated Use {@link DatasetVersion#getCitation()} instead.
+     * @return the citation for the latest dataset version
+     */
+    @Deprecated
     public String getCitation() {
         return getCitation(false, getLatestVersion());
     }
 
+    /**
+     * Returns the citation for the given dataset version.
+     *
+     * @deprecated Use {@link DatasetVersion#getCitation()} instead.
+     * @return the citation for the given dataset version
+     */
+    @Deprecated
     public String getCitation(DatasetVersion version) {
         return version.getCitation();
     }
 
+    /**
+     * Returns the citation for the given dataset version.
+     *
+     * @deprecated Use {@link DatasetVersion#getCitation()} instead.
+     * @return the citation for the given dataset version
+     */
+    @Deprecated
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
         return getCitation(isOnlineVersion, version, false);
     }
-    
+    /**
+     * Returns the citation for the given dataset version.
+     *
+     * @deprecated Use {@link DatasetVersion#getCitation()} instead.
+     * @return the citation for the given dataset version
+     */
+    @Deprecated
     public String getCitation(boolean isOnlineVersion, DatasetVersion version, boolean anonymized) {
         return version.getCitation(isOnlineVersion, anonymized);
     }
