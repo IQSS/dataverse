@@ -2,13 +2,13 @@ package edu.harvard.iq.dataverse.export.citation;
 
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DataCitation;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.DatasetExportQuery;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.caps.bulk.BulkDatasetContext;
 import io.gdcc.spi.export.caps.bulk.BulkDatasetExporter;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.bind.Jsonb;
@@ -35,8 +35,8 @@ public class CslExporter implements Exporter, BulkDatasetExporter {
          * In addition, this exporter can be overloaded by a plugin, allowing manipulation of the formatting per instance.
          * See also DataCitation class for the transformation plan details.
          */
-        try (JsonWriter writer = Json.createWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
-             Jsonb jsonb = JsonbBuilder.create()) {
+        try (JsonWriter writer = JsonUtil.createWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+            Jsonb jsonb = JsonbBuilder.create()) {
             JsonObject json = exportDataProvider.getDatasetJson(DatasetExportQuery.defaults());
             
             String citationJson = json.get("datasetVersion").asJsonObject().getString("datacitation");
