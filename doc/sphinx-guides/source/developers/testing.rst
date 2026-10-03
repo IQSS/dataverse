@@ -459,6 +459,8 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 
 GitHub Actions jobs can be found in ``.github/workflows``.
 
+The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Containerized Tests for Dataverse" workflow (``containerized_tests.yml``). It builds the Dataverse containers once in a "Build Containers" job and hands them to jobs that run in parallel: one "JSF Tests" job per browser (Chromium, Firefox and WebKit) and one "Integration Tests" job for the API tests listed in :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>`. Each job starts its own fresh Dataverse installation and uploads its own test report and container logs as artifacts.
+
 As always, pull requests to improve our continuous integration configurations are welcome.
 
 Enhance build time by caching dependencies
@@ -504,7 +506,7 @@ Browser-Based Testing
 Browser-Based Testing of JSF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526).
+The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526). Each browser runs in its own job of the "Containerized Tests for Dataverse" workflow described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782).
 
 Browser-Based Testing of the SPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
