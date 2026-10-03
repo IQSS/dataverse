@@ -236,3 +236,102 @@ jobs:
         uses: ./.github/actions/collect-docker-logs
         with:
           artifact-name: docker-logs-jsf-${{ matrix.browser }}
+
+  # =====================================================================
+  # INTEGRATION TESTS
+  # =====================================================================
+  integration-tests:
+    name: Integration Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # ---------------------------
+      # START + CONFIGURE DATAVERSE
+      # ---------------------------
+      - name: Start Dataverse stack
+        uses: ./.github/actions/start-dataverse-stack
+
+      # ---------------------------
+      # RUN MAVEN INTEGRATION TESTS
+      # ---------------------------
+      - name: Run Maven Integration Tests
+        env:
+          DVAPIKEY: "burrito"
+          DV_APIKEY: "burrito"
+          DV_API_KEY: "burrito"
+        run: |
+          set -euo pipefail
+          TEST_SUITE=$(cat tests/integration-tests.txt)
+
+          echo "Running suite: $TEST_SUITE"
+
+          mvn test \
+            -Dtest="$TEST_SUITE" \
+            -Dmaven.test.failure.ignore=true \
+            -Ddataverse.test.baseurl=http://localhost:8080 \
+            -Ddataverse.test.solr.softcommit.millis=100 \
+            -DcompilerArgument=-Xlint:unchecked
+
+      # ---------------------------
+      # UPLOAD SUREFIRE/FAILSAFE REPORTS
+      # ---------------------------
+      - name: Upload Test Failure Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maven-test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 14
+
+      # ---------------------------
+      # PUBLISH TEST DASHBOARD IN GITHUB PR
+      # ---------------------------
+      - name: Publish Test Results Dashboard
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            target/failsafe-reports/TEST-*.xml
+            target/surefire-reports/TEST-*.xml
+
+      # ---------------------------
+      # FAIL WORKFLOW IF TESTS FAILED
+      # ---------------------------
+      - name: Check for Test Failures
+        if: always()
+        run: |
+          echo "Checking Surefire/Failsafe reports for failures..."
+          if grep -q "<failure" target/surefire-reports/*.xml target/failsafe-reports/*.xml 2>/dev/null; then
+            echo "Tests failed! Failing the workflow."
+            exit 1
+          fi
+          echo "All tests passed."
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: always()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-integration
