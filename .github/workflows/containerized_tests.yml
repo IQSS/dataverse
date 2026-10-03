@@ -103,6 +103,31 @@ jobs:
       # ---------------------------
       # PACKAGE BUILD OUTPUT
       # ---------------------------
+      # Records which code was built, so a failed run can be reproduced locally from the right commit.
+      # On pull requests, GITHUB_SHA is the merge commit of the PR into its base branch, not the PR head.
+      - name: Record build info
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p dataverse-build
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "event=${EVENT_NAME}"
+            echo "ref=${REF}"
+            echo "pr_number=${PR_NUMBER}"
+            echo "pr_head_sha=${PR_HEAD_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "app_image_id=$(docker image inspect --format '{{.Id}}' gdcc/dataverse:unstable)"
+            echo "configbaker_image_id=$(docker image inspect --format '{{.Id}}' gdcc/configbaker:unstable)"
+          } > dataverse-build/build-info.txt
+          cat dataverse-build/build-info.txt
+
       # The base image travels along as layers of the app image, so only these two need saving.
       # docker-compose-dev.yml bind-mounts ./target/dataverse into the app container,
       # so the exploded WAR has to be handed off as well.
