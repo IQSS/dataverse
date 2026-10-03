@@ -116,13 +116,15 @@ jobs:
             | zstd -T0 -3 -o dataverse-build/target-dataverse.tar.zst
           ls -lh dataverse-build/
 
+      # Kept for a week so a failed run can be reproduced locally with the exact same images
+      # (see "Reproducing a CI Failure Locally" in the developer guide).
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
           name: dataverse-build
           path: dataverse-build/
           compression-level: 0
-          retention-days: 1
+          retention-days: 7
 
   # =====================================================================
   # JSF FRONTEND TESTS: one fresh stack per browser
