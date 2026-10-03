@@ -1438,7 +1438,7 @@ public class IndexServiceBean {
 
             AtomicReference<LocalDate> embargoEndDateRef = new AtomicReference<>(null);
             AtomicReference<LocalDate> retentionEndDateRef = new AtomicReference<>(null);
-            final String datasetCitation = (dataset.isReleased() && dataset.getReleasedVersion() != null) ? dataset.getCitation(dataset.getReleasedVersion()) : dataset.getCitation();
+            final String datasetCitation = (dataset.isReleased() && dataset.getReleasedVersion() != null) ? dataset.getReleasedVersion().getCitation() : datasetVersion.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             final String parentTitle = parentDatasetTitle;
