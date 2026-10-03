@@ -190,6 +190,13 @@ RUN <<EOF
     # Disable autodeploy and hot reload
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled="false"
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.autodeploy-enabled="false"
+
+    # Enable Open Telemetry server-wide SDK (does not yet enable processing!)
+    # See also https://docs.azul.com/payara-community/technical-documentation/microprofile/opentelemetry-and-opentracing.html
+    # Please note: the refactored Payara OTel support as of 7.2026.8 seems to be not completely documented
+    ${ASADMIN} set-monitoring-service-configuration --otelenabled=true
+    ${ASADMIN} set-requesttracing-configuration --enabled=true
+
     # Enlarge thread pools
     ${ASADMIN} set server-config.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size="50"
     ${ASADMIN} set server-config.thread-pools.thread-pool.http-thread-pool.max-queue-size=""
