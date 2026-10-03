@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
-import jakarta.json.Json;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.bind.Jsonb;
@@ -91,7 +91,7 @@ class GlobalIdTest {
     }
     
     private static JsonObject parseJson(String json) {
-        try (JsonReader reader = Json.createReader(new StringReader(json))) {
+        try (JsonReader reader = JsonUtil.createReader(new StringReader(json))) {
             return reader.readObject();
         }
     }
@@ -420,7 +420,7 @@ class GlobalIdTest {
             
             @Test
             void readsAllProperties() {
-                String json = Json.createObjectBuilder()
+                String json = JsonUtil.createObjectBuilder()
                     .add(JSON_PROTOCOL, DOI_PROTOCOL)
                     .add(JSON_AUTHORITY, DOI_AUTHORITY)
                     .add(JSON_IDENTIFIER, DOI_IDENTIFIER)
@@ -444,7 +444,7 @@ class GlobalIdTest {
             
             @Test
             void defaultsMissingSeparator() {
-                String json = Json.createObjectBuilder()
+                String json = JsonUtil.createObjectBuilder()
                     .add(JSON_PROTOCOL, DOI_PROTOCOL)
                     .add(JSON_AUTHORITY, DOI_AUTHORITY)
                     .add(JSON_IDENTIFIER, DOI_IDENTIFIER)
@@ -463,7 +463,7 @@ class GlobalIdTest {
             
             @Test
             void defaultsNullSeparator() {
-                String json = Json.createObjectBuilder()
+                String json = JsonUtil.createObjectBuilder()
                     .add(JSON_PROTOCOL, DOI_PROTOCOL)
                     .add(JSON_AUTHORITY, DOI_AUTHORITY)
                     .add(JSON_IDENTIFIER, DOI_IDENTIFIER)
