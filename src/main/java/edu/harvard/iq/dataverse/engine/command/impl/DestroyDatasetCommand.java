@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
-import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -126,13 +126,12 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
 
         // CACHED EXPORTS
-        var exportService = ExportService.getInstance();
         try {
-            exportService.clearAllCachedFormats(managedDoomed);
+            ctxt.exportService().clearAllCachedFormats(managedDoomed);
         }
-        catch (IOException e) {
-            var msg = format("Failed to delete cached exports of {0}: {1} ", managedDoomed.getIdentifier(), e.getClass().getSimpleName());
-            logger.log(Level.WARNING, msg, e.getMessage());
+        catch (ExportSystemException e) {
+            var msg = format("Ignored failure to delete cached exports of {0}: {1} ", managedDoomed.getIdentifier(), e.getClass().getSimpleName());
+            logger.log(Level.WARNING, msg, e);
         }
 
         // DIRECTORY

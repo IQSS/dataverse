@@ -1098,8 +1098,9 @@ public class DatasetVersion implements Serializable {
                     }
                 }
             }
-        }       
-        return retList;        
+        }
+        // Return defensive, immutable list
+        return List.copyOf(retList);
     }
     
     /**
@@ -1144,7 +1145,8 @@ public class DatasetVersion implements Serializable {
                 kod.addAll(dsf.getValues());
             }
         }
-        return kod;
+        // Return defensive, immutable copy
+        return List.copyOf(kod);
     }
     
     /**
@@ -1157,7 +1159,8 @@ public class DatasetVersion implements Serializable {
                 languages.addAll(dsf.getValues());
             }
         }
-        return languages;
+        // Return defensive, immutable list
+        return List.copyOf(languages);
     }
     
         // TODO: consider calling the newer getSpatialCoverages method below with the commaSeparated boolean set to true.
@@ -1200,7 +1203,8 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        return retList;
+        // Return defensive, immutable list
+        return List.copyOf(retList);
     }
  
     public List<String> getSpatialCoverages(boolean commaSeparated) {
@@ -1392,21 +1396,14 @@ public class DatasetVersion implements Serializable {
         // Since only grant agency names are returned, use distinct() to avoid repeats
         // (e.g. if there are two grants from the same agency)
         return getCompoundChildFieldValues(DatasetFieldConstant.grantNumber, DatasetFieldConstant.grantNumberAgency)
-                .stream().distinct().collect(Collectors.toList());
+                .stream().distinct().toList();
     }
 
     /**
      * @return List of Strings containing the version's series title(s)
      */
     public List<String>  getSeriesTitles() {
-
-        List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
-                DatasetFieldConstant.seriesName);
-        if (!seriesNames.isEmpty()) {
-            return seriesNames;
-        } else {
-            return null;
-        }
+        return getCompoundChildFieldValues(DatasetFieldConstant.series, DatasetFieldConstant.seriesName);
     }
 
     /**
@@ -1435,11 +1432,12 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        return keywords;
+        // Return defensive, immutable list
+        return List.copyOf(keywords);
     }
     
     public List<String> getDatasetProducerNames(){
-        List<String> producerNames = new ArrayList<String>();
+        List<String> producerNames = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
@@ -1451,7 +1449,8 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        return producerNames;
+        // Return a defensive copy for immutability
+        return List.copyOf(producerNames);
     }
 
     public String getCitation() {
