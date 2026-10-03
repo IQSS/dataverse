@@ -472,8 +472,10 @@ You will need Docker, Maven, ``zstd`` and the `GitHub CLI <https://cli.github.co
 
 .. code-block:: bash
 
-  git checkout <commit-of-the-failed-run>
   gh run download <run-id> --repo IQSS/dataverse --name dataverse-build --dir /tmp/dataverse-build
+  cat /tmp/dataverse-build/build-info.txt
+  COMMIT=$(grep '^commit=' /tmp/dataverse-build/build-info.txt | cut -d= -f2)
+  git fetch https://github.com/IQSS/dataverse.git "$COMMIT" && git checkout "$COMMIT"
   zstd -dc /tmp/dataverse-build/images.tar.zst | docker load
   mkdir -p target && zstd -dc /tmp/dataverse-build/target-dataverse.tar.zst | tar -C target -xf -
   mvn -Pct docker:start \
@@ -495,6 +497,7 @@ Then run the failing test with the same options as the workflow, for example ``m
 
 Keep in mind:
 
+- ``build-info.txt`` records the commit that was built. For a pull request, that's the merge commit of the pull request into its base branch, which is what CI tests. If GitHub no longer has that merge commit, check out ``pr_head_sha`` instead: the app still runs exactly as in CI, because it comes from the artifact, but the test sources may differ slightly if the base branch has moved since.
 - This reproduces the build, not the state of the failed run. The database, Solr index and files start fresh, just as they did in CI.
 - ``docker load`` replaces any local ``gdcc/dataverse:unstable`` and ``gdcc/configbaker:unstable`` images.
 - The images are built for ``linux/amd64``. On Apple Silicon, Docker Desktop runs them under emulation, so the stack takes longer to start.
