@@ -203,7 +203,7 @@ If this is a regular (non-hotfix) release, create a pull request to merge the "d
 After making the pull request, allow time for important tests pass:
 
 - Unit tests: Maven Tests
-- API tests: Container Integration Tests Workflow
+- API tests: "Integration Tests" job of the Containerized Tests for Dataverse workflow
 - JSF tests: Dataverse JSF Frontend Tests Workflow
 
 Don't worry about style and quality test failures such as these:
@@ -342,7 +342,7 @@ Create a pull request.
 
 Wait for checks to complete. It's ok (even expected) for the following check to fail:
 
-- main-integration-tests-workflow from container_integration_tests.yml
+- Build Containers from containerized_tests.yml (the JSF and integration test jobs that depend on it will be skipped)
 
   - If you see an error like `Error:  DOCKER> Unable to pull 'gdcc/base:6.12-noble-p7.2026.2-j21' : {"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404) [{"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404)]` it's telling you that the Docker image can't be spun up for API testing because it doesn't exist yet. (The error above was just after the 6.11 release.) The image will exist once the pull request is approved and merged.
 
