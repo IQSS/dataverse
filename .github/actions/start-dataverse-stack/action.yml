@@ -1,0 +1,167 @@
+---
+name: "Start Dataverse Stack"
+description: "Load the container images and exploded WAR built by the build job, start the Dataverse stack and configure it for testing."
+inputs:
+  build-artifact:
+    description: "Name of the artifact holding the saved images and the exploded WAR"
+    required: false
+    default: "dataverse-build"
+runs:
+  using: composite
+  steps:
+
+    # ---------------------------
+    # VERIFY DOCKER
+    # ---------------------------
+    - name: Verify Docker
+      shell: bash
+      run: |
+        set -euo pipefail
+        docker version
+
+    # ---------------------------
+    # SETUP JAVA + MAVEN
+    # ---------------------------
+    - name: Setup Java
+      uses: actions/setup-java@v6.0.1
+      with:
+        distribution: "temurin"
+        java-version: "21"
+        cache: "maven"
+
+    - name: Verify Maven
+      shell: bash
+      run: |
+        set -euo pipefail
+        mvn -version
+
+    # ---------------------------
+    # LOAD BUILD OUTPUT
+    # ---------------------------
+    - name: Download build artifact
+      uses: actions/download-artifact@v8
+      with:
+        name: ${{ inputs.build-artifact }}
+        path: ${{ runner.temp }}/dataverse-build
+
+    - name: Load container images
+      shell: bash
+      run: |
+        set -euo pipefail
+        zstd -dc "${{ runner.temp }}/dataverse-build/images.tar.zst" | docker load
+
+    # docker-compose-dev.yml bind-mounts ./target/dataverse over the app inside the image,
+    # so the exploded WAR has to be present on this runner as well.
+    - name: Restore exploded WAR
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p target
+        zstd -dc "${{ runner.temp }}/dataverse-build/target-dataverse.tar.zst" | tar -C target -xf -
+        ls -ld target/dataverse
+
+    # ---------------------------
+    # START CONTAINERS (BACKGROUND)
+    # ---------------------------
+    - name: Start Dataverse stack
+      shell: bash
+      run: |
+        set -euo pipefail
+        mvn -Pct docker:start \
+          -Ddataverse.feature.index-harvested-metadata-source=true \
+          -Ddataverse.oai.server.maxidentifiers=2 \
+          -Ddataverse.oai.server.maxrecords=2 \
+          -Ddataverse.feature.allow-locally-fair-data=true
+
+    # ---------------------------
+    # WAIT FOR API READINESS
+    # ---------------------------
+    - name: Wait for Dataverse API readiness
+      shell: bash
+      run: |
+        set -euo pipefail
+        URL="http://localhost:8080/api/info/version"
+        MAX_ATTEMPTS=10
+        SLEEP_TIME=15
+        echo "Waiting for Dataverse readiness..."
+        for attempt in $(seq 1 $MAX_ATTEMPTS); do
+          echo "Attempt $attempt..."
+          RESPONSE=$(curl -s --max-time 15 "$URL" || true)
+          STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "NOT_READY")
+          if [ "$STATUS" = "OK" ]; then
+            echo "Dataverse endpoint is READY."
+            echo "Waiting 30 more seconds for full readiness..."
+            sleep 30
+            echo "Response: $RESPONSE"
+            exit 0
+          fi
+          echo "Not ready. Sleeping ${SLEEP_TIME}s..."
+          sleep $SLEEP_TIME
+          if [ $SLEEP_TIME -lt 60 ]; then
+            SLEEP_TIME=$((SLEEP_TIME * 2))
+            if [ $SLEEP_TIME -gt 60 ]; then
+              SLEEP_TIME=60
+            fi
+          fi
+        done
+        echo "Dataverse failed to become ready."
+        docker ps
+        CONTAINERS="$(docker ps -aq)"
+        if [ -n "$CONTAINERS" ]; then
+          for cid in $CONTAINERS; do
+            echo "===== Logs for container $cid ====="
+            docker logs "$cid" || true
+          done
+        else
+          echo "No running containers to show logs for."
+        fi
+        exit 1
+
+    # ---------------------------
+    # MAP LOCALSTACK TO LOCALHOST
+    # ---------------------------
+    - name: Map localstack to localhost for Maven tests
+      shell: bash
+      run: echo "127.0.0.1 localstack" | sudo tee -a /etc/hosts
+
+    # ---------------------------
+    # CONFIGURE DATAVERSE FOR TESTS
+    # ---------------------------
+    - name: Configure Dataverse API Settings
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        echo "Setting API Database Settings via internal container curl..."
+
+        # We define the settings in an array
+        declare -A settings=(
+          [":BuiltinUsersKey"]="burrito"
+          [":ProvCollectionEnabled"]="true"
+          [":AllowApiTokenLookupViaApi"]="true"
+          [":AllowSignUp"]="true"
+        )
+        # We run curl INSIDE the container so the source IP is 127.0.0.1
+        for key in "${!settings[@]}"; do
+          echo "Setting $key..."
+          docker exec dev_dataverse curl --fail-with-body -sS -X PUT -d "${settings[$key]}" "http://localhost:8080/api/admin/settings/$key"
+          echo ""
+        done
+
+    # ---------------------------
+    # PRE-TEST INJECTIONS
+    # ---------------------------
+    - name: Put SUSHI config file in place
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        SOURCE_FILE="${{ github.workspace }}/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json"
+
+        echo "Injecting local file into container..."
+        # This reads the local file and writes it inside the container using standard input
+        docker exec -i dev_dataverse sh -c "cat > /tmp/sushi_sample_logs.json" < "$SOURCE_FILE"
+
+        # Verify the content is actually there and has size
+        docker exec dev_dataverse ls -l /tmp/sushi_sample_logs.json
+        docker exec dev_dataverse head -n 5 /tmp/sushi_sample_logs.json
