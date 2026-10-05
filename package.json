@@ -1,7 +1,8 @@
 {
-  "name": "kunai-runner",
+  "name": "dataverse-jsf-tests",
   "version": "1.0.0",
   "description": "High-performance Dataverse Playwright frontend testing framework and E2E automation scaffolding.",
+  "private": true,
   "directories": {
     "doc": "docs",
     "lib": "lib",
@@ -9,10 +10,6 @@
   },
   "scripts": {
     "test": "npx playwright test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/uncch-rdmc/kunai-runner.git"
   },
   "keywords": [
     "playwright",
@@ -23,10 +20,6 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/uncch-rdmc/kunai-runner/issues"
-  },
-  "homepage": "https://github.com/uncch-rdmc/kunai-runner#readme",
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "@types/node": "^26.1.0",

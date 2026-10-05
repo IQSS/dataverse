@@ -7,9 +7,21 @@ This document describes all automated tests for the UNC Dataverse instance from 
 
 ## Test Suite Overview
 
-The test suite is organized into two main categories:
-- Standard Tests (@standard): Tests for the standard UNC Dataverse instance
-- 21 CFR Part 11 Tests (@21cfr): Tests for compliance with FDA regulations for electronic records
+The test suite is organized into three categories, selected via Playwright tags
+(`--grep @tag`) rather than by file number — file numbers reflect the order
+tests were written, not which category they belong to:
+- Standard Tests (`@standard`): Tests for the standard UNC Dataverse instance.
+  Files `01`–`07` and `18`–`22` in `tests/suite/`.
+- 21 CFR Part 11 Tests (`@21cfr`): Tests for compliance with FDA regulations
+  for electronic records. Files `10`–`17` in `tests/suite/`.
+- Regression Tests (`@regression`): Opt-in tests for optional/deployment-specific
+  features. Disabled by default and skipped unless the corresponding `.env`
+  feature flag is set to `true` (see [Section 3](#section-3-regression-tests-opt-in)).
+  Files in `tests/regression/`.
+
+This document groups tests by category (matching the tag), not strictly by
+file number. See [`03_developer_guide.md`](03_developer_guide.md) for how to
+run a single category, a single file, or a single browser.
 
 ---
 
@@ -298,6 +310,167 @@ As a dataverse owner, I need the flexibility to update or replace branding eleme
 
 **User Impact:**
 This test validates that users can iteratively refine their dataverse branding without being locked into initial choices, supporting evolving organizational needs.
+
+---
+
+### Test 07: Dataset Guestbooks
+
+**Test File:** [`07-guestbook.spec.ts`](../tests/suite/07-guestbook.spec.ts)
+
+**Browser Note:** Skipped on WebKit — WebKit does not fire a download event for the CSV response, so the response-verification step cannot run there.
+
+**User Perspective:**
+As a dataverse administrator, I want to collect structured information about who accesses a dataset's files (for grant reporting or audit purposes) via a customizable guestbook, export that data, and remove the guestbook when it's no longer needed.
+
+**What This Test Validates:**
+
+#### Guestbook Creation
+1. Navigation
+   - Navigate to the root dataverse
+   - Click "Edit" → "Dataset Guestbooks" → "Create Dataset Guestbook"
+2. Configuration
+   - Name the guestbook uniquely
+   - Require all four account-info fields: Name, Email, Institution, Position
+   - Add a custom question of type "Multiple Choice" with two options
+     ("Web Search", "Colleague Recommendation")
+   - Save
+
+#### Download All Responses
+- Locate the new guestbook's row in the guestbook list
+- Click its "Download Responses" action
+- A file download is triggered and the suggested filename is non-null
+
+#### Deletion
+- Click the guestbook row's "Delete" action and confirm
+- The guestbook is permanently removed
+
+**User Impact:**
+This test ensures administrators can build custom intake forms for dataset access, export the collected responses for reporting, and clean up guestbooks that are no longer needed — all of which underpin grant-compliance and usage-tracking workflows.
+
+---
+
+### Test 18: File Upload — Non-Ingest Formats
+
+**Test File:** [`18-file-upload-formats.spec.ts`](../tests/suite/18-file-upload-formats.spec.ts)
+
+**User Perspective:**
+As a researcher, I need to deposit heterogeneous file types — documents, code, structured metadata, and archives — into a dataset and trust that Dataverse stores (or, for archives, unpacks) them correctly.
+
+**What This Test Validates:**
+1. A new dataset is created with a unique title
+2. Five files are uploaded in a single batch:
+   - `sample-data.csv`, `demo-document.pdf`, `demo-code.R`, `ro-crate-metadata.json`
+   - `demo-archive.zip` — Dataverse auto-extracts this on upload, so the test
+     checks for its *contents* (`readme.txt`, `data.csv`) rather than the zip itself
+3. After saving, the dataset-creation banner appears (allowed up to 60s, since
+   uploading 5 files takes longer than the default assertion timeout)
+4. Every expected filename appears as a link in the dataset's file table
+
+**User Impact:**
+This test ensures the core "upload arbitrary research artifacts" workflow — the single most common researcher action in Dataverse — works across common non-tabular file types, including the archive auto-extraction feature.
+
+---
+
+### Test 19: File Upload — Tabular Ingest Formats
+
+**Test File:** [`19-file-upload-tabular.spec.ts`](../tests/suite/19-file-upload-tabular.spec.ts)
+
+**User Perspective:**
+As a researcher uploading quantitative data, I need statistics-software file formats to be accepted and correctly processed by Dataverse's tabular ingest pipeline.
+
+**What This Test Validates:**
+1. A new dataset is created with a unique title
+2. Four tabular files that each trigger Dataverse's asynchronous tabular
+   ingest pipeline are uploaded: `.dta` (Stata), `.RData` (R), `.sav` (SPSS), `.xlsx` (Excel)
+3. The dataset-creation banner appears (allowed up to 60s — ingest + save is slow)
+4. Every filename appears in the dataset's file table after ingest completes
+
+This test is intentionally isolated from Test 18 so that a tabular-ingest
+pipeline failure doesn't get masked by, or confused with, a generic upload failure.
+
+**User Impact:**
+This test ensures depositors can upload standard statistical software files and have Dataverse correctly ingest them for downstream reuse (variable-level metadata extraction, format conversion, etc.).
+
+---
+
+### Test 20: Preview URL (Create, Verify, Disable)
+
+**Test File:** [`20-preview-url.spec.ts`](../tests/suite/20-preview-url.spec.ts)
+
+**User Perspective:**
+As a researcher who hasn't published yet, I need to privately share a draft dataset with an external collaborator or reviewer — who has no Dataverse account — and be able to revoke that access afterward.
+
+**What This Test Validates:**
+1. A fresh unpublished dataset with two files is created
+2. From "Edit Dataset" → "Preview URL", a **General Preview URL** is generated;
+   the URL is verified to contain `previewurl.xhtml` and a `token=` parameter
+3. The URL is opened in a brand-new, cookie-less browser context (simulating
+   an external reviewer, since visiting it as the logged-in owner would
+   instead redirect to the normal edit page) — the "Unpublished Dataset
+   Preview URL" banner and explanatory text are verified to render
+4. The preview URL is disabled from the original session, with an explicit
+   "Yes, Disable" confirmation, and the success message is verified
+
+**User Impact:**
+This test ensures the pre-publication sharing workflow — critical for peer review and embargoed collaboration — both grants and reliably revokes external access.
+
+---
+
+### Test 21: Dataset Citation Download (DOI + EndNote + RIS + BibTeX)
+
+**Test File:** [`21-dataset-citation-download.spec.ts`](../tests/suite/21-dataset-citation-download.spec.ts)
+
+**Browser Note:** Skipped on WebKit — WebKit opens the XML/RIS responses inline instead of firing a download event.
+
+**User Perspective:**
+As a researcher, I need a properly formatted, DOI-bearing citation for my dataset in whichever format my collaborators' reference manager expects — even before the dataset is published.
+
+**What This Test Validates:**
+1. A fresh unpublished dataset is created
+2. A `https://doi.org/` DOI is verified to already be present in the citation
+   block pre-publication
+3. The "Cite Dataset" dropdown is opened three times, once per format:
+   - **EndNote XML** — downloaded; content is checked for the XML declaration, `<records>`/`<record>` tags, and a `doi` field
+   - **RIS** — downloaded; content is checked for the `TY  - DATA` type tag, a `DO  - doi:` field, and the `ER  -` end-of-record marker
+   - **BibTeX** — opens in a new browser tab (not a download); content is checked for an `@data` entry, a `doi = {` field, and a `url = {https://doi.org/` field
+
+**User Impact:**
+This test ensures researchers can reliably cite and be cited — a prerequisite for scholarly credit — across the three reference-manager formats Dataverse supports.
+
+---
+
+### Test 22: Dataset & File Permissions Management
+
+**Test File:** [`22-dataset-permissions.spec.ts`](../tests/suite/22-dataset-permissions.spec.ts)
+
+Translated from QDR's `test_dataset_permissions.py`. Runs as a
+`test.describe.serial` block of four ordered sub-tests sharing one dataset,
+which is created once in `beforeAll` (or, if the `PERMISSIONS_DATASET_PID`
+environment variable is set, reused from an existing dataset instead of being
+created and deleted) and torn down in `afterAll`.
+
+**User Perspective:**
+As a dataverse administrator, I need to grant and revoke role-based access to a specific dataset — and confirm the permissions UI itself is reachable — so I can control who can view, curate, or manage restricted research data.
+
+**What This Test Validates:**
+1. **Permissions page loads** — the dataset's "Permissions" page renders with
+   an "Assign Roles" control and an existing-roles table
+2. **Assign Curator role** — the `:authenticated-users` group is granted the
+   "Curator" role, and the assignment is verified in the roles table
+3. **Remove Curator role** — that same role assignment is removed, and its
+   absence is verified in the roles table
+4. **File permissions page loads** — the dataset's file-level permissions
+   page (`permissions-manage-files.xhtml`) renders with the same "Assign
+   Roles" control
+
+**Known gap:** the file's own header comment describes six sub-tests,
+including granting and revoking *file-level* access (its listed steps 5–6).
+Only the four sub-tests above are actually implemented — file-level grant/revoke
+is documented in the comment but not yet automated. Treat this test as covering
+dataset-level permissions plus a page-load smoke test for file-level permissions.
+
+**User Impact:**
+This test ensures the core access-control workflow works — critical for datasets containing sensitive or restricted data where the wrong permission state is a compliance risk.
 
 ---
 
@@ -618,36 +791,101 @@ This test ensures users can successfully download dataset files, which is fundam
 
 ---
 
+## Section 3: Regression Tests (Opt-In)
+
+These tests live in `tests/regression/` (a separate `testDir` from the main
+suite) and guard against specific past regressions on deployment-specific,
+*optional* Dataverse features. Both are **skipped by default** — each checks
+its own `.env` feature flag at the top of the test and calls `test.skip(...)`
+when the flag isn't `"true"`. See
+[`03_developer_guide.md`](03_developer_guide.md) for how to run them.
+
+### Regression 1: Dataset Creation with Default Custom License
+
+**Test File:** [`dataset-creation-default-custom-license.spec.ts`](../tests/regression/dataset-creation-default-custom-license.spec.ts)
+
+**Feature Flag:** `CUSTOM_LICENSE_ENABLED=true` (skipped otherwise)
+
+**User Perspective:**
+As a dataverse administrator who requires every dataset in my collection to carry specific custom legal terms — rather than one of Dataverse's standard licenses — I need to configure that once, as a default template, and have it apply automatically to every new dataset without depositors having to remember to set it themselves.
+
+**What This Test Validates:**
+1. A dataset template is created with a **custom** "Terms of Use" ("All Rights Reserved") instead of a standard license
+2. The template is set as the collection's default template
+3. A brand-new dataset is created with no manually-entered metadata or license
+4. The new dataset is verified to automatically inherit both the template's title and its custom terms text (on the dataset's Terms tab)
+5. The default template is unset, restoring the collection to its prior state
+
+**User Impact:**
+Guards against a regression where a default template's custom license terms failed to propagate to newly created datasets — which would silently leave datasets under the wrong legal terms.
+
+---
+
+### Regression 2: Dataset Download in a Locally FAIR Dataverse
+
+**Test File:** [`dataset-download-locally-fair.spec.ts`](../tests/regression/dataset-download-locally-fair.spec.ts)
+
+**Feature Flag:** `LOCALLY_FAIR_ENABLED=true` (skipped otherwise)
+
+**Known blocker:** per [`docs/backlog.md`](backlog.md), Locally FAIR is not enabled on the standard Docker deployment used by Dataverse's own GitHub Actions CI, so this test fails at the contact-autocomplete step on that target. It is only meaningful against a deployment where the feature is actually enabled.
+
+**User Perspective:**
+As an administrator of a "Locally FAIR" dataverse (a UNC-specific contact/compliance feature), I need to confirm that basic dataset file download still works for collections using this feature.
+
+**What This Test Validates:**
+1. A new child dataverse is created with its "Locally FAIR" contact-assignment field populated (using `DV_USERNAME` as the contact)
+2. A dataset with two files is created inside that dataverse
+3. All files are selected and Download is clicked
+4. The resulting downloaded filename is verified to be non-null and non-empty (a zip, since two or more files were selected)
+
+**User Impact:**
+Guards against a regression where enabling Locally FAIR on a collection broke the standard multi-file download flow.
+
+---
+
 ## Test Coverage Summary
 
-### Standard Instance Tests (6 tests)
+### Standard Instance Tests — `@standard` (12 test files)
 1. Preflight health checks (navigation, branding, links)
 2. Account management (profile, notifications, API tokens)
 3. Dataverse creation and configuration
 4. Dataverse publishing
-5. Theme and branding customization
-6. Theme modification and updates
+5. Theme and branding customization (initial setup)
+6. Theme modification and updates (remove/re-upload)
+7. Dataset guestbooks (create, download responses, delete)
+18. File upload — non-ingest formats (csv, zip, pdf, R, json)
+19. File upload — tabular ingest formats (dta, RData, sav, xlsx)
+20. Preview URL (create, verify, disable)
+21. Dataset citation download (DOI, EndNote, RIS, BibTeX)
+22. Dataset & file permissions management (4 sub-tests)
 
-### 21 CFR Part 11 Compliance Tests (8 test files, 17 sub-tests)
-7. Role assignment and revocation
-8. Metadata template creation (Sub-test 11.1)
-9. Metadata template editing (Sub-test 11.2)
-10. Metadata template deletion (Sub-test 11.3)
-11. Dataverse collection creation (Sub-test 12.1)
-12. Dataverse collection deletion (Sub-test 12.2)
-13. Dataset creation with metadata and file upload (Sub-test 13.1)
-14. Dataset metadata editing (Sub-test 13.2)
-15. File metadata editing (Sub-test 13.3)
-16. File replacement with versioning (Sub-test 13.4)
-17. Dataset publishing (Sub-test 13.5)
-18. Dataset browsing, sorting, and filtering
-19. Basic search (Sub-test 15.1)
-20. Advanced search (Sub-test 15.2)
-21. Version history tracking
-22. File downloads
+### 21 CFR Part 11 Compliance Tests — `@21cfr` (8 test files, 17 sub-tests)
+10. Role assignment and revocation
+11. Metadata template creation (Sub-test 11.1)
+12. Metadata template editing (Sub-test 11.2)
+13. Metadata template deletion (Sub-test 11.3)
+14. Dataverse collection creation (Sub-test 12.1)
+15. Dataverse collection deletion (Sub-test 12.2)
+16. Dataset creation with metadata and file upload (Sub-test 13.1)
+17. Dataset metadata editing (Sub-test 13.2)
+18. File metadata editing (Sub-test 13.3)
+19. File replacement with versioning (Sub-test 13.4)
+20. Dataset publishing (Sub-test 13.5)
+21. Dataset browsing, sorting, and filtering
+22. Basic search (Sub-test 15.1)
+23. Advanced search (Sub-test 15.2)
+24. Version history tracking
+25. File downloads
 
-**Total Test Files: 14**
-**Total Test Validations: 23**
+### Regression Tests — `@regression`, opt-in (2 test files)
+26. Dataset creation with default custom license (`CUSTOM_LICENSE_ENABLED=true`)
+27. Dataset download in a Locally FAIR dataverse (`LOCALLY_FAIR_ENABLED=true`)
+
+**Total Test Files: 22** (20 in `tests/suite/`, 2 in `tests/regression/`)
+
+For coverage still missing relative to the full UNC 2026 test checklist, see
+the project's `secure_docs/` checklist and [`backlog.md`](backlog.md) for
+items that are deferred or ruled out as not automatable.
 
 ---
 
