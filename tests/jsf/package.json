@@ -1,0 +1,32 @@
+{
+  "name": "dataverse-jsf-tests",
+  "version": "1.0.0",
+  "description": "High-performance Dataverse Playwright frontend testing framework and E2E automation scaffolding.",
+  "private": true,
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "npx playwright test"
+  },
+  "keywords": [
+    "playwright",
+    "dataverse",
+    "e2e",
+    "testing"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "dotenv": "^17.4.2"
+  }
+}

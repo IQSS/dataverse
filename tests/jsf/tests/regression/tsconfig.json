@@ -1,0 +1,10 @@
+{
+  /**
+   * Regression suite TypeScript config.
+   */
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "baseUrl": "../.."
+  }
+}

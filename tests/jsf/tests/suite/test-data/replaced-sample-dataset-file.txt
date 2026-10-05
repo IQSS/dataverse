@@ -1,0 +1,7 @@
+This is a REPLACED sample dataset file used by Playwright to test and generate datasets.
+
+You can verify the MD5 of this file as needed using node.js crypto. It is recommended NOT to use MD5 due to collision vulnerabilities.
+
+Going forward, you may prefer to use SHA3-384 or SHA3-512 or Argon2id.
+
+Please refer to the latest NIST requirements about hashing.
