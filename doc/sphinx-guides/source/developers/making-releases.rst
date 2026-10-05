@@ -72,8 +72,6 @@ The benefits of the code freeze are:
 
 In short, the steps described below become easier under a code freeze.
 
-Note: for a hotfix, a code freeze is necessary not because we want code to stop changing in the branch being hotfix released, but because bumping the version used in Jenkins/Ansible means that API tests will fail in pull requests until the version is bumped in those pull requests. Basically, we want to get the hotfix merged quickly so we can propagate the version bump into all open pull requests so that API tests can start passing again in those pull requests.
-
 Push Back Milestones on Pull Requests That Missed the Train
 -----------------------------------------------------------
 
@@ -148,17 +146,10 @@ Regression testing should be conducted on production data.
 Build the Guides for the Release Candidate
 ------------------------------------------
 
-Go to https://jenkins.dataverse.org/job/guides.dataverse.org/ and make the following adjustments to the config:
+Jenkins is now turned off. For the short term, throw something at Don and he can build/push the guides onto guides.dataverse.org.
 
 - Repository URL: ``https://github.com/IQSS/dataverse.git``
 - Branch Specifier (blank for 'any'): ``*/develop``
-- ``VERSION`` (under "Build Steps"): use the next release version but add "-rc.1" to the end. Don't prepend a "v". Use ``6.8-rc.1`` (for example)
-
-Click "Save" then "Build Now".
-
-Make sure the guides directory appears in the expected location such as https://guides.dataverse.org/en/6.8-rc.1/
-
-When previewing the HTML version of docs from pull requests, we don't usually use this Jenkins job, relying instead on automated ReadTheDocs builds. The reason for doing this step now while we wait for feedback from the Curation Team is that it's an excellent time to fix the Jenkins job, if necessary, to accommodate any changes needed to continue to build the docs. For example, Sphinx might need to be updated or a dependency might need to be installed. Such changes should be listed in the release notes for documentation writers.
 
 Deploy Release Candidate to Demo
 --------------------------------
@@ -210,11 +201,7 @@ When testing the version change in Docker note that you will have to build the b
 
 (Before you make this change the value should be ``${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}``. Later on, after cutting a release, we'll change it back to that value.)
 
-For a regular release, make the changes above in the release branch you created, but hold off for a moment on making a pull request because Jenkins will fail because it will be testing the previous release.
-
-In the dataverse-ansible repo bump the version in `jenkins.yml <https://github.com/gdcc/dataverse-ansible/blob/develop/tests/group_vars/jenkins.yml>`_ and make a pull request such as https://github.com/gdcc/dataverse-ansible/pull/386. Wait for it to be merged. Note that bumping on the Jenkins side like this will mean that all pull requests will show failures in Jenkins until they are updated to the version we are releasing.
-
-Once dataverse-ansible has been merged, return to the branch you created above ("10852-bump-to-6.4" or whatever) and make a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
+For a regular release, make the changes above in the release branch you created, and submit a pull request. Ensure that all tests are passing and then put the PR through the normal review and QA process.
 
 If you are making a hotfix release, ``<base.image.version>`` should already be set to ``${revision}``. If so, leave it alone. Go ahead and do the normal bumping of version numbers described above. Make the pull request against the "master" branch. Put it through review and QA. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
 
@@ -255,13 +242,8 @@ Check for merged pull requests that have no milestone by going to https://github
 Build the Guides for the Release
 --------------------------------
 
-Go to https://jenkins.dataverse.org/job/guides.dataverse.org/ and make the following adjustments to the config:
-
 - Repository URL: ``https://github.com/IQSS/dataverse.git``
 - Branch Specifier (blank for 'any'): ``*/master``
-- ``VERSION`` (under "Build Steps"): bump to the next release. Don't prepend a "v". Use ``6.10.1`` (for example)
-
-Click "Save" then "Build Now".
 
 Make sure the guides directory appears in the expected location such as https://guides.dataverse.org/en/6.10.1/
 
@@ -327,7 +309,7 @@ Click the "Publish release" button.
 Update Guides Link
 ------------------
 
-"latest" at https://guides.dataverse.org/en/latest/ is a symlink to the directory with the latest release. That directory (e.g. ``6.10.1``) was put into place by the Jenkins "guides" job described above.
+"latest" at https://guides.dataverse.org/en/latest/ is a symlink to the directory with the latest release.
 
 ssh into the guides server and update the symlink to point to the latest release, as in the example below.
 
