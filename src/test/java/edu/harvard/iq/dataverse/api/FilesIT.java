@@ -32,6 +32,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,10 +44,12 @@ import java.text.MessageFormat;
 import java.time.Year;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import static io.restassured.RestAssured.get;
+import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
@@ -3939,7 +3944,7 @@ public class FilesIT {
     }
 
     @Test
-    public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException {
+    public void testDownloadFileWithGuestbookResponse() throws IOException, JsonParseException, URISyntaxException {
         msgt("testDownloadFileWithGuestbookResponse");
         // Create superuser
         Response createUserResponse = UtilIT.createRandomUser();
@@ -4100,6 +4105,7 @@ public class FilesIT {
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
+        String fileId1GuestbookResponseId = UtilIT.getQueryParamValue(signedUrl, "gbrids");
 
         // Verify that the Guestbook Response is persisted
         Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
@@ -4201,6 +4207,15 @@ public class FilesIT {
         // verify all counts are good and equal
         assertEquals(totalCount, pagedTotalCount);
         assertEquals(pagedTotalCount, totalCountFromJson);
+
+        // Test External Tool preview/download (The actual download must be tested manually since we can't click the download button)
+        String toolId = UtilIT.getToolId(ownerApiToken,"image/png");
+        Response toolResponse = UtilIT.getFileToolUrl(fileId1.toString(), toolId, apiToken, null, Long.parseLong(fileId1GuestbookResponseId));
+        toolResponse.prettyPrint();
+        jsonPath = JsonPath.from(toolResponse.body().asString());
+        signedUrl = jsonPath.getString("data.toolUrl");
+        Response callbackResponse = given().get(signedUrl);
+        assertTrue(callbackResponse.prettyPrint().contains("imagePreviewText"));
     }
 
     @Test
