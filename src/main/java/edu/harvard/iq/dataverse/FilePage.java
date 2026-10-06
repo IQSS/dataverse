@@ -1163,7 +1163,7 @@ public class FilePage implements java.io.Serializable {
         if(externalTool == null){
             return "";
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode());
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode(), null);
         String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
         return toolUrl;
     }

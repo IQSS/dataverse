@@ -6338,6 +6338,7 @@ Get File External Tool URL
 This API call generates a URL for accessing an external tool (see :doc:`/installation/external-tools`) that operates at the file level. The URL includes necessary authentication tokens and parameters based on the user's permissions and the tool's configuration.
 
 Authentication is required for draft, restricted, embargoed, or expired (retention period) files; the user must have appropriate permissions.
+Where a Guestbook Response is required to access the file an optional query parameter(``guestbookresponseid=``) can be passed to allow the user to download the file from the external tool.
 
 .. code-block:: bash
 
@@ -6346,7 +6347,7 @@ Authentication is required for draft, restricted, embargoed, or expired (retenti
   export FILE_ID=42
   export TOOL_ID=3
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/$FILE_ID/externalTool/$TOOL_ID/toolUrl" \
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/$FILE_ID/externalTool/$TOOL_ID/toolUrl \
   -H "Content-Type: application/json" \
   -d '{"preview": false, "locale": "en"}'
 
@@ -6354,7 +6355,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/42/externalTool/3/toolUrl" \
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/42/externalTool/3/toolUrl?guestbookresponseid=13" \
   -H "Content-Type: application/json" \
   -d '{"preview": false, "locale": "en"}'
 
