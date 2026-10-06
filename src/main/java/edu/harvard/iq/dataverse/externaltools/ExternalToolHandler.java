@@ -53,9 +53,10 @@ public class ExternalToolHandler extends URLTokenUtil {
      *                     used anonymously.
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken,
-            FileMetadata fileMetadata, String localeCode) {
+            FileMetadata fileMetadata, String localeCode, Long guestbookResponseId) {
         super(dataFile, apiToken, fileMetadata, localeCode);
         this.externalTool = externalTool;
+        this.externalTool.setGuestbookResponseId(guestbookResponseId);
     }
 
     /**
@@ -108,6 +109,9 @@ public class ExternalToolHandler extends URLTokenUtil {
                     callback= SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
                             + dataFile.getId() + "/metadata/" + fileMetadata.getId() + "/toolparams/"
                             + externalTool.getId();
+                    if (externalTool.getGuestbookResponseId() != null) {
+                        callback += "?guestbookResponseId="  + externalTool.getGuestbookResponseId();
+                    }
                 }
                 if (apiToken != null) {
                     callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),

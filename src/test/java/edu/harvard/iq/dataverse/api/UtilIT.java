@@ -35,6 +35,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +46,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -5529,15 +5533,35 @@ public class UtilIT {
      * @return Response from the API
      */
     public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params) {
+        return getFileToolUrl(fileId, toolId, apiToken, params, null);
+    }
+        public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params, Long guestbookResponseId) {
         RequestSpecification request = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.JSON);
-        
+        if (apiToken != null) {
+            request.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (params != null) {
             request = request.body(params.toString());
         }
+        if (guestbookResponseId != null) {
+            request.queryParam("guestbookResponseId", guestbookResponseId);
+        }
         
         return request.post("/api/files/" + fileId + "/externalTool/" + toolId + "/toolUrl");
+    }
+
+    public static String getToolId(String apiToken, String contentType) {
+        String toolId = null;
+        Response tools = getExternalTools(apiToken);
+        List<String> data = tools.body().path("data");
+        for (int i=0; i < data.size(); i++) {
+            if (contentType.equals(tools.body().path("data[" + i + "].contentType"))) {
+                toolId = tools.body().path("data[" + i + "].id").toString();
+                break;
+            }
+        }
+        return toolId;
     }
 
     /**
@@ -5677,5 +5701,18 @@ public class UtilIT {
                 .replace("@QID2", cqIDs.get(1).toString())
                 .replace("@QID3", cqIDs.get(2).toString())
                 .replace("@QID4", cqIDs.get(3).toString());
+    }
+
+    // Return the value for a key in the query parameters of the given url
+    public static String getQueryParamValue(String url, String key) throws URISyntaxException {
+        URI uri = new URI(url);
+        String query = uri.getQuery();
+        Map<String, String> queryMap = Arrays.stream(query.split("&"))
+                .map(param -> param.split("=", 2))
+                .collect(Collectors.toMap(
+                        parts -> URLDecoder.decode(parts[0], StandardCharsets.UTF_8),
+                        parts -> parts.length > 1 ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8) : ""
+                ));
+        return queryMap.get(key);
     }
 }
