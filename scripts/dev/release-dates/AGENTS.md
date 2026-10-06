@@ -4,11 +4,15 @@
 - Code Freeze starts on the Thursday prior.
 - Core PR Last Call starts on the Thursday prior.
 - Community PR Last Call starts on the Thursday prior.
+- Review Priorities on the Thursday prior.
 - Start starts three months before the Release Date, on a Thursday. It's ok to put "??" for the sprint number.
+- Define Release two weeks before start.
 
 Here's some example output:
 
+- Define Release: 2026-03-12
 - Start: Sprint ??, 2026-03-26
+- Review Priorities: 2026-05-14
 - Community PR Last Call: 2026-05-21
 - Core PR Last Call: 2026-05-28
 - Code Freeze: 2026-06-04
