@@ -11,7 +11,7 @@ public class TermsOfUseAndAccessTest {
         License license = new License();
         license.setName("CC0");
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense terms = new TermsOfUseOrLicense();
 
         // 1. Setting license should clear terms
         terms.setTermsOfUse("Some terms");
@@ -39,15 +39,15 @@ public class TermsOfUseAndAccessTest {
         License license = new License();
         license.setName("CC0");
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense terms = new TermsOfUseOrLicense();
         terms.setLicense(license);
 
-        TermsOfUseAndAccess copy = terms.copyTermsOfUseAndAccess();
+        TermsOfUseOrLicense copy = terms.copyTermsOfUseOrLicense();
         assertEquals(license, copy.getLicense());
         assertNull(copy.getTermsOfUse());
 
         terms.setTermsOfUse("Some terms");
-        TermsOfUseAndAccess copy2 = terms.copyTermsOfUseAndAccess();
+        TermsOfUseOrLicense copy2 = terms.copyTermsOfUseOrLicense();
         assertNull(copy2.getLicense());
         assertEquals("Some terms", copy2.getTermsOfUse());
     }

@@ -36,7 +36,8 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
-        datasetVersion.getTermsOfUseAndAccess().setDatasetVersion(datasetVersion);
+        datasetVersion.getTermsOfUseOrLicense().setDatasetVersion(datasetVersion);
+        datasetVersion.getTermsOfAccess().setDatasetVersion(datasetVersion);
 
         String validationErrors = ctxt.datasetFieldsValidator().validateFields(updatedFields, datasetVersion);
         if (!validationErrors.isEmpty()) {

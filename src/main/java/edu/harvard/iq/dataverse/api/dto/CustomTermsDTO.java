@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(description = "Custom dataset terms of access payload, including use terms, restrictions, citation requirements, conditions, and disclaimer text.")
@@ -78,16 +78,16 @@ public class CustomTermsDTO {
         this.disclaimer = disclaimer;
     }
 
-    public TermsOfUseAndAccess toTermsOfUseAndAccess() {
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        termsOfUseAndAccess.setTermsOfUse(termsOfUse);
-        termsOfUseAndAccess.setConfidentialityDeclaration(confidentialityDeclaration);
-        termsOfUseAndAccess.setSpecialPermissions(specialPermissions);
-        termsOfUseAndAccess.setRestrictions(restrictions);
-        termsOfUseAndAccess.setCitationRequirements(citationRequirements);
-        termsOfUseAndAccess.setDepositorRequirements(depositorRequirements);
-        termsOfUseAndAccess.setConditions(conditions);
-        termsOfUseAndAccess.setDisclaimer(disclaimer);
-        return termsOfUseAndAccess;
+    public TermsOfUseOrLicense toTermsOfUseOrLicense() {
+        TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+        termsOfUseOrLicense.setTermsOfUse(termsOfUse);
+        termsOfUseOrLicense.setConfidentialityDeclaration(confidentialityDeclaration);
+        termsOfUseOrLicense.setSpecialPermissions(specialPermissions);
+        termsOfUseOrLicense.setRestrictions(restrictions);
+        termsOfUseOrLicense.setCitationRequirements(citationRequirements);
+        termsOfUseOrLicense.setDepositorRequirements(depositorRequirements);
+        termsOfUseOrLicense.setConditions(conditions);
+        termsOfUseOrLicense.setDisclaimer(disclaimer);
+        return termsOfUseOrLicense;
     }
 }

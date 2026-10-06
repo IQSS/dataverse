@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.pidproviders.doi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -27,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.ocpsoft.common.util.Strings;
@@ -1277,10 +1279,13 @@ public class XmlMetadataTemplate {
             dv = df.getOwner().getLatestVersionForCopy();
 
             closed = df.isRestricted();
+        } else {
+            var msg = "Expected Dataset or DataFile but got " + dvObject.getClass().getName();
+            logger.warning(msg);
+            throw new RuntimeException(msg);
         }
-        TermsOfUseAndAccess terms = dv.getTermsOfUseAndAccess();
-        boolean requestsAllowed = terms.isFileAccessRequest();
-        License license = terms.getLicense();
+        boolean requestsAllowed = dv.getTermsOfAccess().isFileAccessRequest();
+        License license = dv.getTermsOfUseOrLicense().getLicense();
 
         if (requestsAllowed && closed) {
             xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/restrictedAccess");
@@ -1364,7 +1369,7 @@ public class XmlMetadataTemplate {
                                 }
                             }
                         } else {
-                            
+
                             // No label or notice info - we'll still add a pointer to the project
                             xmlw.writeStartElement("rights"); // <rights>
                             xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
@@ -1415,7 +1420,7 @@ public class XmlMetadataTemplate {
         }
         xmlw.writeEndElement(); // </rights>
     }
-    
+
     private void writeLocalContextLabelRightsElement(XMLStreamWriter xmlw, String projectUrl, JsonObject labelObject) throws XMLStreamException {
         xmlw.writeStartElement("rights"); // <rights>
         xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
