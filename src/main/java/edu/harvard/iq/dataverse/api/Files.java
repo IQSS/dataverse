@@ -937,6 +937,8 @@ public class Files extends AbstractApiBean {
     @RequestBody(description = "External tool launch options such as preview mode and locale.")
     public Response getExternalToolUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileId,
             @Parameter(description = "External tool id.") @PathParam("tid") long externalToolId,
+            @Parameter(description = "Numeric id of the Guestbook response.")
+            @QueryParam("guestbookResponseId") Long guestbookResponseId,
             @RequestBody(description = "External tool launch options such as preview mode and locale.")
             String jsonBody) {
 
@@ -1026,7 +1028,7 @@ public class Files extends AbstractApiBean {
 
             // Create the external tool handler
             ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken,
-                    fileMetadata, locale);
+                    fileMetadata, locale, guestbookResponseId);
 
             // Get the tool URL
             String toolUrl;
@@ -1066,7 +1068,10 @@ public class Files extends AbstractApiBean {
             @Parameter(description = "File metadata database id.", required = true)
             @PathParam("fmid") long fmid,
             @Parameter(description = "Locale used when creating the external tool parameter payload.")
-            @QueryParam(value = "locale") String locale) {
+            @QueryParam(value = "locale") String locale,
+            @Parameter(description = "Numeric id of the Guestbook response.")
+            @QueryParam("guestbookResponseId") Long guestbookResponseId) {
+
         ExternalTool externalTool = externalToolService.findById(externalToolId);
         if(externalTool == null) {
             return error(BAD_REQUEST, "External tool not found.");
@@ -1084,7 +1089,7 @@ public class Files extends AbstractApiBean {
 
         URLTokenUtil eth = null;
 
-        eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
+        eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale, guestbookResponseId);
         return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
     }
 
