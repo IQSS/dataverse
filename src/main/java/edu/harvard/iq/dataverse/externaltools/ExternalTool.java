@@ -7,20 +7,11 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -114,6 +105,9 @@ public class ExternalTool implements Serializable {
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String requirements;
+
+    @Transient
+    Long guestbookResponseId = null;
 
     /**
      * This default constructor is only here to prevent this error at
@@ -350,7 +344,15 @@ public class ExternalTool implements Serializable {
      * @return the allowedApiCalls
      */
     public String getAllowedApiCalls() {
-        return allowedApiCalls;
+        String allowedCallsModified = allowedApiCalls;
+        if (guestbookResponseId != null) {
+            // gbrecs was written if the guestbookResponseId exists
+            String guestbookResponseParams = "gbrecs=true&gbrids=" + guestbookResponseId;
+            allowedCallsModified = allowedCallsModified
+                    .replaceAll("(?i)" + Pattern.quote("gbrecs=true"),guestbookResponseParams)
+                    .replaceAll("(?i)" + Pattern.quote("gbrecs=false"), guestbookResponseParams);
+        }
+        return allowedCallsModified;
     }
 
     /**
@@ -373,4 +375,10 @@ public class ExternalTool implements Serializable {
         return reqs!=null && reqs.contains(AUX_FILES_EXIST);
     }
 
+    public void setGuestbookResponseId(Long guestbookResponseId) {
+        this.guestbookResponseId = guestbookResponseId;
+    }
+    public Long getGuestbookResponseId() {
+        return guestbookResponseId;
+    }
 }
