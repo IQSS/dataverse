@@ -274,5 +274,4 @@ public class TemplatePage implements java.io.Serializable {
         String fieldInstructions = template.getInstructionsMap().get(fieldType);
         return (fieldInstructions!=null && !fieldInstructions.isBlank()) ? fieldInstructions : BundleUtil.getStringFromBundle("template.instructions.empty.label");
     }
-
 }

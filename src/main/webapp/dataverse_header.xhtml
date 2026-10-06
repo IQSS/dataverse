@@ -87,7 +87,7 @@
                         <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarSupportUrl')}">
                             <li>
                                 <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                                    <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}" id="headerSupportLink">
+                                    <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}" id="headerSupportLink" process="@this">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
@@ -203,7 +203,7 @@
                 <ui:repeat value="#{dataverseHeaderFragment.bannerMessages}" var="message" varStatus="status">                
                     <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.displayValue }">
                         <div class="alert alert-dismissible container text-warning">
-                            <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="&#215;"/>
+                            <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="&#215;" process="@this"/>
                             <h:outputText rendered="#{!empty message.displayValue }" value=" #{message.displayValue }" escape="false"/>
                         </div>
                     </div>

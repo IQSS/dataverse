@@ -22,6 +22,8 @@ import jakarta.persistence.OrderBy;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.util.Objects;
 import jakarta.persistence.Column;
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
@@ -85,6 +87,7 @@ public class DataTable implements Serializable {
      */
     @OneToMany (mappedBy="dataTable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     @OrderBy ("fileOrder")
+    @BatchFetch(BatchFetchType.IN)
     private List<DataVariable> dataVariables;
     
     /* 
