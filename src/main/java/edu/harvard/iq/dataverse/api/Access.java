@@ -134,7 +134,7 @@ public class Access extends AbstractApiBean {
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
-    private static final int GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
+    private static final int GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 5;
     //@EJB
 
     @GET
