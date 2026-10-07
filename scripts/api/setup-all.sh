@@ -44,7 +44,7 @@ command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, 
 
 
 echo "Setup the metadata blocks"
-"$SCRIPT_PATH"/setup-datasetfields.sh
+"$SCRIPT_PATH"/setup-datasetfields.sh || exit $?
 
 echo "Setup the builtin roles"
 "$SCRIPT_PATH"/setup-builtin-roles.sh
