@@ -1,6 +1,8 @@
 ## RORs for User Accounts
 
-Users can now associate one or more ROR (Research Organization Registry) identifiers with their account, in order. The first one is the user's primary ROR. For now, RORs are managed through the API only.
+Users can now associate one or more ROR (Research Organization Registry) identifiers with their account, in order. The first one is the user's primary ROR. Users can add, remove, and reorder their RORs when signing up (including the first login with ORCID, GitHub, Google, or Microsoft) and when editing their account information. See [the guides](https://guides.dataverse.org/en/6.13/user/account.html#account-rors).
+
+When a user creates a dataset, the author "Affiliation" field is now pre-populated with their primary ROR if they have one. Otherwise it is pre-populated with their account's affiliation, as before.
 
 ## API Updates
 

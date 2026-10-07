@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.ExternalIdentifier;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import jakarta.persistence.Column;
@@ -70,6 +72,28 @@ public class AuthenticatedUserRor implements Serializable {
             return null;
         }
         return ExternalIdentifier.ROR.format(candidate);
+    }
+
+    /**
+     * Normalizes a list of ROR identifiers, keeping their order.
+     *
+     * @param rorIds bare ROR IDs or ROR URLs
+     * @return the ROR URLs, in the same order
+     * @throws IllegalArgumentException if any entry is invalid or duplicated
+     */
+    public static List<String> normalizeRorIds(List<String> rorIds) {
+        List<String> normalizedIds = new ArrayList<>();
+        for (String rorId : rorIds) {
+            String normalized = normalizeRorId(rorId);
+            if (normalized == null) {
+                throw new IllegalArgumentException("Invalid ROR identifier: " + rorId);
+            }
+            if (normalizedIds.contains(normalized)) {
+                throw new IllegalArgumentException("Duplicate ROR identifier: " + rorId);
+            }
+            normalizedIds.add(normalized);
+        }
+        return normalizedIds;
     }
 
     public Long getId() {

@@ -1,0 +1,74 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <!--
+        Editor for a user's ordered list of RORs. Must be inside an h:form.
+        Parameters:
+          editor - an edu.harvard.iq.dataverse.authorization.users.RorListEditor
+    -->
+    <div class="form-group">
+        <h:outputLabel value="#{bundle['user.rors']}" for="newRorId" class="col-sm-3 control-label">
+            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.rors.tip']}"></span>
+        </h:outputLabel>
+        <div class="col-sm-6">
+            <h:panelGroup id="rorListEditorPanel" layout="block" styleClass="ror-list-editor">
+                <p class="form-control-static text-muted" jsf:rendered="#{empty editor.rorIds}">
+                    #{bundle['user.rors.none']}
+                </p>
+                <ol class="list-unstyled" jsf:rendered="#{not empty editor.rorIds}">
+                    <ui:repeat value="#{editor.rorIds}" var="rorId" varStatus="status">
+                        <li class="margin-bottom-half">
+                            <h:outputLink value="#{rorId}" target="_blank" title="#{bundle['user.rors.link']}">
+                                <h:outputText value="#{rorId}"/>
+                            </h:outputLink>
+                            <h:outputText value=" "/>
+                            <h:outputText styleClass="label label-primary" value="#{bundle['user.rors.primary']}" rendered="#{status.first}"/>
+                            <span class="btn-group btn-group-xs" style="margin-left: .5em;">
+                                <p:commandLink styleClass="btn btn-default" title="#{bundle['user.rors.moveUp']}"
+                                               disabled="#{status.first}"
+                                               action="#{editor.moveUp(status.index)}"
+                                               process="@this" update="@(.ror-list-editor)">
+                                    <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"/>
+                                    <span class="sr-only">#{bundle['user.rors.moveUp']}</span>
+                                </p:commandLink>
+                                <p:commandLink styleClass="btn btn-default" title="#{bundle['user.rors.moveDown']}"
+                                               disabled="#{status.last}"
+                                               action="#{editor.moveDown(status.index)}"
+                                               process="@this" update="@(.ror-list-editor)">
+                                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"/>
+                                    <span class="sr-only">#{bundle['user.rors.moveDown']}</span>
+                                </p:commandLink>
+                                <p:commandLink styleClass="btn btn-default" title="#{bundle['user.rors.remove']}"
+                                               action="#{editor.remove(status.index)}"
+                                               process="@this" update="@(.ror-list-editor)">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"/>
+                                    <span class="sr-only">#{bundle['user.rors.remove']}</span>
+                                </p:commandLink>
+                            </span>
+                        </li>
+                    </ui:repeat>
+                </ol>
+                <div class="input-group">
+                    <p:inputText id="newRorId" styleClass="form-control" value="#{editor.newRorId}"
+                                 placeholder="#{bundle['user.rors.placeholder']}"
+                                 label="#{bundle['user.rors.newRor']}"/>
+                    <span class="input-group-btn">
+                        <p:commandLink id="addRor" styleClass="btn btn-default" title="#{bundle['user.rors.add']}"
+                                       action="#{editor.add()}"
+                                       process="@this newRorId" update="@(.ror-list-editor)">
+                            <span class="glyphicon glyphicon-plus no-text" aria-hidden="true"/>
+                            <span class="sr-only">#{bundle['user.rors.add']}</span>
+                        </p:commandLink>
+                    </span>
+                </div>
+                <div class="text-danger" role="alert" jsf:rendered="#{not empty editor.errorMessage}">
+                    <h:outputText value="#{editor.errorMessage}"/>
+                </div>
+            </h:panelGroup>
+        </div>
+    </div>
+</ui:composition>

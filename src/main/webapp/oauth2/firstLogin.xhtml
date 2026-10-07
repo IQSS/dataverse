@@ -123,6 +123,10 @@
                                     <p:inputText id="affiliation" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.affiliation}"/>
                                 </div>
                             </div>
+                            <!-- RORs -->
+                            <ui:include src="../rorListEditor.xhtml">
+                                <ui:param name="editor" value="#{OAuth2FirstLoginPage.rorEditor}"/>
+                            </ui:include>
                             <div class="form-group">
                                 <label for="position" class="col-sm-3 control-label">
                                     #{bundle['user.position']} 

@@ -655,6 +655,25 @@
                                                 #{DataverseUserPage.currentUser.affiliation}
                                             </td>
                                         </tr>
+                                        <!-- RORs, in order; the first is the primary ROR -->
+                                        <tr id="userRors" jsf:rendered="#{not empty DataverseUserPage.savedRorIds}">
+                                            <th scope="row">
+                                                #{bundle['user.rors']}
+                                            </th>
+                                            <td>
+                                                <ol class="list-unstyled">
+                                                    <ui:repeat value="#{DataverseUserPage.savedRorIds}" var="rorId" varStatus="status">
+                                                        <li>
+                                                            <h:outputLink value="#{rorId}" target="_blank" title="#{bundle['user.rors.link']}">
+                                                                <h:outputText value="#{rorId}"/>
+                                                            </h:outputLink>
+                                                            <h:outputText value=" "/>
+                                                            <h:outputText styleClass="label label-primary" value="#{bundle['user.rors.primary']}" rendered="#{status.first}"/>
+                                                        </li>
+                                                    </ui:repeat>
+                                                </ol>
+                                            </td>
+                                        </tr>
                                         <!-- Position (not populated for Shibboleth users) -->
                                         <tr id="userPosition" jsf:rendered="#{!empty DataverseUserPage.currentUser.position}">
                                             <th scope="row">
@@ -760,8 +779,7 @@
                                         <p:inputText id="userName" styleClass="form-control"
                                                      validator="#{DataverseUserPage.validateUserName}"
                                                      value="#{DataverseUserPage.username}"
-                                                     disabled="#{DataverseUserPage.editMode != 'CREATE'}"
-                                                     binding="#{DataverseUserPage.usernameField}"/>
+                                                     disabled="#{DataverseUserPage.editMode != 'CREATE'}"/>
                                         <p:message for="userName" display="text" />
                                     </div>
                                 </div>
@@ -854,6 +872,12 @@
                                         <p:message for="affiliation" display="text" />
                                     </div>
                                 </div>
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- RORs -->
+                                    <ui:include src="rorListEditor.xhtml">
+                                        <ui:param name="editor" value="#{DataverseUserPage.rorEditor}"/>
+                                    </ui:include>
+                                </ui:fragment>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                 <!-- Position -->
                                 <h:outputLabel value="#{bundle.position}" for="position" class="col-sm-3 control-label">

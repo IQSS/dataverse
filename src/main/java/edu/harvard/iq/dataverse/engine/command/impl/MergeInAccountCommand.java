@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUserRor;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -29,6 +28,7 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -162,11 +162,13 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         //RORs: append the consumed user's RORs after the ongoing user's (skipping ones
         //the ongoing user already has) so the ongoing user's primary ROR stays first.
         //The consumed user's rows are deleted when consumedAU is removed below.
-        AuthenticatedUser managedOngoingAU = ctxt.em().find(AuthenticatedUser.class, ongoingAU.getId());
-        AuthenticatedUser managedConsumedAU = ctxt.em().find(AuthenticatedUser.class, consumedAU.getId());
-        for (AuthenticatedUserRor ror : managedConsumedAU.getRors()) {
-            managedOngoingAU.addRor(ror.getRorId(), null);
+        List<String> mergedRorIds = new ArrayList<>(ctxt.authentication().findRorIds(ongoingAU.getId()));
+        for (String rorId : ctxt.authentication().findRorIds(consumedAU.getId())) {
+            if (!mergedRorIds.contains(rorId)) {
+                mergedRorIds.add(rorId);
+            }
         }
+        ctxt.authentication().setRors(ongoingAU.getId(), mergedRorIds);
 
 
         

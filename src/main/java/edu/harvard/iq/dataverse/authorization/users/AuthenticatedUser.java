@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -161,7 +160,10 @@ public class AuthenticatedUser implements User, Serializable {
     private String authenticatedOrcid;
 
     // The user's ROR identifiers, in order. The first one is the primary ROR (see getPrimaryRor()).
-    @OneToMany(mappedBy = "authenticatedUser", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+    // Read-only here: change them with the ROR methods in AuthenticationServiceBean, which work
+    // on fresh rows. There's deliberately no MERGE cascade or orphanRemoval, so merging a stale
+    // copy of the user (such as the one held in the session) can't delete or overwrite RORs.
+    @OneToMany(mappedBy = "authenticatedUser", cascade = {CascadeType.REMOVE})
     @OrderBy("displayOrder ASC")
     private List<AuthenticatedUserRor> rors = new ArrayList<>();
 
@@ -623,118 +625,21 @@ public class AuthenticatedUser implements User, Serializable {
     }
 
     /**
-     * @return the user's RORs in display order (read-only; use addRor, removeRor
-     *         and setRors to change them)
+     * @return the user's RORs in display order (read-only; to change them use
+     *         the ROR methods in AuthenticationServiceBean)
      */
     public List<AuthenticatedUserRor> getRors() {
         return Collections.unmodifiableList(rors);
     }
 
     /**
-     * The primary ROR is the first one in display order. Business logic that
-     * needs "the" ROR for a user should use this method.
+     * The primary ROR is the first one in display order. Note that for a user
+     * object that may be stale, such as the one held in the session,
+     * AuthenticationServiceBean.findPrimaryRorId() is more reliable.
      *
      * @return the user's first ROR, or null if the user has none
      */
     public AuthenticatedUserRor getPrimaryRor() {
         return rors.isEmpty() ? null : rors.get(0);
-    }
-
-    /**
-     * @param rorId a bare ROR ID or ROR URL
-     * @return the matching ROR, or null if the user doesn't have it (or rorId is invalid)
-     */
-    public AuthenticatedUserRor findRor(String rorId) {
-        String normalized = AuthenticatedUserRor.normalizeRorId(rorId);
-        if (normalized == null) {
-            return null;
-        }
-        for (AuthenticatedUserRor ror : rors) {
-            if (normalized.equals(ror.getRorId())) {
-                return ror;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Adds a ROR to this user.
-     *
-     * @param rorId a bare ROR ID or ROR URL
-     * @param position zero-based position to insert at; null appends to the end
-     * @return false if the user already has this ROR (nothing is changed), true otherwise
-     * @throws IllegalArgumentException if rorId is not a valid ROR or position is out of range
-     */
-    public boolean addRor(String rorId, Integer position) {
-        String normalized = AuthenticatedUserRor.normalizeRorId(rorId);
-        if (normalized == null) {
-            throw new IllegalArgumentException("Invalid ROR identifier: " + rorId);
-        }
-        if (findRor(normalized) != null) {
-            return false;
-        }
-        int index = (position == null) ? rors.size() : position;
-        if (index < 0 || index > rors.size()) {
-            throw new IllegalArgumentException("Position must be between 0 and " + rors.size() + ".");
-        }
-        rors.add(index, new AuthenticatedUserRor(this, normalized, index));
-        renumberRors();
-        return true;
-    }
-
-    /**
-     * Removes a ROR from this user. The remaining RORs keep their relative order.
-     *
-     * @param rorId a bare ROR ID or ROR URL
-     * @return true if the ROR was removed, false if the user didn't have it
-     */
-    public boolean removeRor(String rorId) {
-        AuthenticatedUserRor existing = findRor(rorId);
-        if (existing == null) {
-            return false;
-        }
-        rors.remove(existing);
-        renumberRors();
-        return true;
-    }
-
-    /**
-     * Replaces the user's RORs with the given list, in the given order. RORs
-     * that are already associated with the user are kept (and reordered), so
-     * this can be used to reorder as well as to add and remove. An empty list
-     * removes all RORs.
-     *
-     * @param rorIds bare ROR IDs or ROR URLs, in the desired order
-     * @throws IllegalArgumentException if any entry is invalid or duplicated
-     */
-    public void setRors(List<String> rorIds) {
-        List<String> normalizedIds = new ArrayList<>();
-        for (String rorId : rorIds) {
-            String normalized = AuthenticatedUserRor.normalizeRorId(rorId);
-            if (normalized == null) {
-                throw new IllegalArgumentException("Invalid ROR identifier: " + rorId);
-            }
-            if (normalizedIds.contains(normalized)) {
-                throw new IllegalArgumentException("Duplicate ROR identifier: " + rorId);
-            }
-            normalizedIds.add(normalized);
-        }
-
-        rors.removeIf(ror -> !normalizedIds.contains(ror.getRorId()));
-        for (int i = 0; i < normalizedIds.size(); i++) {
-            AuthenticatedUserRor ror = findRor(normalizedIds.get(i));
-            if (ror == null) {
-                rors.add(new AuthenticatedUserRor(this, normalizedIds.get(i), i));
-            } else {
-                ror.setDisplayOrder(i);
-            }
-        }
-        rors.sort(Comparator.comparingInt(AuthenticatedUserRor::getDisplayOrder));
-    }
-
-    private void renumberRors() {
-        for (int i = 0; i < rors.size(); i++) {
-            rors.get(i).setDisplayOrder(i);
-        }
     }
 }

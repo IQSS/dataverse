@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.RorListEditor;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -83,6 +84,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     String selectedEmail;
 
     String password;
+
+    // RORs the new user enters on the first login page
+    private RorListEditor rorEditor = new RorListEditor();
 
     boolean authenticationFailed = false;
     private AuthenticationProvider authProvider;
@@ -176,6 +180,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String createNewAccount() {
+        // Add a ROR that was typed but not explicitly added; stay on the page if it's invalid
+        if (!rorEditor.addNewRor()) {
+            return null;
+        }
 
         AuthenticatedUserDisplayInfo newAud = new AuthenticatedUserDisplayInfo(newUser.getDisplayInfo().getFirstName(),
                 newUser.getDisplayInfo().getLastName(),
@@ -184,6 +192,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 newUser.getDisplayInfo().getPosition(),
                 newUser.getDisplayInfo().getOrcid());
         final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(), newAud, true);
+        authenticationSvc.setRors(user.getId(), rorEditor.getRorIds());
         session.setUser(user);
         /**
          * @todo Move this to AuthenticationServiceBean.createAuthenticatedUser
@@ -293,8 +302,14 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return newUser;
     }
 
+    public RorListEditor getRorEditor() {
+        return rorEditor;
+    }
+
     public void setNewUser(OAuth2UserRecord newUser) {
         this.newUser = newUser;
+        // This bean is session scoped, so start each new user with an empty ROR list
+        rorEditor = new RorListEditor();
         // uncomment to suggest username to user
         //setUsername(newUser.getUsername());
         setSelectedEmail(newUser.getDisplayInfo().getEmailAddress());

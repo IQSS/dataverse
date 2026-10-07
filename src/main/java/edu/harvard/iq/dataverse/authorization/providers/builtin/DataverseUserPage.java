@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.RorListEditor;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailUtil;
@@ -130,6 +131,9 @@ public class DataverseUserPage implements java.io.Serializable {
 
     private AuthenticatedUser currentUser;
     private AuthenticatedUserDisplayInfo userDisplayInfo;
+    // The user's saved RORs, for display; and the list being edited in CREATE/EDIT mode
+    private List<String> savedRorIds = new ArrayList<>();
+    private RorListEditor rorEditor = new RorListEditor();
     private transient AuthenticationProvider userAuthProvider;
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
@@ -144,7 +148,6 @@ public class DataverseUserPage implements java.io.Serializable {
     private List<UserNotification> notificationsList;
     private int activeIndex;
     private String selectTab = "dataRelatedToMe";
-    UIInput usernameField;
 
     
     private String username;
@@ -175,6 +178,7 @@ public class DataverseUserPage implements java.io.Serializable {
                  // in create mode for new user
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.message.signup.label"), BundleUtil.getStringFromBundle("user.message.signup.tip"));
                 userDisplayInfo = new AuthenticatedUserDisplayInfo();
+                rorEditor = new RorListEditor();
                 return "";
             }
         }
@@ -182,6 +186,11 @@ public class DataverseUserPage implements java.io.Serializable {
         if (session.getUser(true).isAuthenticated()) {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
+            savedRorIds = authenticationService.findRorIds(currentUser.getId());
+            if (editMode == EditMode.EDIT) {
+                // EDIT mode can come from the URL, bypassing edit(); without this, saving would clear the RORs
+                rorEditor = new RorListEditor(savedRorIds);
+            }
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             notificationTypeList = Arrays.asList(Type.values()).stream()
                     .filter(x -> !Type.CONFIRMEMAIL.equals(x) && x.hasDescription() && !settingsWrapper.isAlwaysMuted(x))
@@ -221,6 +230,8 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void edit(ActionEvent e) {
         editMode = EditMode.EDIT;
+        // Start from the RORs in the database rather than the (possibly stale) session user
+        rorEditor = new RorListEditor(authenticationService.findRorIds(currentUser.getId()));
     }
 
     public void changePassword(ActionEvent e) {
@@ -313,6 +324,12 @@ public class DataverseUserPage implements java.io.Serializable {
         if (session.getUser().isAuthenticated() && !session.getUser(true).isAuthenticated()) {
             return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "&faces-redirect=true";
         }
+
+        // Add a ROR that was typed but not explicitly added. If it's invalid, stay
+        // on the form (the editor shows the error) and don't save anything.
+        if ((editMode == EditMode.CREATE || editMode == EditMode.EDIT) && !rorEditor.addNewRor()) {
+            return null;
+        }
         
         if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
@@ -344,15 +361,21 @@ public class DataverseUserPage implements java.io.Serializable {
                     builtinUser.getUserName(), userDisplayInfo, false);
             if ( au == null ) {
                 // Username already exists, show an error message
-                getUsernameField().setValid(false);
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
                 FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(getUsernameField().getClientId(context), message);
+                UIInput usernameInput = findUsernameInput(context);
+                if (usernameInput != null) {
+                    usernameInput.setValid(false);
+                    context.addMessage(usernameInput.getClientId(context), message);
+                } else {
+                    context.addMessage(null, message);
+                }
                 return null;
             }
             
             // The Authenticated User was just created via the UI, add an initial login timestamp
             au = userService.updateLastLogin(au);
+            authenticationService.setRors(au.getId(), rorEditor.getRorIds());
             
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
@@ -401,6 +424,9 @@ public class DataverseUserPage implements java.io.Serializable {
             currentUser.setMutedNotifications(mutedNotifications);
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
+            if (editMode == EditMode.EDIT) {
+                savedRorIds = authenticationService.setRors(currentUser.getId(), rorEditor.getRorIds());
+            }
             String emailAfterUpdate = savedUser.getEmail();
             editMode = null;
             StringBuilder msg = new StringBuilder( passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged" )
@@ -632,6 +658,14 @@ public class DataverseUserPage implements java.io.Serializable {
         this.userDisplayInfo = userDisplayInfo;
     }
     
+    public List<String> getSavedRorIds() {
+        return savedRorIds;
+    }
+
+    public RorListEditor getRorEditor() {
+        return rorEditor;
+    }
+
     public EditMode getChangePasswordMode () {
         return EditMode.CHANGE_PASSWORD;
     }
@@ -714,12 +748,15 @@ public class DataverseUserPage implements java.io.Serializable {
         this.selectTab = selectTab;
     }
 
-    public UIInput getUsernameField() {
-        return usernameField;
-    }
-
-    public void setUsernameField(UIInput usernameField) {
-        this.usernameField = usernameField;
+    /**
+     * Looks up the username input in the current view. (It used to be bound to
+     * this view scoped bean, but component bindings must be request scoped.)
+     *
+     * @return the username input, or null if it isn't in the view
+     */
+    private UIInput findUsernameInput(FacesContext context) {
+        UIComponent component = context.getViewRoot().findComponent("dataverseUserForm:accountInfoView:userName");
+        return (component instanceof UIInput) ? (UIInput) component : null;
     }
 
     public String getUsername() {

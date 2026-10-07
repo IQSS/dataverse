@@ -181,6 +181,19 @@ Once you've done that, the link to your ORCID will be shown in the Account Infor
 
 Note that the ability to login via ORCID (or other providers) and the ability to link to your ORCID profile are separate configuration options :doc:`available </installation/orcid>` to Dataverse administrators.
 
+.. _account-rors:
+
+Adding RORs to Your Account Profile
+-----------------------------------
+
+In addition to the free-text "Affiliation" field, you can list the organizations you're affiliated with by their `ROR <https://ror.org>`_ (Research Organization Registry) identifiers. You can do this when you create an account, or later by clicking "Edit Account" on the "Account Information" page.
+
+To add a ROR, enter its ID (such as ``03vek6s52``) or URL (such as ``https://ror.org/03vek6s52``) in the ROR field and click "Add". You can look up your organization's ROR at https://ror.org. Use the arrow buttons to change the order, and the "x" button to remove one. Your changes are saved when you save the form.
+
+The first ROR in the list is your primary affiliation. When you create a dataset, it is used to fill in the author "Affiliation" field (instead of your free-text affiliation).
+
+RORs can also be managed with the API. See :ref:`user-rors` in the API Guide.
+
 .. _my-data:
 
 My Data

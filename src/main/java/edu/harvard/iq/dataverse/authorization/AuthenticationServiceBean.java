@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUserRor;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
@@ -1117,5 +1118,120 @@ public class AuthenticationServiceBean {
             logger.log(Level.WARNING, "Multiple users found with ORCID: " + orcid, e);
             return null;
         }
+    }
+
+    /*
+     * RORs. These work directly on AuthenticatedUserRor rows rather than on an
+     * AuthenticatedUser's collection, so they're safe to call with a stale or
+     * detached user (such as the one held in the session).
+     */
+
+    /**
+     * @return the user's ROR URLs in display order; the first one is the primary ROR
+     */
+    public List<String> findRorIds(Long userId) {
+        return em.createQuery(
+                "SELECT r.rorId FROM AuthenticatedUserRor r WHERE r.authenticatedUser.id = :userId ORDER BY r.displayOrder",
+                String.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
+    /**
+     * @return the primary (first) ROR URL, or null if the user has no RORs
+     */
+    public String findPrimaryRorId(AuthenticatedUser user) {
+        if (user == null || user.getId() == null) {
+            return null;
+        }
+        List<String> rorIds = em.createQuery(
+                "SELECT r.rorId FROM AuthenticatedUserRor r WHERE r.authenticatedUser.id = :userId ORDER BY r.displayOrder",
+                String.class)
+                .setParameter("userId", user.getId())
+                .setMaxResults(1)
+                .getResultList();
+        return rorIds.isEmpty() ? null : rorIds.get(0);
+    }
+
+    /**
+     * Replaces the user's RORs with the given list, in the given order.
+     * Existing rows for RORs the user keeps are reused (and renumbered). An
+     * empty list removes all RORs.
+     *
+     * @param rorIds bare ROR IDs or ROR URLs, in the desired order
+     * @return the user's ROR URLs, in order
+     * @throws IllegalArgumentException if any entry is invalid or duplicated,
+     *         or the user doesn't exist
+     */
+    public List<String> setRors(Long userId, List<String> rorIds) {
+        List<String> normalizedIds = AuthenticatedUserRor.normalizeRorIds(rorIds);
+        AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found: " + userId);
+        }
+        List<AuthenticatedUserRor> existingRors = em.createQuery(
+                "SELECT r FROM AuthenticatedUserRor r WHERE r.authenticatedUser.id = :userId",
+                AuthenticatedUserRor.class)
+                .setParameter("userId", userId)
+                .getResultList();
+        Map<String, AuthenticatedUserRor> existingById = new HashMap<>();
+        for (AuthenticatedUserRor ror : existingRors) {
+            if (normalizedIds.contains(ror.getRorId())) {
+                existingById.put(ror.getRorId(), ror);
+            } else {
+                em.remove(ror);
+            }
+        }
+        for (int i = 0; i < normalizedIds.size(); i++) {
+            AuthenticatedUserRor ror = existingById.get(normalizedIds.get(i));
+            if (ror != null) {
+                ror.setDisplayOrder(i);
+            } else {
+                em.persist(new AuthenticatedUserRor(user, normalizedIds.get(i), i));
+            }
+        }
+        em.flush();
+        return normalizedIds;
+    }
+
+    /**
+     * Adds a ROR to the user.
+     *
+     * @param rorId a bare ROR ID or ROR URL
+     * @param position zero-based position to insert at; null appends to the end
+     * @return false if the user already has this ROR (nothing is changed), true otherwise
+     * @throws IllegalArgumentException if rorId is invalid or position is out of range
+     */
+    public boolean addRor(Long userId, String rorId, Integer position) {
+        String normalized = AuthenticatedUserRor.normalizeRorId(rorId);
+        if (normalized == null) {
+            throw new IllegalArgumentException("Invalid ROR identifier: " + rorId);
+        }
+        List<String> rorIds = new ArrayList<>(findRorIds(userId));
+        if (rorIds.contains(normalized)) {
+            return false;
+        }
+        int index = (position == null) ? rorIds.size() : position;
+        if (index < 0 || index > rorIds.size()) {
+            throw new IllegalArgumentException("Position must be between 0 and " + rorIds.size() + ".");
+        }
+        rorIds.add(index, normalized);
+        setRors(userId, rorIds);
+        return true;
+    }
+
+    /**
+     * Removes a ROR from the user. The remaining RORs keep their relative order.
+     *
+     * @param rorId a bare ROR ID or ROR URL
+     * @return true if the ROR was removed, false if the user didn't have it
+     */
+    public boolean removeRor(Long userId, String rorId) {
+        List<String> rorIds = new ArrayList<>(findRorIds(userId));
+        if (!rorIds.remove(AuthenticatedUserRor.normalizeRorId(rorId))) {
+            return false;
+        }
+        setRors(userId, rorIds);
+        return true;
     }
 }

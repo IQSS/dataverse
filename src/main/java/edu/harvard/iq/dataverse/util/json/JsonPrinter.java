@@ -140,18 +140,18 @@ public class JsonPrinter {
             .add("lastLoginTime", authenticatedUser.getLastLoginTime())
             .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
             .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId())
-            .add("rors", jsonRors(authenticatedUser.getRors()));
+            .add("rors", jsonRors(authenticatedUser.getRors().stream().map(AuthenticatedUserRor::getRorId).collect(toList())));
         return builder;
     }
 
     /**
-     * @param rors a user's RORs, in display order
+     * @param rorIds a user's ROR URLs, in display order
      * @return an array of ROR URLs in display order; the first entry is the primary ROR
      */
-    public static JsonArrayBuilder jsonRors(List<AuthenticatedUserRor> rors) {
+    public static JsonArrayBuilder jsonRors(List<String> rorIds) {
         JsonArrayBuilder arrayBuilder = JsonUtil.createArrayBuilder();
-        for (AuthenticatedUserRor ror : rors) {
-            arrayBuilder.add(ror.getRorId());
+        for (String rorId : rorIds) {
+            arrayBuilder.add(rorId);
         }
         return arrayBuilder;
     }

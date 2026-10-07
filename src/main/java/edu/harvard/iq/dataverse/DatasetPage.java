@@ -2651,6 +2651,11 @@ public class DatasetPage implements java.io.Serializable {
         datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
         if (isSessionUserAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
+            // Prefer the user's primary ROR for the author affiliation, falling back
+            // to their free-text affiliation. Looked up from the database because the
+            // session user may not reflect RORs changed since login.
+            String primaryRorId = authService.findPrimaryRorId(au);
+            String authorAffiliation = (primaryRorId != null) ? primaryRorId : au.getAffiliation();
 
             //On create set pre-populated fields
             for (DatasetField dsf : dataset.getOrCreateEditVersion().getDatasetFields()) {
@@ -2685,7 +2690,7 @@ public class DatasetPage implements java.io.Serializable {
                                 subField.getDatasetFieldValues().get(0).setValue(au.getLastName() + ", " + au.getFirstName());
                             }
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                                subField.getDatasetFieldValues().get(0).setValue(au.getAffiliation());
+                                subField.getDatasetFieldValues().get(0).setValue(authorAffiliation);
                             }
                             if (creatorOrcidId != null) {
                                 if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {

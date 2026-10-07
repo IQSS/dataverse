@@ -235,7 +235,8 @@ public class Users extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
             }
         }
-        return ok(json(authenticatedUser));
+        // Look up RORs fresh: with session cookie auth this is the session's copy of the user, which may be stale
+        return ok(json(authenticatedUser).add("rors", JsonPrinter.jsonRors(authSvc.findRorIds(authenticatedUser.getId()))));
     }
 
     @POST
@@ -355,7 +356,7 @@ public class Users extends AbstractApiBean {
             @PathParam("identifier") String identifier) {
         try {
             AuthenticatedUser user = findUserForRorsOrDie(crc, identifier);
-            return ok(JsonPrinter.jsonRors(user.getRors()));
+            return ok(JsonPrinter.jsonRors(authSvc.findRorIds(user.getId())));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -382,9 +383,7 @@ public class Users extends AbstractApiBean {
             } catch (JsonException | ClassCastException | NullPointerException e) {
                 return badRequest("Request body must be a JSON array of ROR identifiers (strings).");
             }
-            user.setRors(rorIds);
-            user = userSvc.save(user);
-            return ok(JsonPrinter.jsonRors(user.getRors()));
+            return ok(JsonPrinter.jsonRors(authSvc.setRors(user.getId(), rorIds)));
         } catch (IllegalArgumentException ex) {
             return badRequest(ex.getMessage());
         } catch (WrappedResponse ex) {
@@ -415,11 +414,10 @@ public class Users extends AbstractApiBean {
             } catch (JsonException | ClassCastException | NullPointerException e) {
                 return badRequest("Request body must be a JSON object with a \"rorId\" string and an optional \"position\" integer.");
             }
-            if (!user.addRor(rorId, position)) {
+            if (!authSvc.addRor(user.getId(), rorId, position)) {
                 return error(Response.Status.CONFLICT, "User already has ROR " + AuthenticatedUserRor.normalizeRorId(rorId) + ".");
             }
-            user = userSvc.save(user);
-            return ok(JsonPrinter.jsonRors(user.getRors()));
+            return ok(JsonPrinter.jsonRors(authSvc.findRorIds(user.getId())));
         } catch (IllegalArgumentException ex) {
             return badRequest(ex.getMessage());
         } catch (WrappedResponse ex) {
@@ -442,11 +440,10 @@ public class Users extends AbstractApiBean {
             if (AuthenticatedUserRor.normalizeRorId(rorId) == null) {
                 return badRequest("Invalid ROR identifier: " + rorId);
             }
-            if (!user.removeRor(rorId)) {
+            if (!authSvc.removeRor(user.getId(), rorId)) {
                 return notFound("User does not have ROR " + AuthenticatedUserRor.normalizeRorId(rorId) + ".");
             }
-            user = userSvc.save(user);
-            return ok(JsonPrinter.jsonRors(user.getRors()));
+            return ok(JsonPrinter.jsonRors(authSvc.findRorIds(user.getId())));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -456,7 +453,7 @@ public class Users extends AbstractApiBean {
      * Resolves the user whose RORs are being managed. Users can manage their own
      * RORs (by identifier or :me); superusers can manage anyone's.
      *
-     * @return a freshly looked-up (managed) AuthenticatedUser
+     * @return the user whose RORs are being managed
      */
     private AuthenticatedUser findUserForRorsOrDie(ContainerRequestContext crc, String identifier) throws WrappedResponse {
         AuthenticatedUser requester = getRequestAuthenticatedUserOrDie(crc);
