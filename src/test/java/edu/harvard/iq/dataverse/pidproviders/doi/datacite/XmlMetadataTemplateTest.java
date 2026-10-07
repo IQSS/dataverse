@@ -92,7 +92,7 @@ public class XmlMetadataTemplateTest {
 
     /**
      * A minimal example to assure that the XMLMetadataTemplate generates output
-     * consistent with the DataCite XML v4.5 schema.
+     * consistent with the DataCite XML v4.x schema.
      */
     @Test
     public void testDataCiteXMLCreation() throws IOException {
@@ -112,7 +112,7 @@ public class XmlMetadataTemplateTest {
         df2.setSingleValue("Harvard University");
         alice.setAffiliation(df2);
         alice.setIdType("ORCID");
-        alice.setIdValue("0000-0002-1825-0097");
+        alice.setIdValue("https://orcid.org/0000-0002-1825-0097");
         DatasetAuthor bob = new DatasetAuthor();
         DatasetField df3 = new DatasetField();
         df3.setDatasetFieldType(dft);
@@ -212,7 +212,7 @@ public class XmlMetadataTemplateTest {
         DatasetField translatorName = new DatasetField();
         translatorName.setDatasetVersion(dv);
         translatorName.setDatasetFieldType(contributorNameFieldType);
-        translatorName.setSingleValue("Translator Name");
+        translatorName.setSingleValue("0000-0002-1825-0097");
 
         DatasetField translatorRole = new DatasetField();
         translatorRole.setDatasetVersion(dv);
@@ -228,6 +228,7 @@ public class XmlMetadataTemplateTest {
         translatorValues.add(translatorValue);
         translatorField.setDatasetFieldCompoundValues(translatorValues);
         fields.add(translatorField);
+
 
         DatasetFieldType languageFieldType = new DatasetFieldType(DatasetFieldConstant.language,
                 DatasetFieldType.FieldType.TEXT, false);
@@ -280,7 +281,10 @@ public class XmlMetadataTemplateTest {
         assertEquals("Keyword1", XmlPath.from(xml).getString("resource.subjects.subject"));
         assertEquals("https://example.com/keyword1", XmlPath.from(xml).getString("resource.subjects.subject.@valueURI"));
         assertEquals("Translator", XmlPath.from(xml).getString("resource.contributors.contributor[0].@contributorType"));
-        assertEquals("Translator Name", XmlPath.from(xml).getString("resource.contributors.contributor[0].contributorName"));
+        assertEquals("0000-0002-1825-0097", XmlPath.from(xml).getString("resource.contributors.contributor[0].contributorName"));
+        assertEquals("ORCID", XmlPath.from(xml).getString("resource.contributors.contributor[0].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://orcid.org", XmlPath.from(xml).getString("resource.contributors.contributor[0].nameIdentifier.@schemeURI"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", XmlPath.from(xml).getString("resource.contributors.contributor[0].nameIdentifier"));
         assertEquals("en", XmlPath.from(xml).getString("resource.language"));
 
         dv.setVersionNumber(1L);
@@ -298,9 +302,184 @@ public class XmlMetadataTemplateTest {
         }
     }
 
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "treat-sandbox-orcids-as-pids")
+    public void testDataCiteExternalVocabularyOrcidAndRorFields() throws IOException, SAXException {
+        String orcid = "0000-0002-1825-0097";
+        String ror = "03vek6s52";
+        Dataset d = new Dataset();
+        d.setGlobalId(new GlobalId("doi", "10.5072", "FK2/EXTERNAL-VOCAB", null, null, null));
+        DatasetVersion dv = new DatasetVersion();
+        dv.setDataset(d);
+        dv.setVersionState(VersionState.DRAFT);
+        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        toa.setTermsOfUse("Some terms");
+        dv.setTermsOfUseAndAccess(toa);
+
+        DatasetField title = new DatasetField();
+        title.setDatasetVersion(dv);
+        title.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.title, FieldType.TEXT, false));
+        title.setSingleValue("External vocabulary fields");
+
+        DatasetField producer = createCompoundField(dv, DatasetFieldConstant.producer,
+                createCompoundValue(dv, DatasetFieldConstant.producerName, "Producer ORCID",
+                        "producerIdentifier", "https://orcid.org/" + orcid, "producerIdentifierScheme", "ORCID",
+                        DatasetFieldConstant.producerAffiliation, ror),
+                createCompoundValue(dv, DatasetFieldConstant.producerName, "Producer ROR",
+                        "producerIdentifier", "https://ror.org/" + ror, "producerIdentifierScheme", "ROR",
+                        DatasetFieldConstant.producerAffiliation, ror));
+        DatasetField distributor = createCompoundField(dv, DatasetFieldConstant.distributor,
+                createCompoundValue(dv, DatasetFieldConstant.distributorName, "Distributor ORCID",
+                        "distributorIdentifier", orcid, "distributorIdentifierScheme", "ORCID"),
+                createCompoundValue(dv, DatasetFieldConstant.distributorName, "Distributor ROR",
+                        "distributorIdentifier", "https://ror.org/" + ror, "distributorIdentifierScheme", "ROR"));
+        DatasetField contact = createCompoundField(dv, DatasetFieldConstant.datasetContact,
+                createCompoundValue(dv, DatasetFieldConstant.datasetContactName, "Contact ORCID",
+                        "datasetContactIdentifier", "https://orcid.org/" + orcid, "datasetContactIdentifierScheme", "ORCID",
+                        DatasetFieldConstant.datasetContactAffiliation, ror),
+                createCompoundValue(dv, DatasetFieldConstant.datasetContactName, "Contact ROR",
+                        "datasetContactIdentifier", ror, "datasetContactIdentifierScheme", "ROR",
+                        DatasetFieldConstant.datasetContactAffiliation, ror));
+        DatasetField contributor = createCompoundField(dv, DatasetFieldConstant.contributor,
+                createCompoundValue(dv, DatasetFieldConstant.contributorName, "Contributor ORCID",
+                        DatasetFieldConstant.contributorType, "Researcher", "contributorIdentifier", orcid,
+                        "contributorIdentifierScheme", "ORCID"),
+                createCompoundValue(dv, DatasetFieldConstant.contributorName, "https://sandbox.orcid.org/" + orcid,
+                        DatasetFieldConstant.contributorType, "Researcher", "contributorIdentifier", "https://sandbox.orcid.org/" + orcid,
+                        "contributorIdentifierScheme", "ORCID"),
+                createCompoundValue(dv, DatasetFieldConstant.contributorName, "Contributor ROR",
+                        DatasetFieldConstant.contributorType, "ProjectMember", "contributorIdentifier", ror,
+                        "contributorIdentifierScheme", "ROR"));
+        DatasetField dataCollector = createMultipleTextField(dv, DatasetFieldConstant.dataCollector,
+                "https://orcid.org/" + orcid, "https://ror.org/" + ror);
+        DatasetField grants = createCompoundField(dv, DatasetFieldConstant.grantNumber,
+                createCompoundValue(dv, DatasetFieldConstant.grantNumberAgency, "Funding Agency ROR",
+                        "grantNumberAgencyIdentifier", "https://ror.org/" + ror, "grantNumberAgencyIdentifierScheme", "ROR",
+                        DatasetFieldConstant.grantNumberValue, "AWARD-ROR"));
+        dv.setDatasetFields(new ArrayList<>(List.of(title, producer, distributor, contact, contributor,
+                dataCollector, grants)));
+        d.setVersions(new ArrayList<>(List.of(dv)));
+        DatasetType dType = new DatasetType();
+        dType.setName(DatasetType.DATASET_TYPE_DATASET);
+        d.setDatasetType(dType);
+
+        DoiMetadata doiMetadata = new DoiMetadata();
+        doiMetadata.setTitle("External vocabulary fields");
+        doiMetadata.setPublisher("Dataverse");
+        DatasetAuthor author = new DatasetAuthor();
+        DatasetField authorName = new DatasetField();
+        authorName.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.authorName, FieldType.TEXT, false));
+        authorName.setSingleValue("Creator");
+        author.setName(authorName);
+        author.setIdType("ORCID");
+        author.setIdValue("https://sandbox.orcid.org/" + orcid);
+        DatasetField authorAffiliation = new DatasetField();
+        authorAffiliation.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.authorAffiliation, FieldType.TEXT, false));
+        authorAffiliation.setSingleValue(ror);
+        author.setAffiliation(authorAffiliation);
+        doiMetadata.setAuthors(new ArrayList<>(List.of(author)));
+
+        String xml = new XmlMetadataTemplate(doiMetadata).generateXML(d);
+        StreamSource source = new StreamSource(new StringReader(xml));
+        source.setSystemId("DataCite XML for external vocabulary test dataset");
+        assertTrue(XmlValidator.validateXmlSchema(source,
+                new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+
+        XmlPath path = XmlPath.from(xml);
+        assertEquals("https://sandbox.orcid.org/" + orcid,
+                path.getString("resource.creators.creator[0].nameIdentifier"));
+        assertEquals("ORCID", path.getString("resource.creators.creator[0].nameIdentifier.@nameIdentifierScheme"));
+        assertEquals("https://sandbox.orcid.org",
+                path.getString("resource.creators.creator[0].nameIdentifier.@schemeURI"));
+        assertEquals("https://ror.org/" + ror, path.getString("resource.creators.creator[0].affiliation.@affiliationIdentifier"));
+        assertEquals("ROR", path.getString("resource.creators.creator[0].affiliation.@affiliationIdentifierScheme"));
+        assertEquals("https://ror.org", path.getString("resource.creators.creator[0].affiliation.@schemeURI"));
+        assertContributor(path, 0, "Producer", "Producer ORCID", orcid, "ORCID");
+        assertAffiliation(path, 0, ror);
+        assertContributor(path, 1, "Producer", "Producer ROR", ror, "ROR");
+        assertContributor(path, 2, "Distributor", "Distributor ORCID", orcid, "ORCID");
+        assertContributor(path, 3, "Distributor", "Distributor ROR", ror, "ROR");
+        assertContributor(path, 4, "ContactPerson", "Contact ORCID", orcid, "ORCID");
+        assertAffiliation(path, 4, ror);
+        assertContributor(path, 5, "ContactPerson", "Contact ROR", ror, "ROR");
+        assertContributor(path, 6, "Researcher", "Contributor ORCID", orcid, "ORCID");
+        assertContributor(path, 7, "Researcher", "https://sandbox.orcid.org/" + orcid,
+                "https://sandbox.orcid.org/" + orcid, "ORCID");
+        assertContributor(path, 8, "ProjectMember", "Contributor ROR", ror, "ROR");
+        assertContributor(path, 9, "DataCollector", "https://orcid.org/" + orcid,
+                "https://orcid.org/" + orcid, "ORCID");
+        assertContributor(path, 10, "DataCollector", "https://ror.org/" + ror,
+                "https://ror.org/" + ror, "ROR");
+        assertEquals("Funding Agency ROR", path.getString("resource.fundingReferences.fundingReference[0].funderName"));
+        assertEquals("https://ror.org/" + ror,
+                path.getString("resource.fundingReferences.fundingReference[0].funderIdentifier"));
+        assertEquals("ROR", path.getString("resource.fundingReferences.fundingReference[0].funderIdentifier.@funderIdentifierType"));
+        assertEquals("AWARD-ROR", path.getString("resource.fundingReferences.fundingReference[0].awardNumber"));
+    }
+
+    private void assertContributor(XmlPath path, int index, String type, String name, String identifier,
+            String identifierType) {
+        String prefix = "resource.contributors.contributor[" + index + "]";
+        assertEquals(type, path.getString(prefix + ".@contributorType"));
+        assertEquals(name, path.getString(prefix + ".contributorName"));
+        String expectedIdentifier = identifier.startsWith("https://")
+                ? identifier
+                : "https://" + ("ORCID".equals(identifierType) ? "orcid.org" : "ror.org") + "/" + identifier;
+        String identifierHost = expectedIdentifier.substring(0, expectedIdentifier.indexOf('/', 8));
+        assertEquals(expectedIdentifier, path.getString(prefix + ".nameIdentifier"));
+        assertEquals(identifierType, path.getString(prefix + ".nameIdentifier.@nameIdentifierScheme"));
+        assertEquals(identifierHost, path.getString(prefix + ".nameIdentifier.@schemeURI"));
+    }
+
+    private void assertAffiliation(XmlPath path, int index, String identifier) {
+        String prefix = "resource.contributors.contributor[" + index + "].affiliation";
+        assertEquals("https://ror.org/" + identifier, path.getString(prefix + ".@affiliationIdentifier"));
+        assertEquals("ROR", path.getString(prefix + ".@affiliationIdentifierScheme"));
+        assertEquals("https://ror.org", path.getString(prefix + ".@schemeURI"));
+    }
+
+    private DatasetField createCompoundField(DatasetVersion dv, String fieldName,
+            DatasetFieldCompoundValue... values) {
+        DatasetField field = new DatasetField();
+        field.setDatasetVersion(dv);
+        field.setDatasetFieldType(new DatasetFieldType(fieldName, FieldType.NONE, true));
+        field.setDatasetFieldCompoundValues(new ArrayList<>(List.of(values)));
+        return field;
+    }
+
+    private DatasetFieldCompoundValue createCompoundValue(DatasetVersion dv, String... nameAndValues) {
+        DatasetFieldCompoundValue value = new DatasetFieldCompoundValue();
+        List<DatasetField> children = new ArrayList<>();
+        for (int i = 0; i < nameAndValues.length; i += 2) {
+            DatasetField child = new DatasetField();
+            child.setDatasetVersion(dv);
+            child.setDatasetFieldType(new DatasetFieldType(nameAndValues[i], FieldType.TEXT, false));
+            child.setSingleValue(nameAndValues[i + 1]);
+            child.setParentDatasetFieldCompoundValue(value);
+            children.add(child);
+        }
+        value.setChildDatasetFields(children);
+        return value;
+    }
+
+    private DatasetField createMultipleTextField(DatasetVersion dv, String fieldName, String... values) {
+        DatasetField field = new DatasetField();
+        field.setDatasetVersion(dv);
+        field.setDatasetFieldType(new DatasetFieldType(fieldName, FieldType.TEXT, true));
+        List<DatasetFieldValue> fieldValues = new ArrayList<>();
+        for (String value : values) {
+            DatasetFieldValue fieldValue = new DatasetFieldValue();
+            fieldValue.setDatasetField(field);
+            fieldValue.setValue(value);
+            fieldValues.add(fieldValue);
+        }
+        field.setDatasetFieldValues(fieldValues);
+        return field;
+    }
+
     /**
      * This tests a more complete example based off of the dataset-all-defaults
-     * file, again checking for conformance of the result with the DataCite XML v4.5
+     * file, again checking for conformance of the result with the DataCite XML v4.x
      * schema.
      */
     @Test
@@ -357,7 +536,7 @@ public class XmlMetadataTemplateTest {
     
     /**
      * This tests a more complete example based off of the dataset-all-defaults
-     * file, again checking for conformance of the result with the DataCite XML v4.5
+     * file, again checking for conformance of the result with the DataCite XML v4.x
      * schema.
      */
     @Test
