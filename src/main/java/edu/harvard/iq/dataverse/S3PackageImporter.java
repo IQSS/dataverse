@@ -77,23 +77,17 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         ListObjectsV2Request listReq = ListObjectsV2Request.builder()
                 .bucket(dcmBucketName)
                 .prefix(dcmDatasetKey)
+                .maxKeys(1000)
                 .build();
 
-        ListObjectsV2Response listRes;
+        List<S3Object> storedDcmDatasetFilesSummary = new ArrayList<>();
         try {
-            listRes = s3.listObjectsV2(listReq);
+            s3.listObjectsV2Paginator(listReq).stream()
+                .flatMap(r -> r.contents().stream())
+                .forEach(storedDcmDatasetFilesSummary::add);
         } catch (S3Exception se) {
             logger.info("Caught an S3Exception in s3ImportUtil: " + se.getMessage());
-            throw new IOException("S3 listAuxObjects: failed to get a listing for " + dcmDatasetKey);
-        }
-
-        List<S3Object> storedDcmDatasetFilesSummary = new ArrayList<>(listRes.contents());
-
-        while (listRes.isTruncated()) {
-            logger.fine("S3 listAuxObjects: going to next page of list");
-            listReq = listReq.toBuilder().continuationToken(listRes.nextContinuationToken()).build();
-            listRes = s3.listObjectsV2(listReq);
-            storedDcmDatasetFilesSummary.addAll(listRes.contents());
+            throw new IOException("S3 listObjects: failed to get a listing for " + dcmDatasetKey);
         }
 
         for (S3Object item : storedDcmDatasetFilesSummary) {
