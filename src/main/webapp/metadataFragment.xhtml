@@ -108,7 +108,9 @@
                                                     </h:outputText>
                                                 </ui:repeat>
                                                 <ui:repeat value="#{dsf.getValues(mdLangCode)}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and !cvocOnDsf}">
-                                                    <h:outputText value="#{loop.first?'':'; '}#{ value }"
+                                                    <h:outputText rendered="#{dsf.datasetFieldType.fieldType != 'TEXTBOX'}" value="#{loop.first?'':'; '}"/>
+                                                    <br jsf:rendered="#{!loop.first and dsf.datasetFieldType.fieldType == 'TEXTBOX'}"/>
+                                                    <h:outputText value="#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                                 </ui:repeat>
                                             </ui:fragment>
@@ -131,7 +133,20 @@
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <c:set var="cvocOnCvPart" value="#{cvocConf.containsKey(cvPart.key.datasetFieldType.id)}"/>
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}"/>
-                                                        <ui:fragment rendered="#{!cvocOnCvPart and !cvocOnDsfApplies or !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}">
+                                                        <ui:remove>
+                                                          <!--
+                                                          this fragment is supposed to show when no script will be changing it, which occurs when:
+                                                            * the child field itself is not a term-uri field (cvocOnCvPart == false), and
+                                                            * either
+                                                              * there isn't a script configured on the parent field and there is a value for 
+                                                                that script's term-uri field (!cvocOnDsfApplies) or
+                                                              * the child field itself is not listed as a managed field 
+                                                                (!settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id) - 
+                                                                isCvocField is technically true if it's a term-uri or managed field, 
+                                                                but it can't be true from the field being a term-uri when cvocOnCvPart is false)
+                                                          -->
+                                                        </ui:remove>
+                                                        <ui:fragment rendered="#{!cvocOnCvPart and !cvocOnDsfApplies and !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}">
                                                             <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
                                                                     <h:outputText value="#{cvPart.value}"
@@ -169,7 +184,8 @@
                                                         <!-- Cvoc for others fields -->
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"
-                                                                      rendered="#{(cvocOnDsfApplies or cvocOnCvPart)
+                                                                      rendered="#{(cvocOnDsfApplies or cvocOnCvPart
+                                                                            or settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id))
                                                                             and cvPart.key.datasetFieldType.displayFormat ne '#EMAIL'
                                                                             and not (
                                                                             cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))
