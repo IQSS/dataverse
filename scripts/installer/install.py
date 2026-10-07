@@ -564,9 +564,9 @@ if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
    sys.exit("Can't find the api setup scripts; aborting. (are you running the installer in the right directory?)")
 
 try:
-   subprocess.call("./setup-all.sh > setup-all.$$.log 2>&1", shell=True)
+   subprocess.check_call("./setup-all.sh > setup-all.$$.log 2>&1", shell=True)
 except:
-   sys.exit("Failure to execute setup-all.sh! aborting.")
+   sys.exit("Post-deployment setup failed; see setup-all.*.log for details. Aborting.")
 
 # 8c. configure remote Solr location, if specified
 if solrLocation != "LOCAL":

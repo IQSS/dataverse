@@ -460,7 +460,13 @@ If any of the below mentioned property values are changed, corresponding Resourc
 - name, title, description, watermark properties under #datasetfield
 - DatasetField, Value property under #controlledVocabulary
 
-If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse Software installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and contains a series of curl commands. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
+The standard setup script attempts all built-in metadata blocks. If a request fails,
+it reports the block name, HTTP status, and response body, then returns a non-zero
+exit status after processing the remaining blocks. Bootstrap and installer setup
+stop on that failure. For TSV parsing errors, use the response body to locate the problem.
+The installer records setup output in ``setup-all.*.log``.
+
+If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse Software installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and loops over the built-in metadata blocks using curl. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
 
 ``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file /tmp/new-metadata-block.tsv``
 
