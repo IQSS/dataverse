@@ -205,7 +205,7 @@ jobs:
       - name: Checkout dataverse-jsf-tests
         uses: actions/checkout@v7
         with:
-          repository: gdcc/dataverse-jsf-tests
+          repository: unch-rdmc/dataverse-jsf-tests
           path: dataverse-jsf-tests
 
       - name: Install dataverse-jsf-tests dependencies
