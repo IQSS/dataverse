@@ -303,6 +303,19 @@ public enum FeatureFlags {
      * @since Dataverse 6.10
      */
     ALLOW_LOCALLY_FAIR_DATA("allow-locally-fair-data"),
+
+    /**
+     * Enables OIDC user property synchronization from the IdP to Dataverse.
+     * When enabled, user properties (first name, last name, email, email_verified)
+     * are updated from OIDC UserInfo claims every time the user makes an authenticated request,
+     * keeping Dataverse data in sync with the IdP.
+     * When disabled (default), user properties are only set during initial account
+     * creation and are never updated afterward, even if they change at the IdP.
+
+     * @apiNote Raise flag by setting "dataverse.feature.oidc-user-property-sync"
+     * @since Dataverse 6.10
+     */
+    OIDC_USER_PROPERTY_SYNC("oidc-user-property-sync"),
     ;
     
     
