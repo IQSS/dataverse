@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import org.hamcrest.CoreMatchers;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
@@ -36,6 +37,7 @@ import jakarta.json.JsonObjectBuilder;
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -2472,6 +2474,107 @@ public class SearchIT {
         getDatasetResponse.then().assertThat()
                 .body("data.image_url", notNullValue())
                 .statusCode(OK.getStatusCode());
+    }
+
+    // The keyword term URIs are external vocabulary terms. The retrieval URI points to a closed port, so no
+    // vocabulary service is needed: indexing looks the terms up in the database all the same.
+    private static final String KEYWORD_CVOC_CONF = """
+            [{
+              "field-name": "keyword",
+              "term-uri-field": "keywordTermURI",
+              "cvoc-url": "https://example.org/vocab/",
+              "js-url": "https://example.org/vocab/script.js",
+              "protocol": "skosmos",
+              "retrieval-uri": "http://localhost:9/{0}",
+              "allow-free-text": false,
+              "languages": "en",
+              "vocabs": {"example": {"vocabularyUri": "https://example.org/vocab/", "uriSpace": "https://example.org/vocab/term/"}},
+              "managed-fields": {},
+              "retrieval-filtering": {
+                "@context": {"termName": "https://schema.org/name", "lang": "@language", "value": "@value"},
+                "@id": {"pattern": "{0}", "params": ["@id"]},
+                "termName": {"pattern": "{0}", "params": ["/graph/uri=@id/prefLabel"]}
+              }
+            }]""";
+
+    /**
+     * Indexing looks up every external vocabulary term in the database. When each lookup first checks the
+     * whole dataset for changes, the time grows with the square of the number of terms (#12765).
+     */
+    @Test
+    public void testIndexDatasetWithManyExternalVocabularyTerms() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response getCvocConf = UtilIT.getSetting(SettingsServiceBean.Key.CVocConf);
+        String previousCvocConf = getCvocConf.getStatusCode() == OK.getStatusCode() ? getCvocConf.jsonPath().getString("data.message") : null;
+        UtilIT.setSetting(SettingsServiceBean.Key.CVocConf, KEYWORD_CVOC_CONF).then().assertThat().statusCode(OK.getStatusCode());
+        try {
+            int terms = 3000;
+            // not through UtilIT.createDataset, which prints the whole dataset
+            Response createDatasetResponse = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(datasetWithKeywordTerms(terms))
+                    .contentType("application/json")
+                    .post("/api/dataverses/" + dataverseAlias + "/datasets");
+            createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+            Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+            // a few seconds; minutes when every lookup checks the whole dataset
+            assertTrue(UtilIT.sleepForReindex(datasetId.toString(), apiToken, 30),
+                    "a dataset with " + terms + " vocabulary terms should be indexed within 30 seconds");
+
+            UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+            UtilIT.deleteDataverse(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+            UtilIT.deleteUser(UtilIT.getUsernameFromResponse(createUser)).then().assertThat().statusCode(OK.getStatusCode());
+        } finally {
+            if (previousCvocConf == null) {
+                UtilIT.deleteSetting(SettingsServiceBean.Key.CVocConf);
+            } else {
+                UtilIT.setSetting(SettingsServiceBean.Key.CVocConf, previousCvocConf);
+            }
+        }
+    }
+
+    private static String datasetWithKeywordTerms(int terms) throws IOException {
+        JsonArrayBuilder keywords = JsonUtil.createArrayBuilder();
+        for (int i = 1; i <= terms; i++) {
+            keywords.add(JsonUtil.createObjectBuilder()
+                    .add("keywordValue", primitiveField("keywordValue", "Term " + i))
+                    .add("keywordTermURI", primitiveField("keywordTermURI", "https://example.org/vocab/term/" + i))
+                    .add("keywordVocabulary", primitiveField("keywordVocabulary", "Example vocabulary"))
+                    .add("keywordVocabularyURI", primitiveField("keywordVocabularyURI", "https://example.org/vocab/")));
+        }
+        JsonObject dataset = JsonUtil.getJsonObject(Files.readString(Path.of("scripts/search/tests/data/dataset-finch1.json")));
+        JsonObject version = dataset.getJsonObject("datasetVersion");
+        JsonObject blocks = version.getJsonObject("metadataBlocks");
+        JsonObject citation = blocks.getJsonObject("citation");
+        JsonArray fields = JsonUtil.createArrayBuilder(citation.getJsonArray("fields"))
+                .add(JsonUtil.createObjectBuilder()
+                        .add("typeName", "keyword")
+                        .add("multiple", true)
+                        .add("typeClass", "compound")
+                        .add("value", keywords))
+                .build();
+        return JsonUtil.createObjectBuilder(dataset)
+                .add("datasetVersion", JsonUtil.createObjectBuilder(version)
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder(blocks)
+                                .add("citation", JsonUtil.createObjectBuilder(citation).add("fields", fields))))
+                .build().toString();
+    }
+
+    private static JsonObject primitiveField(String typeName, String value) {
+        return JsonUtil.createObjectBuilder()
+                .add("typeName", typeName)
+                .add("multiple", false)
+                .add("typeClass", "primitive")
+                .add("value", value)
+                .build();
     }
 
     private long uploadFile(Integer datasetId, String pathToFile, String apiToken) {
