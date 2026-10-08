@@ -95,7 +95,7 @@
                                                 </h:outputText>
                                                 <h:outputText value="#{dsf.getDisplayValue(mdLangCode)}"
                                                     rendered="#{!dsf.datasetFieldType.allowMultiples and !cvocOnDsf}"
-                                                    escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
+                                                    escape="#{dsf.datasetFieldType.isEscapeFieldText()}"/>
                                                 <ui:repeat value="#{dsf.getValues_nondisplay()}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocOnDsf}">
                                                     <h:outputText value="#{loop.first?'':'; '}"/>
                                                     <h:outputText value="#{ value }"
@@ -155,7 +155,7 @@
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{not compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputText value="#{cvPart.value}"
-                                                                              escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
+                                                                              escape="#{cvPart.key.datasetFieldType.isEscapeFieldText()}"/>
                                                             </ui:fragment>
                                                         </ui:fragment>
                                                         <!--  Cvoc for single child field -->
