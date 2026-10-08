@@ -79,7 +79,7 @@ class DatasetFieldTest {
         compoundValue.setParentDatasetField(parent);
         compoundValue.getChildDatasetFields().add(child);
 
-        assertEquals("first; second", compoundValue.getDisplayValueMap().get(child));
+        assertEquals("first, second", compoundValue.getDisplayValueMap().get(child));
     }
 
     @Test
@@ -128,15 +128,15 @@ class DatasetFieldTest {
     void testCompoundDisplayValueMapFormatsCommaDisplayFormats() {
         DatasetFieldType type = new DatasetFieldType("child", FieldType.TEXT, true);
         type.setTitle("Child");
-        type.setDisplayFormat("#VALUE,");
+        type.setDisplayFormat("#VALUE;");
         DatasetField child = new DatasetField();
         child.setDatasetFieldType(type);
         child.setSingleValue("first");
         child.getDatasetFieldValues().add(new DatasetFieldValue(child));
         child.getDatasetFieldValues().get(1).setValue("second");
 
-        assertEquals("first, second", child.getDisplayValueForValues(child.getValues_nondisplay()));
-        assertEquals("Child: first, second", formatValues("#NAME: #VALUE,", "Child"));
+        assertEquals("first, second;", child.getDisplayValueForValues(child.getValues_nondisplay()));
+        assertEquals("Child: first, second;", formatValues("#NAME: #VALUE;", "Child"));
     }
 
     @Test
@@ -149,7 +149,7 @@ class DatasetFieldTest {
         child.getDatasetFieldValues().add(new DatasetFieldValue(child));
         child.getDatasetFieldValues().get(1).setValue("second");
 
-        assertEquals("(first); (second)", child.getDisplayValueForValues(child.getValues_nondisplay()));
+        assertEquals("(first, second)", child.getDisplayValueForValues(child.getValues_nondisplay()));
     }
 
     private String formatValues(String displayFormat, String title) {

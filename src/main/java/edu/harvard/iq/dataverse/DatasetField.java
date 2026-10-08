@@ -303,17 +303,9 @@ public class DatasetField implements Serializable {
             return "";
         }
 
-        String trimmedFormat = format.trim();
-        boolean commaSeparated = trimmedFormat.equals("#VALUE,")
-                || trimmedFormat.equals("#NAME: #VALUE,");
-        String separator = "; ";
-        if (commaSeparated) {
-            trimmedFormat = trimmedFormat.substring(0, trimmedFormat.length() - 1);
-            separator = ", ";
-        }
-        String value = String.join(separator, displayValues);
+        String value = String.join(", ", displayValues);
         
-        return trimmedFormat
+        return format.trim()
                 // Titles can be null in tests, shouldn't be otherwise
                .replace("#NAME", datasetFieldType.getTitle() == null ? "" : datasetFieldType.getTitle())
                 // Replace #VALUE last to not replace any "#NAME" in the value text
