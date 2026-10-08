@@ -43,6 +43,8 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -1983,10 +1985,12 @@ public class JsonPrinter {
         return arrayBuilder;
     }
 
-    public static JsonObjectBuilder json(DatasetMetrics metrics) {
+    public static JsonObjectBuilder json(DatasetMetrics metrics, Long preMDC, LocalDate mdcStartDate) {
         return jsonObjectBuilder()
                 .add("downloadCount", metrics.getDownloadsTotal())
                 .add("viewCount", metrics.getViewsTotal())
-                .add("citations", datasetExternalCitationsService.getDatasetExternalCitationsByDataset(metrics.getDataset()).size()); // List is never null
+                .add("citations", datasetExternalCitationsService.getDatasetExternalCitationsByDataset(metrics.getDataset()).size()) // List is never null
+                .add("preMDCDownloadCount", preMDC)
+                .add("MDCStartDate", mdcStartDate != null ? mdcStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
     }
 }
