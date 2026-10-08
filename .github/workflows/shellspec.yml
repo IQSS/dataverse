@@ -3,16 +3,30 @@ on:
     push:
         paths:
             - tests/shell/**
+            - .github/workflows/shellspec.yml
             - conf/solr/**
             - scripts/api/setup-datasetfields.sh
             - scripts/api/setup-all.sh
+            - scripts/api/setup-builtin-roles.sh
+            - scripts/api/setup-identity-providers.sh
+            - scripts/api/data/**
+            - modules/container-configbaker/scripts/bootstrap.sh
+            - modules/container-configbaker/scripts/bootstrap/dev/init.sh
+            - modules/container-configbaker/scripts/bootstrap/demo/init.sh
             # add more when more specs are written relying on data
     pull_request:
         paths:
             - tests/shell/**
+            - .github/workflows/shellspec.yml
             - conf/solr/**
             - scripts/api/setup-datasetfields.sh
             - scripts/api/setup-all.sh
+            - scripts/api/setup-builtin-roles.sh
+            - scripts/api/setup-identity-providers.sh
+            - scripts/api/data/**
+            - modules/container-configbaker/scripts/bootstrap.sh
+            - modules/container-configbaker/scripts/bootstrap/dev/init.sh
+            - modules/container-configbaker/scripts/bootstrap/demo/init.sh
             # add more when more specs are written relying on data
 env:
     SHELLSPEC_VERSION: 0.28.1
@@ -40,7 +54,7 @@ jobs:
                   curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
                   ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
             - name: Install dependencies
-              run: dnf install -y ed bc diffutils
+              run: dnf install -y ed bc diffutils jq
             - name: Run shellspec
               run: |
                   cd tests/shell

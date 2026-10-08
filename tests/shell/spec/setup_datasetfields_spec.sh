@@ -4,35 +4,92 @@
 # Run from tests/shell: shellspec spec/setup_datasetfields_spec.sh
 # Add a response case in the curl boundary below, then assert the uploader's
 # exit status and block/HTTP/body diagnostics in a corresponding example.
-setup_datasetfields() {
+setup_datasetfields() (
   METADATA_HTTP_SCENARIO=$1
   METADATA_HTTP_STATUS=${2:-200}
   DATAVERSE_URL=http://metadata-upload.invalid
-  export METADATA_HTTP_SCENARIO METADATA_HTTP_STATUS DATAVERSE_URL
-  bash ../../scripts/api/setup-datasetfields.sh
-}
+  METADATA_HTTP_TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/metadata-upload-spec.XXXXXX") || exit 98
+  trap 'rm -rf "$METADATA_HTTP_TMPDIR"' 0
+  METADATA_CURL_ERRORS=$METADATA_HTTP_TMPDIR/invalid-requests
+  export METADATA_HTTP_SCENARIO METADATA_HTTP_STATUS DATAVERSE_URL METADATA_CURL_ERRORS
+  upload_status=0
+  bash ../../scripts/api/setup-datasetfields.sh || upload_status=$?
+  # A malformed request must fail even an example expecting an HTTP error.
+  if [ -s "$METADATA_CURL_ERRORS" ]; then
+    cat "$METADATA_CURL_ERRORS" >&2
+    exit 97
+  fi
+  exit "$upload_status"
+)
 
 Describe "Metadata block upload command"
   # Command-based mocks are inherited by the actual Bash entry point. Only the
   # HTTP boundary is replaced; response parsing and failure aggregation are real.
   Mock curl
+    reject_request() {
+      printf 'Invalid metadata request: %s\n' "$1" >> "$METADATA_CURL_ERRORS"
+      exit 97
+    }
+
     block=
+    method=
+    content_type=
+    data_binary=
+    url=
     write_out=
     while [ "$#" -gt 0 ]; do
       case "$1" in
-        */loadNAControlledVocabularyValue) block=NAControlledVocabularyValue ;;
+        -X|--request)
+          shift
+          method=$1
+          ;;
+        -H|--header)
+          shift
+          header=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+          case "$header" in
+            'content-type: '*) content_type=${header#content-type: } ;;
+            'content-type:'*) content_type=${header#content-type:} ;;
+          esac
+          ;;
         --data-binary)
           shift
-          block=${1##*/}
-          block=${block%.tsv}
+          data_binary=$1
           ;;
         -w|--write-out)
           shift
           write_out=$1
           ;;
+        http://*) url=$1 ;;
+        -s|-sS) ;;
+        *) reject_request "unsupported curl argument" ;;
       esac
       shift
     done
+
+    if [ -n "$data_binary" ]; then
+      method=${method:-POST}
+    else
+      method=${method:-GET}
+    fi
+    case "$url" in
+      "$DATAVERSE_URL/api/admin/datasetfield/loadNAControlledVocabularyValue")
+        [ "$method" = GET ] || reject_request "vocabulary requires GET"
+        [ -z "$data_binary" ] || reject_request "vocabulary does not accept TSV data"
+        block=NAControlledVocabularyValue
+        ;;
+      "$DATAVERSE_URL/api/admin/datasetfield/load")
+        [ "$method" = POST ] || reject_request "TSV load requires POST"
+        [ "$content_type" = text/tab-separated-values ] || reject_request "TSV content type required"
+        case "$data_binary" in
+          @*.tsv) tsv_file=${data_binary#@} ;;
+          *) reject_request "TSV load requires --data-binary @file.tsv" ;;
+        esac
+        [ -f "$tsv_file" ] && [ -r "$tsv_file" ] || reject_request "TSV file must exist and be readable"
+        block=${tsv_file##*/}
+        block=${block%.tsv}
+        ;;
+      *) reject_request "unknown metadata endpoint" ;;
+    esac
 
     body='{"status":"OK"}'
     http_status=200
