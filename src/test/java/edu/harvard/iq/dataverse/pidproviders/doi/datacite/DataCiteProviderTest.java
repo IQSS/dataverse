@@ -83,7 +83,7 @@ public class DataCiteProviderTest {
         String shoulder = System.getenv("DataCiteShoulder");
         DataCiteDOIProvider provider = new DataCiteDOIProvider("test", "test", authority, shoulder, "randomString",
                 SystemConfig.DataFilePIDFormat.DEPENDENT.toString(), "", "", "https://mds.test.datacite.org",
-                "https://api.test.datacite.org", username, password);
+                "https://api.test.datacite.org", username, password, "expanded");
 
         provider.setPidProviderServiceBean(pidService);
 
