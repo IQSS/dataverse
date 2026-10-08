@@ -140,17 +140,12 @@ See {ref}`locust` and <https://github.com/IQSS/dataverse/issues/12284>, for exam
 
 ## Build the Guides for the Release Candidate
 
-Go to <https://jenkins.dataverse.org/job/guides.dataverse.org/> and make the following adjustments to the config:
+Jenkins has been turned off. For the short-term, throw something at Don, who can build/push updated guides to guides.dataverse.org.
 
 - Repository URL: `https://github.com/IQSS/dataverse.git`
 - Branch Specifier (blank for 'any'): `*/develop`
-- `VERSION` (under "Build Steps"): use the next release version but add "-rc.1" to the end. Don't prepend a "v". Use `6.8-rc.1` (for example)
-
-Click "Save" then "Build Now".
 
 Make sure the guides directory appears in the expected location such as <https://guides.dataverse.org/en/6.8-rc.1/>
-
-When previewing the HTML version of docs from pull requests, we don't usually use this Jenkins job, relying instead on automated ReadTheDocs builds. The reason for doing this step now while we wait for feedback from the Curation Team is that it's an excellent time to fix the Jenkins job, if necessary, to accommodate any changes needed to continue to build the docs. For example, Sphinx might need to be updated or a dependency might need to be installed. Such changes should be listed in the release notes for documentation writers.
 
 ## Deploy Release Candidate to Demo
 
@@ -238,17 +233,12 @@ Check for merged pull requests that have no milestone by going to <https://githu
 (build-guides)=
 ## Build the Guides for the Release
 
-Go to <https://jenkins.dataverse.org/job/guides.dataverse.org/> and make the following adjustments to the config:
+Jenkins has been turned off. For the short-term, throw something at Don, who can build/push updated guides to guides.dataverse.org.
 
 - Repository URL: `https://github.com/IQSS/dataverse.git`
 - Branch Specifier (blank for 'any'): `*/master`
-- `VERSION` (under "Build Steps"): bump to the next release. Don't prepend a "v". Use `6.10.1` (for example)
-
-Click "Save" then "Build Now".
 
 Make sure the guides directory appears in the expected location such as <https://guides.dataverse.org/en/6.10.1/>
-
-As described below, we'll soon point the "latest" symlink to that new directory.
 
 (run-build-create-war)=
 ## Run a Build to Create the War File
@@ -304,7 +294,7 @@ Click the "Publish release" button.
 
 ## Update Guides Link
 
-"latest" at <https://guides.dataverse.org/en/latest/> is a symlink to the directory with the latest release. That directory (e.g. `6.10.1`) was put into place by the Jenkins "guides" job described above.
+"latest" at <https://guides.dataverse.org/en/latest/> is a symlink to the directory with the latest release.
 
 ssh into the guides server and update the symlink to point to the latest release, as in the example below.
 
