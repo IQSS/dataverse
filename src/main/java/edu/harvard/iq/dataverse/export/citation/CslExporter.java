@@ -50,7 +50,7 @@ public class CslExporter implements Exporter, BulkDatasetExporter {
     
     @Override
     public String getFormatName() {
-        return "csl";
+        return DataCitation.Format.CSL.formatId();
     }
     
     @Override
