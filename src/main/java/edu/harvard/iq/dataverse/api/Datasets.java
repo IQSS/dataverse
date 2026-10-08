@@ -5933,13 +5933,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetVersionInternalCitation(@Context ContainerRequestContext crc,
             @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
             @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
-            @Context HttpHeaders headers) {
-        try {
-            return ok(getDatasetVersionCitationAsString(crc, datasetId, versionId, DataCitation.Format.Internal, includeDeaccessioned,
-                    uriInfo, headers));
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
+            @Context HttpHeaders headers) throws WrappedResponse {
+        return getDatasetVersionCitation(crc, datasetId, versionId, DataCitation.Format.Internal.formatId(), includeDeaccessioned, uriInfo, headers);
     }
 
     /**
@@ -5961,33 +5956,41 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
             @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Parameter(description = "Citation format to return.") @PathParam("format") String formatString,
             @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
-            @Context HttpHeaders headers) {
+            @Context HttpHeaders headers) throws WrappedResponse {
 
-        DataCitation.Format format;
-        try {
-            format = DataCitation.Format.valueOf(formatString);
-        } catch (IllegalArgumentException e) {
-            return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
-        }
-        try {
+        // Only accept valid citation formats
+        DataCitation.Format format = Optional.ofNullable(DataCitation.Format.lookup(formatString))
+            .orElseThrow(() -> new BadRequestException(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+        
+        // Lookup the dataset version. In case of errors, exceptions will be thrown and transformed by JAX-RS into a Response
+        DataverseRequest request = createDataverseRequest(getRequestUser(crc));
+        Dataset dataset = findDatasetUserCanSeeOrDie(datasetId, request);
+        DatasetVersion datasetVersion = getDatasetVersionOrDie(request, versionId, dataset, uriInfo, headers, includeDeaccessioned, false);
+        
+        // Looking up the format by the formatId and not formatString to be backward compatible, as the lookup always
+        // has been case-insensitive, but the exporter registry is case-sensitive.
+        var exporterDetail = exporterRegistrySvc.getDetail(format.formatId());
+        // When matching an export format, prioritize using exports over the deprecated DataCitation
+        if (exporterDetail.isPresent()) {
+            StreamingOutput output = out -> {
+                try (InputStream input = exportSvc.getExport(datasetVersion, formatString)) {
+                    input.transferTo(out);
+                }
+            };
+            return Response.ok()
+                           .type(exporterDetail.get().mediaType())
+                           .entity(output)
+                           .build();
+        // Otherwise, reuse the deprecated DataCitation way to retrieve the format (see DataCitation class for refactoring steps)
+        } else {
+            String mediaType = DataCitation.getCitationFormatMediaType(format, true);
+            String citation = datasetVersion.getCitation(format, true, false);
             //ToDo - add ContentDisposition to support downloading with a file name
-            return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(
-                    getDatasetVersionCitationAsString(crc, datasetId, versionId, format, includeDeaccessioned, uriInfo, headers))
-                    .build();
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            return Response.ok()
+                .type(mediaType)
+                .entity(citation)
+                .build();
         }
-    }
-
-    public String getDatasetVersionCitationAsString(ContainerRequestContext crc, String datasetId, String versionId,
-            DataCitation.Format format, boolean includeDeaccessioned, UriInfo uriInfo, HttpHeaders headers)
-            throws IllegalArgumentException, WrappedResponse {
-        boolean checkFilePerms = false;
-
-        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-        DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers,
-                includeDeaccessioned, checkFilePerms);
-        return dsv.getCitation(format, true, false);
     }
 
     @POST
