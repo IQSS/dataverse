@@ -460,10 +460,13 @@ If any of the below mentioned property values are changed, corresponding Resourc
 - name, title, description, watermark properties under #datasetfield
 - DatasetField, Value property under #controlledVocabulary
 
-The standard setup script attempts all built-in metadata blocks. If a request fails,
+The metadata uploader attempts all built-in metadata blocks. If a request fails,
 it reports the block name, HTTP status, and response body, then returns a non-zero
-exit status after processing the remaining blocks. Bootstrap and installer setup
-stop on that failure. For TSV parsing errors, use the response body to locate the problem.
+exit status after processing the remaining blocks. During bootstrap and installation,
+the remaining instance configuration and security lockdown continue before the process
+returns a non-zero exit status. Development bootstrap retains its intentionally
+insecure configuration. Successful block uploads are not rolled back.
+For TSV parsing errors, use the response body to locate the problem.
 The installer records setup output in ``setup-all.*.log``.
 
 If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse Software installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and loops over the built-in metadata blocks using curl. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
