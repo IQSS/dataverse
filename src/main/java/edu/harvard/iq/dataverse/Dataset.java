@@ -8,48 +8,23 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.ColumnResult;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedNativeQuery;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.SqlResultSetMapping;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import jakarta.persistence.*;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  *
  * @author skraffmiller
  */
 @NamedQueries({
-    // Dataset.findById should only be used if you're going to iterate over files (otherwise, lazy loading in DatasetService.find() is better).
-    // If you are going to iterate over files, preferably call the DatasetService.findDeep() method i.s.o. using this query directly.
-    @NamedQuery(name = "Dataset.findById", 
-                query = "SELECT o FROM Dataset o LEFT JOIN FETCH o.files WHERE o.id=:id"),
     @NamedQuery(name = "Dataset.findIdStale",
                query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
     @NamedQuery(name = "Dataset.findIdStalePermission",
@@ -810,13 +785,17 @@ public class Dataset extends DvObjectContainer {
     public void setHarvestedFrom(HarvestingClient harvestingClientConfig) {
         this.harvestedFrom = harvestingClientConfig;
     }
-    
+
     public boolean isHarvested() {
         return this.harvestedFrom != null;
     }
 
+    public boolean isLinked() {
+        return (datasetLinkingDataverses != null && datasetLinkingDataverses.size() > 0);
+    }
+
     private String harvestIdentifier;
-     
+
     public String getHarvestIdentifier() {
         return harvestIdentifier;
     }
