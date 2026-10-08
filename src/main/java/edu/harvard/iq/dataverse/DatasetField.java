@@ -281,7 +281,8 @@ public class DatasetField implements Serializable {
             format = "#VALUE";
         }
         return format
-                .replace("#NAME", datasetFieldType.getTitle())
+                //Tests may have field types with null titles
+                .replace("#NAME", (datasetFieldType.getTitle()!=null) ? datasetFieldType.getTitle():"")
                 .replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                 .replace("#VALUE", getSanitizedDisplayValue(value));
     }
