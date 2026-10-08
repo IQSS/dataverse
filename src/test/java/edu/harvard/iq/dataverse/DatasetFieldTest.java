@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -100,5 +102,62 @@ class DatasetFieldTest {
         compoundValue.getChildDatasetFields().add(child);
 
         assertEquals("fr", compoundValue.getDisplayValueMap("fr").get(child));
+    }
+
+    @Test
+    void testCompoundDisplayValueMapFormatsMultipleValuesWithNameOnce() {
+        DatasetFieldType type = new DatasetFieldType("child", FieldType.TEXT, true);
+        type.setTitle("Child");
+        type.setDisplayFormat("#NAME: #VALUE");
+        DatasetField child = new DatasetField();
+        child.setDatasetFieldType(type);
+        child.setSingleValue("first");
+        child.getDatasetFieldValues().add(new DatasetFieldValue(child));
+        child.getDatasetFieldValues().get(1).setValue("second");
+
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        DatasetField parent = new DatasetField();
+        parent.setDatasetFieldType(new DatasetFieldType("parent", FieldType.TEXT, false));
+        compoundValue.setParentDatasetField(parent);
+        compoundValue.getChildDatasetFields().add(child);
+
+        assertEquals("Child: first, second", compoundValue.getDisplayValueMap().get(child));
+    }
+
+    @Test
+    void testCompoundDisplayValueMapFormatsCommaDisplayFormats() {
+        DatasetFieldType type = new DatasetFieldType("child", FieldType.TEXT, true);
+        type.setTitle("Child");
+        type.setDisplayFormat("#VALUE,");
+        DatasetField child = new DatasetField();
+        child.setDatasetFieldType(type);
+        child.setSingleValue("first");
+        child.getDatasetFieldValues().add(new DatasetFieldValue(child));
+        child.getDatasetFieldValues().get(1).setValue("second");
+
+        assertEquals("first, second", child.getDisplayValueForValues(child.getValues_nondisplay()));
+        assertEquals("Child: first, second", formatValues("#NAME: #VALUE,", "Child"));
+    }
+
+    @Test
+    void testCompoundDisplayValueMapKeepsOrdinaryFormatsPerValue() {
+        DatasetFieldType type = new DatasetFieldType("child", FieldType.TEXT, true);
+        type.setDisplayFormat("(#VALUE)");
+        DatasetField child = new DatasetField();
+        child.setDatasetFieldType(type);
+        child.setSingleValue("first");
+        child.getDatasetFieldValues().add(new DatasetFieldValue(child));
+        child.getDatasetFieldValues().get(1).setValue("second");
+
+        assertEquals("(first); (second)", child.getDisplayValueForValues(child.getValues_nondisplay()));
+    }
+
+    private String formatValues(String displayFormat, String title) {
+        DatasetFieldType type = new DatasetFieldType("child", FieldType.TEXT, true);
+        type.setTitle(title);
+        type.setDisplayFormat(displayFormat);
+        DatasetField child = new DatasetField();
+        child.setDatasetFieldType(type);
+        return child.getDisplayValueForValues(List.of("first", "second"));
     }
 }

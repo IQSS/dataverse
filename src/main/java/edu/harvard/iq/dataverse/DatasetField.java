@@ -280,15 +280,56 @@ public class DatasetField implements Serializable {
         if (StringUtils.isBlank(format)) {
             format = "#VALUE";
         }
+        return format
+                .replace("#NAME", datasetFieldType.getTitle())
+                .replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
+                .replace("#VALUE", getSanitizedDisplayValue(value));
+    }
+
+    public String getDisplayValueForValues(List<String> values) {
+        String format = datasetFieldType.getDisplayFormat();
+        if (StringUtils.isBlank(format)) {
+            format = "#VALUE";
+        }
+
+        List<String> displayValues = new ArrayList<>();
+        for (String value : values) {
+            String displayValue = getSanitizedDisplayValue(value);
+            if (!displayValue.isEmpty()) {
+                displayValues.add(displayValue);
+            }
+        }
+        if (displayValues.isEmpty()) {
+            return "";
+        }
+
+        String trimmedFormat = format.trim();
+        boolean commaSeparated = trimmedFormat.equals("#VALUE,")
+                || trimmedFormat.equals("#NAME: #VALUE,");
+        String separator = "; ";
+        if (commaSeparated) {
+            trimmedFormat = trimmedFormat.substring(0, trimmedFormat.length() - 1);
+            separator = ", ";
+        }
+        String value = String.join(separator, displayValues);
+        
+        return trimmedFormat
+                // Titles can be null in tests, shouldn't be otherwise
+               .replace("#NAME", datasetFieldType.getTitle() == null ? "" : datasetFieldType.getTitle())
+                // Replace #VALUE last to not replace any "#NAME" in the value text
+               .replace("#VALUE", value);
+    }
+
+    private String getSanitizedDisplayValue(String value) {
+        if (StringUtils.isBlank(value) || NA_VALUE.equals(value)) {
+            return "";
+        }
+
         String sanitizedValue = datasetFieldType.isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(value) : value;
         if (!datasetFieldType.isSanitizeHtml() && datasetFieldType.isEscapeOutputText()) {
             sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
         }
-
-        return format
-                .replace("#NAME", datasetFieldType.getTitle())
-                .replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
-                .replace("#VALUE", sanitizedValue);
+        return sanitizedValue;
     }
     
     public String getRawValue() {

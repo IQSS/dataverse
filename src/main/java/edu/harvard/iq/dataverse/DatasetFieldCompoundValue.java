@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,12 +151,10 @@ public class DatasetFieldCompoundValue implements Serializable {
     public Map<DatasetField, String> getDisplayValueMap(String langCode) {
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
         linkMap.clear();
-        boolean fixTrailingComma = false;
         Pair<String, String> linkComponents = getLinkComponents();
         linkScheme = null;
         linkValue = null;
         for (DatasetField childDatasetField : childDatasetFields) {
-            fixTrailingComma = false;
             List<String> values = childDatasetField.getDatasetFieldType().isControlledVocabulary()
                     ? childDatasetField.getValues(langCode)
                     : childDatasetField.getValues_nondisplay();
@@ -173,38 +170,13 @@ public class DatasetFieldCompoundValue implements Serializable {
                     }
                 }
 
-                String format = childDatasetField.getDatasetFieldType().getDisplayFormat();
-                if (StringUtils.isBlank(format)) {
-                    format = "#VALUE";
-                }
-
-                //if a series of child values is comma delimited we want to strip off the final entry's comma
-                if (format.trim().equals("#VALUE,")) fixTrailingComma = true;
-
-                StringBuilder displayValueBuilder = new StringBuilder();
-                for (String value : values) {
-
-                    String displayValue = childDatasetField.getDisplayValueForValue(value);
-                    if(displayValue.isEmpty()) {
-                        continue;
-                    }
-                    if (displayValueBuilder.length() > 0) {
-                        displayValueBuilder.append("; ");
-                    }
-                    displayValueBuilder.append(displayValue);
-                }
-                String displayValue = displayValueBuilder.toString();
+                String displayValue = childDatasetField.getDisplayValueForValues(values);
                 if (displayValue.isEmpty()) {
                     continue;
                 }
                 fieldMap.put(childDatasetField, displayValue);
             }
         }
-        
-        if (fixTrailingComma) {
-            return (removeLastComma(fieldMap));
-        }
-
         return fieldMap;
     }
 
@@ -239,34 +211,6 @@ public class DatasetFieldCompoundValue implements Serializable {
         return false;
     }
 
-    private Map<DatasetField, String> removeLastComma(Map<DatasetField, String> mapIn) {
-
-        Iterator<Map.Entry<DatasetField, String>> itr = mapIn.entrySet().iterator();
-        Map.Entry<DatasetField, String> entry = null;
-        DatasetField keyVal = null;
-        String oldValue = null;
-
-        while (itr.hasNext()) {
-            entry = itr.next();
-            keyVal = entry.getKey();
-            oldValue = entry.getValue();
-        }
-        
-        String newValue = oldValue; 
-        
-        if (keyVal != null && oldValue != null && oldValue.length() >= 2) {
-        //To take into account both versions of the tsv for display value
-            if (oldValue.endsWith(", ")) {
-                newValue = oldValue.substring(0, oldValue.length() - 2);
-            } else if (oldValue.endsWith(",")) {
-                newValue = oldValue.substring(0, oldValue.length() - 1);
-            }
-         
-            mapIn.replace(keyVal, oldValue, newValue);
-        }
-
-        return mapIn;
-    }
     
 
     /**
