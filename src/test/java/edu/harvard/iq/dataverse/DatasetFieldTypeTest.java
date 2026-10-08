@@ -81,28 +81,28 @@ public class DatasetFieldTypeTest {
                 System.out.println("testIsEscapeOutputText");
         DatasetFieldType instance = new DatasetFieldType();
         instance.setFieldType(DatasetFieldType.FieldType.TEXT);
-        Boolean result = instance.isEscapeOutputText();
-        assertTrue(result);
+        assertTrue(instance.isEscapeOutputText());
+        assertTrue(instance.isEscapeFieldText());
         
-        //if Disaplay Format includes a link then don't escape
+        //if Display Format includes a link or <b> or <br/>, escape the values, but don't escape on the page
         instance.setDisplayFormat("'<a target=\"_blank\" href=\"http://www.rcsb.org/pdb/explore/explore.do?structureId=#VALUE\">PDB (RCSB) #VALUE</a>'");
-        result = instance.isEscapeOutputText();
-        assertFalse(result);  
+        assertTrue(instance.isEscapeOutputText());  
+        assertFalse(instance.isEscapeFieldText());
         
         //if textbox then sanitize - allow tags
         instance.setFieldType(DatasetFieldType.FieldType.TEXTBOX);
-        result = instance.isEscapeOutputText();
-        assertFalse( result);
-        
+        assertFalse( instance.isEscapeOutputText());
+        assertFalse( instance.isEscapeFieldText());
+
         //if textbox then don't sanitize - allow tags
         instance.setFieldType(DatasetFieldType.FieldType.EMAIL);
-        result = instance.isEscapeOutputText();
-        assertTrue(result);
+        assertTrue(instance.isEscapeOutputText());
+        assertTrue(instance.isEscapeFieldText());
         
         //URL, too
         instance.setFieldType(DatasetFieldType.FieldType.URL);
-        result = instance.isEscapeOutputText();
-        assertFalse(result);
+        assertFalse(instance.isEscapeOutputText());
+        assertFalse(instance.isEscapeFieldText());
         
     }
     

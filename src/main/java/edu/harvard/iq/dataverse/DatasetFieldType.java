@@ -190,7 +190,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public Boolean isEscapeFieldText(){
-        return this.isEscapeOutputText() || !(this.fieldType.equals(FieldType.TEXT) &&  this.displayFormat != null &&(this.displayFormat.contains("<a") || this.displayFormat.contains("<b")));
+        return this.isEscapeOutputText() && !(this.fieldType.equals(FieldType.TEXT) &&  this.displayFormat != null &&(this.displayFormat.contains("<a") || this.displayFormat.contains("<b")));
     }
     
     public String getName() {
