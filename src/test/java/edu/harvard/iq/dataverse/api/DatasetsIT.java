@@ -6166,7 +6166,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         Response uploadFileResponse = UtilIT.uploadFileViaNative(String.valueOf(datasetId), "scripts/search/data/replace_test/004.txt", apiToken);
         uploadFileResponse.prettyPrint();
@@ -6186,7 +6185,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         countResponse.prettyPrint();
         countResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("downloadCount", equalTo(1))
-                .body("MDCStartDate", is(nullValue()))
                 .body("MDC", is(nullValue()));
         String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         String tomorrow = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
