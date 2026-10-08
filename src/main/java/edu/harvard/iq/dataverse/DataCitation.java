@@ -127,11 +127,11 @@ public class DataCitation {
     private String datasetType;
 
     public enum Format {
-        Internal,
-        EndNote,
-        RIS,
-        BibTeX,
-        CSL;
+        Internal("internal", MediaType.TEXT_PLAIN, MediaType.TEXT_HTML),
+        EndNote("endnote", MediaType.TEXT_XML),
+        RIS("ris", MediaType.TEXT_PLAIN),
+        BibTeX("bibtex", MediaType.TEXT_PLAIN),
+        CSL("csl", MediaType.APPLICATION_JSON);
         
         public static Format lookup(String name) {
             for (Format format : values()) {
@@ -140,6 +140,30 @@ public class DataCitation {
                 }
             }
             return null;
+        }
+        
+        private final String formatId;
+        private final String mediaType;
+        private final String htmlTargetMediaType;
+        
+        Format(String formatId, String mediaType) {
+            this.formatId = formatId;
+            this.mediaType = mediaType;
+            this.htmlTargetMediaType = null;
+        }
+        
+        Format(String formatId, String mediaType, String altMediaType) {
+            this.formatId = formatId;
+            this.mediaType = mediaType;
+            this.htmlTargetMediaType = altMediaType;
+        }
+        
+        public String formatId() {
+            return formatId;
+        }
+        
+        public String mediaType(boolean useHtmlTargetTypeIfPresent) {
+            return useHtmlTargetTypeIfPresent && this.htmlTargetMediaType != null ? this.htmlTargetMediaType : this.mediaType;
         }
     }
     
@@ -297,16 +321,7 @@ public class DataCitation {
     }
     
     public static String getCitationFormatMediaType(Format format, boolean isHtml) {
-        switch (format) {
-        
-        case CSL:
-            return MediaType.APPLICATION_JSON;
-        case EndNote:
-            return MediaType.TEXT_XML;
-        case Internal:
-            return isHtml ? MediaType.TEXT_HTML : MediaType.TEXT_PLAIN;
-        }
-        return MediaType.TEXT_PLAIN;
+        return format.mediaType(isHtml);
     }
         
     private String formatInternalCitation(boolean html, boolean anonymized) {
