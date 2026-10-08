@@ -57,6 +57,7 @@ import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DatasetsIT {
@@ -947,8 +948,8 @@ public class DatasetsIT {
         Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
         exportFail.prettyPrint();
         exportFail.then().assertThat()
-                .body("message", equalTo("Export Failed"))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .body("message", stringContainsInOrder("Export failed", "format", "noSuchExporter"))
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
@@ -1601,8 +1602,8 @@ public class DatasetsIT {
         Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
         exportFail.prettyPrint();
         exportFail.then().assertThat()
-                .body("message", equalTo("Export Failed"))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .body("message", stringContainsInOrder("Export failed", "format", "noSuchExporter"))
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
