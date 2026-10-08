@@ -33,6 +33,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import org.apache.commons.lang3.StringUtils;
 
 @Entity
@@ -268,6 +269,26 @@ public class DatasetField implements Serializable {
             returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
         }
         return returnString;
+    }
+
+    public String getDisplayValueForValue(String value) {
+        if (StringUtils.isBlank(value) || NA_VALUE.equals(value)) {
+            return "";
+        }
+
+        String format = datasetFieldType.getDisplayFormat();
+        if (StringUtils.isBlank(format)) {
+            format = "#VALUE";
+        }
+        String sanitizedValue = datasetFieldType.isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(value) : value;
+        if (!datasetFieldType.isSanitizeHtml() && datasetFieldType.isEscapeOutputText()) {
+            sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
+        }
+
+        return format
+                .replace("#NAME", datasetFieldType.getTitle())
+                .replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
+                .replace("#VALUE", sanitizedValue);
     }
     
     public String getRawValue() {

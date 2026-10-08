@@ -61,4 +61,44 @@ class DatasetFieldTest {
 
         assertEquals(field2.getDatasetFieldType(), field1.getDatasetFieldType());
     }
+
+    @Test
+    void testCompoundDisplayValueMapIncludesMultipleValues() {
+        DatasetFieldType type = new DatasetFieldType("child", FieldType.TEXT, true);
+        DatasetField child = new DatasetField();
+        child.setDatasetFieldType(type);
+        child.setSingleValue("first");
+        child.getDatasetFieldValues().add(new DatasetFieldValue(child));
+        child.getDatasetFieldValues().get(1).setValue("second");
+
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        DatasetField parent = new DatasetField();
+        parent.setDatasetFieldType(new DatasetFieldType("parent", FieldType.TEXT, false));
+        compoundValue.setParentDatasetField(parent);
+        compoundValue.getChildDatasetFields().add(child);
+
+        assertEquals("first; second", compoundValue.getDisplayValueMap().get(child));
+    }
+
+    @Test
+    void testCompoundDisplayValueMapUsesLanguageForControlledVocabularyValues() {
+        DatasetFieldType type = new DatasetFieldType("child", FieldType.TEXT, true);
+        type.setAllowControlledVocabulary(true);
+        DatasetField child = new DatasetField();
+        child.setDatasetFieldType(type);
+        child.getControlledVocabularyValues().add(new ControlledVocabularyValue() {
+            @Override
+            public String getLocaleStrValue(String language) {
+                return language;
+            }
+        });
+
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        DatasetField parent = new DatasetField();
+        parent.setDatasetFieldType(new DatasetFieldType("parent", FieldType.TEXT, false));
+        compoundValue.setParentDatasetField(parent);
+        compoundValue.getChildDatasetFields().add(child);
+
+        assertEquals("fr", compoundValue.getDisplayValueMap("fr").get(child));
+    }
 }
