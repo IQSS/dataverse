@@ -64,8 +64,6 @@ Resetting Your API Token
 
 You can reset your API Token from your account page in your Dataverse installation as described in the :doc:`/user/account` section of the User Guide.
 
-.. _bearer-tokens:
-
 Using Preview URL Tokens as API Token
 --------------------------------------
 
@@ -83,6 +81,8 @@ If you want to access a dataset's contents shared by a preview URL (see :ref:`pr
   FILE_ID=1111111
   FILENAME=example.txt
   curl -H "X-Dataverse-key:$PREVIEW_URL_TOKEN" -o "$FILENAME" "$SERVER_URL/api/access/datafile/$FILE_ID"
+
+.. _bearer-tokens:
 
 Bearer Tokens
 -------------
