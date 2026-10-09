@@ -598,6 +598,106 @@ public class UsersIT {
                 .body("data.count", equalTo(2));
     }
 
+    @Test
+    public void testUserRors() {
+        String harvard = "https://ror.org/03vek6s52";
+        String unc = "https://ror.org/0130frc33";
+        String mit = "https://ror.org/042nb2s44";
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createOtherUser = UtilIT.createRandomUser();
+        createOtherUser.then().assertThat().statusCode(OK.getStatusCode());
+        String otherUsername = UtilIT.getUsernameFromResponse(createOtherUser);
+        String otherApiToken = UtilIT.getApiTokenFromResponse(createOtherUser);
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superuserUsername).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Starts empty, both via :me and via username
+        UtilIT.getUserRors(":me", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of()));
+        UtilIT.getAuthenticatedUserByToken(apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.rors", equalTo(List.of()));
+
+        // Add: appends by default, bare IDs are normalized to URLs
+        UtilIT.addUserRor(":me", "03vek6s52", null, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of(harvard)));
+        UtilIT.addUserRor(username, unc, null, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of(harvard, unc)));
+        // Add at position 0 to make it primary
+        UtilIT.addUserRor(":me", mit, 0, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of(mit, harvard, unc)));
+
+        // Duplicate, invalid, and out-of-range adds
+        UtilIT.addUserRor(":me", harvard, null, apiToken).then().assertThat()
+                .statusCode(CONFLICT.getStatusCode());
+        UtilIT.addUserRor(":me", "not-a-ror", null, apiToken).then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        UtilIT.addUserRor(":me", "02e2c7k09", 99, apiToken).then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Replace/reorder
+        UtilIT.setUserRors(":me", List.of(unc, "03vek6s52"), apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of(unc, harvard)));
+        UtilIT.setUserRors(":me", List.of(unc, unc), apiToken).then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        UtilIT.getAuthenticatedUserByToken(apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.rors", equalTo(List.of(unc, harvard)));
+
+        // Remove
+        UtilIT.removeUserRor(":me", "0130frc33", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of(harvard)));
+        UtilIT.removeUserRor(":me", "0130frc33", apiToken).then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Another (non-super) user can't see or change this user's RORs
+        UtilIT.getUserRors(username, otherApiToken).then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+        UtilIT.addUserRor(username, mit, null, otherApiToken).then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        // A superuser can
+        UtilIT.addUserRor(username, mit, null, superuserApiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of(harvard, mit)));
+        UtilIT.getUserRors("nosuchuser" + UUID.randomUUID().toString().substring(0, 8), superuserApiToken).then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Merge: the consumed user's RORs are appended, duplicates skipped
+        UtilIT.setUserRors(":me", List.of(unc, harvard), otherApiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.mergeAccounts(username, otherUsername, superuserApiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.getUserRors(":me", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of(harvard, mit, unc)));
+
+        // Clear
+        UtilIT.setUserRors(":me", List.of(), apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data", equalTo(List.of()));
+
+        // Deleting a user with RORs works
+        UtilIT.addUserRor(":me", harvard, null, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+        UtilIT.deleteUser(username).then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
     // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
     @Disabled
     public void testRegisterOIDCUser() {
