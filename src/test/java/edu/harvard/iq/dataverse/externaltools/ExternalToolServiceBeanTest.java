@@ -55,7 +55,7 @@ public class ExternalToolServiceBeanTest {
         externalToolTypes.add(externalToolType);
         ExternalTool.Scope scope = ExternalTool.Scope.FILE;
         ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
-        URLTokenUtil externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
+        URLTokenUtil externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null, null);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
         List<ExternalTool> availableExternalTools = externalToolService.findExternalToolsByFile(externalTools, dataFile, true);
@@ -108,7 +108,7 @@ public class ExternalToolServiceBeanTest {
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, "en");
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, "en", null);
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         System.out.println("result: " + toolUrl);
         assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7&fileMetadataId=2&dvLocale=en", toolUrl);
@@ -160,7 +160,7 @@ public class ExternalToolServiceBeanTest {
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, "fr");
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, "fr", null);
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         System.out.println("result: " + toolUrl);
         assertEquals("http://awesometool.com?filePid=doi:10.5072/FK2/RMQT6J/G9F1A1&key=7196b5ce-f200-4286-8809-03ffdbc255d7&fileMetadataId=2&dvLocale=fr", toolUrl);
