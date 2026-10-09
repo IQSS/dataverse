@@ -1020,6 +1020,10 @@ span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 .ui-autocomplete input {padding:6px 12px; margin:0;}
 .ui-autocomplete-moretext {padding:6px 12px; pointer-events:none; font-weight:normal; color:#333; text-decoration:none;}
 
+.ui-selectcheckboxmenu-token {
+    white-space: normal;
+}
+
 /* Overwrite Bootstrap */
 .btn, .input-group-btn {white-space: normal !important;}
 .dropdown-item-text {display: block;padding: 3px 20px;color: #212529;}
