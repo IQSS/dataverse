@@ -3,11 +3,14 @@ package edu.harvard.iq.dataverse.export.service;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InternalFailure;
 import edu.harvard.iq.dataverse.export.service.ExportSystemException.InvalidRequest;
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
 import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.ExporterDetails;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.caps.bulk.BulkDatasetContext;
+import io.gdcc.spi.export.caps.bulk.BulkDatasetExporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Nested;
@@ -23,8 +26,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -32,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -39,20 +46,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * The service is a thin orchestration layer over registry, cache, and pipeline. All three are mocked:
@@ -74,6 +74,9 @@ class ExportServiceBeanTest {
     @Mock ExporterRegistryBean registry;
     @Mock ExportCache cache;
     @Mock ExportPipelineBean pipeline;
+    @Mock DatasetVersionServiceBean versionService;
+    /** The container injects the bean's own proxy; a mock stands in for it, so REQUIRES_NEW hops are observable. */
+    @Mock ExportServiceBean self;
     // TODO: make this an actual object and not a mock?
     @Mock Dataset dataset;
     
@@ -86,6 +89,8 @@ class ExportServiceBeanTest {
         service.registry = registry;
         service.cache = cache;
         service.pipeline = pipeline;
+        service.versionService = versionService;
+        service.self = self;
         
         lenient().when(dataset.getId()).thenReturn(DATASET_ID);
     }
@@ -137,6 +142,40 @@ class ExportServiceBeanTest {
             return Stream.of(
                 Named.of("IOException", new IOException("disk gone")),
                 Named.of("RuntimeException", new IllegalArgumentException("boom"))
+            );
+        }
+    }
+    
+    /**
+     * Only the lookup and the error contract are testable here: whether the container actually opens a new
+     * transaction cannot be observed outside a EJB/CDI container deployment!
+     */
+    @Nested
+    class GetExportInNewTransaction {
+        
+        private static final long VERSION_ID = 7L;
+        
+        @Test
+        void resolvesVersionByIdThenExportsIt() throws IOException {
+            DatasetVersion version = releasedVersion();
+            version.setId(VERSION_ID);
+            InputStream cached = utf8("cached");
+            when(versionService.find(VERSION_ID)).thenReturn(version);
+            when(pipeline.readFreshCachedExport(version, keyOf(version, BASE))).thenReturn(Optional.of(cached));
+            
+            assertSame(cached, service.getExportInNewTransaction(VERSION_ID, BASE));
+        }
+        
+        @Test
+        void rejectsVanishedVersionWithoutTouchingThePipeline() {
+            when(versionService.find(VERSION_ID)).thenReturn(null);
+            
+            InvalidRequest ex = assertThrows(InvalidRequest.class,
+                () -> service.getExportInNewTransaction(VERSION_ID, BASE));
+            
+            assertAll(
+                () -> assertTrue(ex.getMessage().contains(String.valueOf(VERSION_ID))),
+                () -> verifyNoInteractions(pipeline)
             );
         }
     }
@@ -208,6 +247,264 @@ class ExportServiceBeanTest {
             assertSame(boom, ex.getCause());
         }
     }
+    
+    /**
+     * Bulk export is orchestration plus a lazy context.
+     * The exporter is a mock driven by {@link #onExport}, so each test can play the role of a plugin and
+     * exercise the context from the outside, exactly as an SPI implementation would.
+     */
+    @Nested
+    class BulkExport {
+        
+        private static final String CORRELATION_ID = "abc123";
+        private static final ExportTarget FIRST = new ExportTarget(1L, "doi:10.5072/FK2/ONE", "1.0");
+        private static final ExportTarget SECOND = new ExportTarget(2L, "doi:10.5072/FK2/TWO", "DRAFT");
+        
+        /** Mocked as {@link Exporter} with the capability mixed in, mirroring how the registry hands it out. */
+        private Exporter exporter;
+        
+        @BeforeEach
+        void bulkCapableExporterIsRegistered() {
+            Details details = detailsOf(BASE);
+            exporter = mock(Exporter.class, withSettings().extraInterfaces(BulkDatasetExporter.class));
+            // Lenient: validation-failure tests never reach the registry.
+            lenient().when(registry.requireExistsAndSupports(BASE, BulkDatasetExporter.class)).thenReturn(details);
+            lenient().when(registry.get(details)).thenReturn(exporter);
+        }
+        
+        /** What a bulk exporter plugin does with the context; lets tests impersonate one. */
+        @FunctionalInterface
+        private interface BulkBody {
+            void accept(BulkDatasetContext context, OutputStream output) throws Exception;
+        }
+        
+        /** Lets a test act as the plugin: whatever {@code body} does with the context, the exporter does. */
+        private void onExport(BulkBody body) throws Exception {
+            doAnswer(invocation -> {
+                body.accept(invocation.getArgument(0), invocation.getArgument(1));
+                // Mockito requires a return value, even if the method is void.
+                return null;
+            }).when((BulkDatasetExporter) exporter).exportBulk(any(), any());
+        }
+        
+        // ++++ argument validation ++++
+        
+        @Test
+        void rejectsMissingTargets() {
+            assertAll(
+                () -> assertThrows(InvalidRequest.class, () -> service.bulkExport(null, BASE, new RecordingOutputStream(), CORRELATION_ID)),
+                () -> assertThrows(InvalidRequest.class, () -> service.bulkExport(List.of(), BASE, new RecordingOutputStream(), CORRELATION_ID)),
+                () -> verifyNoInteractions(registry, self)
+            );
+        }
+        
+        @Test
+        void rejectsNullOutput() {
+            assertThrows(InvalidRequest.class, () -> service.bulkExport(List.of(FIRST), BASE, null, CORRELATION_ID));
+            verifyNoInteractions(registry, self);
+        }
+        
+        @Test
+        void propagatesUnknownOrIncapableFormat() {
+            doThrow(new InvalidRequest("no bulk capability")).when(registry).requireExistsAndSupports(UNKNOWN, BulkDatasetExporter.class);
+            
+            assertThrows(InvalidRequest.class, () -> service.bulkExport(List.of(FIRST), UNKNOWN, new RecordingOutputStream(), CORRELATION_ID));
+            verifyNoInteractions(self);
+        }
+        
+        // ++++ the context handed to the plugin ++++
+        
+        @Test
+        void exposesLabelsInRequestOrderAndStaysReIterable() throws Exception {
+            AtomicInteger observedSize = new AtomicInteger();
+            List<String> seen = new ArrayList<>();
+            onExport((context, output) -> {
+                observedSize.set(context.size());
+                for (int pass = 0; pass < 2; pass++) {
+                    for (BulkDatasetContext.Item item : context.items()) {
+                        seen.add(item.persistentId() + "@" + item.versionNumber());
+                    }
+                }
+            });
+            
+            service.bulkExport(List.of(FIRST, SECOND), BASE, new RecordingOutputStream(), CORRELATION_ID);
+            
+            assertAll(
+                () -> assertEquals(2, observedSize.get()),
+                () -> assertEquals(
+                    List.of(
+                        FIRST.persistentId() + "@" + FIRST.versionNumber(), SECOND.persistentId() + "@" + SECOND.versionNumber(),
+                        FIRST.persistentId() + "@" + FIRST.versionNumber(), SECOND.persistentId() + "@" + SECOND.versionNumber()
+                    ),
+                    seen),
+                // Reading labels alone must not resolve a single export.
+                () -> verifyNoInteractions(self)
+            );
+        }
+        
+        @Test
+        void writeToCopiesItemsThroughAndReportsByteCounts() throws Exception {
+            when(self.getExportInNewTransaction(FIRST.versionId(), BASE)).thenReturn(utf8("one"));
+            when(self.getExportInNewTransaction(SECOND.versionId(), BASE)).thenReturn(utf8("two"));
+            List<Long> written = new ArrayList<>();
+            onExport((context, output) -> {
+                for (BulkDatasetContext.Item item : context.items()) {
+                    written.add(item.writeTo(output));
+                }
+            });
+            RecordingOutputStream output = new RecordingOutputStream();
+            
+            service.bulkExport(List.of(FIRST, SECOND), BASE, output, CORRELATION_ID);
+            
+            assertAll(
+                () -> assertEquals("onetwo", output.toString(UTF_8)),
+                () -> assertEquals(List.of(3L, 3L), written),
+                () -> assertTrue(output.flushed, "caller stream must be flushed")
+            );
+        }
+        
+        @Test
+        void everyReadResolvesTheExportAnew() throws Exception {
+            when(self.getExportInNewTransaction(FIRST.versionId(), BASE)).thenReturn(utf8("one"), utf8("one"));
+            onExport((context, output) -> {
+                BulkDatasetContext.Item item = context.items().iterator().next();
+                item.writeTo(output);
+                item.writeTo(output);
+            });
+            RecordingOutputStream output = new RecordingOutputStream();
+            
+            service.bulkExport(List.of(FIRST), BASE, output, CORRELATION_ID);
+            
+            assertAll(
+                () -> assertEquals("oneone", output.toString(UTF_8)),
+                () -> verify(self, times(2)).getExportInNewTransaction(FIRST.versionId(), BASE)
+            );
+        }
+        
+        @Test
+        void streamsLeftOpenByThePluginAreClosedWithTheContext() throws Exception {
+            TrackingInputStream abandoned = new TrackingInputStream("one");
+            when(self.getExportInNewTransaction(FIRST.versionId(), BASE)).thenReturn(abandoned);
+            onExport((context, output) -> {
+                InputStream in = context.items().iterator().next().open();
+                output.write(in.readAllBytes()); // deliberately not closed
+            });
+            RecordingOutputStream output = new RecordingOutputStream();
+            
+            service.bulkExport(List.of(FIRST), BASE, output, CORRELATION_ID);
+            
+            assertAll(
+                () -> assertEquals("one", output.toString(UTF_8)),
+                () -> assertTrue(abandoned.closed, "abandoned stream must be released by the context")
+            );
+        }
+        
+        // ++++ per-item degradation ++++
+        
+        @Test
+        void failingItemSurfacesAsIoExceptionWithoutFailingTheBatch() throws Exception {
+            when(self.getExportInNewTransaction(FIRST.versionId(), BASE)).thenThrow(new InvalidRequest("version gone"));
+            when(self.getExportInNewTransaction(SECOND.versionId(), BASE)).thenReturn(utf8("two"));
+            List<String> errors = new ArrayList<>();
+            onExport((context, output) -> {
+                for (BulkDatasetContext.Item item : context.items()) {
+                    try {
+                        item.writeTo(output);
+                    } catch (IOException ex) {
+                        errors.add(ex.getMessage());
+                        output.write("<error/>".getBytes(UTF_8));
+                    }
+                }
+            });
+            RecordingOutputStream output = new RecordingOutputStream();
+            
+            service.bulkExport(List.of(FIRST, SECOND), BASE, output, CORRELATION_ID);
+            
+            assertAll(
+                () -> assertEquals("<error/>two", output.toString(UTF_8), "nothing leaks from the failed item"),
+                () -> assertEquals(1, errors.size()),
+                () -> assertTrue(errors.getFirst().contains(CORRELATION_ID)),
+                () -> assertTrue(errors.getFirst().contains(FIRST.persistentId()))
+            );
+        }
+        
+        @Test
+        void missingExportSurfacesAsIoExceptionToo() throws Exception {
+            when(self.getExportInNewTransaction(FIRST.versionId(), BASE)).thenReturn(null);
+            List<String> errors = new ArrayList<>();
+            onExport((context, output) -> {
+                try {
+                    context.items().iterator().next().open();
+                } catch (IOException ex) {
+                    errors.add(ex.getMessage());
+                }
+            });
+            
+            service.bulkExport(List.of(FIRST), BASE, new RecordingOutputStream(), CORRELATION_ID);
+            
+            assertAll(
+                () -> assertEquals(1, errors.size()),
+                () -> assertTrue(errors.get(0).contains(FIRST.persistentId()))
+            );
+        }
+        
+        // ++++ stream ownership and failure translation ++++
+        
+        @Test
+        void pluginClosingTheOutputStreamCannotCloseTheCallersOne() throws Exception {
+            onExport((context, output) -> {
+                output.write("x".getBytes(UTF_8));
+                output.close(); // careless plugin: must not reach the response stream
+            });
+            RecordingOutputStream output = new RecordingOutputStream();
+            
+            service.bulkExport(List.of(FIRST), BASE, output, CORRELATION_ID);
+            
+            assertAll(
+                () -> assertFalse(output.closed, "the caller owns and closes the output"),
+                () -> assertTrue(output.flushed),
+                () -> assertEquals("x", output.toString(UTF_8))
+            );
+        }
+        
+        @Test
+        void wrapsExporterFailuresIncludingTheCorrelationId() throws Exception {
+            IllegalStateException boom = new IllegalStateException("boom");
+            doThrow(boom).when((BulkDatasetExporter) exporter).exportBulk(any(), any());
+            
+            InternalFailure ex = assertThrows(InternalFailure.class,
+                () -> service.bulkExport(List.of(FIRST), BASE, new RecordingOutputStream(), CORRELATION_ID));
+            
+            assertAll(
+                () -> assertSame(boom, ex.getCause()),
+                () -> assertTrue(ex.getMessage().contains(CORRELATION_ID)),
+                () -> assertTrue(ex.getMessage().contains(BASE))
+            );
+        }
+        
+        @Test
+        void wrapsIoFailuresOfTheCallerStream() {
+            // The exporter does nothing; the final flush on the broken client connection fails.
+            InternalFailure ex = assertThrows(InternalFailure.class, () -> service.bulkExport(List.of(FIRST), BASE, new FailingOutputStream(), CORRELATION_ID));
+            assertInstanceOf(IOException.class, ex.getCause());
+        }
+        
+        @Test
+        void contextIsClosedEvenWhenTheExporterBlowsUp() throws Exception {
+            TrackingInputStream abandoned = new TrackingInputStream("one");
+            when(self.getExportInNewTransaction(FIRST.versionId(), BASE)).thenReturn(abandoned);
+            onExport((context, output) -> {
+                context.items().iterator().next().open();
+                throw new IllegalStateException("boom");
+            });
+            
+            assertThrows(InternalFailure.class,
+                () -> service.bulkExport(List.of(FIRST), BASE, new RecordingOutputStream(), CORRELATION_ID));
+            assertTrue(abandoned.closed, "streams must be released on the failure path as well");
+        }
+    }
+    
+    
     
     // ++++ ++++ ++++ CACHE MANAGEMENT ++++ ++++ ++++
     
@@ -612,4 +909,57 @@ class ExportServiceBeanTest {
             when(registry.get(formatName)).thenReturn(Optional.of(exporter));
         }
     }
+    
+    private static Details detailsOf(String formatName) {
+        return new ExporterDetails(formatName.toUpperCase(Locale.ROOT), formatName,
+            "application/" + formatName, true, true);
+    }
+    
+    // TODO: using this in multiple places now, add as test utility?
+    /** Caller-owned response stream: records whether the service (or a plugin) flushed or closed it. */
+    private static final class RecordingOutputStream extends ByteArrayOutputStream {
+        private boolean closed;
+        private boolean flushed;
+        
+        @Override
+        public void flush() {
+            flushed = true;
+        }
+        
+        @Override
+        public void close() {
+            closed = true;
+        }
+    }
+    
+    // TODO: using this in multiple places now, add as test utility?
+    /** Stands in for a disconnected client. */
+    private static final class FailingOutputStream extends OutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            throw new IOException("broken pipe");
+        }
+        
+        @Override
+        public void flush() throws IOException {
+            throw new IOException("broken pipe");
+        }
+    }
+    
+    // TODO: using this in multiple places now, add as test utility?
+    /** Export stream that remembers being closed, to prove the context releases what a plugin abandons. */
+    private static final class TrackingInputStream extends ByteArrayInputStream {
+        private boolean closed;
+        
+        private TrackingInputStream(String content) {
+            super(content.getBytes(UTF_8));
+        }
+        
+        @Override
+        public void close() throws IOException {
+            closed = true;
+            super.close();
+        }
+    }
+    
 }
