@@ -4246,6 +4246,15 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
 
     
+    private Response updateDatasetMetadataUnique(String datasetPid, String pathToJsonFile, String title, String apiToken) {
+        String json = UtilIT.getDatasetJson(pathToJsonFile).replace("newTitle", title);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(json)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + datasetPid);
+    }
+
     @Test
     public void testCuratePublishedDatasetVersionCommand() throws IOException {
         Response createUser = UtilIT.createRandomUser();
@@ -4255,6 +4264,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String username = UtilIT.getUsernameFromResponse(createUser);
         
+        // Create another user to test the "found" case during curation
+        Response createUser2 = UtilIT.createRandomUser();
+        String apiToken2 = UtilIT.getApiTokenFromResponse(createUser2);
+        String username2 = UtilIT.getUsernameFromResponse(createUser2);
+        UtilIT.setSuperuserStatus(username2, true).then().assertThat().statusCode(OK.getStatusCode());
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
         
         Response createDataverse = UtilIT.createRandomDataverse(apiToken);
         createDataverse.prettyPrint();
@@ -4358,7 +4373,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         editDDIResponse.prettyPrint();
         assertEquals(200, editDDIResponse.getStatusCode());
 
-
+        // Add username2 to the draft before it is published as major version
+        updateDatasetMetadataUnique(datasetPid, pathToJsonFile, "Title Published", apiToken2).then().assertThat().statusCode(OK.getStatusCode());
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -4369,12 +4385,24 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.files[0].label", equalTo("dct.tab"));
         
-        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
-        Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
-        updateTitle.prettyPrint();
-        updateTitle.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        updateDatasetMetadataUnique(datasetPid, pathToJsonFile, "Title Draft 1", apiToken).then().assertThat().statusCode(OK.getStatusCode());
         
+        // Add a workflow comment to the draft
+        UtilIT.submitDatasetForReview(datasetPid, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        JsonObjectBuilder curatorComment = JsonUtil.createObjectBuilder();
+        curatorComment.add("reasonForReturn", "Please fix the metadata.");
+        UtilIT.returnDatasetToAuthor(datasetPid, curatorComment.build(), apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Add another DatasetVersionUser by having another superuser edit the draft
+        // username2 is already in the published version (found = true), username3 is new (found = false)
+        Response createUser3 = UtilIT.createRandomUser();
+        String apiToken3 = UtilIT.getApiTokenFromResponse(createUser3);
+        String username3 = UtilIT.getUsernameFromResponse(createUser3);
+        UtilIT.setSuperuserStatus(username3, true).then().assertThat().statusCode(OK.getStatusCode());
+        
+        updateDatasetMetadataUnique(datasetPid, pathToJsonFile, "Title Draft 2", apiToken2).then().assertThat().statusCode(OK.getStatusCode());
+        updateDatasetMetadataUnique(datasetPid, pathToJsonFile, "Title Draft 3", apiToken3).then().assertThat().statusCode(OK.getStatusCode());
+
         // shouldn't be able to update current unless you're a super user
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(FORBIDDEN.getStatusCode());
@@ -4390,6 +4418,15 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertTrue(getDatasetJsonAfterUpdate.prettyPrint().contains("Spruce"));
         getDatasetJsonAfterUpdate.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        // Check that the DatasetVersionUsers were transferred/updated by checking the contributors list
+        Response getCompareSummary = UtilIT.getCompareSummary(datasetId, apiToken);
+        getCompareSummary.prettyPrint();
+        getCompareSummary.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].contributors", org.hamcrest.Matchers.containsString(username))
+                .body("data[0].contributors", org.hamcrest.Matchers.containsString(username2))
+                .body("data[0].contributors", org.hamcrest.Matchers.containsString(username3));
         
         //Check that the draft version is gone
         Response getDraft1 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
