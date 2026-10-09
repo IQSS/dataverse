@@ -146,7 +146,7 @@
                                                                 but it can't be true from the field being a term-uri when cvocOnCvPart is false)
                                                           -->
                                                         </ui:remove>
-                                                        <ui:fragment rendered="#{!cvocOnCvPart and !cvocOnDsfApplies and !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}">
+                                                        <ui:fragment rendered="#{!cvocOnCvPart and (!cvocOnDsfApplies or !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id))}">
                                                             <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
                                                                     <h:outputText value="#{cvPart.value}"
@@ -184,8 +184,8 @@
                                                         <!-- Cvoc for others fields -->
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"
-                                                                      rendered="#{(cvocOnDsfApplies or cvocOnCvPart
-                                                                            or settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id))
+                                                                      rendered="#{(cvocOnDsfApplies or cvocOnCvPart)
+                                                                            and settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)
                                                                             and cvPart.key.datasetFieldType.displayFormat ne '#EMAIL'
                                                                             and not (
                                                                             cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))
