@@ -8,9 +8,8 @@ package edu.harvard.iq.dataverse.harvest.server;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.ExportService;
-import io.gdcc.spi.export.ExportException;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExportSystemException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.time.Instant;
 import java.util.Collection;
@@ -45,8 +44,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     DatasetServiceBean datasetService;
     @EJB 
     SettingsServiceBean settingsService;
-    //@EJB
-    //ExportService exportService;
+    @EJB
+    ExportServiceBean exportService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;   
@@ -250,31 +249,39 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     public void exportAllFormats(Dataset dataset) {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
             logger.log(Level.FINE, "Attempting to run export on dataset {0}", dataset.getGlobalId());
-            exportServiceInstance.exportAllFormats(dataset);
-            dataset = datasetService.merge(dataset);
-        } catch (ExportException ee) {logger.fine("Caught export exception while trying to export. (ignoring)");}
-        catch (Exception e) {logger.fine("Caught unknown exception while trying to export (ignoring)");}
+            exportService.exportAllFormats(dataset);
+            datasetService.merge(dataset);
+        } catch (ExportSystemException ee) {
+            // TODO: Should this really be ignored? What if we at least have a failure escalation for this?
+            //       At least the exception should be logged.
+            logger.fine("Caught export exception while trying to export. (ignoring)");
+        } catch (Exception e) {
+            // TODO: Should this really be ignored? What if we at least have a failure escalation for this?
+            //       At least the exception should be logged.
+            logger.fine("Caught unknown exception while trying to export (ignoring)");
+        }
     }
     
     @TransactionAttribute(REQUIRES_NEW)
-    public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
+    public void exportAllFormatsInNewTransaction(Dataset dataset) {
         exportFormatsInNewTransaction(dataset, List.of());
     }
     
+    // TODO: This is messy and does not work reliably to cache versions or different formats of datasets.
+    //       It should be replaced with better bookkeeping of what has been exported and cached.
+    //       It is also a duplication of code above around exporting where a comment already documents the imprecision.
     @TransactionAttribute(REQUIRES_NEW)
-    public void exportFormatsInNewTransaction(Dataset dataset, List<String> formatNames) throws ExportException {
+    public void exportFormatsInNewTransaction(Dataset dataset, List<String> formatNames) {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
-            exportServiceInstance.exportFormats(dataset, formatNames);
+            exportService.exportFormats(dataset, formatNames);
+            // As the ExportServiceBean does not handle transactions, copy the changed date and commit to DB
             datasetService.setLastExportTimeInNewTransaction(dataset.getId(), dataset.getLastExportTime());
         } catch (OptimisticLockException ole) {
             datasetService.setLastExportTimeInNewTransaction(dataset.getId(), dataset.getLastExportTime());
-        } catch (Exception e) {
-            logger.log(Level.FINE, "Caught unknown exception while trying to export", e);
-            throw new ExportException(e.getMessage());
         }
+        // Note: Any other exceptions should bubble up. If necessary, they will cause the transaction to roll back.
+        //       The ExportSystemExceptions are annotated as no rollbacks, but no commit will have been done yet.
     }
     
     

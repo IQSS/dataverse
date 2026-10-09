@@ -40,6 +40,8 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -788,6 +790,16 @@ public class JsonPrinter {
     private static JsonObjectBuilder versionAsJsonForDTO(DatasetVersion dsv, boolean includeFiles) {
         JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, null, includeFiles, false, true, true, false);
         dsvWithCitation.add("citation", dsv.getCitation());
+        
+        // Add serialized snapshot of data citation, so exporters can reuse that
+        // Note: while catching a broad "Exception" may look like the typical antipattern,
+        //       it is required by the AutoClosable interface used in the try-with-resources.
+        try (Jsonb jsonb = JsonbBuilder.create()) {
+            dsvWithCitation.add("datacitation", jsonb.toJson(new DataCitation(dsv)));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        
         return dsvWithCitation;
     }
 

@@ -6,7 +6,9 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.CustomTermsDTO;
 import edu.harvard.iq.dataverse.api.dto.LicenseUpdateRequest;
+import edu.harvard.iq.dataverse.api.dto.MultiDatasetExportRequest;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
+import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -35,8 +37,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.croissant.CroissantExportUtil;
+import edu.harvard.iq.dataverse.export.service.ExportTarget;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean.Details;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
@@ -64,6 +68,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import io.gdcc.spi.export.caps.bulk.BulkDatasetExporter;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -71,6 +76,8 @@ import jakarta.json.*;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
@@ -80,6 +87,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -238,7 +246,7 @@ public class Datasets extends AbstractApiBean {
             final JsonObjectBuilder jsonbuilder = json(retrieved, returnOwners);
             //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
             if((latest != null) && latest.isReleased()) {
-                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
+                MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
                 mdcLogService.logEntry(entry);
             }
             return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest, true) : null));
@@ -251,9 +259,11 @@ public class Datasets extends AbstractApiBean {
     @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
     @Operation(summary = "Export dataset metadata",
             description = "Exports dataset metadata by persistent id using the requested version and exporter.")
-    public Response exportDataset(@Context ContainerRequestContext crc, @Parameter(description = "Persistent identifier.") @QueryParam("persistentId") String persistentId,
-            @Parameter(description = "Dataset version selector.") @QueryParam("version") String versionId, @Parameter(description = "Exporter option.") @QueryParam("exporter") String exporter,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response exportDataset(
+        @QueryParam("persistentId") @Parameter(description = "Persistent identifier.") String persistentId,
+        @QueryParam("version") @Parameter(description = "Dataset version selector.") String versionId,
+        @QueryParam("exporter") @Parameter(description = "Exporter option.") String exporter,
+        @Context ContainerRequestContext crc, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
 
         try {
             Dataset dataset = datasetService.findByGlobalId(persistentId);
@@ -285,10 +295,13 @@ public class Datasets extends AbstractApiBean {
                     return error(BAD_REQUEST, "Non-draft version requested (" + versionId + ") but for published versions only the latest (" + DS_VERSION_LATEST_PUBLISHED + ") is supported.");
                 }
             }
-
-            ExportService instance = ExportService.getInstance();
-
-            InputStream is = instance.getExport(datasetVersion, exporter);
+            
+            Optional<Details> exporterDetails = exporterRegistrySvc.getDetail(exporter);
+            if (exporterDetails.isEmpty()) {
+                return error(BAD_REQUEST, "Export failed: no exporter registered for format name " + exporter);
+            }
+            
+            InputStream is = exportSvc.getExport(datasetVersion, exporter);
             if (FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()
                     && (exporter.equals("croissant") || exporter.equals("croissantSlim"))) {
                 // Rewrite the export on the fly and insert local reviews until we have a solution for https://github.com/gdcc/dataverse-spi/issues/5
@@ -300,22 +313,140 @@ public class Datasets extends AbstractApiBean {
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                 is = new ByteArrayInputStream(updatedContent.getBytes(StandardCharsets.UTF_8));
             }
-
-            String mediaType = instance.getMediaType(exporter);
-
+            
             if (datasetVersion.isReleased()) {
-                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
+                MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
                 mdcLogService.logEntry(entry);
             }
-
+            
             return Response.ok()
-                    .entity(is)
-                    .type(mediaType).
-                    build();
+                .entity(is)
+                .type(exporterDetails.get().mediaType()).
+                build();
         } catch (Exception wr) {
             logger.warning(wr.getMessage());
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
+    }
+    
+    /**
+     * Exports metadata for one or multiple dataset versions based on a request containing persistent identifiers
+     * and version specifications.
+     * <p>
+     * This method validates the exporter, checks for supported multi-dataset exports when applicable,
+     * resolves dataset and version references, ensures access permissions, and aggregates errors encountered
+     * during resolution before proceeding with export (if no errors occurred).
+     * <p>
+     * {@code @AuthRequested} triggers {@link edu.harvard.iq.dataverse.api.auth.AuthFilter} to inject a user entity
+     * into the {@code ContainerRequestContext}.
+     *
+     * @param request the request body containing the exporter name and a list of dataset export specifications
+     *                (persistent ID and version), using JSON-B to inject and Bean Validation to vet.
+     * @param uriInfo contextual information about the request URI
+     * @param headers HTTP headers of the request
+     * @param crc container request context providing access to the authenticated user and other request-scoped data
+     * @return a JAX-RS Response indicating success, client errors (e.g., invalid or unsupported request), or (TODO)
+     * @implNote In regard to the HTTP method: as it is retrieval of data, it should be GET, not POST.
+     *           A GET request would become a nightmare to code on the client side fast with the amount of parameters.
+     *           A nice concise JSON format is much easier to handle.
+     *           But, GET should have no body according to RFC 9110, yet the QUERY method is still a draft
+     *           (https://httpwg.org/http-extensions/draft-ietf-httpbis-safe-method-w-body.html).
+     *           Thus, POST is the only viable option (https://roy.gbiv.com/untangled/2009/it-is-okay-to-use-post).
+     */
+    @POST
+    @AuthRequired
+    @Consumes("application/json")
+    @Path("export")
+    @Operation(summary = "Export metadata for one or multiple dataset versions")
+    @APIResponse(responseCode = "400", description = "Invalid JSON or not following schema (syntactical error), or valid JSON, but not processable (semantical error).")
+    public Response exportMultiple(@RequestBody(content = @Content(schema = @Schema(implementation = MultiDatasetExportRequest.class)))
+                                   @NotNull(message = "{api.request.body.null}") @Valid MultiDatasetExportRequest request,
+                                   @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context ContainerRequestContext crc) {
+        
+        ExporterRegistryBean.Details exporterDetail;
+        
+        // Verify the exporter exists and supports multiple datasets (when given more than one)
+        if (request.datasets().size() < 2) {
+            // Hand over to single dataset version export if only asked for single dataset
+            return exportDataset(
+                request.datasets().getFirst().persistentId(), request.datasets().getFirst().version(), request.exporter(),
+                crc, uriInfo, headers);
+        } else {
+            exporterDetail = exporterRegistrySvc.requireExistsAndSupports(request.exporter(), BulkDatasetExporter.class);
+        }
+        
+        // Enforce upper limit on request size to avoid simple DoS attacks
+        int maxRequestSize = JvmSettings.API_EXPORT_BULK_MAX_REQUEST_SIZE.lookupOptional(Integer.class)
+                                                                         .orElse(ApiConstants.DEFAULT_MAX_EXPORT_REQUEST_SIZE);
+        if (request.datasets().size() > maxRequestSize) {
+            return JsonResponseBuilder.error(BAD_REQUEST)
+                .message("Too many dataset versions requested for export (exceeds maximum of " + maxRequestSize + ")")
+                .build();
+        }
+        
+        // Lookup the HTTP request enhanced with the authenticated user from context (resolved by the AuthFilter/AuthRequired mechanism)
+        DataverseRequest userScopedHttpRequest = createDataverseRequest(getRequestUser(crc));
+        
+        // TODO: The below should not be a direct part of the API code, but embedded into a Dataverse Command, submitted to the engine
+        
+        // Instead of bailing out on the first error, keep going and record any problems before reporting back
+        List<JsonResponseBuilder.Violation> errors = new ArrayList<>();
+        // Note: The set automatically avoids duplicate requests, linked set preserves insertion order.
+        //       (As an API user may rely on keeping the order as given in the request.)
+        LinkedHashSet<ExportTarget> targets = new LinkedHashSet<>();
+        // Registry of MDC log entries to send to the MDC service once exports are all done.
+        Set<MakeDataCountEntry> makeDataCountLogEntries = new HashSet<>();
+        
+        // Get all the requested DatasetVersions (requiring permission checks)
+        int index = 0;
+        for (MultiDatasetExportRequest.ExportItem requested : request.datasets()) {
+            // First, lookup the dataset itself to verify it exists and the user has access to it
+            try {
+                // TODO: Not sure about the deep=true. Is it necessary?
+                Dataset dataset = findDatasetUserCanSeeOrDie(requested.persistentId(), userScopedHttpRequest);
+                DatasetVersion version = getDatasetVersionOrDie(userScopedHttpRequest, requested.version(), dataset, uriInfo, headers);
+                
+                // Transform found JPA entities to immutable records for safe passage to threads and across EJB borders
+                // Note: This creates a snapshot, which may become stale. Depending on how large the timeframe between
+                //       lookup during request validation and lookup during processing are, there is a small timeframe
+                //       allowing permission changes and metadata changes to happen. This is likely negligible.
+                targets.add(ExportTarget.from(version));
+                
+                // Take an MDC note of this dataset being downloaded. It will be applied later, after exporting is done.
+                if (version.isReleased()) {
+                    makeDataCountLogEntries.add(new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset));
+                }
+            } catch (WrappedResponse e) {
+                // Record if absent and move on to next request. Note: coarse message here to prevent leaking existance information
+                errors.add(new JsonResponseBuilder.Violation(
+                    "datasets[" + index + "]",
+                    "No such dataset " + requested.persistentId() + " or version " + requested.version()
+                ));
+            }
+            index++;
+        }
+        
+        // In case of any errors, stop now.
+        if (!errors.isEmpty()) {
+            return JsonResponseBuilder.error(BAD_REQUEST)
+                .violations(errors)
+                .message("Your request contained errors.")
+                .build();
+        }
+        
+        // Create an ID that allows admins to trace failing export requests in logs
+        String correlationId = UUID.randomUUID().toString();
+        
+        // Lambda to trigger creation of output, as designed for JAX-RS
+        StreamingOutput output = outputStream -> {
+            exportSvc.bulkExport(targets.stream().toList(), request.exporter(), outputStream, correlationId);
+            // Once all the exports are written to the output stream successfully, log all the MDC entries.
+            makeDataCountLogEntries.forEach(mdcLogService::logEntry);
+        };
+        return Response.ok(output)
+            .header(EXPORT_CORRELATION_ID_HEADER, correlationId)
+            .type(exporterDetail.mediaType())
+            .build();
     }
 
     @DELETE
@@ -798,7 +929,7 @@ public class Datasets extends AbstractApiBean {
             return Response
                     .ok(JsonUtil.createObjectBuilder()
                             .add("linkset",
-                                    new SignpostingResources(systemConfig, dsv,
+                                    new SignpostingResources(systemConfig, exporterRegistrySvc, dsv,
                                             JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
                                             JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""))
                                                     .getJsonLinkset())
@@ -3593,7 +3724,7 @@ public class Datasets extends AbstractApiBean {
                     notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found"));
         }
         if (dsv.isReleased()&& uriInfo!=null) {
-            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
+            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
             mdcLogService.logEntry(entry);
         }
         return dsv;
@@ -5802,13 +5933,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetVersionInternalCitation(@Context ContainerRequestContext crc,
             @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId,
             @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
-            @Context HttpHeaders headers) {
-        try {
-            return ok(getDatasetVersionCitationAsString(crc, datasetId, versionId, DataCitation.Format.Internal, includeDeaccessioned,
-                    uriInfo, headers));
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
+            @Context HttpHeaders headers) throws WrappedResponse {
+        return getDatasetVersionCitation(crc, datasetId, versionId, DataCitation.Format.Internal.formatId(), includeDeaccessioned, uriInfo, headers);
     }
 
     /**
@@ -5830,33 +5956,41 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
             @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Parameter(description = "Citation format to return.") @PathParam("format") String formatString,
             @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo,
-            @Context HttpHeaders headers) {
+            @Context HttpHeaders headers) throws WrappedResponse {
 
-        DataCitation.Format format;
-        try {
-            format = DataCitation.Format.valueOf(formatString);
-        } catch (IllegalArgumentException e) {
-            return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
-        }
-        try {
+        // Only accept valid citation formats
+        DataCitation.Format format = Optional.ofNullable(DataCitation.Format.lookup(formatString))
+            .orElseThrow(() -> new BadRequestException(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat")));
+        
+        // Lookup the dataset version. In case of errors, exceptions will be thrown and transformed by JAX-RS into a Response
+        DataverseRequest request = createDataverseRequest(getRequestUser(crc));
+        Dataset dataset = findDatasetUserCanSeeOrDie(datasetId, request);
+        DatasetVersion datasetVersion = getDatasetVersionOrDie(request, versionId, dataset, uriInfo, headers, includeDeaccessioned, false);
+        
+        // Looking up the format by the formatId and not formatString to be backward compatible, as the lookup always
+        // has been case-insensitive, but the exporter registry is case-sensitive.
+        var exporterDetail = exporterRegistrySvc.getDetail(format.formatId());
+        // When matching an export format, prioritize using exports over the deprecated DataCitation
+        if (exporterDetail.isPresent()) {
+            StreamingOutput output = out -> {
+                try (InputStream input = exportSvc.getExport(datasetVersion, formatString)) {
+                    input.transferTo(out);
+                }
+            };
+            return Response.ok()
+                           .type(exporterDetail.get().mediaType())
+                           .entity(output)
+                           .build();
+        // Otherwise, reuse the deprecated DataCitation way to retrieve the format (see DataCitation class for refactoring steps)
+        } else {
+            String mediaType = DataCitation.getCitationFormatMediaType(format, true);
+            String citation = datasetVersion.getCitation(format, true, false);
             //ToDo - add ContentDisposition to support downloading with a file name
-            return Response.ok().type(DataCitation.getCitationFormatMediaType(format, true)).entity(
-                    getDatasetVersionCitationAsString(crc, datasetId, versionId, format, includeDeaccessioned, uriInfo, headers))
-                    .build();
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            return Response.ok()
+                .type(mediaType)
+                .entity(citation)
+                .build();
         }
-    }
-
-    public String getDatasetVersionCitationAsString(ContainerRequestContext crc, String datasetId, String versionId,
-            DataCitation.Format format, boolean includeDeaccessioned, UriInfo uriInfo, HttpHeaders headers)
-            throws IllegalArgumentException, WrappedResponse {
-        boolean checkFilePerms = false;
-
-        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-        DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers,
-                includeDeaccessioned, checkFilePerms);
-        return dsv.getCitation(format, true, false);
     }
 
     @POST

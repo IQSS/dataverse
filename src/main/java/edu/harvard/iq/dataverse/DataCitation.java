@@ -1,15 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLNameBuilder;
 import de.undercouch.citeproc.csl.CSLType;
-import de.undercouch.citeproc.helper.json.JsonBuilder;
+import de.undercouch.citeproc.helper.json.MapJsonBuilderFactory;
 import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
@@ -22,6 +17,12 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJBException;
 import jakarta.json.JsonObject;
+import jakarta.json.bind.adapter.JsonbAdapter;
+import jakarta.json.bind.annotation.JsonbDateFormat;
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.json.bind.annotation.JsonbVisibility;
+import jakarta.json.bind.config.PropertyVisibilityStrategy;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -29,10 +30,24 @@ import org.apache.commons.text.StringEscapeUtils;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -44,60 +59,121 @@ import static edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider.HDL
 import static edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider.PERMA_PROTOCOL;
 
 /**
+ * The DataCitation class represents a citation object for datasets and files, offering detailed functionality for
+ * formatting citations in various output formats. It supports metadata retrieval, citation export, and string
+ * formatting for presentation purposes.
  *
- * @author gdurand, qqmyers
+ * @deprecated since 6.13. This class has been around since Dataverse 4.3.1. Today, it suffers from being a POJO
+ * which also
+ * a) serves business logic for DOI registration (getDataCiteMetadata),
+ * b) is a non-configurable and hardcoded way of creating citation formats, and
+ * c) contains mapping logic from a DB entity to it (models are not supposed to do this, that's the job of a mapping service).
+ * <p>
+ * As a consequence, this class shall be gradually replaced by a more flexible, configurable and pluggable solution.
+ * Ideally, citation formats are not recreated on-the-fly, but are created once and then reused from a cache.
+ * This is precisely the functionality provided by the export subsystem. The plan to get there:
+ * <ol>
+ * <li>As the first step, this class is made immutable, no longer holding JPA entity objects.
+ *     This enables clean serialization to JSON, allowing to move a data citation across service border without
+ *     risking thread-safety or consistency issues. (IQSS/dataverse#12747)</li>
+ * <li>As the second step, JSON-serialized DataCitations is made available to any {@link io.gdcc.spi.export.Exporter}.
+ *     The easiest way to do this is by adding it to Dataverse JSON in {@code util.json.JsonPrinter#versionAsJsonForDTO(DatasetVersion,boolean)}.
+ *     Exporters appear to create the citation formats of dataset versions and are usable via the Datasets API.
+ *     (IQSS/dataverse#12747)</li>
+ * <li>As the third step, the business logic for DOI registration moves to that subsystem.</li>
+ * <li>As the fourth step, the creation of citations formats of dataset versions is moved to exporters completely,
+ *     and requires no longer the usage of a serialized DataCitation. This must include implementing mapping the
+ *     metadata in ways it makes it easy for an exporter to consume it. The current Dataverse JSON is not efficient
+ *     to be used for this. Ideally, a data contract is used and the {@code ExportDataProvider} can offer a DTO.
+ *     Eventually, this will allow pluggable exports to fully support citations without parsing the JSON,
+ *     as they have no access to the DataCitation class for deserialization.</li>
+ * <li>As the fifth step, the Exporter subsystem is extended to support the creation of citations formats of files.</li>
+ * <li>As the sixth step, every use of DataCitation is replaced by reaching out to the export subsystem.</li>
+ * <li>As the last step, DataCitation is removed.</li>
+ * </ol>
  */
+@Deprecated(since = "6.13", forRemoval = true)
+@JsonbVisibility(DataCitation.FieldsOnly.class)
 public class DataCitation {
 
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
-    private List<String> authors = new ArrayList<String>();
-    private List<CSLName> cslAuthors = new ArrayList<CSLName>();
-    private List<String> producers = new ArrayList<String>();
+    private List<String> authors = List.of();
+    @JsonbTypeAdapter(CSLNameListAdapter.class)
+    private List<CSLName> cslAuthors = List.of();
+    private List<String> producers = List.of();
     private String title;
     private String fileTitle = null;
     private String year;
+    @JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
     private Date date;
     private GlobalId persistentId;
     private String version;
+    @JsonbProperty("unf")
     private String UNF = null;
     private String publisher;
     private boolean direct;
-    private List<String> funders;
-    private List<String> seriesTitles;
+    private List<String> funders = List.of();
+    private List<String> seriesTitles = List.of();
     private String description;
-    private List<String> datesOfCollection;
-    private List<String> keywords;
-    private List<String> kindsOfData;
-    private List<String> languages;
-    private List<String> spatialCoverages;
+    
+    private List<OptionalValue> optionalValues = List.of();
+    private List<String> datesOfCollection = List.of();
+    private List<String> keywords = List.of();
+    private List<String> kindsOfData = List.of();
+    private List<String> languages = List.of();
+    private List<String> spatialCoverages = List.of();
 
-    private List<DatasetField> optionalValues = new ArrayList<>();
-    private int optionalURLcount = 0;
-
-    private DatasetType type; 
+    private String datasetType;
 
     public enum Format {
-        Internal,
-        EndNote,
-        RIS,
-        BibTeX,
-        CSL
-    }
-
-    public static Format getFormat(String name) {
-        for (Format format : Format.values()) {
-            if (format.name().equalsIgnoreCase(name)) {
-                return format;
+        Internal("internal", MediaType.TEXT_PLAIN, MediaType.TEXT_HTML),
+        EndNote("endnote", MediaType.TEXT_XML),
+        RIS("ris", MediaType.TEXT_PLAIN),
+        BibTeX("bibtex", MediaType.TEXT_PLAIN),
+        CSL("csl", MediaType.APPLICATION_JSON);
+        
+        public static Format lookup(String name) {
+            for (Format format : values()) {
+                if (format.name().equalsIgnoreCase(name)) {
+                    return format;
+                }
             }
+            return null;
         }
-        return null;
+        
+        private final String formatId;
+        private final String mediaType;
+        private final String htmlTargetMediaType;
+        
+        Format(String formatId, String mediaType) {
+            this.formatId = formatId;
+            this.mediaType = mediaType;
+            this.htmlTargetMediaType = null;
+        }
+        
+        Format(String formatId, String mediaType, String altMediaType) {
+            this.formatId = formatId;
+            this.mediaType = mediaType;
+            this.htmlTargetMediaType = altMediaType;
+        }
+        
+        public String formatId() {
+            return formatId;
+        }
+        
+        public String mediaType(boolean useHtmlTargetTypeIfPresent) {
+            return useHtmlTargetTypeIfPresent && this.htmlTargetMediaType != null ? this.htmlTargetMediaType : this.mediaType;
+        }
+    }
+    
+    /** For JSON-B deserialization only. */
+    protected DataCitation() {
     }
     
     public DataCitation(DatasetVersion dsv) {
         this(dsv, false);
     }
-
 
     public DataCitation(DatasetVersion dsv, boolean direct) {
         this.direct = direct;
@@ -110,18 +186,17 @@ public class DataCitation {
 
         // UNF
         UNF = dsv.getUNF();
-
-        // optional values
+        
+        // Optional values (citation relevant metadata)
+        List<OptionalValue> optionalValues = new ArrayList<>();
         for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
             DatasetField dsf = dsv.getDatasetField(dsfType);
             if (dsf != null) {
-                optionalValues.add(dsf);
-                
-                if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
-                    optionalURLcount++;
-                }
+                optionalValues.add(OptionalValue.from(dsf));
             }
         }
+        // Save defensive, immutable copy.
+        this.optionalValues = List.copyOf(optionalValues);
     }
     
     public DataCitation(FileMetadata fm) {
@@ -167,7 +242,7 @@ public class DataCitation {
         spatialCoverages = dsv.getSpatialCoverages();
         publisher = getPublisherFrom(dsv);
         version = getVersionFrom(dsv);
-        type = getTypeFrom(dsv);
+        datasetType = Optional.ofNullable(getTypeFrom(dsv)).map(DatasetType::getName).orElse(DatasetType.DEFAULT_DATASET_TYPE);
     }
 
     private DatasetType getTypeFrom(DatasetVersion dsv) {
@@ -246,16 +321,7 @@ public class DataCitation {
     }
     
     public static String getCitationFormatMediaType(Format format, boolean isHtml) {
-        switch (format) {
-        
-        case CSL:
-            return MediaType.APPLICATION_JSON;
-        case EndNote:
-            return MediaType.TEXT_XML;
-        case Internal:
-            return isHtml ? MediaType.TEXT_HTML : MediaType.TEXT_PLAIN;
-        }
-        return MediaType.TEXT_PLAIN;
+        return format.mediaType(isHtml);
     }
         
     private String formatInternalCitation(boolean html, boolean anonymized) {
@@ -286,24 +352,25 @@ public class DataCitation {
                 .collect(Collectors.joining(separator)));
 
         if ((fileTitle != null) && !isDirect()) {
-            citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
+            citation.append("; ").append(formatString(fileTitle, html, "")).append(" [fileName]");
         }
         // append UNF
         if (!StringUtils.isEmpty(UNF)) {
             citation.append(separator).append(UNF).append(" [fileUNF]");
         }
-
-        for (DatasetField dsf : optionalValues) {
-            String displayName = dsf.getDatasetFieldType().getDisplayName();
+        
+        long optionalURLcount = optionalValues.stream().filter(OptionalValue::url).count();
+        for (OptionalValue value : optionalValues) {
+            String displayName = value.displayName();
             String displayValue;
             
-            if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
-                displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
+            if (value.url()) {
+                displayValue = formatURL(value.displayValue(), value.displayValue(), html);
                 if (optionalURLcount == 1) {
                     displayName = "URL";
                 }
             } else {
-                displayValue = formatString(dsf.getDisplayValue(), html);
+                displayValue = formatString(value.displayValue(), html);
             }
             citation.append(" [").append(displayName).append(": ").append(displayValue).append("]");
         }
@@ -315,7 +382,7 @@ public class DataCitation {
         try {
             writeAsBibtexCitation(buffer);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Error writing Bibtex citation: ", e);
         }
         //Use UTF-8?
         return buffer.toString();
@@ -402,10 +469,8 @@ public class DataCitation {
             out.write("TY  - DATA" + "\r\n");
             out.write("T1  - " + getTitle() + "\r\n");
         }
-        if (seriesTitles != null) {
-            for (String seriesTitle : seriesTitles) {
-                out.write("T3  - " + seriesTitle + "\r\n");
-            }
+        for (String seriesTitle : seriesTitles) {
+            out.write("T3  - " + seriesTitle + "\r\n");
         }
         /* Removing abstract/description per Request from G. King in #3759
         if(description!=null) {
@@ -415,53 +480,38 @@ public class DataCitation {
             out.write("AU  - " + author + "\r\n");
         }
         
-        if (!producers.isEmpty()) {
-            for (String author : producers) {
-                out.write("A2  - " + author + "\r\n");
-            }
+        for (String author : producers) {
+            out.write("A2  - " + author + "\r\n");
         }
-        if (!funders.isEmpty()) {
-            for (String author : funders) {
-                out.write("A4  - " + author + "\r\n");
-            }
+        for (String author : funders) {
+            out.write("A4  - " + author + "\r\n");
         }
-        if (!kindsOfData.isEmpty()) {
-            for (String kod : kindsOfData) {
-                out.write("C3  - " + kod + "\r\n");
-            }
-        }    
-        if (!datesOfCollection.isEmpty()) {
-            for (String dateRange : datesOfCollection) {
-                out.write("DA  - " + dateRange + "\r\n");
-            }
+        for (String kod : kindsOfData) {
+            out.write("C3  - " + kod + "\r\n");
+        }
+        for (String dateRange : datesOfCollection) {
+            out.write("DA  - " + dateRange + "\r\n");
         }
 
         if (persistentId != null) {
-            out.write("DO  - " + persistentId.toString() + "\r\n");
+            out.write("DO  - " + persistentId + "\r\n");
+            out.write("UR  - " + persistentId.asURL() + "\r\n");
         }
         out.write("ET  - " + version + "\r\n");
-        if (!keywords.isEmpty()) {
-            for (String keyword : keywords) {
+        for (String keyword : keywords) {
                 out.write("KW  - " + keyword + "\r\n");
-            }
         }
-        if (!languages.isEmpty()) {
-            for (String lang : languages) {
+        for (String lang : languages) {
                 out.write("LA  - " + lang + "\r\n");
-            }
         }
 
         out.write("PY  - " + year + "\r\n");
         
-        if (!spatialCoverages.isEmpty()) {
-            for (String coverage : spatialCoverages) {
-                out.write("RI  - " + coverage + "\r\n");
-            }
+        for (String coverage : spatialCoverages) {
+            out.write("RI  - " + coverage + "\r\n");
         }
         
         out.write("SE  - " + date + "\r\n");
-
-        out.write("UR  - " + persistentId.asURL() + "\r\n");
         out.write("PB  - " + publisher + "\r\n");
 
         // a DataFile citation also includes filename und UNF, if applicable:
@@ -478,8 +528,6 @@ public class DataCitation {
         out.flush();
     }
 
-    private XMLOutputFactory xmlOutputFactory = null;
-
     public String toEndNoteString() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         writeAsEndNoteCitation(outStream);
@@ -489,7 +537,7 @@ public class DataCitation {
     
     public void writeAsEndNoteCitation(OutputStream os) {
 
-        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
+        XMLOutputFactory xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
         XMLStreamWriter xmlw = null;
         try {
             xmlw = xmlOutputFactory.createXMLStreamWriter(os);
@@ -734,29 +782,83 @@ public class DataCitation {
 
     public JsonObject getCSLJsonFormat() {
         CSLItemDataBuilder itemBuilder = new CSLItemDataBuilder();
-        // TODO consider making this a switch
-        if (type.getName().equals(DatasetType.DATASET_TYPE_SOFTWARE)) {
-            itemBuilder.type(CSLType.SOFTWARE);
-        } else if (type.getName().equals(DatasetType.DATASET_TYPE_REVIEW)) {
-            itemBuilder.type(CSLType.REVIEW);
-        } else {
-            itemBuilder.type(CSLType.DATASET);
+        
+        try {
+            // Fits most types like dataset, software, review, ...
+            itemBuilder.type(CSLType.fromString(datasetType));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            // If no match was found or datasetType was null, declare as generic "entry"
+            itemBuilder.type(CSLType.ENTRY);
         }
-        itemBuilder.title(formatString(title,true)).author((CSLName[]) cslAuthors.toArray(new CSLName[0])).issued(Integer.parseInt(year));
-        if (seriesTitles != null) {
-            itemBuilder.containerTitle(formatString(seriesTitles.get(0), true));
-        }
-        itemBuilder.version(version).DOI(persistentId.asRawIdentifier());
-        if (keywords != null) {
-            itemBuilder
-                    .categories(keywords.stream().map(keyword -> formatString(keyword, true)).toArray(String[]::new));
-        }
-        itemBuilder.abstrct(formatString(description, true)).publisher(formatString(publisher, true))
-                .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
-        JsonBuilder b = (new StringJsonBuilderFactory()).createJsonBuilder();
-        return JsonUtil.getJsonObject((String) itemBuilder.build().toJson(b));
+        
+        itemBuilder
+            .title(formatString(title,true))
+            .author(cslAuthors.toArray(new CSLName[0]))
+            .issued(Integer.parseInt(year))
+            .version(version)
+            .DOI(persistentId.asRawIdentifier())
+            .abstrct(formatString(description, true))
+            .publisher(formatString(publisher, true))
+            .URL(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + persistentId.asString());
+        
+        if (!seriesTitles.isEmpty())
+            itemBuilder.containerTitle(formatString(seriesTitles.getFirst(), true));
+        
+        itemBuilder.categories(keywords.stream()
+                                       .map(keyword -> formatString(keyword, true))
+                                       .toArray(String[]::new)
+        );
+        
+        // We know from Citeproc's API docs that the result of itemBuilder.build().toJson(StringJsonBuilder) is a String.
+        // In addition, we cannot use Citeproc's MapJsonBuilder because it adds JSON-P incompatible types to the resulting map.
+        // As a consequence, CPU cycles must be spent converting to String with citeproc and back with JSON-P.
+        @SuppressWarnings("unchecked")
+        String json = (String) itemBuilder.build().toJson((new StringJsonBuilderFactory()).createJsonBuilder());
+        return JsonUtil.getJsonObject(json);
     }
 
+    /** Optional metadata as displayed when the citation was captured. */
+    public record OptionalValue(String displayName, String displayValue, boolean url) {
+        public static OptionalValue from(DatasetField field) {
+            Objects.requireNonNull(field, "field");
+            DatasetFieldType type = field.getDatasetFieldType();
+            return new OptionalValue(
+                type.getDisplayName(),
+                field.getDisplayValue(),
+                type.getFieldType() == DatasetFieldType.FieldType.URL);
+        }
+    }
+    
+    /** Serialize instance fields only, so derived getters are never exposed. */
+    public static final class FieldsOnly implements PropertyVisibilityStrategy {
+        @Override
+        public boolean isVisible(Field field) {
+            return !Modifier.isStatic(field.getModifiers()) && !field.isSynthetic();
+        }
+        
+        @Override
+        public boolean isVisible(Method method) {
+            return false;
+        }
+    }
+    
+    /** Reuses citeproc's CSL JSON mapping for the author list. */
+    public static final class CSLNameListAdapter implements JsonbAdapter<List<CSLName>, List<Map<String, Object>>> {
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<Map<String, Object>> adaptToJson(List<CSLName> names) {
+            return names.stream()
+                // We know from Citeproc's API docs that toJson(MapJsonBuilder) results in a Map<String, Object>
+                .map(name -> (Map<String, Object>) name.toJson(new MapJsonBuilderFactory().createJsonBuilder()))
+                .toList();
+        }
+        
+        @Override
+        public List<CSLName> adaptFromJson(List<Map<String, Object>> json) {
+            return json.stream().map(CSLName::fromJson).toList();
+        }
+    }
+    
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
@@ -858,8 +960,10 @@ public class DataCitation {
     }
 
     private void getAuthorsAndProducersFrom(DatasetVersion dsv) {
-
-        dsv.getDatasetAuthors().stream().forEach((author) -> {
+        List<String> authors = new ArrayList<>();
+        List<CSLName> cslAuthors = new ArrayList<>();
+        
+        dsv.getDatasetAuthors().forEach(author -> {
             if (!author.isEmpty()) {
                 String an = author.getName().getDisplayValue().trim();
                 authors.add(an);
@@ -879,7 +983,12 @@ public class DataCitation {
                 }
             }
         });
-        producers = dsv.getDatasetProducerNames();
+        
+        // Assign defensive copies for immutability
+        this.authors = List.copyOf(authors);
+        this.cslAuthors = List.copyOf(cslAuthors);
+        
+        this.producers = dsv.getDatasetProducerNames();
     }
 
     private String getPublisherFrom(DatasetVersion dsv) {
