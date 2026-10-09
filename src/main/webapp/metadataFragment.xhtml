@@ -132,7 +132,7 @@
                                                     <c:set var="cvocOnDsfApplies" value="#{compoundValue.hasChildOfType(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}"/>
                                                     <ui:repeat value="#{compoundValue.getDisplayValueMap(mdLangCode).entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <c:set var="cvocOnCvPart" value="#{cvocConf.containsKey(cvPart.key.datasetFieldType.id)}"/>
-                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}"/>
+                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !settingsWrapper.isCvocField(compoundValue.getDisplayValueMap(mdLangCode).entrySet().toArray()[partStatus.index-1].key.datasetFieldType.id)}"/>
                                                         <ui:remove>
                                                           <!--
                                                           this fragment is supposed to show when no script will be changing it, which occurs when:
