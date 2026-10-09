@@ -22,6 +22,8 @@ public final class ApiConstants {
     public static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
     public static final String RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED = "Only authenticated users can perform the requested operation";
+    public static final String ORIGIN_HEADER = "Origin";
+    public static final String REFERER_HEADER = "Referer";
 
     // Dataset
     public static final String PERSISTENT_ID_KEY=":persistentId";

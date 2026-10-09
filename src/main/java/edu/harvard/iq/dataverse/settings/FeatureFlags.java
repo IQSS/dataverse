@@ -31,6 +31,16 @@ public enum FeatureFlags {
      */
     API_SESSION_AUTH("api-session-auth"),
     /**
+     * Enables CSRF hardening for session-cookie API authentication. A request authenticated
+     * by session cookie from a fully authenticated user must carry an Origin or Referer
+     * header matching the site origin. A mismatched header is rejected with 403; a request
+     * carrying neither header falls back to guest access.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.api-session-auth-hardening"
+     * @since Dataverse 6.12
+     */
+    API_SESSION_AUTH_HARDENING("api-session-auth-hardening"),
+    /**
      * Enables API authentication via Bearer Token.
      * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
      * @since Dataverse 5.14:
