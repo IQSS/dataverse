@@ -233,15 +233,13 @@ jobs:
       - name: Authenticate (${{ matrix.browser }})
         run: |
           npx playwright test --no-deps --reporter=list \
-            --project=setup-${{ matrix.browser }} \
-            --project=regression-setup-${{ matrix.browser }}
+            --project=setup-${{ matrix.browser }}
         working-directory: dataverse-jsf-tests
 
       - name: Run Playwright frontend tests (${{ matrix.browser }})
         run: |
           npx playwright test --no-deps \
-            --project=suite-${{ matrix.browser }} \
-            --project=regression-${{ matrix.browser }}
+            --project=${{ matrix.browser }}
         working-directory: dataverse-jsf-tests
 
       # ---------------------------
