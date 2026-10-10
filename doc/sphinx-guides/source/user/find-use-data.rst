@@ -16,6 +16,8 @@ Basic Search
 ------------
 You can search the entire contents of the Dataverse installation, including Dataverse collections, datasets, and files. You can access the search by clicking the "Search" button in the header of every page. The search bar accepts search terms, queries, or exact phrases (in quotations).
 
+File results can also match names in their directory paths. For example, searching for ``Figure1`` can find both ``Figure1/plot.txt`` and ``results/Figure1/nested.txt``, even when the filenames and descriptions do not contain ``Figure1``. The results are files, not separate folder entries.
+
 Sorting and Viewing Search Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -78,7 +80,7 @@ Files in a Dataverse installation each have their own landing page that can be r
 File Search within Datasets
 ---------------------------
 
-Datasets containing multiple files offer a file search function. On the Dataset page, under the Files tab, you'll see a search bar you can use to locate an individual file. It searches within the filename and file description. Performing a search will filter the file table to list only files matching your search. After you perform a search, if you'd like to return to the full list of files, just perform an empty search. 
+Datasets containing multiple files offer a file search function. On the Dataset page, under the Files tab, you'll see a search bar you can use to locate an individual file. It searches within the filename, file description, and directory path. Performing a search will filter the file table to list only files matching your search. After you perform a search, if you'd like to return to the full list of files, just perform an empty search.
 
 Under the search bar, you'll see file search facets you can use to filter the dataset's files by file type, access level, and file tags (see the example below). 
 
