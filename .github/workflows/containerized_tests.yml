@@ -438,15 +438,15 @@ jobs:
         run: |
           set -euo pipefail
           ls -l coverage/*.exec
-          java -jar jacoco/jacococli.jar merge coverage/*.exec --destfile coverage/merged.exec
+          java -jar jacoco/jacococli.jar merge coverage/*.exec --destfile coverage/jacoco.exec
           report() {
             java -jar jacoco/jacococli.jar report "$1" \
               --classfiles target/dataverse/WEB-INF/classes \
               --sourcefiles src/main/java \
               --name "$2" "${@:3}"
           }
-          report coverage/merged.exec "Dataverse server coverage - integration and JSF tests" \
-            --html coverage/html --xml coverage/jacoco.xml
+          report coverage/jacoco.exec "Dataverse server coverage - integration and JSF tests" \
+            --html coverage/jacoco-html --xml coverage/jacoco.xml
           for exec in coverage/chromium.exec coverage/firefox.exec coverage/webkit.exec; do
             [ -f "$exec" ] && report "$exec" "$(basename "$exec" .exec)" --xml "${exec%.exec}.xml"
           done
@@ -470,15 +470,15 @@ jobs:
               t = totals(path)
               cells = [f"{100 * t[k][0] / sum(t[k]):.1f}% ({t[k][0]:,}/{sum(t[k]):,})" for k in types]
               print(f"| {label} | " + " | ".join(cells) + " |")
-          print("\nFull HTML report: the `jacoco-coverage` artifact of this run.")
+          print("\nFull report: the `jacoco-report-html-xml` artifact of this run (open `jacoco-html/index.html`).")
           PY
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v7
         with:
-          name: jacoco-coverage
+          name: jacoco-report-html-xml
           path: |
-            coverage/html/
+            coverage/jacoco-html/
             coverage/jacoco.xml
-            coverage/merged.exec
+            coverage/jacoco.exec
           retention-days: 14
