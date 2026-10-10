@@ -152,13 +152,14 @@ jobs:
           retention-days: 7
 
   # =====================================================================
-  # JSF FRONTEND TESTS: one fresh stack per browser
+  # TESTS: one fresh stack per browser, each running the integration
+  # tests and that browser's JSF tests against it at the same time
   # =====================================================================
-  jsf-tests:
-    name: JSF Tests (${{ matrix.browser }})
+  tests:
+    name: Integration + JSF Tests (${{ matrix.browser }})
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -171,6 +172,8 @@ jobs:
 
     permissions:
       contents: read
+      checks: write
+      pull-requests: write
 
     env:
       BASE_URL:       "http://localhost:8080"
@@ -196,6 +199,32 @@ jobs:
       # ---------------------------
       - name: Start Dataverse stack
         uses: ./.github/actions/start-dataverse-stack
+
+      # ---------------------------
+      # START MAVEN INTEGRATION TESTS (BACKGROUND)
+      # ---------------------------
+      # The integration tests run in the background while the JSF tests run in
+      # the foreground, against the same stack. "Wait for Maven Integration
+      # Tests" below collects them.
+      - name: Start Maven Integration Tests
+        env:
+          DVAPIKEY: "burrito"
+          DV_APIKEY: "burrito"
+          DV_API_KEY: "burrito"
+        run: |
+          set -euo pipefail
+          TEST_SUITE=$(cat tests/integration-tests.txt)
+
+          echo "Running suite: $TEST_SUITE"
+
+          nohup mvn test \
+            -Dtest="$TEST_SUITE" \
+            -Dmaven.test.failure.ignore=true \
+            -Ddataverse.test.baseurl=http://localhost:8080 \
+            -Ddataverse.test.solr.softcommit.millis=100 \
+            -DcompilerArgument=-Xlint:unchecked \
+            > integration-tests.log 2>&1 &
+          echo $! > integration-tests.pid
 
       # ---------------------------
       # SETUP NODE.JS
@@ -236,14 +265,28 @@ jobs:
             --project=setup-${{ matrix.browser }}
         working-directory: dataverse-jsf-tests
 
+      # continue-on-error so the integration tests are still collected; the
+      # last step fails the job if either suite failed.
       - name: Run Playwright frontend tests (${{ matrix.browser }})
+        id: jsf
+        continue-on-error: true
         run: |
           npx playwright test --no-deps \
             --project=${{ matrix.browser }}
         working-directory: dataverse-jsf-tests
 
       # ---------------------------
-      # UPLOAD PLAYWRIGHT REPORT
+      # WAIT FOR MAVEN INTEGRATION TESTS
+      # ---------------------------
+      - name: Wait for Maven Integration Tests
+        if: always()
+        run: |
+          PID=$(cat integration-tests.pid)
+          while kill -0 "$PID" 2>/dev/null; do sleep 15; done
+          cat integration-tests.log
+
+      # ---------------------------
+      # UPLOAD REPORTS
       # ---------------------------
       - name: Upload Playwright report
         if: always()
@@ -253,77 +296,13 @@ jobs:
           path: dataverse-jsf-tests/playwright-report/
           retention-days: 14
 
-      # ---------------------------
-      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
-      # ---------------------------
-      - name: Collect Docker logs
-        if: always()
-        uses: ./.github/actions/collect-docker-logs
-        with:
-          artifact-name: docker-logs-jsf-${{ matrix.browser }}
-
-  # =====================================================================
-  # INTEGRATION TESTS
-  # =====================================================================
-  integration-tests:
-    name: Integration Tests
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-
-    defaults:
-      run:
-        shell: bash
-
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-
-    steps:
-
-      # ---------------------------
-      # CHECKOUT
-      # ---------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      # ---------------------------
-      # START + CONFIGURE DATAVERSE
-      # ---------------------------
-      - name: Start Dataverse stack
-        uses: ./.github/actions/start-dataverse-stack
-
-      # ---------------------------
-      # RUN MAVEN INTEGRATION TESTS
-      # ---------------------------
-      - name: Run Maven Integration Tests
-        env:
-          DVAPIKEY: "burrito"
-          DV_APIKEY: "burrito"
-          DV_API_KEY: "burrito"
-        run: |
-          set -euo pipefail
-          TEST_SUITE=$(cat tests/integration-tests.txt)
-
-          echo "Running suite: $TEST_SUITE"
-
-          mvn test \
-            -Dtest="$TEST_SUITE" \
-            -Dmaven.test.failure.ignore=true \
-            -Ddataverse.test.baseurl=http://localhost:8080 \
-            -Ddataverse.test.solr.softcommit.millis=100 \
-            -DcompilerArgument=-Xlint:unchecked
-
-      # ---------------------------
-      # UPLOAD SUREFIRE/FAILSAFE REPORTS
-      # ---------------------------
       - name: Upload Test Failure Reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: maven-test-reports
+          name: maven-test-reports-${{ matrix.browser }}
           path: |
+            integration-tests.log
             target/surefire-reports/
             target/failsafe-reports/
           retention-days: 14
@@ -335,19 +314,29 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
+          check_name: Integration Test Results (${{ matrix.browser }})
           files: |
             target/failsafe-reports/TEST-*.xml
             target/surefire-reports/TEST-*.xml
 
       # ---------------------------
-      # FAIL WORKFLOW IF TESTS FAILED
+      # FAIL THE JOB IF EITHER SUITE FAILED
       # ---------------------------
       - name: Check for Test Failures
         if: always()
         run: |
+          failed=0
           echo "Checking Surefire/Failsafe reports for failures..."
           if grep -q "<failure" target/surefire-reports/*.xml target/failsafe-reports/*.xml 2>/dev/null; then
-            echo "Tests failed! Failing the workflow."
+            echo "Integration tests failed."
+            failed=1
+          fi
+          if [ "${{ steps.jsf.outcome }}" != "success" ]; then
+            echo "JSF tests (${{ matrix.browser }}) failed."
+            failed=1
+          fi
+          if [ "$failed" = 1 ]; then
+            echo "Failing the job."
             exit 1
           fi
           echo "All tests passed."
@@ -359,4 +348,4 @@ jobs:
         if: always()
         uses: ./.github/actions/collect-docker-logs
         with:
-          artifact-name: docker-logs-integration
+          artifact-name: docker-logs-${{ matrix.browser }}
