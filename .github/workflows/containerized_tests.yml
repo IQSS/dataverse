@@ -197,6 +197,10 @@ jobs:
       # ---------------------------
       # START + CONFIGURE DATAVERSE
       # ---------------------------
+      # Server-side code coverage: see the "code-coverage" job below.
+      - name: Attach JaCoCo agent
+        uses: ./.github/actions/attach-jacoco-agent
+
       - name: Start Dataverse stack
         uses: ./.github/actions/start-dataverse-stack
 
@@ -286,6 +290,27 @@ jobs:
           cat integration-tests.log
 
       # ---------------------------
+      # DUMP CODE COVERAGE
+      # ---------------------------
+      # Both suites have finished, so this is everything they exercised on the
+      # server. The code-coverage job merges the three browsers' dumps.
+      - name: Dump JaCoCo coverage
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p coverage
+          java -jar jacoco/jacococli.jar dump --address localhost --port 6300 \
+            --destfile coverage/${{ matrix.browser }}.exec
+
+      - name: Upload JaCoCo coverage data
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-exec-${{ matrix.browser }}
+          path: coverage/${{ matrix.browser }}.exec
+          retention-days: 14
+
+      # ---------------------------
       # UPLOAD REPORTS
       # ---------------------------
       - name: Upload Playwright report
@@ -349,3 +374,112 @@ jobs:
         uses: ./.github/actions/collect-docker-logs
         with:
           artifact-name: docker-logs-${{ matrix.browser }}
+
+  # =====================================================================
+  # CODE COVERAGE: merge the browser jobs' server-side coverage into one
+  # report of what the integration and JSF tests exercise together
+  # =====================================================================
+  code-coverage:
+    name: Code Coverage
+    needs: tests
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v6.0.1
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      # The report needs the exact classes the server ran: the exploded WAR
+      # from the build job.
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: dataverse-build
+          path: ${{ runner.temp }}/dataverse-build
+
+      - name: Restore server classes
+        run: |
+          set -euo pipefail
+          mkdir -p target
+          zstd -dc "${{ runner.temp }}/dataverse-build/target-dataverse.tar.zst" | tar -C target -xf -
+          ls -d target/dataverse/WEB-INF/classes
+
+      - name: Download JaCoCo coverage data
+        uses: actions/download-artifact@v8
+        with:
+          pattern: jacoco-exec-*
+          path: coverage
+          merge-multiple: true
+
+      - name: Download JaCoCo
+        run: |
+          set -euo pipefail
+          V=0.8.14
+          mkdir -p jacoco
+          curl -fsSL -o jacoco/jacococli.jar \
+            "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/${V}/org.jacoco.cli-${V}-nodeps.jar"
+
+      - name: Merge coverage and build the report
+        run: |
+          set -euo pipefail
+          ls -l coverage/*.exec
+          java -jar jacoco/jacococli.jar merge coverage/*.exec --destfile coverage/jacoco.exec
+          report() {
+            java -jar jacoco/jacococli.jar report "$1" \
+              --classfiles target/dataverse/WEB-INF/classes \
+              --sourcefiles src/main/java \
+              --name "$2" "${@:3}"
+          }
+          report coverage/jacoco.exec "Dataverse server coverage - integration and JSF tests" \
+            --html coverage/jacoco-html --xml coverage/jacoco.xml
+          for exec in coverage/chromium.exec coverage/firefox.exec coverage/webkit.exec; do
+            [ -f "$exec" ] && report "$exec" "$(basename "$exec" .exec)" --xml "${exec%.exec}.xml"
+          done
+
+          # Summary table on the run's page
+          python3 - <<'PY' | tee -a "$GITHUB_STEP_SUMMARY"
+          import os
+          import xml.etree.ElementTree as ET
+
+          def totals(path):
+              root = ET.parse(path).getroot()
+              return {c.get("type"): (int(c.get("covered")), int(c.get("missed"))) for c in root.findall("counter")}
+
+          rows = [("All browsers (merged)", "coverage/jacoco.xml")] + [
+              (b, f"coverage/{b}.xml") for b in ("chromium", "firefox", "webkit") if os.path.exists(f"coverage/{b}.xml")]
+          types = ["LINE", "BRANCH", "METHOD", "CLASS"]
+          labels = {"LINE": "Lines", "BRANCH": "Branches", "METHOD": "Methods", "CLASS": "Classes"}
+          print("### Server-side code coverage (integration + JSF tests)\n")
+          print("| | " + " | ".join(labels[t] for t in types) + " |")
+          print("|---|" + "---|" * len(types))
+          for label, path in rows:
+              t = totals(path)
+              cells = [f"{100 * t[k][0] / sum(t[k]):.1f}% ({t[k][0]:,}/{sum(t[k]):,})" for k in types]
+              print(f"| {label} | " + " | ".join(cells) + " |")
+          print("\nFull report: the `jacoco-report-html-xml` artifact of this run (open `jacoco-html/index.html`).")
+          PY
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-report-html-xml
+          path: |
+            coverage/jacoco-html/
+            coverage/jacoco.xml
+            coverage/jacoco.exec
+          retention-days: 14

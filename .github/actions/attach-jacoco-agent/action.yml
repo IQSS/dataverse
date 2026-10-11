@@ -1,0 +1,62 @@
+---
+name: "Attach JaCoCo Agent"
+description: "Download JaCoCo and add its agent to the Dataverse app container, so server-side code coverage can be collected from the running server."
+inputs:
+  jacoco-version:
+    description: "JaCoCo version (keep in step with maven-jacoco-plugin.version in modules/dataverse-parent/pom.xml)"
+    required: false
+    default: "0.8.14"
+  port:
+    description: "Port the agent listens on for coverage dumps"
+    required: false
+    default: "6300"
+runs:
+  using: composite
+  steps:
+
+    # The agent runs as a TCP server inside the app container, and coverage
+    # is dumped from the live server with `jacococli dump`. In JaCoCo's default
+    # file mode the .exec file is only written when the JVM shuts down cleanly,
+    # which never happens in CI.
+    - name: Download JaCoCo
+      shell: bash
+      run: |
+        set -euo pipefail
+        V="${{ inputs.jacoco-version }}"
+        mkdir -p jacoco
+        curl -fsSL -o jacoco/jacocoagent.jar \
+          "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/${V}/org.jacoco.agent-${V}-runtime.jar"
+        curl -fsSL -o jacoco/jacococli.jar \
+          "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/${V}/org.jacoco.cli-${V}-nodeps.jar"
+
+    # Extra JVM options reach Payara only through JVM_ARGS, which
+    # startInForeground.sh adds to the server's command line, so the agent is
+    # appended to the JVM_ARGS docker-compose-dev.yml already sets. The file is
+    # changed on the runner only.
+    - name: Add the agent to docker-compose-dev.yml
+      shell: bash
+      env:
+        JACOCO_PORT: ${{ inputs.port }}
+      run: |
+        set -euo pipefail
+        python3 - <<'PY'
+        import os
+        port = os.environ["JACOCO_PORT"]
+        path = "docker-compose-dev.yml"
+        s = open(path).read()
+
+        def add_after(anchor, line):
+            global s
+            if s.count(anchor) != 1:
+                raise SystemExit(f"Expected exactly one {anchor.strip()!r} in {path}")
+            s = s.replace(anchor, anchor + line)
+
+        add_after("      JVM_ARGS: -Ddataverse.files.storage-driver-id=file1\n",
+                  f"        -javaagent:/jacoco/jacocoagent.jar=output=tcpserver,address=*,port={port},includes=edu.harvard.iq.dataverse.*\n")
+        add_after('      - "8686:8686" # JMX\n',
+                  f'      - "{port}:{port}" # JaCoCo agent\n')
+        add_after("      - ./target/dataverse:/opt/payara/deployments/dataverse:ro\n",
+                  "      - ./jacoco:/jacoco:ro\n")
+        open(path, "w").write(s)
+        PY
+        git diff docker-compose-dev.yml
