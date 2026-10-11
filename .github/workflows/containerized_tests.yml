@@ -1,0 +1,485 @@
+name: Containerized Tests for Dataverse
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths-ignore:
+      - "doc/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/*.md"
+
+concurrency:
+  group: "containerized-tests-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+
+  # =====================================================================
+  # BUILD: build the containers once and hand them off to the test jobs
+  # =====================================================================
+  build:
+    name: Build Containers
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # ---------------------------
+      # VERIFY DOCKER
+      # ---------------------------
+      - name: Verify Docker
+        run: |
+          set -euo pipefail
+          docker version
+
+      # ---------------------------
+      # SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v6.0.1
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Verify Maven
+        run: |
+          set -euo pipefail
+          mvn -version
+
+      # ---------------------------
+      # FETCH OR BUILD BASE IMAGE
+      # ---------------------------
+      - name: Fetch or Build local base image
+        run: |
+          set -euo pipefail
+
+          # 1. Ask Maven for the expected tag
+          BASE_IMAGE=$(cd modules/container-base && mvn build-helper:parse-version help:evaluate -Dexpression=base.image -q -DforceStdout -Pct)
+          echo "Target base image: $BASE_IMAGE"
+
+          # 2. Try to pull it. If that fails, build it.
+          if docker pull "$BASE_IMAGE"; then
+            echo "✅ Image found and pulled successfully! Skipping local build."
+          else
+            echo "⚠️ Pull failed (image likely doesn't exist yet). Building locally..."
+            mvn -Pct clean package -f modules/container-base/pom.xml
+          fi
+
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      - name: Build Dataverse containers via Maven
+        run: |
+          set -euo pipefail
+          mvn -Pct -T 1C package
+
+      # ---------------------------
+      # PACKAGE BUILD OUTPUT
+      # ---------------------------
+      # Records which code was built, so a failed run can be reproduced locally from the right commit.
+      # On pull requests, GITHUB_SHA is the merge commit of the PR into its base branch, not the PR head.
+      - name: Record build info
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p dataverse-build
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "event=${EVENT_NAME}"
+            echo "ref=${REF}"
+            echo "pr_number=${PR_NUMBER}"
+            echo "pr_head_sha=${PR_HEAD_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "app_image_id=$(docker image inspect --format '{{.Id}}' gdcc/dataverse:unstable)"
+            echo "configbaker_image_id=$(docker image inspect --format '{{.Id}}' gdcc/configbaker:unstable)"
+          } > dataverse-build/build-info.txt
+          cat dataverse-build/build-info.txt
+
+      # The base image travels along as layers of the app image, so only these two need saving.
+      # docker-compose-dev.yml bind-mounts ./target/dataverse into the app container,
+      # so the exploded WAR has to be handed off as well.
+      - name: Save images and exploded WAR
+        run: |
+          set -euo pipefail
+          mkdir -p dataverse-build
+          docker save gdcc/dataverse:unstable gdcc/configbaker:unstable \
+            | zstd -T0 -3 -o dataverse-build/images.tar.zst
+          tar -C target -cf - dataverse \
+            | zstd -T0 -3 -o dataverse-build/target-dataverse.tar.zst
+          ls -lh dataverse-build/
+
+      # Kept for a week so a failed run can be reproduced locally with the exact same images
+      # (see "Reproducing a CI Failure Locally" in the developer guide).
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: dataverse-build
+          path: dataverse-build/
+          compression-level: 0
+          retention-days: 7
+
+  # =====================================================================
+  # TESTS: one fresh stack per browser, each running the integration
+  # tests and that browser's JSF tests against it at the same time
+  # =====================================================================
+  tests:
+    name: Integration + JSF Tests (${{ matrix.browser }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    env:
+      BASE_URL:       "http://localhost:8080"
+      LOGIN_ADAPTER:  "builtin"
+      DV_USERNAME:    "dataverseAdmin"
+      DV_PASSWORD:    "admin1"
+      DV_FULL_NAME:   "Dataverse Admin"
+      ROOT_DATAVERSE: "/dataverse/root"
+      SKIP_PREFLIGHT: "true"
+      LOCALLY_FAIR_ENABLED: "false"
+      DOTENV_CONFIG_QUIET: "true"
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # ---------------------------
+      # START + CONFIGURE DATAVERSE
+      # ---------------------------
+      # Server-side code coverage: see the "code-coverage" job below.
+      - name: Attach JaCoCo agent
+        uses: ./.github/actions/attach-jacoco-agent
+
+      - name: Start Dataverse stack
+        uses: ./.github/actions/start-dataverse-stack
+
+      # ---------------------------
+      # START MAVEN INTEGRATION TESTS (BACKGROUND)
+      # ---------------------------
+      # The integration tests run in the background while the JSF tests run in
+      # the foreground, against the same stack. "Wait for Maven Integration
+      # Tests" below collects them.
+      - name: Start Maven Integration Tests
+        env:
+          DVAPIKEY: "burrito"
+          DV_APIKEY: "burrito"
+          DV_API_KEY: "burrito"
+        run: |
+          set -euo pipefail
+          TEST_SUITE=$(cat tests/integration-tests.txt)
+
+          echo "Running suite: $TEST_SUITE"
+
+          nohup mvn test \
+            -Dtest="$TEST_SUITE" \
+            -Dmaven.test.failure.ignore=true \
+            -Ddataverse.test.baseurl=http://localhost:8080 \
+            -Ddataverse.test.solr.softcommit.millis=100 \
+            -DcompilerArgument=-Xlint:unchecked \
+            > integration-tests.log 2>&1 &
+          echo $! > integration-tests.pid
+
+      # ---------------------------
+      # SETUP NODE.JS
+      # ---------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      # ---------------------------
+      # CHECKOUT dataverse-jsf-tests
+      # ---------------------------
+      - name: Checkout dataverse-jsf-tests
+        uses: actions/checkout@v7
+        with:
+          repository: gdcc/dataverse-jsf-tests
+          path: dataverse-jsf-tests
+
+      - name: Install dataverse-jsf-tests dependencies
+        run: npm ci
+        working-directory: dataverse-jsf-tests
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+        working-directory: dataverse-jsf-tests
+
+      # ---------------------------
+      # RUN PLAYWRIGHT FRONTEND TESTS
+      # ---------------------------
+      # The Playwright projects chain the browsers (chromium -> firefox -> webkit),
+      # so --no-deps is needed to run a single browser. Without dependencies the
+      # setup -> suite ordering is no longer guaranteed, so authentication runs first
+      # as its own invocation. It reports to the console only, so it doesn't
+      # overwrite the HTML report of the test run.
+      - name: Authenticate (${{ matrix.browser }})
+        run: |
+          npx playwright test --no-deps --reporter=list \
+            --project=setup-${{ matrix.browser }}
+        working-directory: dataverse-jsf-tests
+
+      # continue-on-error so the integration tests are still collected; the
+      # last step fails the job if either suite failed.
+      - name: Run Playwright frontend tests (${{ matrix.browser }})
+        id: jsf
+        continue-on-error: true
+        run: |
+          npx playwright test --no-deps \
+            --project=${{ matrix.browser }}
+        working-directory: dataverse-jsf-tests
+
+      # ---------------------------
+      # WAIT FOR MAVEN INTEGRATION TESTS
+      # ---------------------------
+      - name: Wait for Maven Integration Tests
+        if: always()
+        run: |
+          PID=$(cat integration-tests.pid)
+          while kill -0 "$PID" 2>/dev/null; do sleep 15; done
+          cat integration-tests.log
+
+      # ---------------------------
+      # DUMP CODE COVERAGE
+      # ---------------------------
+      # Both suites have finished, so this is everything they exercised on the
+      # server. The code-coverage job merges the three browsers' dumps.
+      - name: Dump JaCoCo coverage
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p coverage
+          java -jar jacoco/jacococli.jar dump --address localhost --port 6300 \
+            --destfile coverage/${{ matrix.browser }}.exec
+
+      - name: Upload JaCoCo coverage data
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-exec-${{ matrix.browser }}
+          path: coverage/${{ matrix.browser }}.exec
+          retention-days: 14
+
+      # ---------------------------
+      # UPLOAD REPORTS
+      # ---------------------------
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: dataverse-jsf-tests/playwright-report/
+          retention-days: 14
+
+      - name: Upload Test Failure Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maven-test-reports-${{ matrix.browser }}
+          path: |
+            integration-tests.log
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 14
+
+      # ---------------------------
+      # PUBLISH TEST DASHBOARD IN GITHUB PR
+      # ---------------------------
+      - name: Publish Test Results Dashboard
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: Integration Test Results (${{ matrix.browser }})
+          files: |
+            target/failsafe-reports/TEST-*.xml
+            target/surefire-reports/TEST-*.xml
+
+      # ---------------------------
+      # FAIL THE JOB IF EITHER SUITE FAILED
+      # ---------------------------
+      - name: Check for Test Failures
+        if: always()
+        run: |
+          failed=0
+          echo "Checking Surefire/Failsafe reports for failures..."
+          if grep -q "<failure" target/surefire-reports/*.xml target/failsafe-reports/*.xml 2>/dev/null; then
+            echo "Integration tests failed."
+            failed=1
+          fi
+          if [ "${{ steps.jsf.outcome }}" != "success" ]; then
+            echo "JSF tests (${{ matrix.browser }}) failed."
+            failed=1
+          fi
+          if [ "$failed" = 1 ]; then
+            echo "Failing the job."
+            exit 1
+          fi
+          echo "All tests passed."
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: always()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-${{ matrix.browser }}
+
+  # =====================================================================
+  # CODE COVERAGE: merge the browser jobs' server-side coverage into one
+  # report of what the integration and JSF tests exercise together
+  # =====================================================================
+  code-coverage:
+    name: Code Coverage
+    needs: tests
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v6.0.1
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      # The report needs the exact classes the server ran: the exploded WAR
+      # from the build job.
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: dataverse-build
+          path: ${{ runner.temp }}/dataverse-build
+
+      - name: Restore server classes
+        run: |
+          set -euo pipefail
+          mkdir -p target
+          zstd -dc "${{ runner.temp }}/dataverse-build/target-dataverse.tar.zst" | tar -C target -xf -
+          ls -d target/dataverse/WEB-INF/classes
+
+      - name: Download JaCoCo coverage data
+        uses: actions/download-artifact@v8
+        with:
+          pattern: jacoco-exec-*
+          path: coverage
+          merge-multiple: true
+
+      - name: Download JaCoCo
+        run: |
+          set -euo pipefail
+          V=0.8.14
+          mkdir -p jacoco
+          curl -fsSL -o jacoco/jacococli.jar \
+            "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/${V}/org.jacoco.cli-${V}-nodeps.jar"
+
+      - name: Merge coverage and build the report
+        run: |
+          set -euo pipefail
+          ls -l coverage/*.exec
+          java -jar jacoco/jacococli.jar merge coverage/*.exec --destfile coverage/jacoco.exec
+          report() {
+            java -jar jacoco/jacococli.jar report "$1" \
+              --classfiles target/dataverse/WEB-INF/classes \
+              --sourcefiles src/main/java \
+              --name "$2" "${@:3}"
+          }
+          report coverage/jacoco.exec "Dataverse server coverage - integration and JSF tests" \
+            --html coverage/jacoco-html --xml coverage/jacoco.xml
+          for exec in coverage/chromium.exec coverage/firefox.exec coverage/webkit.exec; do
+            [ -f "$exec" ] && report "$exec" "$(basename "$exec" .exec)" --xml "${exec%.exec}.xml"
+          done
+
+          # Summary table on the run's page
+          python3 - <<'PY' | tee -a "$GITHUB_STEP_SUMMARY"
+          import os
+          import xml.etree.ElementTree as ET
+
+          def totals(path):
+              root = ET.parse(path).getroot()
+              return {c.get("type"): (int(c.get("covered")), int(c.get("missed"))) for c in root.findall("counter")}
+
+          rows = [("All browsers (merged)", "coverage/jacoco.xml")] + [
+              (b, f"coverage/{b}.xml") for b in ("chromium", "firefox", "webkit") if os.path.exists(f"coverage/{b}.xml")]
+          types = ["LINE", "BRANCH", "METHOD", "CLASS"]
+          labels = {"LINE": "Lines", "BRANCH": "Branches", "METHOD": "Methods", "CLASS": "Classes"}
+          print("### Server-side code coverage (integration + JSF tests)\n")
+          print("| | " + " | ".join(labels[t] for t in types) + " |")
+          print("|---|" + "---|" * len(types))
+          for label, path in rows:
+              t = totals(path)
+              cells = [f"{100 * t[k][0] / sum(t[k]):.1f}% ({t[k][0]:,}/{sum(t[k]):,})" for k in types]
+              print(f"| {label} | " + " | ".join(cells) + " |")
+          print("\nFull report: the `jacoco-report-html-xml` artifact of this run (open `jacoco-html/index.html`).")
+          PY
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-report-html-xml
+          path: |
+            coverage/jacoco-html/
+            coverage/jacoco.xml
+            coverage/jacoco.exec
+          retention-days: 14

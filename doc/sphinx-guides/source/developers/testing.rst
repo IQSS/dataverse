@@ -459,7 +459,49 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 
 GitHub Actions jobs can be found in ``.github/workflows``.
 
+The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Containerized Tests for Dataverse" workflow (``containerized_tests.yml``). It builds the Dataverse containers once in a "Build Containers" job and hands them to three jobs that run in parallel, one per browser (Chromium, Firefox and WebKit). Each "Integration + JSF Tests" job starts its own fresh Dataverse installation and runs two suites against it at the same time: the API tests listed in :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>`, and the JSF frontend tests in that browser. Each job uploads its own test reports and container logs as artifacts.
+
 As always, pull requests to improve our continuous integration configurations are welcome.
+
+Reproducing a CI Failure Locally
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The "Build Containers" job of the "Containerized Tests for Dataverse" workflow uploads the exact container images and exploded war file that the test jobs ran against, as an artifact called ``dataverse-build``. It is kept for 7 days. When a test fails in CI, you can start that same build on your machine instead of relying on the logs alone.
+
+You will need Docker, Maven, ``zstd`` and the `GitHub CLI <https://cli.github.com>`_. Find the run ID in the URL of the failed run (``.../actions/runs/<run-id>``), then, from a clone of the repository:
+
+.. code-block:: bash
+
+  gh run download <run-id> --repo IQSS/dataverse --name dataverse-build --dir /tmp/dataverse-build
+  cat /tmp/dataverse-build/build-info.txt
+  COMMIT=$(grep '^commit=' /tmp/dataverse-build/build-info.txt | cut -d= -f2)
+  git fetch https://github.com/IQSS/dataverse.git "$COMMIT" && git checkout "$COMMIT"
+  zstd -dc /tmp/dataverse-build/images.tar.zst | docker load
+  mkdir -p target && zstd -dc /tmp/dataverse-build/target-dataverse.tar.zst | tar -C target -xf -
+  mvn -Pct docker:start \
+    -Ddataverse.feature.index-harvested-metadata-source=true \
+    -Ddataverse.oai.server.maxidentifiers=2 \
+    -Ddataverse.oai.server.maxrecords=2 \
+    -Ddataverse.feature.allow-locally-fair-data=true
+
+Once http://localhost:8080/api/info/version responds, apply the same settings the workflow uses. The admin API only accepts requests from localhost, so the commands run inside the container:
+
+.. code-block:: bash
+
+  docker exec dev_dataverse curl -sS -X PUT -d burrito http://localhost:8080/api/admin/settings/:BuiltinUsersKey
+  docker exec dev_dataverse curl -sS -X PUT -d true http://localhost:8080/api/admin/settings/:ProvCollectionEnabled
+  docker exec dev_dataverse curl -sS -X PUT -d true http://localhost:8080/api/admin/settings/:AllowApiTokenLookupViaApi
+  docker exec dev_dataverse curl -sS -X PUT -d true http://localhost:8080/api/admin/settings/:AllowSignUp
+
+Then run the failing test with the same options as the workflow, for example ``mvn test -Dtest=DatasetsIT -Ddataverse.test.baseurl=http://localhost:8080 -Ddataverse.test.solr.softcommit.millis=100``. Tests that use S3 storage also need ``127.0.0.1 localstack`` in your ``/etc/hosts``.
+
+Keep in mind:
+
+- ``build-info.txt`` records the commit that was built. For a pull request, that's the merge commit of the pull request into its base branch, which is what CI tests. If GitHub no longer has that merge commit, check out ``pr_head_sha`` instead: the app still runs exactly as in CI, because it comes from the artifact, but the test sources may differ slightly if the base branch has moved since.
+- This reproduces the build, not the state of the failed run. The database, Solr index and files start fresh, just as they did in CI.
+- ``docker load`` replaces any local ``gdcc/dataverse:unstable`` and ``gdcc/configbaker:unstable`` images.
+- The images are built for ``linux/amd64``. On Apple Silicon, Docker Desktop runs them under emulation, so the stack takes longer to start.
+- Stop the stack with ``mvn -Pct docker:stop``. To start over from an empty database, also remove ``docker-dev-volumes``.
 
 Enhance build time by caching dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -504,7 +546,7 @@ Browser-Based Testing
 Browser-Based Testing of JSF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526).
+The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526). Each browser runs in its own job of the "Containerized Tests for Dataverse" workflow, alongside a full run of the API tests described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782).
 
 Browser-Based Testing of the SPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
