@@ -463,8 +463,9 @@ jobs:
           rows = [("All browsers (merged)", "coverage/jacoco.xml")] + [
               (b, f"coverage/{b}.xml") for b in ("chromium", "firefox", "webkit") if os.path.exists(f"coverage/{b}.xml")]
           types = ["LINE", "BRANCH", "METHOD", "CLASS"]
+          labels = {"LINE": "Lines", "BRANCH": "Branches", "METHOD": "Methods", "CLASS": "Classes"}
           print("### Server-side code coverage (integration + JSF tests)\n")
-          print("| | " + " | ".join(t.title() + "s" for t in types) + " |")
+          print("| | " + " | ".join(labels[t] for t in types) + " |")
           print("|---|" + "---|" * len(types))
           for label, path in rows:
               t = totals(path)
