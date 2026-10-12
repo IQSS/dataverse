@@ -46,6 +46,7 @@
         <openapi.infoDescription>Open source research data repository software.</openapi.infoDescription>
         <!-- https://download.eclipse.org/microprofile/microprofile-open-api-3.1.1/microprofile-openapi-spec-3.1.1.html#_location_and_formats -->
         <openapi.outputDirectory>${project.build.outputDirectory}/META-INF</openapi.outputDirectory>
+        <maven.smallrye.skip>false</maven.smallrye.skip>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -1179,6 +1180,7 @@
                         <!-- Plugin scans class files, not sources. Execute after compile phase but before package -->
                         <phase>process-classes</phase>
                         <configuration>
+                            <skip>${maven.smallrye.skip}</skip>
                             <outputDirectory>${openapi.outputDirectory}</outputDirectory>
                             <schemaFilename>openapi</schemaFilename>
                             <infoTitle>${openapi.infoTitle}</infoTitle>

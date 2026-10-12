@@ -1,6 +1,9 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataset;
 
-import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.testing.fixtures.DatasetFixtureBuilder;
 import edu.harvard.iq.dataverse.util.testing.performance.JpaEntityManagerService;
 import edu.harvard.iq.dataverse.util.testing.performance.JpaPerformanceTest;
@@ -58,9 +61,13 @@ class DatasetThumbnailIndexTimeIT {
         });
 
         // the thumbnail command runs
-        jpa.inTransactionVoid(em -> {
-            DatasetServiceBean datasetService = new DatasetServiceBean();
-            datasetService.em = em;
+        jpa.inTransactionVoid(entityManager -> {
+            // em is protected, a subclass can set it from this package
+            DatasetServiceBean datasetService = new DatasetServiceBean() {
+                {
+                    em = entityManager;
+                }
+            };
             datasetService.setDatasetFileAsThumbnail(loadedForTheCommand, dataFile);
         });
 
