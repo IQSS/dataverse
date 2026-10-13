@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUserRor;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -138,8 +139,21 @@ public class JsonPrinter {
             .add("createdTime", authenticatedUser.getCreatedTime())
             .add("lastLoginTime", authenticatedUser.getLastLoginTime())
             .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
-            .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+            .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId())
+            .add("rors", jsonRors(authenticatedUser.getRors()));
         return builder;
+    }
+
+    /**
+     * @param rors a user's RORs, in display order
+     * @return an array of ROR URLs in display order; the first entry is the primary ROR
+     */
+    public static JsonArrayBuilder jsonRors(List<AuthenticatedUserRor> rors) {
+        JsonArrayBuilder arrayBuilder = JsonUtil.createArrayBuilder();
+        for (AuthenticatedUserRor ror : rors) {
+            arrayBuilder.add(ror.getRorId());
+        }
+        return arrayBuilder;
     }
     public static JsonObjectBuilder json(FileAccessRequest fileAccessRequest) {
         JsonObjectBuilder builder = json(fileAccessRequest.getRequester())

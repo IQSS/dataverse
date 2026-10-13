@@ -2125,6 +2125,44 @@ public class UtilIT {
         return response;
     }
 
+    static Response getUserRors(String username, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/users/" + username + "/rors");
+    }
+
+    static Response addUserRor(String username, String rorId, Integer position, String apiToken) {
+        JsonObjectBuilder body = JsonUtil.createObjectBuilder().add("rorId", rorId);
+        if (position != null) {
+            body.add("position", position);
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .contentType(ContentType.JSON)
+                .body(body.build().toString())
+                .post("/api/users/" + username + "/rors");
+    }
+
+    static Response setUserRors(String username, List<String> rorIds, String apiToken) {
+        JsonArrayBuilder body = JsonUtil.createArrayBuilder();
+        rorIds.forEach(body::add);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .contentType(ContentType.JSON)
+                .body(body.build().toString())
+                .put("/api/users/" + username + "/rors");
+    }
+
+    static Response removeUserRor(String username, String rorId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .delete("/api/users/" + username + "/rors/" + rorId);
+    }
+
     /**
      * Used to the test the filter Authenticated Users API endpoint
      *

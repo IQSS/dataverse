@@ -7359,6 +7359,65 @@ Each user can get a dump of their basic information in JSON format by passing in
 
     curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/:me"
 
+The response includes a ``rors`` array. See :ref:`user-rors` below.
+
+.. _user-rors:
+
+Manage a User's RORs
+~~~~~~~~~~~~~~~~~~~~
+
+Users can associate one or more `ROR <https://ror.org>`_ (Research Organization Registry) identifiers with their account, in a specific order. The first ROR in the list is the user's primary ROR.
+
+RORs can be supplied either as bare IDs (``03vek6s52``) or as URLs (``https://ror.org/03vek6s52``). They are always stored and returned as URLs.
+
+Each of these API calls can be made by the user themselves (use ``:me`` or their own username in place of ``$USERNAME``) or by a superuser for any user. Each call that changes the list returns the updated list.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+List a user's RORs, in order:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export USERNAME=:me
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/rors"
+
+Example response:
+
+.. code-block:: json
+
+  {
+    "status": "OK",
+    "data": [
+      "https://ror.org/03vek6s52",
+      "https://ror.org/02e2c7k09"
+    ]
+  }
+
+Add a ROR. It goes at the end of the list unless you supply a zero-based ``position``. Position ``0`` makes it the primary ROR. Adding a ROR the user already has returns ``409 Conflict``.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-Type: application/json" "$SERVER_URL/api/users/$USERNAME/rors" -d '{"rorId": "03vek6s52", "position": 0}'
+
+Replace all of a user's RORs. This is also how to reorder them. Supplying an empty array (``[]``) removes all RORs.
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -H "Content-Type: application/json" "$SERVER_URL/api/users/$USERNAME/rors" -d '["02e2c7k09", "https://ror.org/03vek6s52"]'
+
+Remove a ROR. Put the bare ID (without ``https://ror.org/``) in the URL. The remaining RORs keep their order.
+
+.. code-block:: bash
+
+  export ROR_ID=03vek6s52
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/users/$USERNAME/rors/$ROR_ID"
+
+When accounts are merged (see :ref:`merge-accounts-label`), the RORs of the account being merged in are appended after those of the account it's merged into, skipping duplicates.
+
 
 
 Managing Harvesting Server and Sets

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUserRor;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
@@ -20,6 +21,7 @@ import static edu.harvard.iq.dataverse.api.auth.AuthUtil.extractBearerTokenFromH
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +33,7 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.stream.JsonParsingException;
@@ -340,6 +343,132 @@ public class Users extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/rors")
+    @Operation(summary = "Lists a user's RORs",
+            description = "Returns the ROR identifiers associated with the specified user, in order. The first one is the user's primary ROR. Available to the user (use :me) or a superuser.")
+    public Response getUserRors(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user identifier, or :me for the requesting user.", required = true)
+            @PathParam("identifier") String identifier) {
+        try {
+            AuthenticatedUser user = findUserForRorsOrDie(crc, identifier);
+            return ok(JsonPrinter.jsonRors(user.getRors()));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/rors")
+    @Operation(summary = "Replaces a user's RORs",
+            description = "Replaces the user's ROR identifiers with the supplied JSON array, in the supplied order. Use this to reorder; an empty array removes all RORs. Available to the user (use :me) or a superuser.")
+    public Response setUserRors(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user identifier, or :me for the requesting user.", required = true)
+            @PathParam("identifier") String identifier,
+            @RequestBody(description = "JSON array of ROR IDs or ROR URLs in the desired order, e.g. [\"https://ror.org/03vek6s52\", \"02e2c7k09\"].")
+            String body) {
+        try {
+            AuthenticatedUser user = findUserForRorsOrDie(crc, identifier);
+            List<String> rorIds = new ArrayList<>();
+            try {
+                JsonArray rorArray = JsonUtil.getJsonArray(body);
+                for (int i = 0; i < rorArray.size(); i++) {
+                    rorIds.add(rorArray.getString(i));
+                }
+            } catch (JsonException | ClassCastException | NullPointerException e) {
+                return badRequest("Request body must be a JSON array of ROR identifiers (strings).");
+            }
+            user.setRors(rorIds);
+            user = userSvc.save(user);
+            return ok(JsonPrinter.jsonRors(user.getRors()));
+        } catch (IllegalArgumentException ex) {
+            return badRequest(ex.getMessage());
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{identifier}/rors")
+    @Operation(summary = "Adds a ROR to a user",
+            description = "Adds a ROR identifier to the user, at the end of the list or at the given zero-based position. Position 0 makes it the primary ROR. Available to the user (use :me) or a superuser.")
+    public Response addUserRor(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user identifier, or :me for the requesting user.", required = true)
+            @PathParam("identifier") String identifier,
+            @RequestBody(description = "JSON object with \"rorId\" (ROR ID or ROR URL) and optional \"position\" (zero-based), e.g. {\"rorId\": \"03vek6s52\", \"position\": 0}.")
+            String body) {
+        try {
+            AuthenticatedUser user = findUserForRorsOrDie(crc, identifier);
+            String rorId;
+            Integer position = null;
+            try {
+                JsonObject rorJson = JsonUtil.getJsonObject(body);
+                rorId = rorJson.getString("rorId");
+                if (rorJson.containsKey("position") && !rorJson.isNull("position")) {
+                    position = rorJson.getInt("position");
+                }
+            } catch (JsonException | ClassCastException | NullPointerException e) {
+                return badRequest("Request body must be a JSON object with a \"rorId\" string and an optional \"position\" integer.");
+            }
+            if (!user.addRor(rorId, position)) {
+                return error(Response.Status.CONFLICT, "User already has ROR " + AuthenticatedUserRor.normalizeRorId(rorId) + ".");
+            }
+            user = userSvc.save(user);
+            return ok(JsonPrinter.jsonRors(user.getRors()));
+        } catch (IllegalArgumentException ex) {
+            return badRequest(ex.getMessage());
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/rors/{rorId}")
+    @Operation(summary = "Removes a ROR from a user",
+            description = "Removes a ROR identifier from the user. The remaining RORs keep their order. Available to the user (use :me) or a superuser.")
+    public Response removeUserRor(@Context ContainerRequestContext crc,
+            @Parameter(description = "Authenticated user identifier, or :me for the requesting user.", required = true)
+            @PathParam("identifier") String identifier,
+            @Parameter(description = "The ROR ID to remove, without the https://ror.org/ prefix, e.g. 03vek6s52.", required = true)
+            @PathParam("rorId") String rorId) {
+        try {
+            AuthenticatedUser user = findUserForRorsOrDie(crc, identifier);
+            if (AuthenticatedUserRor.normalizeRorId(rorId) == null) {
+                return badRequest("Invalid ROR identifier: " + rorId);
+            }
+            if (!user.removeRor(rorId)) {
+                return notFound("User does not have ROR " + AuthenticatedUserRor.normalizeRorId(rorId) + ".");
+            }
+            user = userSvc.save(user);
+            return ok(JsonPrinter.jsonRors(user.getRors()));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    /**
+     * Resolves the user whose RORs are being managed. Users can manage their own
+     * RORs (by identifier or :me); superusers can manage anyone's.
+     *
+     * @return a freshly looked-up (managed) AuthenticatedUser
+     */
+    private AuthenticatedUser findUserForRorsOrDie(ContainerRequestContext crc, String identifier) throws WrappedResponse {
+        AuthenticatedUser requester = getRequestAuthenticatedUserOrDie(crc);
+        String targetIdentifier = ":me".equals(identifier) ? requester.getUserIdentifier() : identifier;
+        if (!requester.isSuperuser() && !requester.getUserIdentifier().equalsIgnoreCase(targetIdentifier)) {
+            throw new WrappedResponse(forbidden("Only the user or a superuser can manage a user's RORs."));
+        }
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(targetIdentifier);
+        if (user == null) {
+            throw new WrappedResponse(notFound("User " + targetIdentifier + " not found."));
+        }
+        return user;
     }
 
     @POST
