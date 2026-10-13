@@ -327,19 +327,22 @@ public class XmlMetadataTemplateTest {
                         DatasetFieldConstant.producerAffiliation, ror),
                 createCompoundValue(dv, DatasetFieldConstant.producerName, "Producer ROR",
                         "producerIdentifier", "https://ror.org/" + ror, "producerIdentifierScheme", "ROR",
-                        DatasetFieldConstant.producerAffiliation, ror));
+                        DatasetFieldConstant.producerAffiliation, ror),
+                createCompoundValue(dv, DatasetFieldConstant.producerName, "Producer Name Only"));
         DatasetField distributor = createCompoundField(dv, DatasetFieldConstant.distributor,
                 createCompoundValue(dv, DatasetFieldConstant.distributorName, "Distributor ORCID",
                         "distributorIdentifier", orcid, "distributorIdentifierScheme", "ORCID"),
                 createCompoundValue(dv, DatasetFieldConstant.distributorName, "Distributor ROR",
-                        "distributorIdentifier", "https://ror.org/" + ror, "distributorIdentifierScheme", "ROR"));
+                        "distributorIdentifier", "https://ror.org/" + ror, "distributorIdentifierScheme", "ROR"),
+                createCompoundValue(dv, DatasetFieldConstant.distributorName, "Distributor Name Only"));
         DatasetField contact = createCompoundField(dv, DatasetFieldConstant.datasetContact,
                 createCompoundValue(dv, DatasetFieldConstant.datasetContactName, "Contact ORCID",
                         "datasetContactIdentifier", "https://orcid.org/" + orcid, "datasetContactIdentifierScheme", "ORCID",
                         DatasetFieldConstant.datasetContactAffiliation, ror),
                 createCompoundValue(dv, DatasetFieldConstant.datasetContactName, "Contact ROR",
                         "datasetContactIdentifier", ror, "datasetContactIdentifierScheme", "ROR",
-                        DatasetFieldConstant.datasetContactAffiliation, ror));
+                        DatasetFieldConstant.datasetContactAffiliation, ror),
+                createCompoundValue(dv, DatasetFieldConstant.datasetContactName, "Contact Name Only"));
         DatasetField contributor = createCompoundField(dv, DatasetFieldConstant.contributor,
                 createCompoundValue(dv, DatasetFieldConstant.contributorName, "Contributor ORCID",
                         DatasetFieldConstant.contributorType, "Researcher", "contributorIdentifier", orcid,
@@ -349,13 +352,17 @@ public class XmlMetadataTemplateTest {
                         "contributorIdentifierScheme", "ORCID"),
                 createCompoundValue(dv, DatasetFieldConstant.contributorName, "Contributor ROR",
                         DatasetFieldConstant.contributorType, "ProjectMember", "contributorIdentifier", ror,
-                        "contributorIdentifierScheme", "ROR"));
+                        "contributorIdentifierScheme", "ROR"),
+                createCompoundValue(dv, DatasetFieldConstant.contributorName, "Contributor Name Only",
+                        DatasetFieldConstant.contributorType, "Researcher"));
         DatasetField dataCollector = createMultipleTextField(dv, DatasetFieldConstant.dataCollector,
-                "https://orcid.org/" + orcid, "https://ror.org/" + ror);
+                "https://orcid.org/" + orcid, "https://ror.org/" + ror, "Data Collector Name Only");
         DatasetField grants = createCompoundField(dv, DatasetFieldConstant.grantNumber,
                 createCompoundValue(dv, DatasetFieldConstant.grantNumberAgency, "Funding Agency ROR",
                         "grantNumberAgencyIdentifier", "https://ror.org/" + ror, "grantNumberAgencyIdentifierScheme", "ROR",
-                        DatasetFieldConstant.grantNumberValue, "AWARD-ROR"));
+                        DatasetFieldConstant.grantNumberValue, "AWARD-ROR"),
+                createCompoundValue(dv, DatasetFieldConstant.grantNumberAgency, "Funding Agency Name Only",
+                        DatasetFieldConstant.grantNumberValue, "AWARD-NAME-ONLY"));
         dv.setDatasetFields(new ArrayList<>(List.of(title, producer, distributor, contact, contributor,
                 dataCollector, grants)));
         d.setVersions(new ArrayList<>(List.of(dv)));
@@ -397,24 +404,39 @@ public class XmlMetadataTemplateTest {
         assertContributor(path, 0, "Producer", "Producer ORCID", orcid, "ORCID");
         assertAffiliation(path, 0, ror);
         assertContributor(path, 1, "Producer", "Producer ROR", ror, "ROR");
-        assertContributor(path, 2, "Distributor", "Distributor ORCID", orcid, "ORCID");
-        assertContributor(path, 3, "Distributor", "Distributor ROR", ror, "ROR");
-        assertContributor(path, 4, "ContactPerson", "Contact ORCID", orcid, "ORCID");
-        assertAffiliation(path, 4, ror);
-        assertContributor(path, 5, "ContactPerson", "Contact ROR", ror, "ROR");
-        assertContributor(path, 6, "Researcher", "Contributor ORCID", orcid, "ORCID");
-        assertContributor(path, 7, "Researcher", "https://sandbox.orcid.org/" + orcid,
+        assertNameOnlyContributor(path, 2, "Producer", "Producer Name Only");
+        assertContributor(path, 3, "Distributor", "Distributor ORCID", "https://sandbox.orcid.org/" + orcid, "ORCID");
+        assertContributor(path, 4, "Distributor", "Distributor ROR", ror, "ROR");
+        assertNameOnlyContributor(path, 5, "Distributor", "Distributor Name Only");
+        assertContributor(path, 6, "ContactPerson", "Contact ORCID", orcid, "ORCID");
+        assertAffiliation(path, 6, ror);
+        assertContributor(path, 7, "ContactPerson", "Contact ROR", ror, "ROR");
+        assertNameOnlyContributor(path, 8, "ContactPerson", "Contact Name Only");
+        assertContributor(path, 9, "Researcher", "Contributor ORCID", "https://sandbox.orcid.org/" + orcid, "ORCID");
+        assertContributor(path, 10, "Researcher", "https://sandbox.orcid.org/" + orcid,
                 "https://sandbox.orcid.org/" + orcid, "ORCID");
-        assertContributor(path, 8, "ProjectMember", "Contributor ROR", ror, "ROR");
-        assertContributor(path, 9, "DataCollector", "https://orcid.org/" + orcid,
+        assertContributor(path, 11, "ProjectMember", "Contributor ROR", ror, "ROR");
+        assertNameOnlyContributor(path, 12, "Researcher", "Contributor Name Only");
+        assertContributor(path, 13, "DataCollector", "https://orcid.org/" + orcid,
                 "https://orcid.org/" + orcid, "ORCID");
-        assertContributor(path, 10, "DataCollector", "https://ror.org/" + ror,
+        assertContributor(path, 14, "DataCollector", "https://ror.org/" + ror,
                 "https://ror.org/" + ror, "ROR");
+        assertNameOnlyContributor(path, 15, "DataCollector", "Data Collector Name Only");
         assertEquals("Funding Agency ROR", path.getString("resource.fundingReferences.fundingReference[0].funderName"));
         assertEquals("https://ror.org/" + ror,
                 path.getString("resource.fundingReferences.fundingReference[0].funderIdentifier"));
         assertEquals("ROR", path.getString("resource.fundingReferences.fundingReference[0].funderIdentifier.@funderIdentifierType"));
         assertEquals("AWARD-ROR", path.getString("resource.fundingReferences.fundingReference[0].awardNumber"));
+        assertEquals("Funding Agency Name Only", path.getString("resource.fundingReferences.fundingReference[1].funderName"));
+        assertEquals("", path.getString("resource.fundingReferences.fundingReference[1].funderIdentifier"));
+        assertEquals("AWARD-NAME-ONLY", path.getString("resource.fundingReferences.fundingReference[1].awardNumber"));
+    }
+
+    private void assertNameOnlyContributor(XmlPath path, int index, String type, String name) {
+        String prefix = "resource.contributors.contributor[" + index + "]";
+        assertEquals(type, path.getString(prefix + ".@contributorType"));
+        assertEquals(name, path.getString(prefix + ".contributorName"));
+        assertEquals("", path.getString(prefix + ".nameIdentifier"));
     }
 
     private void assertContributor(XmlPath path, int index, String type, String name, String identifier,
