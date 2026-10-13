@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.authorization;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
@@ -30,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -50,6 +52,9 @@ public class AuthenticationServiceBeanTest {
         sut = new AuthenticationServiceBean();
         sut.authProvidersRegistrationService = Mockito.mock(AuthenticationProvidersRegistrationServiceBean.class);
         sut.em = Mockito.mock(EntityManager.class);
+        sut.userService = Mockito.mock(UserServiceBean.class);
+        Mockito.when(sut.userService.save(Mockito.any(AuthenticatedUser.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -123,6 +128,130 @@ public class AuthenticationServiceBeanTest {
 
         // Then no user should be found, and result should be null
         assertNull(actualUser);
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "oidc-user-property-sync")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_updatesUserProperties() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns a valid user identifier with updated properties
+        OAuth2UserRecord record = setupOidcUserRecordBasics();
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo("NewFirst", "NewLast", "new@example.org", "", "");
+        Mockito.when(record.getDisplayInfo()).thenReturn(displayInfo);
+        Mockito.when(record.getAvailableEmailAddresses()).thenReturn(List.of("new@example.org"));
+
+        // Setting up an authenticated user with outdated properties
+        AuthenticatedUser oldAuthenticatedUser = new AuthenticatedUser();
+        oldAuthenticatedUser.setFirstName("OldFirst");
+        oldAuthenticatedUser.setLastName("OldLast");
+        oldAuthenticatedUser.setEmail("old@example.org");
+        setupAuthenticatedUserByAuthPrvIDQueryWithResult(oldAuthenticatedUser);
+
+        // When invoking lookupUserByOIDCBearerToken
+        AuthenticatedUser actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Verify that save() was called with the updated user
+        Mockito.verify(sut.userService, Mockito.times(1)).save(Mockito.any());
+
+        // Then the user properties should be updated to match the OIDC token
+        assertEquals("NewFirst", actualUser.getFirstName());
+        assertEquals("NewLast", actualUser.getLastName());
+        assertEquals("new@example.org", actualUser.getEmail());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "oidc-user-property-sync")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_noPropertyChanges_doesNotSave() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns a valid user identifier with same properties
+        OAuth2UserRecord record = setupOidcUserRecordBasics();
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo("SameFirst", "SameLast", "same@example.org", "", "");
+        Mockito.when(record.getDisplayInfo()).thenReturn(displayInfo);
+        Mockito.when(record.getAvailableEmailAddresses()).thenReturn(List.of("same@example.org"));
+
+        // Setting up an authenticated user with identical properties
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setFirstName("SameFirst");
+        authenticatedUser.setLastName("SameLast");
+        authenticatedUser.setEmail("same@example.org");
+        setupAuthenticatedUserByAuthPrvIDQueryWithResult(authenticatedUser);
+
+        // When invoking lookupUserByOIDCBearerToken
+        sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Then save should never be called since nothing changed
+        Mockito.verify(sut.userService, Mockito.never()).save(Mockito.any());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "oidc-user-property-sync")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_onlyEmailChanges() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns a valid user identifier with updated email only
+        OAuth2UserRecord record = setupOidcUserRecordBasics();
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo("SameFirst", "SameLast", "new@example.org", "", "");
+        Mockito.when(record.getDisplayInfo()).thenReturn(displayInfo);
+        Mockito.when(record.getAvailableEmailAddresses()).thenReturn(List.of("new@example.org"));
+
+        // Setting up an authenticated user with the same name but different email
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setFirstName("SameFirst");
+        authenticatedUser.setLastName("SameLast");
+        authenticatedUser.setEmail("old@example.org");
+        setupAuthenticatedUserByAuthPrvIDQueryWithResult(authenticatedUser);
+
+        // When invoking lookupUserByOIDCBearerToken
+        AuthenticatedUser actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Then only the email should be updated
+        assertEquals("SameFirst", actualUser.getFirstName());
+        assertEquals("SameLast", actualUser.getLastName());
+        assertEquals("new@example.org", actualUser.getEmail());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "oidc-user-property-sync")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_displayInfoNull_doesNotUpdateNames() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns no display info but a valid email
+        OAuth2UserRecord record = setupOidcUserRecordBasics();
+        Mockito.when(record.getDisplayInfo()).thenReturn(null);
+        Mockito.when(record.getAvailableEmailAddresses()).thenReturn(List.of("new@example.org"));
+
+        // Setting up an authenticated user with existing properties
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setFirstName("ExistingFirst");
+        authenticatedUser.setLastName("ExistingLast");
+        authenticatedUser.setEmail("old@example.org");
+        setupAuthenticatedUserByAuthPrvIDQueryWithResult(authenticatedUser);
+
+        // When invoking lookupUserByOIDCBearerToken
+        AuthenticatedUser actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Then names should remain unchanged since displayInfo is null
+        assertEquals("ExistingFirst", actualUser.getFirstName());
+        assertEquals("ExistingLast", actualUser.getLastName());
+        // But email should still be updated
+        assertEquals("new@example.org", actualUser.getEmail());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "oidc-user-property-sync")
+    void testLookupUserByOIDCBearerToken_oneProvider_validToken_emailNullInRecord_doesNotUpdateEmail() throws ParseException, IOException, AuthorizationException, OAuth2Exception {
+        // Given a single OIDC provider that returns a valid user identifier with no email
+        OAuth2UserRecord record = setupOidcUserRecordBasics();
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo("NewFirst", "NewLast", "", "", "");
+        Mockito.when(record.getDisplayInfo()).thenReturn(displayInfo);
+        Mockito.when(record.getAvailableEmailAddresses()).thenReturn(null);
+
+        // Setting up an authenticated user with an existing email
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setFirstName("OldFirst");
+        authenticatedUser.setLastName("OldLast");
+        authenticatedUser.setEmail("existing@example.org");
+        setupAuthenticatedUserByAuthPrvIDQueryWithResult(authenticatedUser);
+
+        // When invoking lookupUserByOIDCBearerToken
+        AuthenticatedUser actualUser = sut.lookupUserByOIDCBearerToken(TEST_BEARER_TOKEN);
+
+        // Then email should remain unchanged
+        assertEquals("existing@example.org", actualUser.getEmail());
     }
 
     @Test
