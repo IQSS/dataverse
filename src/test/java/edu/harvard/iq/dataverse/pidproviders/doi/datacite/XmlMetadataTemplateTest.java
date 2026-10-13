@@ -1,22 +1,8 @@
 package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataCitation;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetAuthor;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
@@ -90,6 +76,43 @@ public class XmlMetadataTemplateTest {
 
     }
 
+    @Test
+    public void testDatasetFileMetadataUsesLatestVersionFiles() {
+        Dataset dataset = new Dataset();
+        dataset.setGlobalId(new GlobalId("doi", "10.5072", "FK2/ABCDEF", null, null, null));
+        DatasetType type = new DatasetType();
+        type.setName(DatasetType.DEFAULT_DATASET_TYPE);
+        dataset.setDatasetType(type);
+        DatasetVersion version = new DatasetVersion();
+        version.setDataset(dataset);
+        version.setVersionState(VersionState.RELEASED);
+        dataset.setVersions(new ArrayList<>(List.of(version)));
+        version.setVersionNumber(1L);
+        version.setMinorVersionNumber(0L);
+        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        
+        version=dataset.getLatestVersionForCopy();
+        
+        DataFile versionFile = new DataFile();
+        versionFile.setFilesize(10L);
+        versionFile.setContentType("text/csv");
+        FileMetadata versionMetadata = new FileMetadata();
+        versionMetadata.setDataFile(versionFile);
+        versionMetadata.setDatasetVersion(version);
+        version.setFileMetadatas(new ArrayList<>(List.of(versionMetadata)));
+
+        DataFile fileFromAnotherVersion = new DataFile();
+        fileFromAnotherVersion.setFilesize(20L);
+        fileFromAnotherVersion.setContentType("application/json");
+        dataset.setFiles(new ArrayList<>(List.of(versionFile, fileFromAnotherVersion)));
+
+        String xml = new XmlMetadataTemplate(new DoiMetadata()).generateXML(dataset);
+        XmlPath xmlPath = XmlPath.from(xml);
+
+        assertEquals(List.of("10"), xmlPath.getList("resource.sizes.size"));
+        assertEquals(List.of("text/csv"), xmlPath.getList("resource.formats.format"));
+    }
+    
     /**
      * A minimal example to assure that the XMLMetadataTemplate generates output
      * consistent with the DataCite XML v4.5 schema.
