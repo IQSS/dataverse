@@ -1008,10 +1008,17 @@ assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">do
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Afghanistan, GeographicCoverageStateProvince1, GeographicCoverageCity1, GeographicCoverageOther1"
+                + "</geoLocationPlace>"
+                + "</geoLocation>" 
+                + "<geoLocation><geoLocationPlace>Albania, GeographicCoverageStateProvince2, GeographicCoverageCity2, GeographicCoverageOther2" 
+                + "</geoLocationPlace>"
+                + "</geoLocation>"   
                 + "</geoLocations>",
                 stringWriter.toString());
     }
-    
+   
     /**
      * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
      *
@@ -1052,10 +1059,18 @@ assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">do
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Afghanistan, GeographicCoverageStateProvince1, GeographicCoverageCity1, GeographicCoverageOther1"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Albania, GeographicCoverageStateProvince2, GeographicCoverageCity2, GeographicCoverageOther2"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
                 + "</geoLocations>",
                 stringWriter.toString());
     }
-
+    
     /**
      * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
      *
@@ -1083,7 +1098,16 @@ assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">do
                 + "<southBoundLatitude>34</southBoundLatitude>"
                 + "<westBoundLongitude>45</westBoundLongitude>"
                 + "</geoLocationBox>"
-                + "</geoLocation></geoLocations>",
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>United States, MA, Arlington"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Aruba, beach, beachcity"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "</geoLocations>",
                 stringWriter.toString());
     }
 
