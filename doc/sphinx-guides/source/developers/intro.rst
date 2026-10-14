@@ -10,7 +10,11 @@ Welcome! `The Dataverse Project <https://dataverse.org>`_ is an `open source <ht
 Intended Audience
 -----------------
 
-This guide is intended primarily for developers who want to work on the main Dataverse codebase at https://github.com/IQSS/dataverse but see the :doc:`/contributor/code` section of the Contributor Guide for other code you can work on!
+This guide is primarily for developers who want to work on Dataverse itself. (See :ref:`related-projects` for other projects to hack on!)
+
+https://github.com/IQSS/dataverse contains the backend logic, APIs, and the classic Java Server Faces (JSF) web interface.
+
+https://github.com/IQSS/dataverse-frontend contains the modern, React-based, Single Page Application (SPA) web interface.
 
 To get started, you'll want to set up your :doc:`dev-environment` and make sure you understand the branching strategy described in the :doc:`version-control` section and how to make a pull request. :doc:`testing` is expected. Opinions about :doc:`coding-style` are welcome!
 
@@ -30,7 +34,7 @@ Dataverse is a `Jakarta EE <https://en.wikipedia.org/wiki/Jakarta_EE>`_ applicat
 
 We make use of a variety of Jakarta EE technologies such as JPA, JAX-RS, JMS, and JSF. In addition, we use parts of Eclipse MicroProfile such as `MicroProfile Config <https://github.com/eclipse/microprofile-config>`_.
 
-The frontend is built using PrimeFaces and Bootstrap. A new frontend is being built using React at https://github.com/IQSS/dataverse-frontend
+The JSF frontend is built using PrimeFaces and Bootstrap. The SPA is built using React.
 
 Roadmap
 -------

@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UsersIT {
@@ -598,8 +597,7 @@ public class UsersIT {
                 .body("data.count", equalTo(2));
     }
 
-    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
-    @Disabled
+    @Test
     public void testRegisterOIDCUser() {
         // Set Up - Get the admin access token from the OIDC provider
         Response adminOidcLoginResponse = UtilIT.performKeycloakROPCLogin("admin", "admin");
