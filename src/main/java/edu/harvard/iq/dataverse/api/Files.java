@@ -71,7 +71,9 @@ import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -228,7 +230,9 @@ public class Files extends AbstractApiBean {
     @Operation(summary = "Replace a file on a dataset", 
                description = "Replace a file to a dataset")
     @APIResponse(responseCode = "200",
-               description = "File replaced successfully on the dataset")
+               description = "File replaced successfully on the dataset",
+               content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                       schema = @Schema(type = SchemaType.OBJECT)))
     @Tag(name = "replaceFilesInDataset", 
          description = "Replace a file to a dataset")
     @RequestBody(description = "Multipart request containing replacement file content and JSON replacement metadata.",
@@ -1143,6 +1147,9 @@ public class Files extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Apply category labels to file metadata",
             description = "Adds or replaces category labels on the selected file metadata record.")
+    @APIResponse(responseCode = "200", description = "File categories updated.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response setFileCategories(@Context ContainerRequestContext crc,
                                       @Parameter(description = "Data file id or persistent identifier.", required = true)
                                       @PathParam("id") String dataFileId,
@@ -1178,6 +1185,9 @@ public class Files extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Apply tabular tags to a file",
             description = "Adds or replaces tabular data tags on a tabular data file.")
+    @APIResponse(responseCode = "200", description = "File tabular tags updated.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response setFileTabularTags(@Context ContainerRequestContext crc,
                                        @Parameter(description = "Data file id or persistent identifier.", required = true)
                                        @PathParam("id") String dataFileId,
@@ -1273,6 +1283,9 @@ public class Files extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Compare file versions",
             description = "Reports metadata differences across versions for a data file.")
+    @APIResponse(responseCode = "200", description = "File version differences.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getFileVersionsList(@Context ContainerRequestContext crc,
                                         @Parameter(description = "Data file id or persistent identifier.", required = true)
                                         @PathParam("id") String fileIdOrPersistentId,
