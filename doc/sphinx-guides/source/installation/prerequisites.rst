@@ -71,12 +71,6 @@ If you intend to install and run Payara under a service account (and we hope you
 
 After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
-- Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
-
-	# vim /usr/local/payara7/glassfish/domains/domain1/config/domain.xml
-
-This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
-
 Launching Payara on System Boot
 ===============================
 
