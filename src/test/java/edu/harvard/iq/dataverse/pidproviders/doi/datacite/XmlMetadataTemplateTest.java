@@ -303,7 +303,6 @@ public class XmlMetadataTemplateTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "treat-sandbox-orcids-as-pids")
     public void testDataCiteExternalVocabularyOrcidAndRorFields() throws IOException, SAXException {
         String orcid = "0000-0002-1825-0097";
         String ror = "03vek6s52";
@@ -347,8 +346,8 @@ public class XmlMetadataTemplateTest {
                 createCompoundValue(dv, DatasetFieldConstant.contributorName, "Contributor ORCID",
                         DatasetFieldConstant.contributorType, "Researcher", "contributorIdentifier", orcid,
                         "contributorIdentifierScheme", "ORCID"),
-                createCompoundValue(dv, DatasetFieldConstant.contributorName, "https://sandbox.orcid.org/" + orcid,
-                        DatasetFieldConstant.contributorType, "Researcher", "contributorIdentifier", "https://sandbox.orcid.org/" + orcid,
+                createCompoundValue(dv, DatasetFieldConstant.contributorName, "https://orcid.org/" + orcid,
+                        DatasetFieldConstant.contributorType, "Researcher", "contributorIdentifier", "https://orcid.org/" + orcid,
                         "contributorIdentifierScheme", "ORCID"),
                 createCompoundValue(dv, DatasetFieldConstant.contributorName, "Contributor ROR",
                         DatasetFieldConstant.contributorType, "ProjectMember", "contributorIdentifier", ror,
@@ -379,7 +378,7 @@ public class XmlMetadataTemplateTest {
         authorName.setSingleValue("Creator");
         author.setName(authorName);
         author.setIdType("ORCID");
-        author.setIdValue("https://sandbox.orcid.org/" + orcid);
+        author.setIdValue("https://orcid.org/" + orcid);
         DatasetField authorAffiliation = new DatasetField();
         authorAffiliation.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.authorAffiliation, FieldType.TEXT, false));
         authorAffiliation.setSingleValue(ror);
@@ -393,10 +392,10 @@ public class XmlMetadataTemplateTest {
                 new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
 
         XmlPath path = XmlPath.from(xml);
-        assertEquals("https://sandbox.orcid.org/" + orcid,
+        assertEquals("https://orcid.org/" + orcid,
                 path.getString("resource.creators.creator[0].nameIdentifier"));
         assertEquals("ORCID", path.getString("resource.creators.creator[0].nameIdentifier.@nameIdentifierScheme"));
-        assertEquals("https://sandbox.orcid.org",
+        assertEquals("https://orcid.org",
                 path.getString("resource.creators.creator[0].nameIdentifier.@schemeURI"));
         assertEquals("https://ror.org/" + ror, path.getString("resource.creators.creator[0].affiliation.@affiliationIdentifier"));
         assertEquals("ROR", path.getString("resource.creators.creator[0].affiliation.@affiliationIdentifierScheme"));
@@ -405,16 +404,16 @@ public class XmlMetadataTemplateTest {
         assertAffiliation(path, 0, ror);
         assertContributor(path, 1, "Producer", "Producer ROR", ror, "ROR");
         assertNameOnlyContributor(path, 2, "Producer", "Producer Name Only");
-        assertContributor(path, 3, "Distributor", "Distributor ORCID", "https://sandbox.orcid.org/" + orcid, "ORCID");
+        assertContributor(path, 3, "Distributor", "Distributor ORCID", "https://orcid.org/" + orcid, "ORCID");
         assertContributor(path, 4, "Distributor", "Distributor ROR", ror, "ROR");
         assertNameOnlyContributor(path, 5, "Distributor", "Distributor Name Only");
         assertContributor(path, 6, "ContactPerson", "Contact ORCID", orcid, "ORCID");
         assertAffiliation(path, 6, ror);
         assertContributor(path, 7, "ContactPerson", "Contact ROR", ror, "ROR");
         assertNameOnlyContributor(path, 8, "ContactPerson", "Contact Name Only");
-        assertContributor(path, 9, "Researcher", "Contributor ORCID", "https://sandbox.orcid.org/" + orcid, "ORCID");
-        assertContributor(path, 10, "Researcher", "https://sandbox.orcid.org/" + orcid,
-                "https://sandbox.orcid.org/" + orcid, "ORCID");
+        assertContributor(path, 9, "Researcher", "Contributor ORCID", "https://orcid.org/" + orcid, "ORCID");
+        assertContributor(path, 10, "Researcher", "https://orcid.org/" + orcid,
+                "https://orcid.org/" + orcid, "ORCID");
         assertContributor(path, 11, "ProjectMember", "Contributor ROR", ror, "ROR");
         assertNameOnlyContributor(path, 12, "Researcher", "Contributor Name Only");
         assertContributor(path, 13, "DataCollector", "https://orcid.org/" + orcid,
@@ -961,5 +960,4 @@ public class XmlMetadataTemplateTest {
 
         dsf.setControlledVocabularyValues(vals);
     }
-
 }
