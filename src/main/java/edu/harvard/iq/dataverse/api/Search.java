@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -80,6 +81,7 @@ public class Search extends AbstractApiBean {
             @Parameter(description = "Whether API URLs are included.") @QueryParam("show_api_urls") boolean showApiUrls,
             @Parameter(description = "Whether search queries entity fields.") @QueryParam("query_entities") @DefaultValue("true") boolean queryEntities,
             @Parameter(description = "Metadata fields to include.") @QueryParam("metadata_fields") List<String> metadataFields,
+            @Parameter(description = "Search index fields to include.") @QueryParam("index_fetch") List<String> indexFetch,
             @Parameter(description = "Geographic point used for spatial search.") @QueryParam("geo_point") String geoPointRequested,
             @Parameter(description = "Geographic radius used for spatial search.") @QueryParam("geo_radius") String geoRadiusRequested,
             @Parameter(description = "Whether object type counts are included.") @QueryParam("show_type_counts") boolean showTypeCounts,
@@ -207,8 +209,17 @@ public class Search extends AbstractApiBean {
                         geoRadius,
                         showFacets, // facets are expensive, no need to ask for them if not requested
                         showRelevance, // no need for highlights unless requested either
-                        showCollections // same for collections
+                        showCollections, // same for collections
+                        indexFetch
                 );
+            } catch (IllegalArgumentException ex) {
+                return badRequest(ex.getMessage());
+            } catch (EJBException ex) {
+                IllegalArgumentException illegalArgumentException = findCause(ex, IllegalArgumentException.class);
+                if (illegalArgumentException != null) {
+                    return badRequest(illegalArgumentException.getMessage());
+                }
+                throw ex;
             } catch (SearchException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
@@ -292,6 +303,17 @@ public class Search extends AbstractApiBean {
         } else {
             return error(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
+    }
+
+    private static <T extends Throwable> T findCause(Throwable throwable, Class<T> causeType) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (causeType.isInstance(current)) {
+                return causeType.cast(current);
+            }
+            current = current.getCause();
+        }
+        return null;
     }
 
 

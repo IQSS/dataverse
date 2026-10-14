@@ -92,6 +92,23 @@ public interface SearchService {
             boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
             String geoRadius, boolean addFacets, boolean addHighlights, boolean addCollections) throws SearchException;
 
+    /**
+     * Optional stored-field projection. Existing search plugins remain compatible and
+     * continue receiving legacy calls when no additional fields are requested.
+     */
+    default SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
+            List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
+            boolean onlyDataRelatedToMe, int numResultsPerPage, boolean retrieveEntities, String geoPoint,
+            String geoRadius, boolean addFacets, boolean addHighlights, boolean addCollections,
+            List<String> requestedFields) throws SearchException {
+        if (requestedFields != null && !requestedFields.isEmpty()) {
+            throw new IllegalArgumentException("index_fetch is not supported by the configured search service");
+        }
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart,
+                onlyDataRelatedToMe, numResultsPerPage, retrieveEntities, geoPoint, geoRadius,
+                addFacets, addHighlights, addCollections);
+    }
+
     /** Provide a way for other search engines to use the solr search engine
      * 
      * @param solrSearchService
