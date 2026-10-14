@@ -169,6 +169,26 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
     }
 
+    /*
+     * If the dvObject is no longer in any released version (i.e. all published
+     * versions have been deaccessioned), changes the DOI from FINDABLE to
+     * REGISTERED. Unlike deleteIdentifier, the metadata and target URL are left
+     * as is so the DOI continues to resolve to the tombstone page.
+     */
+    @Override
+    public void deaccessionIdentifier(DvObject dvObject) throws Exception {
+        logger.log(Level.FINE, "deaccessionIdentifier");
+        if (REGISTERED.equals(getPidStatus(dvObject))) {
+            String identifier = getIdentifier(dvObject);
+            try {
+                doiDataCiteRegisterService.hideIdentifier(identifier);
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "deaccessionIdentifier failed for " + identifier, e);
+                throw e;
+            }
+        }
+    }
+
     /**
      * Deletes DOI from the DataCite side, if possible. Only "draft" DOIs can be
      * deleted.
