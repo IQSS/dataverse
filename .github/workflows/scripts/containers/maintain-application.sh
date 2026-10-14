@@ -145,10 +145,10 @@ for BRANCH in "$@"; do
   NEWER_IMAGE=0
   if (( NEWER_BASE_IMAGE + FORCE_BUILD > 0 )); then
     if ! (( DRY_RUN )); then
-      # Build the application image, but skip the configbaker image (that's a different job)!
-      # shellcheck disable=SC2046
+      # Only build the application image (docker.filter is an allow list)
+      # shellcheck disable=SC2046,SC2086
       mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
-        -Dconf.skipBuild -Dbase.image="${BASE_IMAGE_REF}" $TAG_OPTIONS \
+        -Ddocker.filter=dev_dataverse -Dbase.image="${BASE_IMAGE_REF}" $TAG_OPTIONS \
         $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push"; fi )
     else
       echo "Skipping Maven build as requested by DRY_RUN=1"

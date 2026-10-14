@@ -63,11 +63,13 @@ jobs:
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
                   install
+            # We don't want to push dev_keycloak so we filter/whitelist other images to push
             - name: Deploy multi-arch application and configbaker container image
               run: >
                   mvn -Pct deploy 
                   -Dapp.image.tag=${{ env.IMAGE_TAG }}
                   -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
+                  -Ddocker.filter=dev_dataverse,dev_bootstrap
 
             - uses: marocchino/sticky-pull-request-comment@v3
               with:
