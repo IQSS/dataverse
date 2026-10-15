@@ -391,14 +391,8 @@ jobs:
 
     steps:
 
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Java
-        uses: actions/setup-java@v6.0.1
-        with:
-          distribution: "temurin"
-          java-version: "21"
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
 
       # The report needs the exact classes the server ran: the exploded WAR
       # from the build job.
