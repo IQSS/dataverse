@@ -7,21 +7,32 @@ on:
         branches:
             - '*'
             - '!master'
-        paths:
+        paths: &test-paths
             - "**.java"
             - "**.sql"
             - "pom.xml"
             - "modules/**/pom.xml"
             - "!modules/container-base/**"
             - "!modules/dataverse-spi/**"
+            # What the API and JSF tests (dataverse-tests job) depend on. Later entries win, so
+            # this includes container-base and dataverse-spi again: the tests run on images built
+            # from them.
+            - "conf/**"
+            - "src/**"
+            - "modules/**"
+            - "!**/backports/**"
+            - "!src/maven/**"
+            - "docker-compose-dev.yml"
+            - "tests/**"
+            - "scripts/**"
+            - ".github/workflows/maven_unit_test.yml"
+            - ".github/workflows/dataverse_tests.yml"
+            - ".github/actions/start-dataverse-stack/**"
+            - ".github/actions/run-jsf-tests/**"
+            - ".github/actions/collect-docker-logs/**"
+            - ".github/actions/attach-jacoco-agent/**"
     pull_request:
-        paths:
-            - "**.java"
-            - "**.sql"
-            - "pom.xml"
-            - "modules/**/pom.xml"
-            - "!modules/container-base/**"
-            - "!modules/dataverse-spi/**"
+        paths: *test-paths
 
 jobs:
     unittest:

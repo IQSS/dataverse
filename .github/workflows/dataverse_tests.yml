@@ -2,39 +2,15 @@ name: Dataverse Tests
 
 on:
   workflow_dispatch:
-  # Called by Maven Tests (maven_unit_test.yml) after its unit tests, so the server-side
-  # coverage of these tests joins its JaCoCo merge and goes to Coveralls and SonarCloud.
+  # Runs as part of Maven Tests (maven_unit_test.yml), which owns the triggers: it calls this
+  # workflow after its unit tests, so the server-side coverage of these tests joins its JaCoCo
+  # merge and goes to Coveralls and SonarCloud.
   workflow_call:
     inputs:
       use-maven-build:
         description: "Reuse the classes compiled by Maven Tests (java-artifacts) instead of compiling again"
         type: boolean
         default: false
-  push:
-    branches:
-      - develop
-      - master
-    paths: &test-paths
-      - "conf/**"
-      - "src/**"
-      - "modules/**"
-      - "!**/backports/**"
-      - "!src/maven/**"
-      # Outside those folders, but the tests depend on them
-      - "pom.xml"
-      - "docker-compose-dev.yml"
-      - "tests/**"
-      - "scripts/**"
-      - ".github/workflows/dataverse_tests.yml"
-      - ".github/actions/start-dataverse-stack/**"
-      - ".github/actions/run-jsf-tests/**"
-      - ".github/actions/collect-docker-logs/**"
-      - ".github/actions/attach-jacoco-agent/**"
-  pull_request:
-    branches:
-      - develop
-      - master
-    paths: *test-paths
 
 concurrency:
   group: "dataverse-tests-${{ github.ref }}"
