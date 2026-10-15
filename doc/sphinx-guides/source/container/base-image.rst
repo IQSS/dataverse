@@ -251,6 +251,14 @@ provides. These are mostly based on environment variables (very common with cont
       - [dump-option]_
       - String
       - Can be fine tuned for more grained controls of dumping behaviour.
+    * - ``JAVA_AGENTS``
+      - (empty)
+      - String
+      - Java agents to attach to the JVM, separated by spaces. Each entry is the path to an agent's JAR file,
+        optionally followed by ``=`` and the agent's options, and becomes a ``-javaagent`` argument.
+        Relative paths are resolved against ``${AGENTS_DIR}`` (see below), which ships the JaCoCo agent.
+        Example, collecting code coverage that ``mvn jacoco:dump`` can fetch over port 6300:
+        ``jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=edu.harvard.iq.dataverse.*``
     * - ``ENABLE_JMX``
       - ``0``
       - Bool, ``0|1``
@@ -335,6 +343,10 @@ building upon it. You can also use these for references in scripts, etc.
     * - ``SCRIPT_DIR``
       - ``${HOME_DIR}/scripts``
       - Any scripts like the container entrypoint, init scripts, etc
+    * - ``AGENTS_DIR``
+      - ``${HOME_DIR}/agents``
+      - Java agents shipped with the image, to attach with ``JAVA_AGENTS`` (see above).
+        Contains ``jacocoagent.jar``, the JaCoCo agent for code coverage, at the version the JaCoCo Maven plugin uses.
     * - ``CONFIG_DIR``
       - ``${HOME_DIR}/config``
       - Payara Server configurations like pre/postboot command files go here
