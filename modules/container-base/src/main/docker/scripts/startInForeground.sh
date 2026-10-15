@@ -19,6 +19,8 @@
 #   - $POSTBOOT_COMMANDS - the post boot command file.
 #   - $DOMAIN_NAME - the name of the domain to start.
 #   - $JVM_ARGS - extra JVM options to pass to the Payara Server instance.
+#   - $JAVA_AGENTS - space-separated Java agents to attach, each a jar optionally followed by =options.
+#                    Relative jar paths are resolved against $AGENTS_DIR.
 #   - $AS_ADMIN_MASTERPASSWORD - the master password for the Payara Server instance.
 #
 # This script executes the asadmin tool which is expected at ~/appserver/bin/asadmin.
@@ -42,6 +44,19 @@ if [ -z "$DOMAIN_NAME" ]; then echo "Variable DOMAIN_NAME is not set."; exit 1; 
 # Check if dumps are enabled - add arg to JVM_ARGS in this case
 if [ -n "${ENABLE_DUMPS}" ] && [ "${ENABLE_DUMPS}" = "1" ]; then
   JVM_ARGS="${JVM_DUMPS_ARG} ${JVM_ARGS}"
+fi
+
+# Attach any Java agents listed in JAVA_AGENTS - add a -javaagent arg to JVM_ARGS for each.
+# Split with read so options like "includes=edu.harvard.*" aren't expanded as file globs.
+if [ -n "${JAVA_AGENTS}" ]; then
+  read -r -a AGENTS <<< "${JAVA_AGENTS}"
+  for AGENT in "${AGENTS[@]}"; do
+    case "${AGENT}" in
+      /*) ;;
+      *) AGENT="${AGENTS_DIR}/${AGENT}" ;;
+    esac
+    JVM_ARGS="-javaagent:${AGENT} ${JVM_ARGS}"
+  done
 fi
 
 # For safety reasons, do no longer expose the passwords - malicious code could extract it!
