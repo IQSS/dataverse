@@ -69,6 +69,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     # Make heap dumps on OOM appear in DUMPS_DIR
     ENABLE_DUMPS=0 \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
+    # Java agents to attach, e.g. "jacocoagent.jar=output=tcpserver,address=*,port=6300"
+    JAVA_AGENTS="" \
     ENABLE_JMX=0 \
     ENABLE_JDWP=0 \
     ENABLE_RELOAD=0 \
