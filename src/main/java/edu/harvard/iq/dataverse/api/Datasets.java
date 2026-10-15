@@ -322,42 +322,32 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}")
     @Operation(summary = "Deletes a dataset",
-            description = "Deletes the latest draft version or destroys an unpublished single-version dataset after checking delete permissions.")
+            description = "Deletes a dataset that has only a draft version and has never been published. Fails if the dataset has released versions.")
     public Response deleteDataset(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
-        // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
-        // (and there's a comment that says "TODO: remove this command")
-        // do we need an exposed API call for it?
-        // And DeleteDatasetVersionCommand further redirects to DestroyDatasetCommand,
-        // if the dataset only has 1 version... In other words, the functionality
-        // currently provided by this API is covered between the "deleteDraftVersion" and
-        // "destroyDataset" API calls.
-        // (The logic below follows the current implementation of the underlying
-        // commands!)
+        // This API only allows deleting datasets with a single draft version.
+        // In other words, the functionality currently provided by this API is a subset also covered between
+        //  - the "deleteDraftVersion" (normal users) and
+        // - the "destroyDataset" API calls (for superusers).
 
         User u = getRequestUser(crc);
         return response( req -> {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
-            boolean destroy = false;
 
-            if (doomed.getVersions().size() == 1) {
-                if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
-                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can delete published datasets"));
+            if (doomed.getVersions().size() > 1 || !doomedVersion.isDraft()) {
+                String msg = "This API can only delete a dataset that has never been published (only a draft version exists).";
+                if (u.isSuperuser()) {
+                    msg = msg + " Please use '/destroy' to delete a published dataset.";
                 }
-                destroy = true;
-            } else {
-                if (!doomedVersion.isDraft()) {
-                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "This is a published dataset with multiple versions. This API can only delete the latest version if it is a DRAFT"));
-                }
+                throw new WrappedResponse(error(BAD_REQUEST, msg));
             }
 
-            // Gather the locations of the physical files that will need to be
-            // deleted once the destroy command execution has been finalized:
-            Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomedVersion, destroy);
+            // Gather the locations of the physical files that will need to be deleted
+            Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomedVersion);
 
-            execCommand( new DeleteDatasetCommand(req, findDatasetOrDie(id)));
+            execCommand(new DeleteDatasetVersionCommand(req, doomed));
 
-            // If we have gotten this far, the destroy command has succeeded,
+            // If we have gotten this far, the delete command has succeeded,
             // so we can finalize it by permanently deleting the physical files:
             // (DataFileService will double-check that the datafiles no
             // longer exist in the database, before attempting to delete
