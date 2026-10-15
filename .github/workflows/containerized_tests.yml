@@ -271,18 +271,104 @@ jobs:
           artifact-name: docker-logs-api
 
   # =====================================================================
-  # JSF TESTS: one fresh stack per browser
+  # JSF TESTS: one fresh stack per browser. Chromium runs first, then
+  # Firefox and WebKit in parallel, so at most three test runners are
+  # busy at once and all suites finish at about the same time.
   # =====================================================================
-  jsf-tests:
-    name: Dataverse JSF Tests (${{ matrix.browser }})
+  jsf-chromium:
+    name: Dataverse JSF Tests (Chromium)
     needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    env:
+      BASE_URL:       "http://localhost:8080"
+      LOGIN_ADAPTER:  "builtin"
+      DV_USERNAME:    "dataverseAdmin"
+      DV_PASSWORD:    "admin1"
+      DV_FULL_NAME:   "Dataverse Admin"
+      ROOT_DATAVERSE: "/dataverse/root"
+      SKIP_PREFLIGHT: "true"
+      LOCALLY_FAIR_ENABLED: "false"
+      DOTENV_CONFIG_QUIET: "true"
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT + SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+
+      # ---------------------------
+      # START + CONFIGURE DATAVERSE
+      # ---------------------------
+      - name: Attach JaCoCo agent
+        uses: ./.github/actions/attach-jacoco-agent
+
+      - name: Start Dataverse stack
+        uses: ./.github/actions/start-dataverse-stack
+
+      # ---------------------------
+      # RUN JSF TESTS
+      # ---------------------------
+      - name: Run JSF tests (chromium)
+        uses: ./.github/actions/run-jsf-tests
+        with:
+          browser: chromium
+
+      # ---------------------------
+      # DUMP CODE COVERAGE
+      # ---------------------------
+      - name: Dump JaCoCo coverage
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p coverage
+          java -jar jacoco/jacococli.jar dump --address localhost --port 6300 \
+            --destfile coverage/chromium.exec
+
+      - name: Upload JaCoCo coverage data
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-exec-chromium
+          path: coverage/chromium.exec
+          retention-days: 14
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: always()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-chromium
+
+  jsf-tests:
+    name: Dataverse JSF Tests (${{ matrix.label }})
+    needs: [build, jsf-chromium]
+    # Wait for Chromium, but run whatever its result: one browser's failure
+    # shouldn't hide the others.
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        include:
+          - browser: firefox
+            label: Firefox
+          - browser: webkit
+            label: WebKit
 
     defaults:
       run:
@@ -361,7 +447,7 @@ jobs:
   # =====================================================================
   code-coverage:
     name: Code Coverage
-    needs: [api-tests, jsf-tests]
+    needs: [api-tests, jsf-chromium, jsf-tests]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
