@@ -2869,6 +2869,8 @@ Edit Dataset Metadata
 
 Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following:
 
+Note that a child of a compound field, such as ``authorName``, must be sent inside its parent field (``author``) and is rejected if it is sent on its own as if it were a top level field.
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
