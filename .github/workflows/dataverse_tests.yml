@@ -2,6 +2,14 @@ name: Dataverse Tests
 
 on:
   workflow_dispatch:
+  # Called by Maven Tests (maven_unit_test.yml) after its unit tests, so the server-side
+  # coverage of these tests joins its JaCoCo merge and goes to Coveralls and SonarCloud.
+  workflow_call:
+    inputs:
+      use-maven-build:
+        description: "Reuse the classes compiled by Maven Tests (java-artifacts) instead of compiling again"
+        type: boolean
+        default: false
   push:
     branches:
       - develop
@@ -94,12 +102,33 @@ jobs:
           mvn -Pct clean package -f modules/container-base/pom.xml
 
       # ---------------------------
-      # BUILD IMAGES (Dataverse-native)
+      # REUSE MAVEN TESTS' COMPILED CLASSES (WHEN CALLED FROM IT)
       # ---------------------------
-      - name: Build Dataverse containers via Maven
+      # JaCoCo matches coverage to classes by the bytes of the compiled class, so the server
+      # must run exactly the classes the coverage report is built from: Maven Tests' compile.
+      - name: Download Maven Tests build output
+        if: ${{ inputs.use-maven-build }}
+        uses: actions/download-artifact@v8
+        with:
+          name: java-artifacts
+
+      - name: Restore Maven Tests build output
+        if: ${{ inputs.use-maven-build }}
         run: |
           set -euo pipefail
-          mvn -Pct -T 1C package
+          tar -xf java-builddir.tar
+          tar -xf java-m2-selection.tar -C /
+
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      # With Maven Tests' classes restored, skip compiling them again (maven.main.skip).
+      - name: Build Dataverse containers via Maven
+        env:
+          SKIP_MAIN_COMPILE: ${{ inputs.use-maven-build && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          mvn -Pct -T 1C package -Dmaven.main.skip="$SKIP_MAIN_COMPILE"
 
       # ---------------------------
       # PACKAGE BUILD OUTPUT
