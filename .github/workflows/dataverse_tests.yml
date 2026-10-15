@@ -1,4 +1,4 @@
-name: Containerized Tests for Dataverse
+name: Dataverse Tests
 
 on:
   workflow_dispatch:
@@ -22,7 +22,7 @@ on:
       - ".github/*.md"
 
 concurrency:
-  group: "containerized-tests-${{ github.ref }}"
+  group: "dataverse-tests-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
