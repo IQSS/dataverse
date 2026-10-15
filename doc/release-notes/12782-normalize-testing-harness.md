@@ -1,7 +1,7 @@
 ## Updates for Developers
 
-The "Container Integration Tests Workflow" and "Dataverse JSF Frontend Tests Workflow" GitHub Actions have been combined into a single workflow called "Containerized Tests for Dataverse". It builds the containers once and then runs one job per browser (Chromium, Firefox and WebKit). Each job runs the API tests and that browser's JSF frontend tests at the same time, against the same Dataverse installation. JSF test results now arrive in about 27 minutes instead of about 50.
+The "Container Integration Tests Workflow" and "Dataverse JSF Frontend Tests Workflow" GitHub Actions have been combined into a single workflow called "Dataverse Tests". It builds the containers once and hands them to separate jobs for the API tests and for the JSF frontend tests in each browser (Chromium, Firefox and WebKit), each with its own fresh Dataverse installation. The API tests and the Chromium tests run at the same time; Firefox and WebKit follow in parallel once Chromium has finished.
 
-To see which API tests are failing on your pull request, look at any of the "Integration + JSF Tests" jobs of this workflow (each runs the full set). See [the guides](https://guides.dataverse.org/en/latest/developers/testing.html#continuous-integration) and #12782.
+To see which API tests are failing on your pull request, look at the "Dataverse API Tests" job of this workflow. See [the guides](https://guides.dataverse.org/en/latest/developers/testing.html#continuous-integration) and #12782.
 
 The container images each run was tested against are now kept for 7 days, so you can start the exact same build on your machine to investigate a failure. See [the guides](https://guides.dataverse.org/en/latest/developers/testing.html#reproducing-a-ci-failure-locally).

@@ -459,14 +459,20 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 
 GitHub Actions jobs can be found in ``.github/workflows``.
 
-The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Containerized Tests for Dataverse" workflow (``containerized_tests.yml``). It builds the Dataverse containers once in a "Build Containers" job and hands them to three jobs that run in parallel, one per browser (Chromium, Firefox and WebKit). Each "Integration + JSF Tests" job starts its own fresh Dataverse installation and runs two suites against it at the same time: the API tests listed in :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>`, and the JSF frontend tests in that browser. Each job uploads its own test reports and container logs as artifacts.
+The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Dataverse Tests" workflow (``dataverse_tests.yml``). It builds the Dataverse containers once in a "Build Containers" job and hands them to the test jobs, each of which starts its own fresh Dataverse installation:
+
+- "Dataverse API Tests" runs the API tests listed in :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>`.
+- "Dataverse JSF Tests (Chromium)" runs the JSF frontend tests in Chromium, at the same time as the API tests.
+- "Dataverse JSF Tests (Firefox)" and "Dataverse JSF Tests (WebKit)" start when the Chromium job has finished, whatever its result, and run in parallel.
+
+This way at most three test jobs run at once, and the suites finish at about the same time. Each job uploads its own test reports and container logs as artifacts.
 
 As always, pull requests to improve our continuous integration configurations are welcome.
 
 Reproducing a CI Failure Locally
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The "Build Containers" job of the "Containerized Tests for Dataverse" workflow uploads the exact container images and exploded war file that the test jobs ran against, as an artifact called ``dataverse-build``. It is kept for 7 days. When a test fails in CI, you can start that same build on your machine instead of relying on the logs alone.
+The "Build Containers" job of the "Dataverse Tests" workflow uploads the exact container images and exploded war file that the test jobs ran against, as an artifact called ``dataverse-build``. It is kept for 7 days. When a test fails in CI, you can start that same build on your machine instead of relying on the logs alone.
 
 You will need Docker, Maven, ``zstd`` and the `GitHub CLI <https://cli.github.com>`_. Find the run ID in the URL of the failed run (``.../actions/runs/<run-id>``), then, from a clone of the repository:
 
@@ -546,7 +552,7 @@ Browser-Based Testing
 Browser-Based Testing of JSF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526). Each browser runs in its own job of the "Containerized Tests for Dataverse" workflow, alongside a full run of the API tests described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782).
+The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526). Each browser runs in its own job of the "Dataverse Tests" workflow described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782).
 
 Browser-Based Testing of the SPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
