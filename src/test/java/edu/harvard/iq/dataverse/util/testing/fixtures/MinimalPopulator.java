@@ -5,7 +5,8 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfAccess;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
@@ -54,9 +55,12 @@ public final class MinimalPopulator implements FixturePopulator {
         // TermsOfUseAndAccess and DatasetVersion are mutually linked via a OneToOne.
         // The validator reads datasetVersion from the terms object, so both sides
         // must be wired before the entity graph is persisted.
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setDatasetVersion(version);
-        version.setTermsOfUseAndAccess(terms);
+        TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+        termsOfUseOrLicense.setDatasetVersion(version);
+        version.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        TermsOfAccess termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setDatasetVersion(version);
+        version.setTermsOfAccess(termsOfAccess);
     }
     
     /**

@@ -40,6 +40,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.SqlResultSetMapping;
@@ -151,6 +152,10 @@ public class FileMetadata implements Serializable {
     @BatchFetch(BatchFetchType.IN)
     private DataFile dataFile;
 
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @JoinColumn(name = "termsofuseorlicense_id")
+    private TermsOfUseOrLicense termsOfUseOrLicense;
+
     /**
      * There are two types of provenance types and this "free-form" type is
      * represented in the GUI as text box the user can type into. The other type
@@ -190,10 +195,11 @@ public class FileMetadata implements Serializable {
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
         fmd.setProvFreeForm(getProvFreeForm());
+        fmd.setTermsOfUseOrLicense(null);
         dsv.getFileMetadatas().add(fmd);
         return fmd;
     }
-    
+
     public String getLabel() {
         getLabelNoExtension();
         return label;
@@ -854,5 +860,12 @@ public class FileMetadata implements Serializable {
 
         return returnSet;
     }
-    
+
+    public TermsOfUseOrLicense getTermsOfUseOrLicense() {
+        return termsOfUseOrLicense;
+    }
+
+    public void setTermsOfUseOrLicense(TermsOfUseOrLicense termsOfUseOrLicense) {
+        this.termsOfUseOrLicense = termsOfUseOrLicense;
+    }
 }

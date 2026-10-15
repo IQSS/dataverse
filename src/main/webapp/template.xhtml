@@ -64,7 +64,8 @@
                                    rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}}">
                                     <ui:include src="dataset-license-terms.xhtml" >
                                         <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'LICENSE': ''}"/>
-                                        <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>
+                                        <ui:param name="termsOfUseOrLicense" value="#{TemplatePage.template.termsOfUseOrLicense}"/>
+                                        <ui:param name="termsOfAccess" value="#{TemplatePage.template.termsOfAccess}"/>
                                         <ui:param name="datasetPage" value="false"/>
                                         <ui:param name="publicStore" value="settingsWrapper.publicInstall"/>
                                     </ui:include>
@@ -109,7 +110,8 @@
                                 <ui:param name="datasetPage" value="false"/>
                                 <ui:param name="templatePage" value="true"/>
                                 <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'LICENSE' : ''}"/>
-                                <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>
+                                <ui:param name="termsOfUseOrLicense" value="#{TemplatePage.template.termsOfUseOrLicense}"/>
+                                <ui:param name="termsOfAccess" value="#{TemplatePage.template.termsOfAccess}"/>
                                 <ui:param name="publicStore" value="settingsWrapper.publicInstall"/>
                             </ui:include> 
                         </ui:fragment>
