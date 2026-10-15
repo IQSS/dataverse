@@ -61,6 +61,9 @@ fi
 ENV_OUT=$(mktemp)
 export ENV_OUT
 
+# Retain dev/demo setup errors until after persona configuration and env export.
+SETUP_STATUS=0
+
 # Now execute the bootstrapping script
 echo "Now executing bootstrapping script at ${BOOTSTRAP_DIR}/${PERSONA}/init.sh."
 # shellcheck disable=SC1090
@@ -75,3 +78,5 @@ if [[ -n "${TARGET_ENV_FILE}" ]]; then
     exit 2
   fi
 fi
+
+exit "$SETUP_STATUS"
