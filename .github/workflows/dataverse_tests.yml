@@ -6,20 +6,27 @@ on:
     branches:
       - develop
       - master
-    paths-ignore:
-      - "doc/**"
-      - "**/*.md"
-      - ".github/ISSUE_TEMPLATE/**"
-      - ".github/*.md"
+    paths: &test-paths
+      - "conf/**"
+      - "src/**"
+      - "modules/**"
+      - "!**/backports/**"
+      - "!src/maven/**"
+      # Outside those folders, but the tests depend on them
+      - "pom.xml"
+      - "docker-compose-dev.yml"
+      - "tests/**"
+      - "scripts/**"
+      - ".github/workflows/dataverse_tests.yml"
+      - ".github/actions/start-dataverse-stack/**"
+      - ".github/actions/run-jsf-tests/**"
+      - ".github/actions/collect-docker-logs/**"
+      - ".github/actions/attach-jacoco-agent/**"
   pull_request:
     branches:
       - develop
       - master
-    paths-ignore:
-      - "doc/**"
-      - "**/*.md"
-      - ".github/ISSUE_TEMPLATE/**"
-      - ".github/*.md"
+    paths: *test-paths
 
 concurrency:
   group: "dataverse-tests-${{ github.ref }}"
