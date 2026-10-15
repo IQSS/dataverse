@@ -212,20 +212,18 @@ jobs:
       # ---------------------------
       # DUMP CODE COVERAGE
       # ---------------------------
+      # Into target/coverage-reports/, where the JaCoCo plugin's merge execution
+      # (jacoco-merge-unit-and-it in pom.xml) picks up every *.exec.
       - name: Dump JaCoCo coverage
         if: always()
-        run: |
-          set -euo pipefail
-          mkdir -p coverage
-          java -jar jacoco/jacococli.jar dump --address localhost --port 6300 \
-            --destfile coverage/api.exec
+        run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-api.exec
 
       - name: Upload JaCoCo coverage data
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: jacoco-exec-api
-          path: coverage/api.exec
+          path: target/coverage-reports/jacoco-api.exec
           retention-days: 14
 
       # ---------------------------
@@ -330,18 +328,14 @@ jobs:
       # ---------------------------
       - name: Dump JaCoCo coverage
         if: always()
-        run: |
-          set -euo pipefail
-          mkdir -p coverage
-          java -jar jacoco/jacococli.jar dump --address localhost --port 6300 \
-            --destfile coverage/chromium.exec
+        run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-jsf-chromium.exec
 
       - name: Upload JaCoCo coverage data
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: jacoco-exec-chromium
-          path: coverage/chromium.exec
+          name: jacoco-exec-jsf-chromium
+          path: target/coverage-reports/jacoco-jsf-chromium.exec
           retention-days: 14
 
       # ---------------------------
@@ -418,18 +412,14 @@ jobs:
       # ---------------------------
       - name: Dump JaCoCo coverage
         if: always()
-        run: |
-          set -euo pipefail
-          mkdir -p coverage
-          java -jar jacoco/jacococli.jar dump --address localhost --port 6300 \
-            --destfile coverage/${{ matrix.browser }}.exec
+        run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-jsf-${{ matrix.browser }}.exec
 
       - name: Upload JaCoCo coverage data
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: jacoco-exec-${{ matrix.browser }}
-          path: coverage/${{ matrix.browser }}.exec
+          name: jacoco-exec-jsf-${{ matrix.browser }}
+          path: target/coverage-reports/jacoco-jsf-${{ matrix.browser }}.exec
           retention-days: 14
 
       # ---------------------------
@@ -507,7 +497,7 @@ jobs:
           }
           report coverage/jacoco.exec "Dataverse server coverage - API and JSF tests" \
             --html coverage/jacoco-html --xml coverage/jacoco.xml
-          for exec in coverage/api.exec coverage/chromium.exec coverage/firefox.exec coverage/webkit.exec; do
+          for exec in coverage/jacoco-api.exec coverage/jacoco-jsf-chromium.exec coverage/jacoco-jsf-firefox.exec coverage/jacoco-jsf-webkit.exec; do
             [ -f "$exec" ] && report "$exec" "$(basename "$exec" .exec)" --xml "${exec%.exec}.xml"
           done
 
@@ -520,8 +510,8 @@ jobs:
               root = ET.parse(path).getroot()
               return {c.get("type"): (int(c.get("covered")), int(c.get("missed"))) for c in root.findall("counter")}
 
-          suites = [("API tests", "api"), ("JSF tests (Chromium)", "chromium"),
-                    ("JSF tests (Firefox)", "firefox"), ("JSF tests (WebKit)", "webkit")]
+          suites = [("API tests", "jacoco-api"), ("JSF tests (Chromium)", "jacoco-jsf-chromium"),
+                    ("JSF tests (Firefox)", "jacoco-jsf-firefox"), ("JSF tests (WebKit)", "jacoco-jsf-webkit")]
           rows = [("All suites (merged)", "coverage/jacoco.xml")] + [
               (label, f"coverage/{name}.xml") for label, name in suites if os.path.exists(f"coverage/{name}.xml")]
           types = ["LINE", "BRANCH", "METHOD", "CLASS"]
