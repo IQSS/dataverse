@@ -90,7 +90,18 @@ public class DatasetUtil {
             }
 	    IOUtils.closeQuietly(in);
         }
-        for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
+        // Use database-level filtering to get only thumbnail-candidate files (images, PDFs)
+        // instead of iterating through all files in the dataset.
+        // Fall back to iterating all files if CDI is not available (e.g., unit tests).
+        List<FileMetadata> candidateFileMetadatas;
+        try {
+            DataFileServiceBean dataFileService = CDI.current().select(DataFileServiceBean.class).get();
+            candidateFileMetadatas = dataFileService.findThumbnailCandidateFileMetadatasByDatasetVersionId(dataset.getLatestVersion().getId());
+        } catch (IllegalStateException ex) {
+            // CDI not available (e.g., unit tests) - fall back to iterating all files
+            candidateFileMetadatas = dataset.getLatestVersion().getFileMetadatas();
+        }
+        for (FileMetadata fileMetadata : candidateFileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
 
             if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
@@ -310,14 +321,25 @@ public class DatasetUtil {
             return null; 
         }
 
-        for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
+        // Use database-level filtering to get only thumbnail-candidate files (images, PDFs)
+        // instead of iterating through all files in the dataset.
+        // Fall back to iterating all files if CDI is not available (e.g., unit tests).
+        List<FileMetadata> candidateFileMetadatas;
+        try {
+            DataFileServiceBean dataFileService = CDI.current().select(DataFileServiceBean.class).get();
+            candidateFileMetadatas = dataFileService.findThumbnailCandidateFileMetadatasByDatasetVersionId(datasetVersion.getId());
+        } catch (IllegalStateException ex) {
+            // CDI not available (e.g., unit tests) - fall back to iterating all files
+            candidateFileMetadatas = datasetVersion.getFileMetadatas();
+        }
+        for (FileMetadata fmd : candidateFileMetadatas) {
             DataFile testFile = fmd.getDataFile();
             // We don't want to use a restricted image file as the dedicated thumbnail:
             if (!testFile.isRestricted() && !FileUtil.isActivelyEmbargoed(testFile) && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE)) {
                 return testFile;
             }
         }
-        logger.fine("In attemptToAutomaticallySelectThumbnailFromDataFiles and interated through all the files but couldn't find a thumbnail.");
+        logger.fine("In attemptToAutomaticallySelectThumbnailFromDataFiles and iterated through all candidate files but couldn't find a thumbnail.");
         return null;
     }
 
