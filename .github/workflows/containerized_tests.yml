@@ -45,10 +45,16 @@ jobs:
     steps:
 
       # ---------------------------
-      # CHECKOUT
+      # CHECKOUT + SETUP JAVA + MAVEN
       # ---------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      # Reads the Java version from the POM and falls back to the shared Maven cache
+      # (seeded by maven_cache_management.yml) when this branch has no cache yet.
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: |
+            pom.xml
+            modules/container-base/pom.xml
 
       # ---------------------------
       # VERIFY DOCKER
@@ -57,16 +63,6 @@ jobs:
         run: |
           set -euo pipefail
           docker version
-
-      # ---------------------------
-      # SETUP JAVA + MAVEN
-      # ---------------------------
-      - name: Setup Java
-        uses: actions/setup-java@v6.0.1
-        with:
-          distribution: "temurin"
-          java-version: "21"
-          cache: "maven"
 
       - name: Verify Maven
         run: |
