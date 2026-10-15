@@ -106,7 +106,7 @@ public class AuthorizedExternalStep implements WorkflowStep {
         templateParams.put("dataset.identifier", ctxt.getDataset().getIdentifier());
         templateParams.put("dataset.globalId", ctxt.getDataset().getGlobalId().toString());
         templateParams.put("dataset.displayName", ctxt.getDataset().getDisplayName());
-        templateParams.put("dataset.citation", ctxt.getDataset().getCitation());
+        templateParams.put("dataset.citation", ctxt.getDataset().getLatestVersion().getCitation());
         templateParams.put("minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()));
         templateParams.put("majorVersion", Long.toString(ctxt.getNextVersionNumber()));
         templateParams.put("releaseStatus", (ctxt.getType()==TriggerType.PostPublishDataset) ? "done":"in-progress");

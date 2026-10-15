@@ -2173,7 +2173,7 @@ public class DatasetPage implements java.io.Serializable {
             displayTitle = workingVersion.getTitle();
 
             // init the citation
-            displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
+            displayCitation = workingVersion.getCitation(true, isAnonymizedAccess());
             logger.fine("Citation: " + displayCitation);
 
             if(workingVersion.isPublished()) {
@@ -3120,7 +3120,7 @@ public class DatasetPage implements java.io.Serializable {
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
 
-        displayCitation = dataset.getCitation(true, workingVersion);
+        displayCitation = workingVersion.getCitation(true);
         stateChanged = false;
 
         if (lockedDueToIngestVar != null && lockedDueToIngestVar) {
