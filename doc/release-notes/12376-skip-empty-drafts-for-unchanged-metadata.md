@@ -1,0 +1,1 @@
+When metadata uploaded via `PUT /api/datasets/{id}/versions/:draft` is identical to the existing dataset version, Dataverse no longer creates or updates a draft version. This prevents repeated uploads of unchanged metadata from creating unnecessary drafts or rewriting an existing draft.
