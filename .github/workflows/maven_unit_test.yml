@@ -148,7 +148,10 @@ jobs:
 
     coverage-report:
         runs-on: ubuntu-latest
-        needs: integration-test
+        needs: [integration-test, dataverse-tests]
+        # Also when Dataverse Tests was skipped (branch pushes) or failed: coverage then
+        # covers whatever ran.
+        if: ${{ !cancelled() && needs.integration-test.result == 'success' }}
         name: Coverage Report Submission
         steps:
             # TODO: As part of #10618 change to setup-maven custom action
@@ -160,11 +163,41 @@ jobs:
                 distribution: temurin
                 cache: maven
 
-          # Get the build output from the integration test job
+          # Get the compiled classes (the report needs them), then the integration test job's
+          # report and JaCoCo data
+          - uses: actions/download-artifact@v8
+            with:
+              name: java-artifacts
           - uses: actions/download-artifact@v8
             with:
               name: java-reportdir
-          - run: tar -xvf java-reportdir.tar
+          - run: |
+                tar -xf java-builddir.tar
+                tar -xvf java-reportdir.tar
+
+          # Server-side coverage of the API and JSF tests, next to the unit and integration data
+          - name: Get Dataverse Tests coverage
+            if: ${{ needs.dataverse-tests.result == 'success' || needs.dataverse-tests.result == 'failure' }}
+            uses: actions/download-artifact@v8
+            with:
+              pattern: jacoco-exec-*
+              path: target/coverage-reports
+              merge-multiple: true
+
+          # Merge every target/coverage-reports/*.exec and rebuild the merged report, with the
+          # same executions mvn verify uses (jacoco-merge-unit-and-it, jacoco-report in pom.xml)
+          - name: Merge all coverage data
+            run: |
+                ls -l target/coverage-reports/
+                mvn -B jacoco:merge@jacoco-merge-unit-and-it jacoco:report@jacoco-report
+
+          # Hand the merged report to the SonarCloud job
+          - run: tar -cvf java-reportdir-merged.tar target/site
+          - uses: actions/upload-artifact@v7
+            with:
+                name: java-reportdir-merged
+                path: java-reportdir-merged.tar
+                retention-days: 3
 
           # Deposit Code Coverage
           - name: Deposit Code Coverage
@@ -199,7 +232,7 @@ jobs:
 
     sonarcloud:
       runs-on: ubuntu-latest
-      needs: check-secrets
+      needs: [check-secrets, coverage-report]
       name: SonarQube Analysis and Coverage
       # Only run in upstream repo - avoid unnecessary runs in forks (they don't have access to SONAR_TOKEN)
       if: needs.check-secrets.outputs.available == 'true'
@@ -216,17 +249,17 @@ jobs:
             distribution: temurin
             cache: maven
 
-        # Get the coverage output from the integration test job
+        # Get the merged coverage report from the coverage job (unit, integration, API and JSF tests)
         - uses: actions/download-artifact@v8
           with:
-            name: java-reportdir
+            name: java-reportdir-merged
         # Get the binary class files as Sonar needs them for analysis
         - uses: actions/download-artifact@v8
           with:
             name: java-artifacts
         - run: |
             tar -xvf java-builddir.tar
-            tar -xvf java-reportdir.tar
+            tar -xvf java-reportdir-merged.tar
 
         # Run Sonarcube analysis
         - name: Analyze and commit to SonarCloud
