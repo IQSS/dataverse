@@ -32,6 +32,11 @@ concurrency:
   group: "dataverse-tests-${{ github.ref }}"
   cancel-in-progress: true
 
+# Where the test jobs reach their Dataverse stack. Used by the API tests, the JSF
+# tests and start-dataverse-stack's readiness check.
+env:
+  BASE_URL: "http://localhost:8080"
+
 jobs:
 
   # =====================================================================
@@ -172,9 +177,6 @@ jobs:
       checks: write
       pull-requests: write
 
-    env:
-      BASE_URL: "http://localhost:8080"
-
     steps:
 
       # ---------------------------
@@ -296,7 +298,6 @@ jobs:
       contents: read
 
     env:
-      BASE_URL:       "http://localhost:8080"
       LOGIN_ADAPTER:  "builtin"
       DV_USERNAME:    "dataverseAdmin"
       DV_PASSWORD:    "admin1"
@@ -385,7 +386,6 @@ jobs:
       contents: read
 
     env:
-      BASE_URL:       "http://localhost:8080"
       LOGIN_ADAPTER:  "builtin"
       DV_USERNAME:    "dataverseAdmin"
       DV_PASSWORD:    "admin1"
