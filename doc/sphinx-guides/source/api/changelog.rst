@@ -28,6 +28,7 @@ v6.12
 
 - Dataset creation API calls may now behave differently when neither a license nor terms are provided, depending on the new :ref:`dataverse.feature.do-not-assume-default-license` feature flag.
 - Whether file extensions are included in the "Content-disposition" header returned when downloading auxiliary files depends on whether the relevant format is one of the content types supported in Tika. A recent update to the version of Tika has added new content types, including "text/markdown", and auxiliary files with these types now have a a file extension included (e.g. ".md" in this case) in the header.
+- File text searches now also match directory paths, which can increase result counts and filtered download sizes. This affects ``searchText`` on dataset version ``files``, ``files/counts``, and ``downloadsize`` endpoints, as well as file results in the Search API. Existing installations must update their Solr schema and reindex existing files for Search API directory matches; see :ref:`directory-name-search-index`. Related request: `dataverse-frontend#1062 <https://github.com/IQSS/dataverse-frontend/issues/1062>`_.
 
 v6.11
 -----

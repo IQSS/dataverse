@@ -8,6 +8,8 @@ The Search API supports the same searching, sorting, and faceting operations as 
 
 To search unpublished content, you must pass in an API token as described in the :doc:`auth` section.
 
+File searches include names within directory paths. For example, ``q=Figure1&type=file`` can return files in both ``Figure1`` and ``results/Figure1``, even when their filenames and descriptions do not contain the query term. Directory names follow the existing search tokenization and case-insensitive matching rules; the results remain files, not folders.
+
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
 .. note:: |CORS| The search API can be used from scripts running in web browsers, as it allows cross-origin resource sharing (CORS).
