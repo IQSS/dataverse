@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,13 +59,43 @@ public class XmlMetadataTemplate {
     public static final String XML_XSI = "http://www.w3.org/2001/XMLSchema-instance";
     public static final String XML_SCHEMA_VERSION = "4.7";
 
+    public enum DatafileInfoMode {
+        EXPANDED("expanded"),
+        BRIEF("brief"),
+        NONE("none");
+
+        private final String value;
+
+        DatafileInfoMode(String value) {
+            this.value = value;
+        }
+
+        public static DatafileInfoMode from(String value) {
+            if (value != null) {
+                for (DatafileInfoMode mode : values()) {
+                    if (mode.value.equalsIgnoreCase(value.trim())) {
+                        return mode;
+                    }
+                }
+                logger.warning("Unknown DataCite datafile info mode '" + value + "', using expanded");
+            }
+            return EXPANDED;
+        }
+    }
+
     private DoiMetadata doiMetadata;
+    private DatafileInfoMode datafileInfoMode = DatafileInfoMode.EXPANDED;
 
     public XmlMetadataTemplate() {
     }
 
     public XmlMetadataTemplate(DoiMetadata doiMetadata) {
+        this(doiMetadata, DatafileInfoMode.EXPANDED);
+    }
+
+    public XmlMetadataTemplate(DoiMetadata doiMetadata, DatafileInfoMode datafileInfoMode) {
         this.doiMetadata = doiMetadata;
+        this.datafileInfoMode = datafileInfoMode;
     }
 
     public String generateXML(DvObject dvObject) {
@@ -1192,19 +1223,35 @@ public class XmlMetadataTemplate {
     private void writeSize(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
         // sizes -> size
         boolean sizesWritten = false;
-        List<DataFile> dataFiles = new ArrayList<DataFile>();
-
-        if (dvObject instanceof Dataset dataset) {
-            dataFiles = dataset.getFiles();
-        } else if (dvObject instanceof DataFile df) {
-            dataFiles.add(df);
+        if (datafileInfoMode == DatafileInfoMode.NONE) {
+            return;
+        }
+        List<DataFile> dataFiles = getDataFiles(dvObject);
+        if (datafileInfoMode == DatafileInfoMode.BRIEF) {
+            long totalSize = 0L;
+            boolean hasKnownSize = false;
+            if (dataFiles != null && !dataFiles.isEmpty()) {
+                for (DataFile dataFile : dataFiles) {
+                    long size = dataFile.getFilesize();
+                    if (size != -1) {
+                        totalSize += size;
+                        hasKnownSize = true;
+                    }
+                }
+            }
+            if (hasKnownSize) {
+                xmlw.writeStartElement("sizes");
+                XmlWriterUtil.writeFullElement(xmlw, "size", Long.toString(totalSize));
+                xmlw.writeEndElement();
+            }
+            return;
         }
         if (dataFiles != null && !dataFiles.isEmpty()) {
             for (DataFile dataFile : dataFiles) {
-                Long size = dataFile.getFilesize();
+                long size = dataFile.getFilesize();
                 if (size != -1) {
                     sizesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "sizes", sizesWritten);
-                    XmlWriterUtil.writeFullElement(xmlw, "size", size.toString());
+                    XmlWriterUtil.writeFullElement(xmlw, "size", Long.toString(size));
                 }
             }
         }
@@ -1217,12 +1264,28 @@ public class XmlMetadataTemplate {
     private void writeFormats(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
 
         boolean formatsWritten = false;
-        List<DataFile> dataFiles = new ArrayList<DataFile>();
-
-        if (dvObject instanceof Dataset dataset) {
-            dataFiles = dataset.getFiles();
-        } else if (dvObject instanceof DataFile df) {
-            dataFiles.add(df);
+        if (datafileInfoMode == DatafileInfoMode.NONE) {
+            return;
+        }
+        List<DataFile> dataFiles = getDataFiles(dvObject);
+        if (datafileInfoMode == DatafileInfoMode.BRIEF) {
+            Set<String> uniqueFormats = new LinkedHashSet<>();
+            if (dataFiles != null && !dataFiles.isEmpty()) {
+                for (DataFile dataFile : dataFiles) {
+                    String format = dataFile.getContentType();
+                    if (StringUtils.isNotBlank(format)) {
+                        uniqueFormats.add(format);
+                    }
+                }
+            }
+            if (!uniqueFormats.isEmpty()) {
+                xmlw.writeStartElement("formats");
+                for (String format : uniqueFormats) {
+                    XmlWriterUtil.writeFullElement(xmlw, "format", format);
+                }
+                xmlw.writeEndElement();
+            }
+            return;
         }
         if (dataFiles != null && !dataFiles.isEmpty()) {
             for (DataFile dataFile : dataFiles) {
@@ -1243,6 +1306,16 @@ public class XmlMetadataTemplate {
             xmlw.writeEndElement();
         }
 
+    }
+
+    private List<DataFile> getDataFiles(DvObject dvObject) {
+        List<DataFile> dataFiles = new ArrayList<>();
+        if (dvObject instanceof Dataset dataset) {
+            return dataset.getFiles() != null ? dataset.getFiles() : dataFiles;
+        } else if (dvObject instanceof DataFile df) {
+            dataFiles.add(df);
+        }
+        return dataFiles;
     }
 
     private void writeVersion(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {

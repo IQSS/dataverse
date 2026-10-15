@@ -21,6 +21,12 @@ class JvmSettingsTest {
     void lookupPidProviderSetting() {
         assertEquals("test", JvmSettings.DATACITE_USERNAME.lookup("datacite"));
     }
+
+    @Test
+    @SystemProperty(key = "dataverse.datacite.xml.datafile-info", value = "brief")
+    void lookupDataciteDatafileInfoSetting() {
+        assertEquals("brief", JvmSettings.DATACITE_XML_DATAFILE_INFO.lookup());
+    }
     
     @Test
     @SystemProperty(key = "dataverse.ingest.rserve.port", value = "1234")
