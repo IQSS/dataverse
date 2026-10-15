@@ -6,8 +6,11 @@
 
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 
@@ -17,10 +20,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.util.concurrent.Future;
@@ -110,7 +116,32 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         Dataset dataset = version.getDataset();
 
         ctxt.index().asyncIndexDataset(dataset, true);
+
+        // Let the PID provider(s) know, e.g. so that DataCite DOIs of datasets/files
+        // no longer in any released version move from "findable" to "registered".
+        // Done after the transaction has committed and not treated as fatal.
+        if (!dataset.isHarvested()) {
+            deaccessionPid(dataset);
+            for (DataFile df : dataset.getFiles()) {
+                deaccessionPid(df);
+            }
+        }
         return retVal;
+    }
+
+    private void deaccessionPid(DvObject dvObject) {
+        GlobalId pid = dvObject.getGlobalId();
+        if (pid == null || !dvObject.isIdentifierRegistered()) {
+            return;
+        }
+        try {
+            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+            if (pidProvider != null) {
+                pidProvider.deaccessionIdentifier(dvObject);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to update PID status after deaccession for " + pid.asString(), e);
+        }
     }
 
 }
