@@ -96,6 +96,10 @@ public enum JvmSettings {
     // API: MDC Citation updates
     SCOPE_API_MDC(SCOPE_API, "mdc"),
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
+    // API: Metadata Exports
+    SCOPE_API_EXPORT(SCOPE_API, "export"),
+    SCOPE_API_EXPORT_BULK(SCOPE_API_EXPORT, "bulk"),
+    API_EXPORT_BULK_MAX_REQUEST_SIZE(SCOPE_API_EXPORT_BULK, "max-request-size"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),

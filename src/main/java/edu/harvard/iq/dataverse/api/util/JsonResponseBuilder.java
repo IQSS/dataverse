@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.api.util;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.stream.JsonCollectors;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import edu.harvard.iq.dataverse.api.filter.ApiBlockingFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -140,6 +142,21 @@ public class JsonResponseBuilder {
         return this;
     }
     
+    public record Violation(String path, String message) {
+    }
+    
+    public JsonResponseBuilder violations(List<Violation> violations) {
+        JsonArray entries = violations.stream()
+            .map(violation -> JsonUtil.createObjectBuilder()
+                .add("path", violation.path())
+                .add("message", violation.message())
+                .build()
+            )
+            .collect(JsonCollectors.toJsonArray());
+        this.entityBuilder.add("violations", entries);
+        return this;
+    }
+    
     /**
      * Finish building a Jersey JAX-RS response with JSON message
      * @return JAX-RS response including JSON message
@@ -230,10 +247,9 @@ public class JsonResponseBuilder {
         metadata.deleteCharAt(metadata.length()-1);
         
         if (ex.isPresent()) {
-            ex.get().printStackTrace();
             metadata.append("|");
             logger.log(level, metadata.toString(), ex);
-            if(includeStackTrace) {
+            if (includeStackTrace) {
                 logger.log(level, ExceptionUtils.getStackTrace(ex.get()));
             }
         } else {

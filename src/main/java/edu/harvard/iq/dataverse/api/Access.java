@@ -150,7 +150,7 @@ public class Access extends AbstractApiBean {
                                      @Parameter(description = "Dataset version, such as 1.0, :draft, :latest, or :latest-published. If omitted, uses :latest.", required = false)
                                      @QueryParam("version") String version) {
 
-        DataCitation.Format format = DataCitation.getFormat(formatString);
+        DataCitation.Format format = DataCitation.Format.lookup(formatString);
         if (format == null) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.citation.invalidFormat"));
         }

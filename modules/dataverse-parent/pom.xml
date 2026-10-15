@@ -450,7 +450,6 @@
             </snapshots>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
-        <!--
         <repository>
             <id>central-portal-snapshots</id>
             <name>Central Portal Snapshots</name>
@@ -464,7 +463,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        -->
         <!--
         <repository>
             <id>s01-oss-sonatype</id>
