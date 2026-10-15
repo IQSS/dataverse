@@ -122,8 +122,9 @@ jobs:
             # Run integration tests (but not unit tests again)
             - run: mvn -DskipUnitTests -Dtarget.java.version=${{ matrix.jdk }} verify
 
-            # Wrap up and send to coverage job
-            - run: tar -cvf java-reportdir.tar target/site
+            # Wrap up and send to coverage job. The coverage job merges these JaCoCo inputs
+            # again, together with the server-side coverage from Dataverse Tests.
+            - run: tar -cvf java-reportdir.tar target/site target/coverage-reports/jacoco-*.exec
             - uses: actions/upload-artifact@v7
               with:
                   name: java-reportdir
