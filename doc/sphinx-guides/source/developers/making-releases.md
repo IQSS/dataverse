@@ -208,8 +208,8 @@ If this is a regular (non-hotfix) release, create a pull request to merge the "d
 After making the pull request, allow time for important tests pass:
 
 - Unit tests: Maven Tests
-- API tests: "Dataverse API Tests" job of the Dataverse Tests workflow
-- JSF tests: "Dataverse JSF Tests" jobs (one per browser) of the Dataverse Tests workflow
+- API tests: "Dataverse API Tests" job of the Dataverse Tests workflow, which runs as part of Maven Tests
+- JSF tests: "Dataverse JSF Tests" jobs (one per browser) of the Dataverse Tests workflow, which runs as part of Maven Tests
 
 Don't worry about style and quality test failures such as these:
 

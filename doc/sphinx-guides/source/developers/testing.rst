@@ -39,7 +39,7 @@ Unit Test Automation Overview
 
 We use a variety of tools to write, execute, and measure the code coverage of unit tests, including Maven, JUnit, Jacoco, GitHub, and Coveralls. We'll explain the role of each tool below, but here's an overview of what you can expect from the automation we've set up.
 
-As you prepare to make a pull request, as described in the :doc:`version-control` section, you will be working on a new branch you create from the "develop" branch. Let's say your branch is called ``1012-private-url``. As you work, you are constantly invoking Maven to build the war file. When you do a "clean and build" in Netbeans, Maven runs all the unit tests (anything ending with ``Test.java``) and then runs the results through a tool called Jacoco that calculates code coverage. When you push your branch to GitHub and make a pull request, GitHub Actions runs Maven and Jacoco on your branch and pushes the results to Coveralls, which is a web service that tracks changes to code coverage over time. Note that we have configured Coveralls to not mark small decreases in code coverage as a failure. You can find the Coveralls reports at https://coveralls.io/github/IQSS/dataverse
+As you prepare to make a pull request, as described in the :doc:`version-control` section, you will be working on a new branch you create from the "develop" branch. Let's say your branch is called ``1012-private-url``. As you work, you are constantly invoking Maven to build the war file. When you do a "clean and build" in Netbeans, Maven runs all the unit tests (anything ending with ``Test.java``) and then runs the results through a tool called Jacoco that calculates code coverage. When you push your branch to GitHub and make a pull request, GitHub Actions runs Maven and Jacoco on your branch and pushes the results to Coveralls, which is a web service that tracks changes to code coverage over time. The coverage sent to Coveralls (and SonarCloud) also includes the integration tests and the server-side coverage of the API and JSF tests described under `Continuous Integration`_. Note that we have configured Coveralls to not mark small decreases in code coverage as a failure. You can find the Coveralls reports at https://coveralls.io/github/IQSS/dataverse
 
 The main takeaway should be that we care about unit testing enough to measure the changes to code coverage over time using automation. Now let's talk about how you can help keep our code coverage up by writing unit tests with JUnit.
 
@@ -459,13 +459,15 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 
 GitHub Actions jobs can be found in ``.github/workflows``.
 
-The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Dataverse Tests" workflow (``dataverse_tests.yml``). It builds the Dataverse containers once in a "Build Containers" job and hands them to the test jobs, each of which starts its own fresh Dataverse installation:
+The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Dataverse Tests" workflow (``dataverse_tests.yml``), which the "Maven Tests" workflow (``maven_unit_test.yml``) runs after its unit tests. It builds the Dataverse containers once in a "Build Containers" job, from the classes the unit-test job compiled, and hands them to the test jobs, each of which starts its own fresh Dataverse installation:
 
 - "Dataverse API Tests" runs the API tests listed in :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>`.
 - "Dataverse JSF Tests (Chromium)" runs the JSF frontend tests in Chromium, at the same time as the API tests.
 - "Dataverse JSF Tests (Firefox)" and "Dataverse JSF Tests (WebKit)" start when the Chromium job has finished, whatever its result, and run in parallel.
 
 This way at most three test jobs run at once, and the suites finish at about the same time. Each job uploads its own test reports and container logs as artifacts.
+
+Each test job also records which server code its tests exercised, with a JaCoCo agent in the app container. Maven Tests' "Coverage Report Submission" job merges that with the unit and integration test coverage, using the JaCoCo executions in ``pom.xml``, and sends the result to Coveralls and SonarCloud.
 
 As always, pull requests to improve our continuous integration configurations are welcome.
 
