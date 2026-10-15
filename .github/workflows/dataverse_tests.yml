@@ -20,6 +20,10 @@ concurrency:
 # tests and start-dataverse-stack's readiness check.
 env:
   BASE_URL: "http://localhost:8080"
+  # Server-side code coverage: the JaCoCo agent shipped in the base image, listening for
+  # `mvn jacoco:dump` on port 6300. Each test job dumps after its tests; Maven Tests'
+  # coverage job merges the dumps.
+  JACOCO_AGENT: "jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=edu.harvard.iq.dataverse.*"
 
 jobs:
 
@@ -186,12 +190,10 @@ jobs:
       # ---------------------------
       # START + CONFIGURE DATAVERSE
       # ---------------------------
-      # Server-side code coverage: dumped after the tests and merged by Maven Tests' coverage job.
-      - name: Attach JaCoCo agent
-        uses: ./.github/actions/attach-jacoco-agent
-
       - name: Start Dataverse stack
         uses: ./.github/actions/start-dataverse-stack
+        with:
+          java-agents: ${{ env.JACOCO_AGENT }}
 
       # ---------------------------
       # RUN API TESTS
@@ -314,11 +316,10 @@ jobs:
       # ---------------------------
       # START + CONFIGURE DATAVERSE
       # ---------------------------
-      - name: Attach JaCoCo agent
-        uses: ./.github/actions/attach-jacoco-agent
-
       - name: Start Dataverse stack
         uses: ./.github/actions/start-dataverse-stack
+        with:
+          java-agents: ${{ env.JACOCO_AGENT }}
 
       # ---------------------------
       # RUN JSF TESTS
@@ -398,11 +399,10 @@ jobs:
       # ---------------------------
       # START + CONFIGURE DATAVERSE
       # ---------------------------
-      - name: Attach JaCoCo agent
-        uses: ./.github/actions/attach-jacoco-agent
-
       - name: Start Dataverse stack
         uses: ./.github/actions/start-dataverse-stack
+        with:
+          java-agents: ${{ env.JACOCO_AGENT }}
 
       # ---------------------------
       # RUN JSF TESTS

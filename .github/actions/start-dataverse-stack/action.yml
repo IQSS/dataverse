@@ -6,6 +6,10 @@ inputs:
     description: "Name of the artifact holding the saved images and the exploded WAR"
     required: false
     default: "dataverse-build"
+  java-agents:
+    description: "Java agents to attach to the app server, as JAVA_AGENTS in the base image (empty: none)"
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -59,9 +63,12 @@ runs:
     # ---------------------------
     - name: Start Dataverse stack
       shell: bash
+      env:
+        JAVA_AGENTS: ${{ inputs.java-agents }}
       run: |
         set -euo pipefail
         mvn -Pct docker:start \
+          -DJAVA_AGENTS="$JAVA_AGENTS" \
           -Ddataverse.feature.index-harvested-metadata-source=true \
           -Ddataverse.oai.server.maxidentifiers=2 \
           -Ddataverse.oai.server.maxrecords=2 \
