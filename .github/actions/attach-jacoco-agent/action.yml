@@ -1,6 +1,6 @@
 ---
 name: "Attach JaCoCo Agent"
-description: "Download JaCoCo and add its agent to the Dataverse app container, so server-side code coverage can be collected from the running server."
+description: "Download the JaCoCo agent and add it to the Dataverse app container, so server-side code coverage can be collected from the running server."
 inputs:
   jacoco-version:
     description: "JaCoCo version (keep in step with maven-jacoco-plugin.version in modules/dataverse-parent/pom.xml)"
@@ -15,7 +15,7 @@ runs:
   steps:
 
     # The agent runs as a TCP server inside the app container, and coverage
-    # is dumped from the live server with `jacococli dump`. In JaCoCo's default
+    # is dumped from the live server with `mvn jacoco:dump`. In JaCoCo's default
     # file mode the .exec file is only written when the JVM shuts down cleanly,
     # which never happens in CI.
     - name: Download JaCoCo
@@ -26,8 +26,6 @@ runs:
         mkdir -p jacoco
         curl -fsSL -o jacoco/jacocoagent.jar \
           "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/${V}/org.jacoco.agent-${V}-runtime.jar"
-        curl -fsSL -o jacoco/jacococli.jar \
-          "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/${V}/org.jacoco.cli-${V}-nodeps.jar"
 
     # Extra JVM options reach Payara only through JVM_ARGS, which
     # startInForeground.sh adds to the server's command line, so the agent is
