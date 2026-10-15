@@ -442,8 +442,8 @@ jobs:
           artifact-name: docker-logs-${{ matrix.browser }}
 
   # =====================================================================
-  # CODE COVERAGE: merge the browser jobs' server-side coverage into one
-  # report of what the integration and JSF tests exercise together
+  # CODE COVERAGE: merge the API and JSF jobs' server-side coverage into
+  # one report of what the two suites exercise together
   # =====================================================================
   code-coverage:
     name: Code Coverage
@@ -505,9 +505,9 @@ jobs:
               --sourcefiles src/main/java \
               --name "$2" "${@:3}"
           }
-          report coverage/jacoco.exec "Dataverse server coverage - integration and JSF tests" \
+          report coverage/jacoco.exec "Dataverse server coverage - API and JSF tests" \
             --html coverage/jacoco-html --xml coverage/jacoco.xml
-          for exec in coverage/chromium.exec coverage/firefox.exec coverage/webkit.exec; do
+          for exec in coverage/api.exec coverage/chromium.exec coverage/firefox.exec coverage/webkit.exec; do
             [ -f "$exec" ] && report "$exec" "$(basename "$exec" .exec)" --xml "${exec%.exec}.xml"
           done
 
@@ -520,11 +520,13 @@ jobs:
               root = ET.parse(path).getroot()
               return {c.get("type"): (int(c.get("covered")), int(c.get("missed"))) for c in root.findall("counter")}
 
-          rows = [("All browsers (merged)", "coverage/jacoco.xml")] + [
-              (b, f"coverage/{b}.xml") for b in ("chromium", "firefox", "webkit") if os.path.exists(f"coverage/{b}.xml")]
+          suites = [("API tests", "api"), ("JSF tests (Chromium)", "chromium"),
+                    ("JSF tests (Firefox)", "firefox"), ("JSF tests (WebKit)", "webkit")]
+          rows = [("All suites (merged)", "coverage/jacoco.xml")] + [
+              (label, f"coverage/{name}.xml") for label, name in suites if os.path.exists(f"coverage/{name}.xml")]
           types = ["LINE", "BRANCH", "METHOD", "CLASS"]
           labels = {"LINE": "Lines", "BRANCH": "Branches", "METHOD": "Methods", "CLASS": "Classes"}
-          print("### Server-side code coverage (integration + JSF tests)\n")
+          print("### Server-side code coverage (API + JSF tests)\n")
           print("| | " + " | ".join(labels[t] for t in types) + " |")
           print("|---|" + "---|" * len(types))
           for label, path in rows:
