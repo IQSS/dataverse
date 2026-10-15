@@ -195,6 +195,7 @@ jobs:
       # START + CONFIGURE DATAVERSE
       # ---------------------------
       - name: Start Dataverse stack
+        id: stack
         uses: ./.github/actions/start-dataverse-stack
         with:
           java-agents: ${{ env.JACOCO_AGENT }}
@@ -225,12 +226,14 @@ jobs:
       # ---------------------------
       # Into target/coverage-reports/, where the JaCoCo plugin's merge execution
       # (jacoco-merge-unit-and-it in pom.xml) picks up every *.exec.
+      # Only if the stack started: otherwise there is no agent to dump from, and the job
+      # should show the startup failure alone. Also runs after test failures.
       - name: Dump JaCoCo coverage
-        if: always()
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
         run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-api.exec
 
       - name: Upload JaCoCo coverage data
-        if: always()
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
         uses: actions/upload-artifact@v7
         with:
           name: jacoco-exec-api
@@ -321,6 +324,7 @@ jobs:
       # START + CONFIGURE DATAVERSE
       # ---------------------------
       - name: Start Dataverse stack
+        id: stack
         uses: ./.github/actions/start-dataverse-stack
         with:
           java-agents: ${{ env.JACOCO_AGENT }}
@@ -336,12 +340,14 @@ jobs:
       # ---------------------------
       # DUMP CODE COVERAGE
       # ---------------------------
+      # Only if the stack started: otherwise there is no agent to dump from, and the job
+      # should show the startup failure alone. Also runs after test failures.
       - name: Dump JaCoCo coverage
-        if: always()
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
         run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-jsf-chromium.exec
 
       - name: Upload JaCoCo coverage data
-        if: always()
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
         uses: actions/upload-artifact@v7
         with:
           name: jacoco-exec-jsf-chromium
@@ -404,6 +410,7 @@ jobs:
       # START + CONFIGURE DATAVERSE
       # ---------------------------
       - name: Start Dataverse stack
+        id: stack
         uses: ./.github/actions/start-dataverse-stack
         with:
           java-agents: ${{ env.JACOCO_AGENT }}
@@ -419,12 +426,14 @@ jobs:
       # ---------------------------
       # DUMP CODE COVERAGE
       # ---------------------------
+      # Only if the stack started: otherwise there is no agent to dump from, and the job
+      # should show the startup failure alone. Also runs after test failures.
       - name: Dump JaCoCo coverage
-        if: always()
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
         run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-jsf-${{ matrix.browser }}.exec
 
       - name: Upload JaCoCo coverage data
-        if: always()
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
         uses: actions/upload-artifact@v7
         with:
           name: jacoco-exec-jsf-${{ matrix.browser }}
