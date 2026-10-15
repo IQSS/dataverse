@@ -1033,6 +1033,19 @@ public class JsonParser {
     }
 
     public DatasetField parseField(JsonObject json, Boolean testType, boolean replaceData) throws JsonParseException {
+        return parseField(json, testType, replaceData, null);
+    }
+
+    /**
+     * Parses a single field.
+     *
+     * @param parentType when null, {@code json} is expected to describe a field that can stand on
+     *                   its own, i.e. one that is not a child of a compound field type. When
+     *                   non-null, {@code json} is expected to describe a child of that compound
+     *                   field type. This is what keeps callers from submitting a child field such
+     *                   as "authorName" as if it were a top level primitive field - see #12752.
+     */
+    private DatasetField parseField(JsonObject json, Boolean testType, boolean replaceData, DatasetFieldType parentType) throws JsonParseException {
         if (json == null) {
             return null;
         }
@@ -1044,6 +1057,15 @@ public class JsonParser {
         if (type == null) {
             logger.fine("Can't find type '" + json.getString("typeName", "") + "'");
             return null;
+        }
+        if (parentType == null) {
+            if (type.isHasParent()) {
+                throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.childfield.not.toplevel",
+                        List.of(type.getName(), type.getParentDatasetFieldType().getName())));
+            }
+        } else if (!parentType.getChildDatasetFieldTypes().contains(type)) {
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.field.not.child",
+                    List.of(type.getName(), parentType.getName())));
         }
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
@@ -1089,17 +1111,14 @@ public class JsonParser {
                     JsonObject childFieldJson = obj.getJsonObject(fieldName);
                     DatasetField f=null;
                     try {
-                        f = parseField(childFieldJson, testType, replaceData);
+                        f = parseField(childFieldJson, testType, replaceData, compoundType);
                     } catch(ControlledVocabularyException ex) {
                         vocabExceptions.add(ex);
                     }
 
                     if (f!=null) {
-                        if (!compoundType.getChildDatasetFieldTypes().contains(f.getDatasetFieldType())) {
-                            throw new JsonParseException("field " + f.getDatasetFieldType().getName() + " is not a child of " + compoundType.getName());
-                        }
                         f.setParentDatasetFieldCompoundValue(cv);
-                            fields.add(f);
+                        fields.add(f);
                     }
                 }
                 if (!fields.isEmpty()) {
@@ -1121,7 +1140,7 @@ public class JsonParser {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField f = null;
                 try {
-                    f=parseField(childFieldJson, testType, replaceData);
+                    f=parseField(childFieldJson, testType, replaceData, compoundType);
                 } catch(ControlledVocabularyException ex ) {
                     vocabExceptions.add(ex);
                 }

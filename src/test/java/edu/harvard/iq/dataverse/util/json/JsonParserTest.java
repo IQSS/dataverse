@@ -63,6 +63,7 @@ public class JsonParserTest {
     DatasetFieldType subjectType;
     DatasetFieldType pubIdType;
     DatasetFieldType compoundSingleType;
+    DatasetFieldType compoundNoRepeatsType;
     JsonParser sut;
 
     final static String guestbookJson = """
@@ -168,6 +169,16 @@ public class JsonParserTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
+
+        // a compound type that does not allow multiples, so that the single value branch of
+        // parseCompoundValue gets exercised as well
+        compoundNoRepeatsType = datasetFieldTypeSvc.add(new DatasetFieldType("series", FieldType.TEXT, false));
+        Set<DatasetFieldType> seriesChildTypes = new HashSet<>();
+        seriesChildTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("seriesName", FieldType.TEXT, false)) );
+        for ( DatasetFieldType t : seriesChildTypes ) {
+            t.setParentDatasetFieldType(compoundNoRepeatsType);
+        }
+        compoundNoRepeatsType.setChildDatasetFieldTypes(seriesChildTypes);
         settingsSvc = new MockSettingsSvc();
         DatasetType datasetType = new DatasetType();
         datasetType.setName(DatasetType.DEFAULT_DATASET_TYPE);
@@ -260,6 +271,91 @@ public class JsonParserTest {
         JsonObject obj = JsonUtil.getJsonObject(text);
 
         assertThrows(JsonParseException.class, () -> sut.parseField(obj));
+    }
+
+    @Test
+    void testChildFieldRejectedAtTopLevel() {
+        // "lat" is a child of the compound field "coordinate", so it may not be submitted
+        // on its own as if it were a top level primitive field. See #12752.
+        JsonObject obj = JsonUtil.getJsonObject("""
+                {
+                  "typeName": "lat",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "value": "42"
+                }""");
+
+        assertThrows(JsonParseException.class, () -> sut.parseField(obj));
+    }
+
+    @Test
+    void testChildFieldRejectedAtTopLevelWithoutTypeChecking() {
+        // The editMetadata APIs parse with testType=false, so typeClass and multiple are not
+        // checked at all. The child check still has to hold. See #12752.
+        JsonObject obj = JsonUtil.getJsonObject("""
+                {
+                  "typeName": "lat",
+                  "value": "42"
+                }""");
+
+        assertThrows(JsonParseException.class, () -> sut.parseField(obj, Boolean.FALSE));
+    }
+
+    @Test
+    void testChildFieldRejectedInFieldsArray() {
+        // Same as above, via the "fields" array used by editMetadata and deleteMetadata.
+        JsonObject obj = JsonUtil.getJsonObject("""
+                {
+                  "fields": [
+                    {
+                      "typeName": "lat",
+                      "value": "42"
+                    }
+                  ]
+                }""");
+
+        assertThrows(JsonParseException.class, () -> sut.parseMultipleFields(obj));
+    }
+
+    @Test
+    void testChildValidationSingleValueCompound() {
+        // "description" is not a child of "series". The branch handling compound fields that do
+        // not allow multiples used to skip this check entirely.
+        JsonObject obj = JsonUtil.getJsonObject("""
+                {
+                  "typeName": "series",
+                  "typeClass": "compound",
+                  "multiple": false,
+                  "value": {
+                    "description": {
+                      "typeName": "description",
+                      "typeClass": "primitive",
+                      "multiple": false,
+                      "value": "0"
+                    }
+                  }
+                }""");
+
+        assertThrows(JsonParseException.class, () -> sut.parseField(obj));
+    }
+
+    @Test
+    void testSingleValueCompoundRoundTrip() throws JsonParseException {
+        DatasetField expected = new DatasetField();
+        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("series") );
+        DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
+        val.setParentDatasetField(expected);
+        DatasetField seriesName = new DatasetField();
+        seriesName.setDatasetFieldType( datasetFieldTypeSvc.findByName("seriesName") );
+        seriesName.setDatasetFieldValues( Collections.singletonList(new DatasetFieldValue(seriesName, "My Series")) );
+        val.setChildDatasetFields( Collections.singletonList(seriesName) );
+        expected.setDatasetFieldCompoundValues( Collections.singletonList(val) );
+
+        JsonObject json = JsonPrinter.json(expected);
+
+        DatasetField actual = sut.parseField(json);
+
+        assertFieldsEqual(expected, actual);
     }
     
     
