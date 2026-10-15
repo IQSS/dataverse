@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MailSessionProducer;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlOriginUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.DependsOn;
 import jakarta.ejb.Singleton;
@@ -50,8 +52,31 @@ public class ConfigCheckService {
         
         // Only checks resulting in warnings, nothing critical that needs to stop deployment
         checkSystemMailSetup();
+        checkSessionAuthHardening();
     }
 
+
+    /**
+     * Startup diagnostics for session-cookie API authentication hardening.
+     */
+    void checkSessionAuthHardening() {
+        if (!FeatureFlags.API_SESSION_AUTH_HARDENING.enabled()) {
+            return;
+        }
+        if (!FeatureFlags.API_SESSION_AUTH.enabled()) {
+            logger.log(Level.WARNING, () -> "Feature flag " + FeatureFlags.API_SESSION_AUTH_HARDENING.name()
+                    + " is enabled, but " + FeatureFlags.API_SESSION_AUTH.name()
+                    + " is not. Only the Access API authenticates by session cookie in that case, so the"
+                    + " hardening covers nothing else. Enable dataverse.feature.api-session-auth as well.");
+        }
+        String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
+        if (UrlOriginUtil.toOrigin(siteUrl) == null) {
+            logger.log(Level.SEVERE, () -> "Feature flag " + FeatureFlags.API_SESSION_AUTH_HARDENING.name()
+                    + " is enabled, but the configured Dataverse site URL (" + siteUrl
+                    + ") is missing or unparseable. Session-cookie API requests carrying an Origin or"
+                    + " Referer header will be rejected with 403 until this is fixed.");
+        }
+    }
     /**
      * In this method, we check the existence and write-ability of all important directories we use during
      * normal operations. It does not include checks for the storage system. If directories are not available,
