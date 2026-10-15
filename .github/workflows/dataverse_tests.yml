@@ -186,7 +186,7 @@ jobs:
       # ---------------------------
       # START + CONFIGURE DATAVERSE
       # ---------------------------
-      # Server-side code coverage: see the "code-coverage" job below.
+      # Server-side code coverage: dumped after the tests and merged by Maven Tests' coverage job.
       - name: Attach JaCoCo agent
         uses: ./.github/actions/attach-jacoco-agent
 
