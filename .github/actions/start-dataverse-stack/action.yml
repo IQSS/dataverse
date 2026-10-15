@@ -74,7 +74,8 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        URL="http://localhost:8080/api/info/version"
+        # BASE_URL comes from the calling workflow; the default matches docker-compose-dev.yml.
+        URL="${BASE_URL:-http://localhost:8080}/api/info/version"
         MAX_ATTEMPTS=10
         SLEEP_TIME=15
         echo "Waiting for Dataverse readiness..."
@@ -135,7 +136,8 @@ runs:
           [":AllowApiTokenLookupViaApi"]="true"
           [":AllowSignUp"]="true"
         )
-        # We run curl INSIDE the container so the source IP is 127.0.0.1
+        # We run curl INSIDE the container so the source IP is 127.0.0.1, which the admin
+        # API requires. That's why this stays localhost:8080 rather than BASE_URL.
         for key in "${!settings[@]}"; do
           echo "Setting $key..."
           docker exec dev_dataverse curl --fail-with-body -sS -X PUT -d "${settings[$key]}" "http://localhost:8080/api/admin/settings/$key"
