@@ -145,7 +145,7 @@ Beginning with Dataverse Software 5.0, the way a Dataverse installation handles 
 - Files with the same checksum can be included in a dataset, even if the files are in the same directory.
 - Files with the same filename can be included in a dataset as long as the files are in different directories.
 - If a user uploads a file to a directory where a file already exists with that directory/filename combination, the Dataverse installation will adjust the file path and names by adding "-1" or "-2" as applicable. This change will be visible in the list of files being uploaded. 
-- If the directory or name of an existing or newly uploaded file is edited in such a way that would create a directory/filename combination that already exists, the Dataverse installation will display an error.
+- If the directory or name of an existing or newly uploaded file is edited in such a way that would create a directory/filename combination that already exists, or the new directory/filename exists as directory, the Dataverse installation will display an error.
 - If a user attempts to replace a file with another file that has the same checksum, an error message will be displayed and the file will not be able to be replaced.
 - If a user attempts to replace a file with a file that has the same checksum as a different file in the dataset, a warning will be displayed.
 
