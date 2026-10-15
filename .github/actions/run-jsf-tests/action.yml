@@ -1,0 +1,65 @@
+---
+name: "Run JSF Tests"
+description: "Run the JSF frontend test suite from gdcc/dataverse-jsf-tests in one browser against a running Dataverse stack, and upload its Playwright report. Expects the stack to be up (start-dataverse-stack) and the BASE_URL, DV_* and related variables to be set by the calling job."
+inputs:
+  browser:
+    description: "Browser to test with: chromium, firefox or webkit"
+    required: true
+runs:
+  using: composite
+  steps:
+
+    # ---------------------------
+    # SETUP NODE.JS + THE JSF SUITE
+    # ---------------------------
+    - name: Set up Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: "24"
+
+    - name: Checkout dataverse-jsf-tests
+      uses: actions/checkout@v7
+      with:
+        repository: gdcc/dataverse-jsf-tests
+        path: dataverse-jsf-tests
+
+    - name: Install dataverse-jsf-tests dependencies
+      shell: bash
+      run: npm ci
+      working-directory: dataverse-jsf-tests
+
+    - name: Install Playwright browser
+      shell: bash
+      run: npx playwright install --with-deps ${{ inputs.browser }}
+      working-directory: dataverse-jsf-tests
+
+    # ---------------------------
+    # RUN PLAYWRIGHT FRONTEND TESTS
+    # ---------------------------
+    # --no-deps runs a single browser. Without dependencies the setup -> tests ordering
+    # is no longer guaranteed, so authentication runs first as its own invocation. It
+    # reports to the console only, so it doesn't overwrite the HTML report of the test run.
+    - name: Authenticate (${{ inputs.browser }})
+      shell: bash
+      run: |
+        npx playwright test --no-deps --reporter=list \
+          --project=setup-${{ inputs.browser }}
+      working-directory: dataverse-jsf-tests
+
+    - name: Run Playwright frontend tests (${{ inputs.browser }})
+      shell: bash
+      run: |
+        npx playwright test --no-deps \
+          --project=${{ inputs.browser }}
+      working-directory: dataverse-jsf-tests
+
+    # ---------------------------
+    # UPLOAD PLAYWRIGHT REPORT
+    # ---------------------------
+    - name: Upload Playwright report
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: playwright-report-${{ inputs.browser }}
+        path: dataverse-jsf-tests/playwright-report/
+        retention-days: 14
