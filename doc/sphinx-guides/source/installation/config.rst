@@ -1481,8 +1481,13 @@ Reported Working S3-Compatible Storage
 ######################################
 
 `Ceph Object Gateway <https://docs.ceph.com/en/reef/radosgw/#ceph-object-gateway>`_ (added July 2026/Dataverse v6.12)
-Set ``dataverse.files.<id>.disable-multipart-download-for-indirect-download=true`` if not using direct download. 
+Set ``dataverse.files.<id>.disable-multipart-download-for-indirect-download=true`` if not using direct download.
 (This forces the S3 server to handle part reassembly and avoid incompatible headers that cause `412` errors from the Ceph Gateway.)
+
+`BackBlaze B2 <https://www.backblaze.com/cloud-storage>`_
+  (As of 2026-06-11)
+  Set ``dataverse.files.<id>.disable-tagging=true``, as B2 does not support tagging (and will fail without this setting).
+  Tested with ``.path-style-access=true``, ``.download-redirect=true``, and ``.upload-redirect=true``.
 
 `StorJ Object Store <https://www.storj.io>`_
  StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configuration to use a StorJ object store: ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
