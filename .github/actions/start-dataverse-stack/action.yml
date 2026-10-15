@@ -1,6 +1,6 @@
 ---
 name: "Start Dataverse Stack"
-description: "Load the container images and exploded WAR built by the build job, start the Dataverse stack and configure it for testing."
+description: "Load the container images and exploded WAR built by the build job, start the Dataverse stack and configure it for testing. Expects Java and Maven to be set up by the calling job (setup-maven)."
 inputs:
   build-artifact:
     description: "Name of the artifact holding the saved images and the exploded WAR"
@@ -20,15 +20,9 @@ runs:
         docker version
 
     # ---------------------------
-    # SETUP JAVA + MAVEN
+    # VERIFY JAVA + MAVEN
     # ---------------------------
-    - name: Setup Java
-      uses: actions/setup-java@v6.0.1
-      with:
-        distribution: "temurin"
-        java-version: "21"
-        cache: "maven"
-
+    # Java and Maven come from the calling job (IQSS/dataverse/.github/actions/setup-maven).
     - name: Verify Maven
       shell: bash
       run: |

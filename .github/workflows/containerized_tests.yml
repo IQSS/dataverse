@@ -185,10 +185,10 @@ jobs:
     steps:
 
       # ---------------------------
-      # CHECKOUT
+      # CHECKOUT + SETUP JAVA + MAVEN
       # ---------------------------
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
 
       # ---------------------------
       # START + CONFIGURE DATAVERSE
