@@ -67,6 +67,12 @@ public class SystemConfig {
     public static final String DEFAULT_KEY = "default";
 
     /**
+     * A JVM option to override the number of minutes for which a signed external tool callback
+     * url is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
+     */
+    private static final String SIGNED_EXTERNAL_TOOL_CALLBACK_URL_TIMEOUT_IN_MINUTES = "dataverse.api.signing.external-tool-callback-timeout-in-minutes";
+
+    /**
      * The default number of datafiles that we allow to be created through 
      * zip file upload.
      */
@@ -226,7 +232,30 @@ public class SystemConfig {
         }
         return reasonableDefault;
     }
-    
+
+    /**
+     * The number of minutes for which a signed external tool callback url is valid . Can be
+     * overridden by {@link #SIGNED_EXTERNAL_TOOL_CALLBACK_URL_TIMEOUT_IN_MINUTES}.
+     */
+    public static int getMinutesUntilSignedExternalToolCallbackExpires() {
+        final int reasonableDefault = 10;
+        String configuredValueAsString = System.getProperty(SIGNED_EXTERNAL_TOOL_CALLBACK_URL_TIMEOUT_IN_MINUTES);
+        if (configuredValueAsString != null) {
+            int configuredValueAsInteger = 0;
+            try {
+                configuredValueAsInteger = Integer.parseInt(configuredValueAsString);
+                if (configuredValueAsInteger > 0) {
+                    return configuredValueAsInteger;
+                } else {
+                    logger.info(SIGNED_EXTERNAL_TOOL_CALLBACK_URL_TIMEOUT_IN_MINUTES + " is configured as a negative number \"" + configuredValueAsInteger + "\". Using default value instead: " + reasonableDefault);
+                    return reasonableDefault;
+                }
+            } catch (NumberFormatException ex) {
+                logger.info("Unable to convert " + SIGNED_EXTERNAL_TOOL_CALLBACK_URL_TIMEOUT_IN_MINUTES + " from \"" + configuredValueAsString + "\" into an integer value: " + ex + ". Using default value " + reasonableDefault);
+            }
+        }
+        return reasonableDefault;
+    }
     /**
      * Lookup (or construct) the designated URL of this instance from configuration.
      *
