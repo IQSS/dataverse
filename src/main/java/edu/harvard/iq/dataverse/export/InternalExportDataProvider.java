@@ -9,7 +9,6 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
@@ -122,7 +121,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
         // going through the normal Export framework? (it may be, if it needs
         // to be version-specific - ?)
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
-                dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+                dv.getDataset().getGlobalId().asString(), dv.getDataset());
     }
 
     @Override

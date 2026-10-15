@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
@@ -209,9 +208,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     }
     
     public String getDataCiteXml(DatasetVersion dv) {
-        DataCitation dc = new DataCitation(dv);
-        Map<String, String> metadata = dc.getDataCiteMetadata();
-        return DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), metadata,
+        return DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(),
                 dv.getDataset());
     }
 
