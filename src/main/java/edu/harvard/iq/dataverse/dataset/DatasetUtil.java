@@ -110,6 +110,47 @@ public class DatasetUtil {
     }
 
     /**
+     * Returns thumbnail candidates as lazy DatasetThumbnail objects that hold
+     * only DataFile references. Base64 images are generated on-demand when
+     * getBase64image() is called, deferring expensive storage I/O until the
+     * thumbnail is actually displayed.
+     *
+     * @param dataset the dataset to find thumbnail candidates for
+     * @return list of lazy DatasetThumbnail objects (base64 not pre-computed)
+     */
+    public static List<DatasetThumbnail> getLazyThumbnailCandidates(Dataset dataset) {
+        List<DatasetThumbnail> thumbnails = new ArrayList<>();
+        if (dataset == null) {
+            return thumbnails;
+        }
+        // Use database-level filtering to get only thumbnail-candidate files (images, PDFs)
+        // instead of iterating through all files in the dataset.
+        // Fall back to iterating all files if CDI is not available (e.g., unit tests).
+        List<FileMetadata> candidateFileMetadatas;
+        try {
+            DataFileServiceBean dataFileService = CDI.current().select(DataFileServiceBean.class).get();
+            candidateFileMetadatas = dataFileService.findThumbnailCandidateFileMetadatasByDatasetVersionId(dataset.getLatestVersion().getId());
+        } catch (IllegalStateException ex) {
+            // CDI not available (e.g., unit tests) - fall back to iterating all files
+            candidateFileMetadatas = dataset.getLatestVersion().getFileMetadatas();
+        }
+        for (FileMetadata fileMetadata : candidateFileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+
+            if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
+                    && !dataFile.isRestricted()
+                    && !FileUtil.isActivelyEmbargoed(dataFile)
+                    && ImageThumbConverter.isThumbnailAvailable(dataFile)
+                    ) {
+                // Create lazy thumbnail — base64 will be generated on first access
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(dataFile);
+                thumbnails.add(datasetThumbnail);
+            }
+        }
+        return thumbnails;
+    }
+
+    /**
      * Note "datasetVersionId" can be null. If needed, it helps the "efficiency"
      * of "attemptToAutomaticallySelectThumbnailFromDataFiles"
      *

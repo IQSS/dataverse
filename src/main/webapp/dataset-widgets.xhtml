@@ -159,7 +159,8 @@
                         </button>
                     </div> 
                 </p:dialog>
-                <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true">
+                <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true" dynamic="true">
+                    <p:ajax event="dialogShow" listener="#{DatasetWidgetsPage.loadThumbnails}" update="customPanel"/>
                     <div class="form-horizontal col-sm-12">
                         <div class="form-group">
                             <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>

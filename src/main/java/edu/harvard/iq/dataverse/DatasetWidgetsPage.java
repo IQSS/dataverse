@@ -74,7 +74,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetVersionCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+        // Use lazy thumbnail candidates to defer expensive base64 generation
+        // until the thumbnail selection dialog is actually opened.
+        datasetThumbnails = DatasetUtil.getLazyThumbnailCandidates(dataset);
         datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();
@@ -119,6 +121,21 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public void setDatasetFileThumbnailToSwitchTo(DataFile datasetFileThumbnailToSwitchTo) {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
+    }
+
+    /**
+     * Called via AJAX when the thumbnail selection dialog opens.
+     * Triggers lazy loading of base64 thumbnails for all candidates.
+     * This defers expensive storage I/O from page load to dialog open time.
+     */
+    public void loadThumbnails() {
+        // Accessing getBase64image() on each lazy thumbnail triggers
+        // the on-demand base64 generation in DatasetThumbnail.
+        if (datasetThumbnails != null) {
+            for (DatasetThumbnail thumb : datasetThumbnails) {
+                thumb.getBase64image();
+            }
+        }
     }
 
     public void setDataFileAsThumbnail() {
