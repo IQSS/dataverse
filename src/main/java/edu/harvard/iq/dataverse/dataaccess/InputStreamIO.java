@@ -13,6 +13,7 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -161,7 +162,7 @@ public class InputStreamIO extends StorageIO<DataFile> {
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+    public List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: tthis method is not supported in this DataAccess driver.");
     }
 
