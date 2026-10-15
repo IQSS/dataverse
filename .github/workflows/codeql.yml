@@ -41,6 +41,10 @@ jobs:
 
     strategy:
       fail-fast: false
+      # One language at a time, in the order listed below: each push takes one runner
+      # instead of four from the organization's shared concurrency limit. Each language
+      # is still its own job, and fail-fast: false keeps one failure from stopping the rest.
+      max-parallel: 1
       matrix:
         include:
         - language: actions
