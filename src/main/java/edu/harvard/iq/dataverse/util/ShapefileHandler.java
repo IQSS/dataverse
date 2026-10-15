@@ -302,20 +302,15 @@ public class ShapefileHandler{
 
 
         try {
+            Path targetRoot = target_directory.toPath().toRealPath();
             for(var origEntry : Collections.list(zipfileInput.entries())){
                 
                 String zentryFileName = origEntry.getName();
                 logger.fine("\nOriginal entry name: " + origEntry);
 
-                // validate zip entry:
-                try {
-                    File targetFile = new File(target_directory, zentryFileName);
-                    if (!targetFile.getCanonicalPath().startsWith(canonicalTargetDir)) {
-                        logger.warning("Skipping invalid zip entry: " + zentryFileName);
-                        continue;
-                    }
-                } catch (IOException e) {
-                    logger.warning("Failed to get canonical path for zip entry: " + zentryFileName);
+                Path outputPath = targetRoot.resolve(zentryFileName).normalize();
+                if (!outputPath.startsWith(targetRoot)) {
+                    logger.warning("Skipping invalid zip entry: " + zentryFileName);
                     continue;
                 }
                 
@@ -326,37 +321,19 @@ public class ShapefileHandler{
                 
                 // Create sub directory, if needed
                 if (origEntry.isDirectory()) {
-                    //logger.info("Subdirectory found!");
                     logger.fine("Skip directory");
-                    String dirpath = target_directory.getAbsolutePath() + "/" + zentryFileName;
-                    createDirectory(dirpath);
+                    Files.createDirectories(outputPath);
                     continue;           // Continue to next Entry
                 }
                 logger.fine("file found!");
                 
-                // Write the file
                 String unzipFileName = this.getFileBasename(zentryFileName);
-                String unzipFolderName = this.getFolderName(zentryFileName);
-                
-                String unzipFilePath = unzipFileName; 
-                if (unzipFolderName != null) {
-                    unzipFilePath = unzipFolderName + "/" + unzipFileName;
-                    
-                    // There's a chance we haven't created this folder yet 
-                    // in the destination directory (this happens if the folder 
-                    // is not explicitly listed in the Zip archive directory). 
-                    String dirpath = target_directory.getAbsolutePath() + "/" + unzipFolderName;
-                    // (and if it already exists, it'll be skipped)
-                    createDirectory(dirpath);
-                }
-                
                 if (unzipFileName==null){
                     logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
                     continue;
                 }
                 
-                //String outpath = target_directory.getAbsolutePath() + "/" + unzipFileName;
-                String outpath = target_directory.getAbsolutePath() + "/" + unzipFilePath;
+                String outpath = outputPath.toString();
                 if (unzippedFileNames.contains(outpath)){
                    logger.info("Potential name collision.  Avoiding duplicate files in 'collapsed' zip directories. Skipping file: " + zentryFileName);
                    continue;
@@ -365,8 +342,8 @@ public class ShapefileHandler{
                 }
                 logger.fine("Write zip file: " + outpath);
                 try(var inputStream = zipfileInput.getInputStream(origEntry)) {
-                    Files.createDirectories(new File(outpath).getParentFile().toPath());
-                    Files.copy(inputStream, Path.of(outpath), StandardCopyOption.REPLACE_EXISTING);
+                    Files.createDirectories(outputPath.getParent());
+                    Files.copy(inputStream, outputPath, StandardCopyOption.REPLACE_EXISTING);
                 }
             } // end outer while
         } catch (IOException ex) {
