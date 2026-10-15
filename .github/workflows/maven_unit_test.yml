@@ -30,7 +30,6 @@ on:
             - ".github/actions/start-dataverse-stack/**"
             - ".github/actions/run-jsf-tests/**"
             - ".github/actions/collect-docker-logs/**"
-            - ".github/actions/attach-jacoco-agent/**"
     pull_request:
         paths: *test-paths
 
