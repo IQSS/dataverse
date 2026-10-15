@@ -332,6 +332,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * (image/*, application/pdf, or geospatial tabular data) in a given dataset version.
      * This query filters at the database level using the indexed contentType column,
      * avoiding the need to load and iterate through all files in the dataset.
+     * Excludes restricted files and files where thumbnail generation has previously failed (previewImageFail = true).
      *
      * @param datasetVersionId the ID of the dataset version to search
      * @return list of FileMetadata entries for thumbnail-candidate files
@@ -343,7 +344,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                 "OR LOWER(fm.dataFile.contentType) = 'application/pdf' " +
                 "OR LOWER(fm.dataFile.contentType) = 'application/zipped-shapefile') " +
                 "AND fm.dataFile.restricted = false " +
-                "AND fm.dataFile.harvested = false";
+                "AND fm.dataFile.harvested = false " +
+                "AND (fm.dataFile.previewImageFail IS NULL OR fm.dataFile.previewImageFail = false)";
         return em.createQuery(jpql, FileMetadata.class)
                 .setParameter("datasetVersionId", datasetVersionId)
                 .getResultList();
