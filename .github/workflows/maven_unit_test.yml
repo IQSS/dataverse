@@ -131,6 +131,21 @@ jobs:
                   path: java-reportdir.tar
                   retention-days: 3
 
+    # API and JSF tests against the running app, built from the unit-test job's classes so their
+    # server-side coverage matches. Runs alongside the integration tests. On pushes, only for develop:
+    # Maven Tests also runs on every other branch push, where these suites would be too costly.
+    dataverse-tests:
+        name: Dataverse Tests
+        needs: unittest
+        if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/develop' }}
+        permissions:
+            contents: read
+            checks: write
+            pull-requests: write
+        uses: ./.github/workflows/dataverse_tests.yml
+        with:
+            use-maven-build: true
+
     coverage-report:
         runs-on: ubuntu-latest
         needs: integration-test
