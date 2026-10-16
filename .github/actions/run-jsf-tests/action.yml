@@ -60,16 +60,3 @@ runs:
           dataverse-jsf-tests/target/failsafe-reports/${{ inputs.browser }}/
           dataverse-jsf-tests/target/playwright/
         retention-days: 14
-
-    # ---------------------------
-    # PUBLISH TEST DASHBOARD IN GITHUB PR
-    # ---------------------------
-    # One check and PR comment per browser, next to the API job's "API Test Results".
-    # Needs checks: write and pull-requests: write on the calling job.
-    - name: Publish JSF Test Results Dashboard (${{ inputs.browser }})
-      if: always()
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      with:
-        check_name: JSF Test Results (${{ inputs.browser }})
-        files: |
-          dataverse-jsf-tests/target/failsafe-reports/${{ inputs.browser }}/TEST-*.xml
