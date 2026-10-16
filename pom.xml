@@ -147,17 +147,40 @@
                             <summaryFile>${jsf.reports}/webkit/failsafe-summary.xml</summaryFile>
                         </configuration>
                     </execution>
+                    <!--
+                        One verify per browser, skipped together with that browser's run, so
+                        -Ddataverse.test.jsf.browser=<name> only checks the summary it wrote.
+                        All integration-test executions finish before the verify phase, so a
+                        full run still tests every browser before failing on any of them.
+                    -->
                     <execution>
-                        <id>verify</id>
+                        <id>verify-chromium</id>
                         <goals>
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <summaryFiles>
-                                <summaryFile>${jsf.reports}/chromium/failsafe-summary.xml</summaryFile>
-                                <summaryFile>${jsf.reports}/firefox/failsafe-summary.xml</summaryFile>
-                                <summaryFile>${jsf.reports}/webkit/failsafe-summary.xml</summaryFile>
-                            </summaryFiles>
+                            <skipITs>${skip.chromium}</skipITs>
+                            <summaryFile>${jsf.reports}/chromium/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify-firefox</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.firefox}</skipITs>
+                            <summaryFile>${jsf.reports}/firefox/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify-webkit</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.webkit}</skipITs>
+                            <summaryFile>${jsf.reports}/webkit/failsafe-summary.xml</summaryFile>
                         </configuration>
                     </execution>
                 </executions>
