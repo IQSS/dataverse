@@ -306,11 +306,17 @@ public class DatasetField implements Serializable {
 
         String value = String.join(", ", displayValues);
         
-        return format.trim()
+        format = format.trim()
                 // Titles can be null in tests, shouldn't be otherwise
                .replace("#NAME", datasetFieldType.getTitle() == null ? "" : datasetFieldType.getTitle())
                 // Replace #VALUE last to not replace any "#NAME" in the value text
                .replace("#VALUE", value);
+        if(format.equals("#EMAIL")) {
+            format = format.replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"));
+        } else if(format.contains("#EMAIL")) {
+            format = format.replace("#EMAIL", value).replace("@", ":[at]").replace(".", "[dot]");
+        }
+        return format;
     }
 
     private String getSanitizedDisplayValue(String value) {
