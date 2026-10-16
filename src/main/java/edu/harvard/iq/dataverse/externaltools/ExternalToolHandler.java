@@ -114,7 +114,7 @@ public class ExternalToolHandler extends URLTokenUtil {
                     }
                 }
                 if (apiToken != null) {
-                    Integer timeout = SystemConfig.getMinutesUntilSignedExternalToolCallbackExpires();
+                    Integer timeout = params.containsKey("timeout") ? params.getInt("timeout") : 10;
                     callback = UrlSignerUtil.signUrl(callback, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
                             HttpMethod.GET, signingSecretService().getSigningKey(apiToken.getTokenString()));
                 }

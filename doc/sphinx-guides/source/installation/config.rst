@@ -3381,14 +3381,6 @@ the same key.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNING_SECRET`` (although you shouldn't use environment variables for passwords) .
 
-.. _dataverse.api.signing.external-tool-callback-timeout-in-minutes:
-
-dataverse.api.signing.external-tool-callback-timeout-in-minutes
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-Specifies how long a signed url for External Tools will be valid. When previewing larger files that require a guestbook response a longer timeout may be necessary.
-The default expiration is 10 minutes.
-
 .. _dataverse.api.allow-incomplete-metadata:
 
 dataverse.api.allow-incomplete-metadata
