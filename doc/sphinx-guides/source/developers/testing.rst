@@ -462,7 +462,7 @@ GitHub Actions jobs can be found in ``.github/workflows``.
 The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Dataverse Tests" workflow (``dataverse_tests.yml``), which the "Maven Tests" workflow (``maven_unit_test.yml``) runs after its unit tests. It builds the Dataverse containers once in a "Build Containers" job, from the classes the unit-test job compiled, and hands them to the test jobs, each of which starts its own fresh Dataverse installation:
 
 - "Dataverse API Tests" runs the API tests listed in :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>`.
-- "Dataverse JSF Tests (Chromium)" runs the JSF frontend tests in Chromium, at the same time as the API tests.
+- "Dataverse JSF Tests (Chromium)" runs the JSF frontend tests (``modules/dataverse-jsf-tests``) in Chromium, at the same time as the API tests.
 - "Dataverse JSF Tests (Firefox)" and "Dataverse JSF Tests (WebKit)" start when the Chromium job has finished, whatever its result, and run in parallel.
 
 This way at most three test jobs run at once. Each job uploads its own test reports and container logs as artifacts, and the results are summarized on the pull request: "API Test Results" for the API tests, and "JSF Test Results" for all three browsers together.
@@ -554,9 +554,26 @@ Browser-Based Testing
 Browser-Based Testing of JSF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The JSF frontend is being tested with Playwright via a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526). The suite is written in Java, with Playwright for Java and JUnit 5, and lives in that repository's ``java`` branch. Each browser runs in its own job of the "Dataverse Tests" workflow described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782), which runs ``mvn verify -Ddataverse.test.jsf.browser=<browser>`` in a checkout of the suite.
+The JSF frontend is tested with Playwright, using the suite in ``modules/dataverse-jsf-tests``: Java, with Playwright for Java and JUnit 5. It was developed in https://github.com/gdcc/dataverse-jsf-tests and moved here with its history (see https://github.com/IQSS/dataverse/issues/12797). It is a standalone Maven project that the main build doesn't include, so its tests only run when you ask for them. In CI, each browser runs in its own job of the "Dataverse Tests" workflow described under `Continuous Integration`_.
 
-To run the suite yourself, you need Java and Maven, but no Node.js. See the README of the ``java`` branch for the settings it reads, such as ``BASE_URL``.
+To run the suite yourself, you need Java and Maven, but no Node.js. From the root of your clone:
+
+.. code-block:: bash
+
+  mvn -f modules/dataverse-jsf-tests verify                                     # Chromium, then Firefox, then WebKit
+  mvn -f modules/dataverse-jsf-tests verify -Ddataverse.test.jsf.browser=firefox  # one browser
+
+The suite downloads each browser the first time it needs it. The installation to test and the account to log in with are set with ``BASE_URL``, ``DV_USERNAME``, ``DV_PASSWORD`` and a few other settings; see the README in ``modules/dataverse-jsf-tests`` for the full list.
+
+The tests only talk to Dataverse over HTTP, so they don't have to run on the server they test. Run them from a machine Playwright supports (Ubuntu or Debian Linux, macOS or Windows) and point ``BASE_URL`` at the installation, for example:
+
+.. code-block:: bash
+
+  mvn -f modules/dataverse-jsf-tests verify -Ddataverse.test.baseurl=https://dataverse.example.edu
+
+This is also how to test an installation on a platform Playwright doesn't support, such as Red Hat Enterprise Linux, where its browsers (WebKit in particular) often don't start.
+
+.. warning:: Don't point the suite at a production installation. It logs in as the configured user, creates collections and datasets, and publishes them. On a production installation that registers real, permanent persistent identifiers, and the test data shows up in search, harvesting and metrics. Use a staging or test installation instead, ideally one with a test PID provider.
 
 Browser-Based Testing of the SPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
