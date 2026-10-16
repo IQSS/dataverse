@@ -4,7 +4,7 @@ Date: "October 2026"
 
 # 01. Authentication Adapters
 
-The suite supports multiple authentication flows via **login adapters**. The active adapter is selected by setting `LOGIN_ADAPTER` in `.env` — no source code changes required.
+The suite supports multiple authentication flows via **login adapters**. The active adapter is selected with the `dataverse.test.jsf.loginadapter` system property or the `LOGIN_ADAPTER` environment variable — no source code changes required. (Every setting in this document works both ways; see the [developer guide, Section 5](03_developer_guide.md#5-configuration-reference).)
 
 ---
 
@@ -45,13 +45,13 @@ The suite supports multiple authentication flows via **login adapters**. The act
 
 `INCOMMON_INSTITUTION_SEARCH` and `INCOMMON_INSTITUTION_LINK` are required when using this adapter.
 
-The IdP login-page step is shared by both single-sign-on adapters ([`lib/login-adapters/idp-credentials.ts`](../lib/login-adapters/idp-credentials.ts)). It expects the standard Shibboleth IdP form fields `#username` and `#password`; if your IdP's form differs, that is the one file to adapt.
+The IdP login-page step is shared by both single-sign-on adapters ([`IdpCredentials`](../src/test/java/edu/harvard/iq/dataverse/jsf/support/login/IdpCredentials.java)). It expects the standard Shibboleth IdP form fields `#username` and `#password`; if your IdP's form differs, that is the one file to adapt.
 
 ---
 
 ## Duo MFA Challenge
 
-Both single-sign-on flows may encounter a Duo 2FA challenge after password submission. The shared [`lib/login-adapters/duo-mfa.ts`](../lib/login-adapters/duo-mfa.ts) helper handles both branches automatically:
+Both single-sign-on flows may encounter a Duo 2FA challenge after password submission. The shared [`DuoMfa`](../src/test/java/edu/harvard/iq/dataverse/jsf/support/login/DuoMfa.java) helper handles both branches automatically:
 
 - **(A) "Yes, trust this browser" button appears** — click it and wait for redirect back to Dataverse
 - **(B) Device already trusted** — Duo auto-redirects, nothing to do
@@ -70,13 +70,13 @@ Because the test suite always re-injects saved cookies before checking whether l
 
 ## Auth State Persistence
 
-The auth setup step ([`tests/auth.setup.ts`](../tests/auth.setup.ts)) stores session cookies in a per-endpoint, per-browser file:
+The auth setup step ([`AuthSetup`](../src/test/java/edu/harvard/iq/dataverse/jsf/support/AuthSetup.java)), which runs once per browser before that browser's first test, stores session state in a per-endpoint, per-browser file:
 
 ```
 playwright/.auth/<endpoint-slug>-<browser>.json
 ```
 
-The slug is derived from `BASE_URL` by stripping the scheme and replacing non-alphanumeric characters with dashes:
+The slug is derived from the base URL by stripping the scheme and replacing non-alphanumeric characters with dashes:
 
 ```
 https://dataverse.example.edu
@@ -84,7 +84,7 @@ https://dataverse.example.edu
 ```
 
 **Before each run** the setup step:
-1. Loads the saved cookies (if the file exists) into the browser context
+1. Loads the saved session (if the file exists) into the browser context
 2. Navigates to the homepage
 3. Checks whether `DV_FULL_NAME` is visible inside the navbar user display element
 4. If visible → session is live, authentication skipped
@@ -96,12 +96,12 @@ This means a Duo push only needs to be approved once per valid cookie window.
 
 ## Credentials
 
-Credentials are supplied via `.env` (gitignored, never committed):
+Credentials are supplied as environment variables (or the matching `-Ddataverse.test.jsf.username` / `.password` / `.fullname` system properties) — never in a committed file:
 
-```dotenv
-DV_USERNAME=your-username
-DV_PASSWORD=your-password
-DV_FULL_NAME=Your Full Name
+```bash
+export DV_USERNAME=your-username
+export DV_PASSWORD=your-password
+export DV_FULL_NAME="Your Full Name"
 ```
 
 - `DV_USERNAME` / `DV_PASSWORD` — credentials for the target Dataverse instance via the configured adapter
@@ -115,5 +115,5 @@ Delete the endpoint's auth files and re-run:
 
 ```bash
 rm -f playwright/.auth/dataverse-example-edu-*.json
-npx playwright test
+mvn verify
 ```
