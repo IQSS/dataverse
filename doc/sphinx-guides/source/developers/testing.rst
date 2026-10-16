@@ -465,7 +465,7 @@ The API tests and the browser-based tests of the JSF frontend run against a live
 - "Dataverse JSF Tests (Chromium)" runs the JSF frontend tests in Chromium, at the same time as the API tests.
 - "Dataverse JSF Tests (Firefox)" and "Dataverse JSF Tests (WebKit)" start when the Chromium job has finished, whatever its result, and run in parallel.
 
-This way at most three test jobs run at once, and the suites finish at about the same time. Each job uploads its own test reports and container logs as artifacts.
+This way at most three test jobs run at once. Each job uploads its own test reports and container logs as artifacts, and posts a summary of its test results to the pull request: "API Test Results" and "JSF Test Results (<browser>)".
 
 Each test job also records which server code its tests exercised, with a JaCoCo agent in the app container. Maven Tests' "Coverage Report Submission" job merges that with the unit and integration test coverage, using the JaCoCo executions in ``pom.xml``, and sends the result to Coveralls and SonarCloud.
 
