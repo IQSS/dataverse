@@ -4,10 +4,10 @@ Date: "October 2026"
 
 # What are these data files?
 
-Everything a test uploads lives in [`tests/test-data/`](../tests/test-data/).
+Everything a test uploads lives in [`src/test/resources/jsf/`](../src/test/resources/jsf/).
 Tests never reference these by a relative path — use the named paths in
-[`lib/test-data.ts`](../lib/test-data.ts) (`files.sampleText`,
-`images.logo`, …), and add a new entry there when you add a file here.
+[`TestData`](../src/test/java/edu/harvard/iq/dataverse/jsf/support/TestData.java) (`TestData.SAMPLE_TEXT`,
+`TestData.LOGO_IMAGE`, …), and add a new constant there when you add a file here.
 
 The content of the files is dummy data; it only matters that they are
 non-empty and of the right format.
