@@ -14,7 +14,7 @@ For what each individual test *does*, see
 The suite is Java 21 + JUnit 5 + [Playwright for Java](https://playwright.dev/java/),
 built with Maven. It follows the conventions of
 [`IQSS/dataverse`](https://github.com/IQSS/dataverse) so it can be moved into
-that repository later — see [Section 7](#7-folding-into-iqssdataverse).
+that repository. It lives there at `modules/dataverse-jsf-tests` — see [Section 7](#7-history).
 
 ---
 
@@ -31,9 +31,16 @@ that repository later — see [Section 7](#7-folding-into-iqssdataverse).
 ### Setup
 
 ```bash
-git clone <url-of-this-repository> dataverse-jsf-tests
-cd dataverse-jsf-tests   # the folder containing pom.xml
+git clone https://github.com/IQSS/dataverse.git
+cd dataverse/modules/dataverse-jsf-tests   # the folder containing this suite's pom.xml
 ```
+
+The commands in this guide run from that folder. From the repository root instead,
+add `-f modules/dataverse-jsf-tests` to each Maven command, e.g.
+`mvn -f modules/dataverse-jsf-tests verify`.
+
+The main Dataverse build doesn't include this module, so `mvn install` at the
+root never starts a browser; the suite runs only when you ask for it.
 
 On a fresh Linux machine (including most CI images) the browsers also need
 OS-level libraries (the browsers themselves are downloaded by the suite, on demand):
@@ -388,35 +395,26 @@ each adapter drives, and how Duo 2FA and session persistence work.
 
 ---
 
-## 6. Where This Suite Actually Fits: Repo Lineage and CI/CD
+## 6. Where This Suite Fits: CI/CD
 
-**There is no GitHub Actions workflow (or any other CI system) in *this*
-repository that runs the suite.** `.github/workflows/` does not exist here,
-and nothing here is published as a package — it's distributed by cloning it
-directly (Section 1 above).
+The suite runs in IQSS/dataverse's **"Dataverse Tests"** workflow
+(`.github/workflows/dataverse_tests.yml`), which the **"Maven Tests"** workflow
+(`.github/workflows/maven_unit_test.yml`) runs on pull requests and on pushes to
+`develop`. In order, it:
 
-### Repo lineage
-
-| Repo | Role |
-|---|---|
-| [`gdcc/dataverse-jsf-tests`](https://github.com/gdcc/dataverse-jsf-tests) (this repository) | The test suite, maintained by the Global Dataverse Community Consortium. |
-| [`IQSS/dataverse`](https://github.com/IQSS/dataverse) | The Dataverse application itself. Its own CI checks out this suite and runs it against a freshly-built copy of the application, on every push/PR to `develop`/`master`. |
-
-**Practical implication:** a change here is exercised by IQSS's CI on the
-next push or PR to `IQSS/dataverse` after it lands on `main`.
-
-### The actual CI/CD workflow
-
-Lives in the **`IQSS/dataverse`** repo (not here) at
-**`.github/workflows/dataverse_jsf_tests.yml`**. It triggers on
-`workflow_dispatch`, and on push/PR to `develop` or `master` (ignoring
-doc-only changes). In order, it:
-
-1. Builds Dataverse itself from source via Maven (`mvn -Pct package`, using/building the `container-base` image)
-2. Starts the full stack with `mvn -Pct docker:start` — the Dataverse/Payara app container (`dev_dataverse`), Postgres, Solr, and a LocalStack S3 stand-in
-3. Polls `http://localhost:8080/api/info/version` until the API reports ready
-4. Configures the fresh instance via the admin settings API: `:BuiltinUsersKey=burrito`, `:ProvCollectionEnabled=true`, `:AllowApiTokenLookupViaApi=true`, `:AllowSignUp=true`
-5. Checks out **`gdcc/dataverse-jsf-tests`** into a subdirectory and runs the suite against that freshly-built instance with this environment — a known-good reference config, useful if you want to point this suite at your own local Docker-based Dataverse the same way CI does:
+1. Builds the Dataverse container images once (`Build Containers`), from the classes
+   Maven Tests compiled, and hands them to the test jobs.
+2. In each test job, starts a fresh stack with `mvn -Pct docker:start` — the
+   Dataverse/Payara app container (`dev_dataverse`), Postgres, Solr, Keycloak and a
+   LocalStack S3 stand-in — and waits until `/api/info/version` reports ready.
+3. Configures the instance via the admin settings API: `:BuiltinUsersKey=burrito`,
+   `:ProvCollectionEnabled=true`, `:AllowApiTokenLookupViaApi=true`, `:AllowSignUp=true`.
+4. Runs this suite, one browser per job: **Chromium** first (alongside the API tests),
+   then **Firefox** and **WebKit** in parallel. Each job installs its browser's OS
+   libraries and runs
+   `mvn -f modules/dataverse-jsf-tests verify -Ddataverse.test.jsf.browser=<browser>`
+   with this environment — a known-good reference config, useful if you want to
+   point this suite at your own local Docker-based Dataverse the same way CI does:
 
    ```bash
    export BASE_URL=http://localhost:8080
@@ -429,40 +427,31 @@ doc-only changes). In order, it:
 
    `/dataverse/root` is the vanilla Dataverse Docker image's top-level
    collection — and this suite's default.
-6. On every run (pass or fail), uploads the test report and every
-   container's Docker logs as workflow artifacts — check those first when a
-   CI run fails and you can't reproduce it locally.
+5. Summarizes the results of all three browsers as **"JSF Test Results"** (each test
+   once, with a run per browser), and uploads per browser, pass or fail, the
+   `jsf-test-results-<browser>` artifact (`target/failsafe-reports/<browser>/` and
+   `target/playwright/`: a trace, video and final screenshot per test) and every
+   container's Docker logs — check those first when a CI run fails and you can't
+   reproduce it locally.
 
-> **Note:** at the time of writing, that workflow still runs the earlier
-> TypeScript version of this suite (`npm ci`, `npx playwright install
-> --with-deps`, `npx playwright test`) with Node.js. Running this Java suite
-> instead means replacing those steps with the `install-deps` command
-> from Section 1 and `mvn verify` in the checkout (Java 21 is already set up
-> by that workflow), and uploading `target/failsafe-reports/` and
-> `target/playwright/` instead of `playwright-report/`.
+A change to this suite is therefore tested by the same pull request that makes it.
 
 ---
 
-## 7. Folding into IQSS/dataverse
+## 7. History
 
-The layout matches IQSS/dataverse's, so moving the suite there is a copy:
+The suite was developed in
+[`gdcc/dataverse-jsf-tests`](https://github.com/gdcc/dataverse-jsf-tests) — first in
+TypeScript, then ported to Java in its `java` branch — and moved into IQSS/dataverse
+with its history (`git subtree add`). A plain `git log` or `git blame` in this folder
+shows only the commit that added it. The original commits are behind that commit's
+second parent, with the paths they had in the original repository:
 
-1. Copy `src/test/java/edu/harvard/iq/dataverse/jsf/` and
-   `src/test/resources/jsf/` to the same paths in IQSS/dataverse.
-2. Add the `com.microsoft.playwright:playwright` test dependency to its
-   `pom.xml` (JUnit 5 and Hamcrest are already there, at the versions this
-   repo uses).
-3. Run one browser per command, the way the API tests are run:
-   `mvn test -Dtest='edu.harvard.iq.dataverse.jsf.**.*JT' -Ddataverse.test.jsf.browser=firefox`
-   (the browser defaults to `chromium`). These `*JT` classes don't run by
-   accident: Surefire only runs `*Test`/`Test*` classes by default and
-   IQSS's CI selects its live-server tests by explicit class name, so they
-   run only when named with `-Dtest` as above.
-
-The one thing this repo's `pom.xml` adds is the three back-to-back Failsafe
-runs (one per browser) behind `mvn verify`. Carrying that over to
-IQSS/dataverse would mean adding the same executions there, or a small
-profile for them.
+```bash
+IMPORT=$(git log --first-parent --diff-filter=A --format=%H -1 -- modules/dataverse-jsf-tests/pom.xml)
+git log "$IMPORT^2"                 # the suite's history before the move
+git log "$IMPORT^2" -- pom.xml      # one file's history, by its original path
+```
 
 ---
 
