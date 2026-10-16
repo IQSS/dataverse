@@ -33,6 +33,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import org.apache.commons.lang3.StringUtils;
 
 @Entity
@@ -268,6 +269,66 @@ public class DatasetField implements Serializable {
             returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
         }
         return returnString;
+    }
+
+    public String getDisplayValueForValue(String value) {
+        if (StringUtils.isBlank(value) || NA_VALUE.equals(value)) {
+            return "";
+        }
+
+        String format = datasetFieldType.getDisplayFormat();
+        if (StringUtils.isBlank(format)) {
+            format = "#VALUE";
+        }
+        return format
+                //Tests may have field types with null titles
+                .replace("#NAME", (datasetFieldType.getTitle()!=null) ? datasetFieldType.getTitle():"")
+                .replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
+                .replace("#VALUE", getSanitizedDisplayValue(value));
+    }
+
+    public String getDisplayValueForValues(List<String> values) {
+        String format = datasetFieldType.getDisplayFormat();
+        if (StringUtils.isBlank(format)) {
+            format = "#VALUE";
+        }
+
+        List<String> displayValues = new ArrayList<>();
+        for (String value : values) {
+            String displayValue = getSanitizedDisplayValue(value);
+            if (!displayValue.isEmpty()) {
+                displayValues.add(displayValue);
+            }
+        }
+        if (displayValues.isEmpty()) {
+            return "";
+        }
+
+        String value = String.join(", ", displayValues);
+        
+        format = format.trim()
+                // Titles can be null in tests, shouldn't be otherwise
+               .replace("#NAME", datasetFieldType.getTitle() == null ? "" : datasetFieldType.getTitle())
+                // Replace #VALUE last to not replace any "#NAME" in the value text
+               .replace("#VALUE", value);
+        if(format.equals("#EMAIL")) {
+            format = format.replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"));
+        } else if(format.contains("#EMAIL")) {
+            format = format.replace("#EMAIL", value).replace("@", ":[at]").replace(".", "[dot]");
+        }
+        return format;
+    }
+
+    private String getSanitizedDisplayValue(String value) {
+        if (StringUtils.isBlank(value) || NA_VALUE.equals(value)) {
+            return "";
+        }
+
+        String sanitizedValue = datasetFieldType.isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(value) : value;
+        if (!datasetFieldType.isSanitizeHtml() && datasetFieldType.isEscapeOutputText()) {
+            sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
+        }
+        return sanitizedValue;
     }
     
     public String getRawValue() {

@@ -92,28 +92,7 @@ public class DatasetFieldValue implements Serializable {
     }
     
     public String getDisplayValue() {
-        String retVal = "";
-        if (!StringUtils.isBlank(this.getValue()) && !DatasetField.NA_VALUE.equals(this.getValue())) {
-            String format = this.datasetField.getDatasetFieldType().getDisplayFormat();
-            if (StringUtils.isBlank(format)) {
-                format = "#VALUE";
-            }           
-            String sanitizedValue = !this.datasetField.getDatasetFieldType().isSanitizeHtml() ? this.getValue() :  MarkupChecker.sanitizeBasicHTML(this.getValue());    
-            
-                if (!this.datasetField.getDatasetFieldType().isSanitizeHtml() && this.datasetField.getDatasetFieldType().isEscapeOutputText()){
-                    sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
-                }
-            
-            // replace the special values in the format (note: we replace #VALUE last since we don't
-            // want any issues if the value itself has #NAME in it)
-            String displayValue = format
-                    .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
-                    .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
-                    .replace("#VALUE", sanitizedValue);
-            retVal = displayValue;
-        }
-
-        return retVal;
+        return datasetField.getDisplayValueForValue(value);
     }
 
     public String getUnsanitizedDisplayValue() {
