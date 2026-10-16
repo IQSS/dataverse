@@ -301,8 +301,6 @@ jobs:
 
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
 
     env:
       LOGIN_ADAPTER:  "builtin"
@@ -387,8 +385,6 @@ jobs:
 
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
 
     env:
       LOGIN_ADAPTER:  "builtin"
@@ -448,3 +444,38 @@ jobs:
         uses: ./.github/actions/collect-docker-logs
         with:
           artifact-name: docker-logs-${{ matrix.browser }}
+
+  # =====================================================================
+  # JSF TEST RESULTS: one dashboard for all three browsers
+  # =====================================================================
+  jsf-results:
+    name: JSF Test Results
+    needs: [build, jsf-chromium, jsf-tests]
+    # Whatever the browsers' results, as long as they ran.
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+
+      - name: Download JSF test results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: jsf-test-results-*
+          path: jsf-results
+
+      # The browsers run the same tests, so each counts as one test with a run per browser.
+      # report_individual_runs reports a failure in one browser on its own, pointing at that
+      # browser's report (failsafe-reports/<browser>/).
+      - name: Publish JSF Test Results Dashboard
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: JSF Test Results
+          report_individual_runs: true
+          files: |
+            jsf-results/**/failsafe-reports/**/TEST-*.xml
