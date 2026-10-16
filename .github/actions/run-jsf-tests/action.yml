@@ -1,27 +1,13 @@
 ---
 name: "Run JSF Tests"
-description: "Run the Java JSF frontend test suite from gdcc/dataverse-jsf-tests (Playwright for Java, JUnit 5) in one browser against a running Dataverse stack, and upload its results. Expects the stack to be up (start-dataverse-stack), Java and Maven to be set up (setup-maven), and the BASE_URL, DV_* and related variables to be set by the calling job."
+description: "Run the JSF frontend test suite in modules/dataverse-jsf-tests (Playwright for Java, JUnit 5) in one browser against a running Dataverse stack, and upload its results. Expects the stack to be up (start-dataverse-stack), Java and Maven to be set up (setup-maven), and the BASE_URL, DV_* and related variables to be set by the calling job."
 inputs:
   browser:
     description: "Browser to test with: chromium, firefox or webkit"
     required: true
-  ref:
-    description: "Branch, tag or commit of gdcc/dataverse-jsf-tests to run"
-    required: false
-    default: "java"
 runs:
   using: composite
   steps:
-
-    # ---------------------------
-    # CHECKOUT THE JSF SUITE
-    # ---------------------------
-    - name: Checkout dataverse-jsf-tests
-      uses: actions/checkout@v7
-      with:
-        repository: gdcc/dataverse-jsf-tests
-        ref: ${{ inputs.ref }}
-        path: dataverse-jsf-tests
 
     # ---------------------------
     # INSTALL BROWSER SYSTEM LIBRARIES
@@ -31,11 +17,10 @@ runs:
     - name: Install browser system libraries (${{ inputs.browser }})
       shell: bash
       run: >-
-        mvn -B -q test-compile exec:java
+        mvn -B -q -f modules/dataverse-jsf-tests test-compile exec:java
         -Dexec.mainClass=com.microsoft.playwright.CLI
         -Dexec.classpathScope=test
         -Dexec.args="install-deps ${{ inputs.browser }}"
-      working-directory: dataverse-jsf-tests
 
     # ---------------------------
     # RUN THE JSF TESTS
@@ -44,8 +29,7 @@ runs:
     # (its browser-<name> profile). Fails if any test failed.
     - name: Run JSF tests (${{ inputs.browser }})
       shell: bash
-      run: mvn -B verify -Ddataverse.test.jsf.browser=${{ inputs.browser }}
-      working-directory: dataverse-jsf-tests
+      run: mvn -B -f modules/dataverse-jsf-tests verify -Ddataverse.test.jsf.browser=${{ inputs.browser }}
 
     # ---------------------------
     # UPLOAD TEST RESULTS
@@ -57,6 +41,6 @@ runs:
       with:
         name: jsf-test-results-${{ inputs.browser }}
         path: |
-          dataverse-jsf-tests/target/failsafe-reports/${{ inputs.browser }}/
-          dataverse-jsf-tests/target/playwright/
+          modules/dataverse-jsf-tests/target/failsafe-reports/${{ inputs.browser }}/
+          modules/dataverse-jsf-tests/target/playwright/
         retention-days: 14
