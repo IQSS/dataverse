@@ -7,21 +7,31 @@ on:
         branches:
             - '*'
             - '!master'
-        paths:
+        paths: &test-paths
             - "**.java"
             - "**.sql"
             - "pom.xml"
             - "modules/**/pom.xml"
             - "!modules/container-base/**"
             - "!modules/dataverse-spi/**"
+            # What the API and JSF tests (dataverse-tests job) depend on. Later entries win, so
+            # this includes container-base and dataverse-spi again: the tests run on images built
+            # from them.
+            - "conf/**"
+            - "src/**"
+            - "modules/**"
+            - "!**/backports/**"
+            - "!src/maven/**"
+            - "docker-compose-dev.yml"
+            - "tests/**"
+            - "scripts/**"
+            - ".github/workflows/maven_unit_test.yml"
+            - ".github/workflows/dataverse_tests.yml"
+            - ".github/actions/start-dataverse-stack/**"
+            - ".github/actions/run-jsf-tests/**"
+            - ".github/actions/collect-docker-logs/**"
     pull_request:
-        paths:
-            - "**.java"
-            - "**.sql"
-            - "pom.xml"
-            - "modules/**/pom.xml"
-            - "!modules/container-base/**"
-            - "!modules/dataverse-spi/**"
+        paths: *test-paths
 
 jobs:
     unittest:
@@ -122,17 +132,36 @@ jobs:
             # Run integration tests (but not unit tests again)
             - run: mvn -DskipUnitTests -Dtarget.java.version=${{ matrix.jdk }} verify
 
-            # Wrap up and send to coverage job
-            - run: tar -cvf java-reportdir.tar target/site
+            # Wrap up and send to coverage job. The coverage job merges these JaCoCo inputs
+            # again, together with the server-side coverage from Dataverse Tests.
+            - run: tar -cvf java-reportdir.tar target/site target/coverage-reports/jacoco-*.exec
             - uses: actions/upload-artifact@v7
               with:
                   name: java-reportdir
                   path: java-reportdir.tar
                   retention-days: 3
 
+    # API and JSF tests against the running app, built from the unit-test job's classes so their
+    # server-side coverage matches. Runs alongside the integration tests. On pushes, only for develop:
+    # Maven Tests also runs on every other branch push, where these suites would be too costly.
+    dataverse-tests:
+        name: Dataverse Tests
+        needs: unittest
+        if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/develop' }}
+        permissions:
+            contents: read
+            checks: write
+            pull-requests: write
+        uses: ./.github/workflows/dataverse_tests.yml
+        with:
+            use-maven-build: true
+
     coverage-report:
         runs-on: ubuntu-latest
-        needs: integration-test
+        needs: [integration-test, dataverse-tests]
+        # Also when Dataverse Tests was skipped (branch pushes) or failed: coverage then
+        # covers whatever ran.
+        if: ${{ !cancelled() && needs.integration-test.result == 'success' }}
         name: Coverage Report Submission
         steps:
             # TODO: As part of #10618 change to setup-maven custom action
@@ -144,11 +173,41 @@ jobs:
                 distribution: temurin
                 cache: maven
 
-          # Get the build output from the integration test job
+          # Get the compiled classes (the report needs them), then the integration test job's
+          # report and JaCoCo data
+          - uses: actions/download-artifact@v8
+            with:
+              name: java-artifacts
           - uses: actions/download-artifact@v8
             with:
               name: java-reportdir
-          - run: tar -xvf java-reportdir.tar
+          - run: |
+                tar -xf java-builddir.tar
+                tar -xvf java-reportdir.tar
+
+          # Server-side coverage of the API and JSF tests, next to the unit and integration data
+          - name: Get Dataverse Tests coverage
+            if: ${{ needs.dataverse-tests.result == 'success' || needs.dataverse-tests.result == 'failure' }}
+            uses: actions/download-artifact@v8
+            with:
+              pattern: jacoco-exec-*
+              path: target/coverage-reports
+              merge-multiple: true
+
+          # Merge every target/coverage-reports/*.exec and rebuild the merged report, with the
+          # same executions mvn verify uses (jacoco-merge-unit-and-it, jacoco-report in pom.xml)
+          - name: Merge all coverage data
+            run: |
+                ls -l target/coverage-reports/
+                mvn -B jacoco:merge@jacoco-merge-unit-and-it jacoco:report@jacoco-report
+
+          # Hand the merged report to the SonarCloud job
+          - run: tar -cvf java-reportdir-merged.tar target/site
+          - uses: actions/upload-artifact@v7
+            with:
+                name: java-reportdir-merged
+                path: java-reportdir-merged.tar
+                retention-days: 3
 
           # Deposit Code Coverage
           - name: Deposit Code Coverage
@@ -183,7 +242,7 @@ jobs:
 
     sonarcloud:
       runs-on: ubuntu-latest
-      needs: check-secrets
+      needs: [check-secrets, coverage-report]
       name: SonarQube Analysis and Coverage
       # Only run in upstream repo - avoid unnecessary runs in forks (they don't have access to SONAR_TOKEN)
       if: needs.check-secrets.outputs.available == 'true'
@@ -200,17 +259,17 @@ jobs:
             distribution: temurin
             cache: maven
 
-        # Get the coverage output from the integration test job
+        # Get the merged coverage report from the coverage job (unit, integration, API and JSF tests)
         - uses: actions/download-artifact@v8
           with:
-            name: java-reportdir
+            name: java-reportdir-merged
         # Get the binary class files as Sonar needs them for analysis
         - uses: actions/download-artifact@v8
           with:
             name: java-artifacts
         - run: |
             tar -xvf java-builddir.tar
-            tar -xvf java-reportdir.tar
+            tar -xvf java-reportdir-merged.tar
 
         # Run Sonarcube analysis
         - name: Analyze and commit to SonarCloud

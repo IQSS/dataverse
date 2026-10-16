@@ -39,7 +39,7 @@ Unit Test Automation Overview
 
 We use a variety of tools to write, execute, and measure the code coverage of unit tests, including Maven, JUnit, Jacoco, GitHub, and Coveralls. We'll explain the role of each tool below, but here's an overview of what you can expect from the automation we've set up.
 
-As you prepare to make a pull request, as described in the :doc:`version-control` section, you will be working on a new branch you create from the "develop" branch. Let's say your branch is called ``1012-private-url``. As you work, you are constantly invoking Maven to build the war file. When you do a "clean and build" in Netbeans, Maven runs all the unit tests (anything ending with ``Test.java``) and then runs the results through a tool called Jacoco that calculates code coverage. When you push your branch to GitHub and make a pull request, GitHub Actions runs Maven and Jacoco on your branch and pushes the results to Coveralls, which is a web service that tracks changes to code coverage over time. Note that we have configured Coveralls to not mark small decreases in code coverage as a failure. You can find the Coveralls reports at https://coveralls.io/github/IQSS/dataverse
+As you prepare to make a pull request, as described in the :doc:`version-control` section, you will be working on a new branch you create from the "develop" branch. Let's say your branch is called ``1012-private-url``. As you work, you are constantly invoking Maven to build the war file. When you do a "clean and build" in Netbeans, Maven runs all the unit tests (anything ending with ``Test.java``) and then runs the results through a tool called Jacoco that calculates code coverage. When you push your branch to GitHub and make a pull request, GitHub Actions runs Maven and Jacoco on your branch and pushes the results to Coveralls, which is a web service that tracks changes to code coverage over time. The coverage sent to Coveralls (and SonarCloud) also includes the integration tests and the server-side coverage of the API and JSF tests described under `Continuous Integration`_. Note that we have configured Coveralls to not mark small decreases in code coverage as a failure. You can find the Coveralls reports at https://coveralls.io/github/IQSS/dataverse
 
 The main takeaway should be that we care about unit testing enough to measure the changes to code coverage over time using automation. Now let's talk about how you can help keep our code coverage up by writing unit tests with JUnit.
 
@@ -459,7 +459,57 @@ Our Jenkins config is a work in progress and may be viewed at https://github.com
 
 GitHub Actions jobs can be found in ``.github/workflows``.
 
+The API tests and the browser-based tests of the JSF frontend run against a live Dataverse installation in the "Dataverse Tests" workflow (``dataverse_tests.yml``), which the "Maven Tests" workflow (``maven_unit_test.yml``) runs after its unit tests. It builds the Dataverse containers once in a "Build Containers" job, from the classes the unit-test job compiled, and hands them to the test jobs, each of which starts its own fresh Dataverse installation:
+
+- "Dataverse API Tests" runs the API tests listed in :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>`.
+- "Dataverse JSF Tests (Chromium)" runs the JSF frontend tests in Chromium, at the same time as the API tests.
+- "Dataverse JSF Tests (Firefox)" and "Dataverse JSF Tests (WebKit)" start when the Chromium job has finished, whatever its result, and run in parallel.
+
+This way at most three test jobs run at once. Each job uploads its own test reports and container logs as artifacts, and the results are summarized on the pull request: "API Test Results" for the API tests, and "JSF Test Results" for all three browsers together.
+
+Each test job also records which server code its tests exercised, with a JaCoCo agent in the app container. Maven Tests' "Coverage Report Submission" job merges that with the unit and integration test coverage, using the JaCoCo executions in ``pom.xml``, and sends the result to Coveralls and SonarCloud.
+
 As always, pull requests to improve our continuous integration configurations are welcome.
+
+Reproducing a CI Failure Locally
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The "Build Containers" job of the "Dataverse Tests" workflow uploads the exact container images and exploded war file that the test jobs ran against, as an artifact called ``dataverse-build``. It is kept for 7 days. When a test fails in CI, you can start that same build on your machine instead of relying on the logs alone.
+
+You will need Docker, Maven, ``zstd`` and the `GitHub CLI <https://cli.github.com>`_. Find the run ID in the URL of the failed run (``.../actions/runs/<run-id>``), then, from a clone of the repository:
+
+.. code-block:: bash
+
+  gh run download <run-id> --repo IQSS/dataverse --name dataverse-build --dir /tmp/dataverse-build
+  cat /tmp/dataverse-build/build-info.txt
+  COMMIT=$(grep '^commit=' /tmp/dataverse-build/build-info.txt | cut -d= -f2)
+  git fetch https://github.com/IQSS/dataverse.git "$COMMIT" && git checkout "$COMMIT"
+  zstd -dc /tmp/dataverse-build/images.tar.zst | docker load
+  mkdir -p target && zstd -dc /tmp/dataverse-build/target-dataverse.tar.zst | tar -C target -xf -
+  mvn -Pct docker:start \
+    -Ddataverse.feature.index-harvested-metadata-source=true \
+    -Ddataverse.oai.server.maxidentifiers=2 \
+    -Ddataverse.oai.server.maxrecords=2 \
+    -Ddataverse.feature.allow-locally-fair-data=true
+
+Once http://localhost:8080/api/info/version responds, apply the same settings the workflow uses. The admin API only accepts requests from localhost, so the commands run inside the container:
+
+.. code-block:: bash
+
+  docker exec dev_dataverse curl -sS -X PUT -d burrito http://localhost:8080/api/admin/settings/:BuiltinUsersKey
+  docker exec dev_dataverse curl -sS -X PUT -d true http://localhost:8080/api/admin/settings/:ProvCollectionEnabled
+  docker exec dev_dataverse curl -sS -X PUT -d true http://localhost:8080/api/admin/settings/:AllowApiTokenLookupViaApi
+  docker exec dev_dataverse curl -sS -X PUT -d true http://localhost:8080/api/admin/settings/:AllowSignUp
+
+Then run the failing test with the same options as the workflow, for example ``mvn test -Dtest=DatasetsIT -Ddataverse.test.baseurl=http://localhost:8080 -Ddataverse.test.solr.softcommit.millis=100``. Tests that use S3 storage also need ``127.0.0.1 localstack`` in your ``/etc/hosts``.
+
+Keep in mind:
+
+- ``build-info.txt`` records the commit that was built. For a pull request, that's the merge commit of the pull request into its base branch, which is what CI tests. If GitHub no longer has that merge commit, check out ``pr_head_sha`` instead: the app still runs exactly as in CI, because it comes from the artifact, but the test sources may differ slightly if the base branch has moved since.
+- This reproduces the build, not the state of the failed run. The database, Solr index and files start fresh, just as they did in CI.
+- ``docker load`` replaces any local ``gdcc/dataverse:unstable`` and ``gdcc/configbaker:unstable`` images.
+- The images are built for ``linux/amd64``. On Apple Silicon, Docker Desktop runs them under emulation, so the stack takes longer to start.
+- Stop the stack with ``mvn -Pct docker:stop``. To start over from an empty database, also remove ``docker-dev-volumes``.
 
 Enhance build time by caching dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -504,7 +554,9 @@ Browser-Based Testing
 Browser-Based Testing of JSF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The JSF frontend is being tested with Playwright via a GitHub Action that runs a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526).
+The JSF frontend is being tested with Playwright via a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526). The suite is written in Java, with Playwright for Java and JUnit 5, and lives in that repository's ``java`` branch. Each browser runs in its own job of the "Dataverse Tests" workflow described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782), which runs ``mvn verify -Ddataverse.test.jsf.browser=<browser>`` in a checkout of the suite.
+
+To run the suite yourself, you need Java and Maven, but no Node.js. See the README of the ``java`` branch for the settings it reads, such as ``BASE_URL``.
 
 Browser-Based Testing of the SPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
