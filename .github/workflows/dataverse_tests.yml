@@ -301,6 +301,8 @@ jobs:
 
     permissions:
       contents: read
+      checks: write
+      pull-requests: write
 
     env:
       LOGIN_ADAPTER:  "builtin"
@@ -385,6 +387,8 @@ jobs:
 
     permissions:
       contents: read
+      checks: write
+      pull-requests: write
 
     env:
       LOGIN_ADAPTER:  "builtin"
