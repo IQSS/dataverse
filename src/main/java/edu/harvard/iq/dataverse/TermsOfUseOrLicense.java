@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -61,7 +62,7 @@ public class TermsOfUseOrLicense implements Serializable {
         this.id = id;
     }
 
-    @OneToOne(mappedBy = "termsOfUseOrLicense")
+    @OneToOne(mappedBy = "defaultTermsOfUseOrLicense")
     private DatasetVersion datasetVersion;
 
     public DatasetVersion getDatasetVersion() {
@@ -72,8 +73,11 @@ public class TermsOfUseOrLicense implements Serializable {
         this.datasetVersion = datasetVersion;
     }
 
-    @OneToOne(mappedBy = "termsOfUseOrLicense")
+    @OneToOne(mappedBy = "defaultTermsOfUseOrLicense")
     private Template template;
+
+    @OneToMany(mappedBy = "termsOfUseOrLicense")
+    private FileMetadata fileMetadata;
 
     public Template getTemplate() {
         return template;
@@ -217,6 +221,14 @@ public class TermsOfUseOrLicense implements Serializable {
             //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
+    }
+
+    public FileMetadata getFileMetadata() {
+        return fileMetadata;
+    }
+
+    public void setFileMetadata(FileMetadata fileMetadata) {
+        this.fileMetadata = fileMetadata;
     }
 
     public TermsOfUseOrLicense copyTermsOfUseOrLicense(){
