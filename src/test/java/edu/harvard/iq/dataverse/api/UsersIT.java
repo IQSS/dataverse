@@ -777,4 +777,81 @@ public class UsersIT {
         return response;
     }
 
+
+    @Test
+    public void testSignUpBuiltinUser() {
+        String username = "signup" + UUID.randomUUID().toString().substring(0, 8);
+        String email = username + "@mailinator.com";
+        String password = "Str0ngPassw0rd" + UUID.randomUUID().toString().substring(0, 4);
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superuserUsername).then().assertThat().statusCode(OK.getStatusCode());
+
+        String validJson = JsonUtil.createObjectBuilder()
+                .add("username", username)
+                .add("firstName", "Ada")
+                .add("lastName", "Lovelace")
+                .add("emailAddress", email)
+                .add("password", password)
+                .add("affiliation", "Harvard University")
+                .add("position", "Researcher")
+                .add("termsAccepted", true)
+                .build().toString();
+
+        Response signUp = UtilIT.signUpBuiltinUser(validJson);
+        signUp.prettyPrint();
+        signUp.then().assertThat()
+                .statusCode(CREATED.getStatusCode())
+                .body("data.identifier", equalTo("@" + username));
+
+        Response createdUser = UtilIT.getAuthenticatedUser(username, superuserApiToken);
+        createdUser.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.email", equalTo(email))
+                .body("data.affiliation", equalTo("Harvard University"))
+                .body("data.authenticationProviderId", equalTo("builtin"));
+
+        Response duplicate = UtilIT.signUpBuiltinUser(validJson);
+        duplicate.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("fieldErrors.username", equalTo(BundleUtil.getStringFromBundle("user.username.taken")))
+                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("user.email.taken")));
+
+        String invalidJson = JsonUtil.createObjectBuilder()
+                .add("username", "not valid!")
+                .add("firstName", "")
+                .add("emailAddress", "not-an-email")
+                .add("password", "x")
+                .add("termsAccepted", false)
+                .build().toString();
+        Response invalid = UtilIT.signUpBuiltinUser(invalidJson);
+        invalid.prettyPrint();
+        invalid.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("fieldErrors.username", equalTo(BundleUtil.getStringFromBundle("user.username.invalid")))
+                .body("fieldErrors.emailAddress", equalTo(BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid")))
+                .body("fieldErrors.termsAccepted", equalTo(BundleUtil.getStringFromBundle("user.acccountterms.required")))
+                .body("fieldErrors.firstName", notNullValue())
+                .body("fieldErrors.lastName", notNullValue())
+                .body("fieldErrors.password", notNullValue());
+
+        String withRor = JsonUtil.createObjectBuilder()
+                .add("username", username + "x")
+                .add("firstName", "Ada")
+                .add("lastName", "Lovelace")
+                .add("emailAddress", "x" + email)
+                .add("password", password)
+                .add("affiliationRor", "https://ror.org/03vek6s52")
+                .add("termsAccepted", true)
+                .build().toString();
+        UtilIT.signUpBuiltinUser(withRor).then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("users.api.signup.errors.affiliationRorNotSupported")));
+
+        UtilIT.deleteUser(username).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.deleteUser(superuserUsername).then().assertThat().statusCode(OK.getStatusCode());
+    }
+
 }

@@ -6496,6 +6496,36 @@ Place this ``user-add.json`` file in your current directory and run the followin
 
 Optionally, you may use a third query parameter "sendEmailNotification=false" to explicitly disable sending an email notification to the new user.
 
+.. _sign-up-builtin-user:
+
+Sign Up as a Builtin User
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New users can create their own builtin account without an API token or the ``:BuiltinUsersKey``. This is the API equivalent of the "Sign Up" page and is used by the modern, React-based, Single Page Application (SPA) sign-up form.
+
+The endpoint is only available when the :ref:`dataverse.feature.api-builtin-user-signup` feature flag is enabled and :ref:`conf-allow-signup` is not set to "false". Requests are rate-limited per client IP address, see :ref:`dataverse.api.signup.rate-limit-per-hour`.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -X POST -H "Content-Type: application/json" "$SERVER_URL/api/users/signup" --data '{
+    "username": "alovelace",
+    "firstName": "Ada",
+    "lastName": "Lovelace",
+    "emailAddress": "ada@example.edu",
+    "password": "Str0ngPassw0rd",
+    "affiliation": "Harvard University",
+    "position": "Researcher",
+    "termsAccepted": true
+  }'
+
+The fields are validated with the same rules as the "Sign Up" page: the username must be valid and not already taken, the email address must be valid and not already in use, the password must satisfy the password policy (see :ref:`:PVMinLength` and the related settings), and ``termsAccepted`` must be ``true``. ``affiliation`` and ``position`` are optional. Invalid fields are reported in a ``fieldErrors`` object in a 400 response.
+
+On success, the account is created right away with a ``201 Created`` response that includes the new user's identifier, and the user receives the standard welcome email with a link to confirm their email address. No API token is returned; the new user logs in as usual.
+
+Note that this endpoint is not to be confused with ``POST /api/users/register`` (see :ref:`bearer-tokens`), which creates an account for a user who has already authenticated with an OIDC identity provider.
+
 Roles
 -----
 

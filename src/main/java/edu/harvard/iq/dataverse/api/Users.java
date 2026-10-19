@@ -11,10 +11,14 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 
 import static edu.harvard.iq.dataverse.api.auth.AuthUtil.extractBearerTokenFromHeaderParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -29,6 +33,7 @@ import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -52,6 +57,9 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 public class Users extends AbstractApiBean {
     
     private static final Logger logger = Logger.getLogger(Users.class.getName());
+
+    @EJB
+    CacheFactoryBean cacheFactory;
     
     @POST
     @AuthRequired
@@ -365,5 +373,39 @@ public class Users extends AbstractApiBean {
             return e.getResponse();
         }
         return ok(BundleUtil.getStringFromBundle("users.api.userRegistered"));
+    }
+
+    @POST
+    @Path("signup")
+    @Operation(summary = "Signs up a new builtin user",
+            description = "Creates a builtin user account from the supplied user JSON and password, and sends the welcome email with the email confirmation link. Requires the api-builtin-user-signup feature flag and :AllowSignUp.")
+    public Response signUpBuiltinUser(
+            @RequestBody(description = "User JSON with username, firstName, lastName, emailAddress, password, termsAccepted, and optional affiliation and position.")
+            String body) {
+        if (!FeatureFlags.API_BUILTIN_USER_SIGNUP.enabled()) {
+            return forbidden(BundleUtil.getStringFromBundle("users.api.signup.errors.featureFlagDisabled"));
+        }
+        if (!settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, true)) {
+            return forbidden(BundleUtil.getStringFromBundle("users.api.signup.errors.signUpNotAllowed"));
+        }
+        DataverseRequest dataverseRequest = createDataverseRequest(GuestUser.get());
+        int capacityPerHour = JvmSettings.API_SIGNUP_RATE_LIMIT_PER_HOUR.lookupOptional(Integer.class).orElse(10);
+        if (capacityPerHour > 0 && !cacheFactory.checkRate("signup:" + dataverseRequest.getSourceAddress(), capacityPerHour)) {
+            return rateLimited(BundleUtil.getStringFromBundle("users.api.signup.errors.rateLimited"));
+        }
+        try {
+            JsonObject userJson = JsonUtil.getJsonObject(body);
+            if (userJson.containsKey("affiliationRor")) {
+                return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.affiliationRorNotSupported"));
+            }
+            String password = userJson.containsKey("password") && !userJson.isNull("password") ? userJson.getString("password") : null;
+            AuthenticatedUser authenticatedUser = execCommand(new SignUpBuiltinUserCommand(dataverseRequest, jsonParser().parseUserDTO(userJson), password));
+            return created("/api/admin/authenticatedUsers/" + authenticatedUser.getUserIdentifier(),
+                    JsonUtil.createObjectBuilder().add("identifier", authenticatedUser.getIdentifier()));
+        } catch (JsonParseException | JsonParsingException | ClassCastException e) {
+            return error(Response.Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("users.api.errors.jsonParseToUserDTO"), e.getMessage()));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 }

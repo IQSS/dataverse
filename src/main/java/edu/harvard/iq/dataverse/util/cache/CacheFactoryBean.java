@@ -57,6 +57,11 @@ public class CacheFactoryBean implements java.io.Serializable {
             return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
         }
     }
+
+    public boolean checkRate(String key, int capacityPerHour) {
+        return !RateLimitUtil.rateLimited(rateLimitCache, key, capacityPerHour);
+    }
+
     public String getStats(String cacheType, String filter) {
         if (RATE_LIMIT_CACHE.equals(cacheType)) {
             return RateLimitUtil.getStats(rateLimitCache, filter);

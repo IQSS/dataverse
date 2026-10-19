@@ -3963,6 +3963,17 @@ Example: ``dataverse.api.mdc.min-delay-ms=100`` (enforces a minimum 100ms delay 
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_MDC_MIN_DELAY_MS``.
 
+.. _dataverse.api.signup.rate-limit-per-hour:
+
+dataverse.api.signup.rate-limit-per-hour
+++++++++++++++++++++++++++++++++++++++++
+
+Maximum number of requests per hour that a single client IP address can make to the :ref:`sign-up-builtin-user` API endpoint. Set to ``0`` to disable the limit.
+
+Default: ``10``
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNUP_RATE_LIMIT_PER_HOUR``.
+
 .. _dataverse.legacy.schemaorg-in-html-head:
 
 dataverse.legacy.schemaorg-in-html-head
@@ -4213,6 +4224,13 @@ dataverse.feature.allow-locally-fair-data
 Allows support for Locally FAIR collections and datasets.
 When enabled, selected content can remain visible only to authorized users or groups within a Dataverse installation.
 See :ref:`locally-fair` for more information.
+
+.. _dataverse.feature.api-builtin-user-signup:
+
+dataverse.feature.api-builtin-user-signup
++++++++++++++++++++++++++++++++++++++++++
+
+Enables the unauthenticated :ref:`sign-up-builtin-user` API endpoint, which lets new users create a builtin account, for example from the SPA sign-up form. The endpoint also honors :ref:`conf-allow-signup`. Requests are rate-limited per client IP address, see :ref:`dataverse.api.signup.rate-limit-per-hour`.
 
 .. _:ApplicationServerSettings:
 
