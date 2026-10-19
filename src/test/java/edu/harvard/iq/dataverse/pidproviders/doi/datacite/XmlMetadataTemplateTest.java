@@ -154,7 +154,7 @@ public class XmlMetadataTemplateTest {
         DatasetVersion dv = new DatasetVersion();
         TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseOrLicense(toa);
+        dv.setDefaultTermsOfUseOrLicense(toa);
         var termsOfAccess = new TermsOfAccess();
         termsOfAccess.setFileAccessRequest(true);
         dv.setTermsOfAccess(termsOfAccess);
@@ -316,7 +316,7 @@ public class XmlMetadataTemplateTest {
         DatasetVersion dv = new DatasetVersion();
         TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseOrLicense(toa);
+        dv.setDefaultTermsOfUseOrLicense(toa);
         var termsOfAccess = new TermsOfAccess();
         termsOfAccess.setFileAccessRequest(true);
         dv.setTermsOfAccess(termsOfAccess);
@@ -376,7 +376,7 @@ public class XmlMetadataTemplateTest {
         DatasetVersion dv = new DatasetVersion();
         TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseOrLicense(toa);
+        dv.setDefaultTermsOfUseOrLicense(toa);
         var termsOfAccess = new TermsOfAccess();
         termsOfAccess.setFileAccessRequest(true);
         dv.setTermsOfAccess(termsOfAccess);
@@ -442,7 +442,7 @@ public class XmlMetadataTemplateTest {
         dv.setTermsOfAccess(toa);
         TermsOfUseOrLicense tou = new TermsOfUseOrLicense();
         tou.setTermsOfUse("Some more terms of use");
-        dv.setTermsOfUseOrLicense(tou);
+        dv.setDefaultTermsOfUseOrLicense(tou);
         dv.setDataset(d);
         dv.setVersionState(VersionState.DRAFT);
 

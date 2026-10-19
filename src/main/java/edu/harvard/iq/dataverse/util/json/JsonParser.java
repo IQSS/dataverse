@@ -575,7 +575,7 @@ public class JsonParser {
             dsv.setTermsOfAccess(termsOfAccess);
             termsOfAccess.setDatasetVersion(dsv);
 
-            dsv.setTermsOfUseOrLicense(termsOfUseOrLicense);
+            dsv.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
             termsOfUseOrLicense.setDatasetVersion(dsv);
 
             JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");

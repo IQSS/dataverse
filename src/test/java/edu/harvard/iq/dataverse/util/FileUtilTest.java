@@ -92,7 +92,7 @@ public class FileUtilTest {
             License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 1l);
             license.setDefault(true);
             termsOfUseAndAccess.setLicense(license);
-            dsv1.setTermsOfUseOrLicense(termsOfUseAndAccess);
+            dsv1.setDefaultTermsOfUseOrLicense(termsOfUseAndAccess);
             assertFalse(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
@@ -103,7 +103,7 @@ public class FileUtilTest {
             TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
             termsOfUseOrLicense.setLicense(null);
             termsOfUseOrLicense.setTermsOfUse("be excellent to each other");
-            dsv1.setTermsOfUseOrLicense(termsOfUseOrLicense);
+            dsv1.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
             assertTrue(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
@@ -159,7 +159,7 @@ public class FileUtilTest {
             DatasetVersion dsv = new DatasetVersion();
             TermsOfUseOrLicense setTermsOfUseOrLicense = new TermsOfUseOrLicense();
             setTermsOfUseOrLicense.setTermsOfUse("be excellent to each other");
-            dsv.setTermsOfUseOrLicense(setTermsOfUseOrLicense);
+            dsv.setDefaultTermsOfUseOrLicense(setTermsOfUseOrLicense);
             dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
             nonRestrictedFileMetadata.setDatasetVersion(dsv);
             Dataset dataset = new Dataset();

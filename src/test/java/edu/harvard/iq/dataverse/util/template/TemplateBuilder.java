@@ -48,7 +48,7 @@ public final class TemplateBuilder {
         dataverse.setAlias(dataverseAlias);
 
         Template template = new Template();
-        template.setTermsOfUseOrLicense(buildTermsOfUseOrLicense());
+        template.setDefaultTermsOfUseOrLicense(buildTermsOfUseOrLicense());
         template.setTermsOfAccess(buildTermsOfAccess());
         template.setName(name);
         template.setIsDefaultForDataverse(isDefaultForDataverse);

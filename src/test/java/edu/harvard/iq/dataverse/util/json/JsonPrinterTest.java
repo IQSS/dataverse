@@ -690,7 +690,7 @@ public class JsonPrinterTest {
         // Verify termsOfUseOrLicense field by checking a sub-field
         JsonObject termsOUALJson = jsonObject.getJsonObject("termsOfUseOrLicense");
         assertNotNull(termsOUALJson);
-        assertEquals(template.getTermsOfUseOrLicense().getTermsOfUse(), termsOUALJson.getString("termsOfUse"));
+        assertEquals(template.getDefaultTermsOfUseOrLicense().getTermsOfUse(), termsOUALJson.getString("termsOfUse"));
 
         var termsOfAccessJson = jsonObject.getJsonObject("termsOfAccess");
         assertNotNull(termsOfAccessJson);
@@ -759,7 +759,7 @@ public class JsonPrinterTest {
         dsVersion.setDatasetFields(dsFields);
         dsVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         dsVersion.setTermsOfAccess(new TermsOfAccess());
-        dsVersion.setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        dsVersion.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
         dataset.setId(id);
 
         dataset.setVersions(List.of(dsVersion));

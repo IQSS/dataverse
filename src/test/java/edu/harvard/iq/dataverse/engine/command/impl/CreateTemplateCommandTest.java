@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import jakarta.persistence.EntityManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -139,7 +138,7 @@ public class CreateTemplateCommandTest {
 
         // 3. Verify TermsOfUseAndAccess were created and set correctly
         ArgumentCaptor<TermsOfUseOrLicense> toualtCaptor = ArgumentCaptor.forClass(TermsOfUseOrLicense.class);
-        verify(templateSpy).setTermsOfUseOrLicense(toualtCaptor.capture());
+        verify(templateSpy).setDefaultTermsOfUseOrLicense(toualtCaptor.capture());
         TermsOfUseOrLicense capturedToual = toualtCaptor.getValue();
         assertEquals("CC0", capturedToual.getLicense().getName());
 

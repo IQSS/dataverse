@@ -75,7 +75,7 @@ public class StatementManagerImpl implements StatementManager {
             Date lastUpdatedFinal = new Date();
             Date lastUpdateTime = dataset.getLatestVersion().getLastUpdateTime();
             dataset.getLatestVersion().getTermsOfAccess().setDatasetVersion(dataset.getLatestVersion());
-            dataset.getLatestVersion().getTermsOfUseOrLicense().setDatasetVersion(dataset.getLatestVersion());
+            dataset.getLatestVersion().getDefaultTermsOfUseOrLicense().setDatasetVersion(dataset.getLatestVersion());
             if (lastUpdateTime != null) {
                 lastUpdatedFinal = lastUpdateTime;
             } else {

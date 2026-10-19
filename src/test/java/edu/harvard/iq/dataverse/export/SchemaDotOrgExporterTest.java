@@ -196,7 +196,7 @@ public class SchemaDotOrgExporterTest {
         version.setTermsOfAccess(termsOfAccess);
         TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
         termsOfUseOrLicense.setLicense(license);
-        version.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        version.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
 
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");

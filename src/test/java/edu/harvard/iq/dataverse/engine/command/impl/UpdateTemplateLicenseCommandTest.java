@@ -34,7 +34,7 @@ public class UpdateTemplateLicenseCommandTest {
     void setUp() {
         existingTerms = new TermsOfUseOrLicense();
         lenient().when(ctxt.templates()).thenReturn(templateService);
-        lenient().when(template.getTermsOfUseOrLicense()).thenReturn(existingTerms);
+        lenient().when(template.getDefaultTermsOfUseOrLicense()).thenReturn(existingTerms);
     }
 
     @Test

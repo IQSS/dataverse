@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.pidproviders.doi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -28,7 +27,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.ocpsoft.common.util.Strings;
@@ -1285,7 +1283,7 @@ public class XmlMetadataTemplate {
             throw new RuntimeException(msg);
         }
         boolean requestsAllowed = dv.getTermsOfAccess().isFileAccessRequest();
-        License license = dv.getTermsOfUseOrLicense().getLicense();
+        License license = dv.getDefaultTermsOfUseOrLicense().getLicense();
 
         if (requestsAllowed && closed) {
             xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/restrictedAccess");

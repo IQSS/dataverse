@@ -635,7 +635,7 @@ public class DatasetUtil {
 
     public static License getLicense(DatasetVersion dsv) {
         License license = null;
-        TermsOfUseOrLicense terms = dsv.getTermsOfUseOrLicense();
+        TermsOfUseOrLicense terms = dsv.getDefaultTermsOfUseOrLicense();
         if(terms!=null) {
             license = terms.getLicense();
         }

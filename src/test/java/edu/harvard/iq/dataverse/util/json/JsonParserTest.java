@@ -773,18 +773,18 @@ public class JsonParserTest {
         // Case 1: Flag false (default), terms NOT provided -> should pick default
         System.setProperty("dataverse.feature.do-not-assume-default-license", "false");
         DatasetVersion dsv1 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
-        assertEquals(defaultLicense, dsv1.getTermsOfUseOrLicense().getLicense());
+        assertEquals(defaultLicense, dsv1.getDefaultTermsOfUseOrLicense().getLicense());
 
         // Case 2: Flag false (default), terms PROVIDED -> should NOT pick default
         String jsonWithTerms = "{\"metadataBlocks\":{\"citation\":{\"fields\":[]}}, \"termsOfUse\":\"Some terms\"}";
         DatasetVersion dsv2 = sut.parseDatasetVersion(JsonUtil.getJsonObject(jsonWithTerms));
-        assertNull(dsv2.getTermsOfUseOrLicense().getLicense());
-        assertEquals("Some terms", dsv2.getTermsOfUseOrLicense().getTermsOfUse());
+        assertNull(dsv2.getDefaultTermsOfUseOrLicense().getLicense());
+        assertEquals("Some terms", dsv2.getDefaultTermsOfUseOrLicense().getTermsOfUse());
 
         // Case 3: Flag true, terms NOT provided -> should NOT pick default
         System.setProperty("dataverse.feature.do-not-assume-default-license", "true");
         DatasetVersion dsv3 = sut.parseDatasetVersion(JsonUtil.getJsonObject(baseJson));
-        assertNull(dsv3.getTermsOfUseOrLicense().getLicense());
+        assertNull(dsv3.getDefaultTermsOfUseOrLicense().getLicense());
         
         // Cleanup
         System.clearProperty("dataverse.feature.do-not-assume-default-license");
@@ -996,7 +996,7 @@ public class JsonParserTest {
         dsv1.setDataset(ds);
         dsv1.setReleaseTime(Date.from(Instant.now()));
         dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-        dsv1.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        dsv1.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
         dsv1.setTermsOfAccess(termsOfAccess);
 
         // Test output of JsonPrinter can be used as input to JsonParser

@@ -57,7 +57,7 @@ public final class MinimalPopulator implements FixturePopulator {
         // must be wired before the entity graph is persisted.
         TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
         termsOfUseOrLicense.setDatasetVersion(version);
-        version.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        version.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
         TermsOfAccess termsOfAccess = new TermsOfAccess();
         termsOfAccess.setDatasetVersion(version);
         version.setTermsOfAccess(termsOfAccess);

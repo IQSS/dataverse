@@ -165,7 +165,7 @@ public class SwordServiceBean {
         termsOfAccess.setDatasetVersion(datasetVersionToMutate);
 
         TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
-        datasetVersionToMutate.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        datasetVersionToMutate.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
         termsOfUseOrLicense.setDatasetVersion(datasetVersionToMutate);
 
         if (listOfLicensesProvided == null) {
@@ -218,7 +218,7 @@ public class SwordServiceBean {
 
     private void setTermsOfUse(DatasetVersion datasetVersionToMutate, Map<String, List<String>> dcterms, License providedLicense) throws SwordError {
         if (providedLicense != null) {
-            String existingTermsOfUse = datasetVersionToMutate.getTermsOfUseOrLicense().getTermsOfUse();
+            String existingTermsOfUse = datasetVersionToMutate.getDefaultTermsOfUseOrLicense().getTermsOfUse();
             if (existingTermsOfUse != null) {
                 throw new SwordError("Can not change license to \"" + providedLicense.getName() + "\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a Custom license.");
             }
@@ -244,7 +244,7 @@ public class SwordServiceBean {
                      */
                     // throw new SwordError("Terms of Use (dcterms:rights) provided was blank.");
                 } else {
-                    datasetVersionToMutate.getTermsOfUseOrLicense().setTermsOfUse(termsOfUseProvided);
+                    datasetVersionToMutate.getDefaultTermsOfUseOrLicense().setTermsOfUse(termsOfUseProvided);
                 }
             }
         }

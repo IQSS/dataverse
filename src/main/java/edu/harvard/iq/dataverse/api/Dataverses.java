@@ -65,7 +65,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
@@ -447,7 +446,7 @@ public class Dataverses extends AbstractApiBean {
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
             version.getTermsOfAccess().setFileAccessRequest(true);
             version.getTermsOfAccess().setDatasetVersion(version);
-            version.getTermsOfUseOrLicense().setDatasetVersion(version);
+            version.getDefaultTermsOfUseOrLicense().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
@@ -515,7 +514,7 @@ public class Dataverses extends AbstractApiBean {
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
             version.getTermsOfAccess().setFileAccessRequest(true);
             version.getTermsOfAccess().setDatasetVersion(version);
-            version.getTermsOfUseOrLicense().setDatasetVersion(version);
+            version.getDefaultTermsOfUseOrLicense().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);

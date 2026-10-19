@@ -30,7 +30,7 @@ BEGIN
     ALTER TABLE datasetversion ADD COLUMN IF NOT EXISTS termsofaccess_id BIGINT;
     ALTER TABLE datasetversion ADD COLUMN IF NOT EXISTS default_termsofuseorlicense_id BIGINT;
     ALTER TABLE template ADD COLUMN IF NOT EXISTS termsofaccess_id BIGINT;
-    ALTER TABLE template ADD COLUMN IF NOT EXISTS termsofuseorlicense_id BIGINT;
+    ALTER TABLE template ADD COLUMN IF NOT EXISTS default_termsofuseorlicense_id BIGINT;
     ALTER TABLE filemetadata ADD COLUMN IF NOT EXISTS termsofuseorlicense_id BIGINT;
 
     CREATE INDEX IF NOT EXISTS index_datasetversion_default_termsofuseorlicense_id
@@ -93,7 +93,7 @@ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='template' AND column_name='termsofuseandaccess_id') THEN
         UPDATE template
         SET termsofaccess_id = termsofuseandaccess_id,
-            termsofuseorlicense_id = termsofuseandaccess_id
+            default_termsofuseorlicense_id = termsofuseandaccess_id
         WHERE termsofaccess_id IS NULL OR termsofuseorlicense_id IS NULL;
     END IF;
 

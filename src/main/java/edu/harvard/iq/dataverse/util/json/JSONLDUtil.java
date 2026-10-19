@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -18,7 +17,6 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -54,7 +52,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
 
@@ -161,7 +158,7 @@ public class JSONLDUtil {
         }
 
         TermsOfAccess termsOfAccess = (dsv.getTermsOfAccess() != null) ? dsv.getTermsOfAccess().copyTermsOfAccess() : new TermsOfAccess();
-        TermsOfUseOrLicense termsOfUseOrLicense = (dsv.getTermsOfUseOrLicense() != null) ? dsv.getTermsOfUseOrLicense().copyTermsOfUseOrLicense() : new TermsOfUseOrLicense();
+        TermsOfUseOrLicense termsOfUseOrLicense = (dsv.getDefaultTermsOfUseOrLicense() != null) ? dsv.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense() : new TermsOfUseOrLicense();
 
 
         for (String key : jsonld.keySet()) {
@@ -253,7 +250,7 @@ public class JSONLDUtil {
         }
         dsv.setTermsOfAccess(termsOfAccess);
         termsOfAccess.setDatasetVersion(dsv);
-        dsv.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        dsv.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
         termsOfUseOrLicense.setDatasetVersion(dsv);
         dsv.setDatasetFields(dsfl);
 
@@ -290,7 +287,7 @@ public class JSONLDUtil {
         }
         
         TermsOfAccess termsOfAccess = dsv.getTermsOfAccess().copyTermsOfAccess();
-        TermsOfUseOrLicense termsOfUseOrLicense = dsv.getTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+        TermsOfUseOrLicense termsOfUseOrLicense = dsv.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
 
         //Iterate through input json
         for (String key : jsonld.keySet()) {
@@ -350,7 +347,7 @@ public class JSONLDUtil {
                                 "Term: " + key + " not found.");
                                     }
                     
-                    dsv.setTermsOfUseOrLicense(termsOfUseOrLicense);
+                    dsv.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
                     dsv.setTermsOfAccess(termsOfAccess);
                 }
             }

@@ -66,7 +66,7 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
         TermsOfUseOrLicense touol = new TermsOfUseOrLicense();
         touol.setTemplate(template);
         touol.setLicense(ctxt.licenses().getDefault());
-        template.setTermsOfUseOrLicense(touol);
+        template.setDefaultTermsOfUseOrLicense(touol);
     }
 
     private static void updateTermsOfAccess(CommandContext ctxt, Template template) {

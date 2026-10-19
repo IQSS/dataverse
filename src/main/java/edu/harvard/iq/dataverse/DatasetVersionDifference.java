@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -245,12 +244,12 @@ public final class DatasetVersionDifference {
 
     private void getTermsOfUseOrLicenseDifferences() {
 
-        TermsOfUseOrLicense originalTerms = originalVersion.getTermsOfUseOrLicense();
+        TermsOfUseOrLicense originalTerms = originalVersion.getDefaultTermsOfUseOrLicense();
         if(originalTerms == null) {
             originalTerms = new TermsOfUseOrLicense();
         }
         // newTerms should never be null
-        TermsOfUseOrLicense newTerms = newVersion.getTermsOfUseOrLicense();
+        TermsOfUseOrLicense newTerms = newVersion.getDefaultTermsOfUseOrLicense();
         if(newTerms == null) {
             logger.warning("New version does not have TermsOfUseAndAccess");
             newTerms = new TermsOfUseOrLicense();

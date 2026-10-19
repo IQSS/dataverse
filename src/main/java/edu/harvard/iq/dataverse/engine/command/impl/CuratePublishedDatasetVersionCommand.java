@@ -79,18 +79,18 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         //Put old terms on version that will be deleted....
         newVersion.setTermsOfAccess(oldTermsOfAccess);
         
-        TermsOfUseOrLicense oldTermsOfUseOrLicense = updateVersion.getTermsOfUseOrLicense();
-        TermsOfUseOrLicense newTermsOfUseOrLicense = newVersion.getTermsOfUseOrLicense();
+        TermsOfUseOrLicense oldTermsOfUseOrLicense = updateVersion.getDefaultTermsOfUseOrLicense();
+        TermsOfUseOrLicense newTermsOfUseOrLicense = newVersion.getDefaultTermsOfUseOrLicense();
         newTermsOfUseOrLicense.setDatasetVersion(updateVersion);
-        updateVersion.setTermsOfUseOrLicense(newTermsOfUseOrLicense);
+        updateVersion.setDefaultTermsOfUseOrLicense(newTermsOfUseOrLicense);
         //Put old terms on version that will be deleted....
-        newVersion.setTermsOfUseOrLicense(oldTermsOfUseOrLicense);
+        newVersion.setDefaultTermsOfUseOrLicense(oldTermsOfUseOrLicense);
 
         //Version Note
         updateVersion.setVersionNote(newVersion.getVersionNote());
 
         // Clear unnecessary terms relationships ....
-        newVersion.setTermsOfUseOrLicense(null);
+        newVersion.setDefaultTermsOfUseOrLicense(null);
         newVersion.setTermsOfAccess(null);
         oldTermsOfAccess.setDatasetVersion(null);
         oldTermsOfUseOrLicense.setDatasetVersion(null);

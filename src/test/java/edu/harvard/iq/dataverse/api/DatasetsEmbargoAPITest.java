@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -106,7 +105,7 @@ public class DatasetsEmbargoAPITest {
         when(dataset.getLatestVersion()).thenReturn(datasetVersion);
         when(dataset.getFiles()).thenReturn(List.of(file));
         when(datasetVersion.getTermsOfAccess()).thenReturn(termsOfAccess);
-        when(datasetVersion.getTermsOfUseOrLicense()).thenReturn(termsOfUseAndLicense);
+        when(datasetVersion.getDefaultTermsOfUseOrLicense()).thenReturn(termsOfUseAndLicense);
         when(datasetVersion.getVersionState()).thenReturn(DatasetVersion.VersionState.DRAFT);
         when(termsOfAccess.getDatasetVersion()).thenReturn(datasetVersion);
         when(termsOfUseAndLicense.getDatasetVersion()).thenReturn(datasetVersion);

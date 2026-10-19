@@ -711,14 +711,14 @@ public class JsonPrinter {
             bld.add("license", jsonLicense(dsv));
         } else {
             // Custom terms
-            bld.add("termsOfUse", dsv.getTermsOfUseOrLicense().getTermsOfUse())
-                    .add("confidentialityDeclaration", dsv.getTermsOfUseOrLicense().getConfidentialityDeclaration())
-                    .add("specialPermissions", dsv.getTermsOfUseOrLicense().getSpecialPermissions())
-                    .add("restrictions", dsv.getTermsOfUseOrLicense().getRestrictions())
-                    .add("citationRequirements", dsv.getTermsOfUseOrLicense().getCitationRequirements())
-                    .add("depositorRequirements", dsv.getTermsOfUseOrLicense().getDepositorRequirements())
-                    .add("conditions", dsv.getTermsOfUseOrLicense().getConditions())
-                    .add("disclaimer", dsv.getTermsOfUseOrLicense().getDisclaimer());
+            bld.add("termsOfUse", dsv.getDefaultTermsOfUseOrLicense().getTermsOfUse())
+                    .add("confidentialityDeclaration", dsv.getDefaultTermsOfUseOrLicense().getConfidentialityDeclaration())
+                    .add("specialPermissions", dsv.getDefaultTermsOfUseOrLicense().getSpecialPermissions())
+                    .add("restrictions", dsv.getDefaultTermsOfUseOrLicense().getRestrictions())
+                    .add("citationRequirements", dsv.getDefaultTermsOfUseOrLicense().getCitationRequirements())
+                    .add("depositorRequirements", dsv.getDefaultTermsOfUseOrLicense().getDepositorRequirements())
+                    .add("conditions", dsv.getDefaultTermsOfUseOrLicense().getConditions())
+                    .add("disclaimer", dsv.getDefaultTermsOfUseOrLicense().getDisclaimer());
         }
         bld.add("termsOfAccess", dsv.getTermsOfAccess().getTermsOfAccess())
                 .add("dataAccessPlace", dsv.getTermsOfAccess().getDataAccessPlace())
@@ -1828,7 +1828,7 @@ public class JsonPrinter {
                 .add("createTime", template.getCreateTime().toString())
                 .add("createDate", template.getCreateDate())
                 .add("termsOfAccess", jsonTermsOfAccess(template.getTermsOfAccess()))
-                .add("termsOfUseOrLicense", jsonTermsOfUseOrLicense(template.getTermsOfUseOrLicense()))
+                .add("termsOfUseOrLicense", jsonTermsOfUseOrLicense(template.getDefaultTermsOfUseOrLicense()))
                 .add("datasetFields", jsonByBlocks(template.getDatasetFields()))
                 .add("instructions", jsonTemplateInstructions(template.getInstructionsMap()))
                 .add("dataverseAlias", template.getDataverse().getAlias());

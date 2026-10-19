@@ -2013,17 +2013,17 @@ public class IndexServiceBean {
     }
 
     private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
-        if (datasetVersion != null && datasetVersion.getTermsOfUseOrLicense() != null) {
+        if (datasetVersion != null && datasetVersion.getDefaultTermsOfUseOrLicense() != null) {
             //test to see if the terms of use are the default set in 5.10 - if so and there's no license then don't add license to solr doc.
             //fixes 10513
-            if(TermsOfUseOrLicense.DEFAULT_NOTERMS.equals(datasetVersion.getTermsOfUseOrLicense().getTermsOfUse())) {
+            if(TermsOfUseOrLicense.DEFAULT_NOTERMS.equals(datasetVersion.getDefaultTermsOfUseOrLicense().getTermsOfUse())) {
                 return; 
             }
             
             String licenseName = "Custom Terms";
-            if (datasetVersion.getTermsOfUseOrLicense().getLicense() != null) {
-                licenseName = datasetVersion.getTermsOfUseOrLicense().getLicense().getName();
-            } else if (datasetVersion.getTermsOfUseOrLicense().getTermsOfUse() == null) {
+            if (datasetVersion.getDefaultTermsOfUseOrLicense().getLicense() != null) {
+                licenseName = datasetVersion.getDefaultTermsOfUseOrLicense().getLicense().getName();
+            } else if (datasetVersion.getDefaultTermsOfUseOrLicense().getTermsOfUse() == null) {
                 // this fixes #10513 for datasets harvested in oai_dc - these 
                 // have neither the license id, nor any actual custom terms 
                 return; 

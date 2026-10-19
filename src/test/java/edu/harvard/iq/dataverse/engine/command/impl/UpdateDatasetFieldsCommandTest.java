@@ -48,7 +48,7 @@ public class UpdateDatasetFieldsCommandTest {
         when(commandContextMock.engine()).thenReturn(dataverseEngineMock);
         when(commandContextMock.datasetFieldsValidator()).thenReturn(datasetFieldsValidatorMock);
         when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
-        when(datasetVersionMock.getTermsOfUseOrLicense()).thenReturn(termsOfUseOrLicenseStub);
+        when(datasetVersionMock.getDefaultTermsOfUseOrLicense()).thenReturn(termsOfUseOrLicenseStub);
         when(datasetVersionMock.getTermsOfAccess()).thenReturn(termsOfAccessStub);
     }
 
@@ -311,7 +311,7 @@ public class UpdateDatasetFieldsCommandTest {
 
     private DatasetVersion prepareDatasetVersionWithCompoundField(DatasetFieldType fieldType, List<DatasetField> datasetFields) {
         DatasetVersion datasetVersion = new DatasetVersion();
-        datasetVersion.setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        datasetVersion.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
         datasetVersion.setTermsOfAccess(new TermsOfAccess());
 
         List<DatasetField> fields = new ArrayList<>();
@@ -350,7 +350,7 @@ public class UpdateDatasetFieldsCommandTest {
 
     private DatasetVersion prepareDatasetVersionWithSingleValueField(DatasetFieldType fieldType, String originalValue) {
         DatasetVersion datasetVersion = new DatasetVersion();
-        datasetVersion.setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        datasetVersion.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
         datasetVersion.setTermsOfAccess(new TermsOfAccess());
 
         List<DatasetField> fields = new ArrayList<>();
@@ -377,7 +377,7 @@ public class UpdateDatasetFieldsCommandTest {
 
     private DatasetVersion prepareDatasetVersionWithSingleControlledVocabularyValueField(DatasetFieldType fieldType, ControlledVocabularyValue controlledVocabularyValue) {
         DatasetVersion datasetVersion = new DatasetVersion();
-        datasetVersion.setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        datasetVersion.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
         datasetVersion.setTermsOfAccess(new TermsOfAccess());
 
         List<DatasetField> fields = new ArrayList<>();

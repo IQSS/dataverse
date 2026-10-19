@@ -33,7 +33,6 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -338,7 +337,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             try {
                 TermsOfUseOrLicense toua = (TermsOfUseOrLicense) em.createNamedQuery("TermsOfUseOrLicense.findByDatasetVersionIdAndDefaultTerms")
                         .setParameter("id", datasetVersion.getId()).setParameter("defaultTerms", TermsOfUseOrLicense.DEFAULT_NOTERMS).getSingleResult();
-                if (toua != null && datasetVersion.getTermsOfUseOrLicense().getLicense() == null) {
+                if (toua != null && datasetVersion.getDefaultTermsOfUseOrLicense().getLicense() == null) {
                     return true;
                 }
 

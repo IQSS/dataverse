@@ -141,10 +141,10 @@ public class TemplatePage implements java.io.Serializable {
                 template.setTermsOfAccess(terms);
             }
 
-            if (template.getTermsOfUseOrLicense() != null) {
-                TermsOfUseOrLicense terms = template.getTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+            if (template.getDefaultTermsOfUseOrLicense() != null) {
+                TermsOfUseOrLicense terms = template.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
                 terms.setTemplate(template);
-                template.setTermsOfUseOrLicense(terms);
+                template.setDefaultTermsOfUseOrLicense(terms);
             }
 
             updateDatasetFieldInputLevels();
@@ -161,7 +161,7 @@ public class TemplatePage implements java.io.Serializable {
             TermsOfUseOrLicense toual = new TermsOfUseOrLicense();
             toual.setTemplate(template);
             toual.setLicense(licenseServiceBean.getDefault());
-            template.setTermsOfUseOrLicense(toual);
+            template.setDefaultTermsOfUseOrLicense(toual);
 
             updateDatasetFieldInputLevels();
         } else {

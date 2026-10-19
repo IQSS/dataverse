@@ -38,7 +38,7 @@ public class UpdateDatasetLicenseCommand extends AbstractDatasetCommand<Dataset>
             if (!license.isActive()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
             }
-            TermsOfUseOrLicense termsOfUseOrLicense = datasetVersion.getTermsOfUseOrLicense();
+            TermsOfUseOrLicense termsOfUseOrLicense = datasetVersion.getDefaultTermsOfUseOrLicense();
             termsOfUseOrLicense.setLicense(license);
 
             savedDataset = ctxt.engine().submit(new UpdateDatasetVersionCommand(getDataset(), getRequest()));
@@ -46,10 +46,10 @@ public class UpdateDatasetLicenseCommand extends AbstractDatasetCommand<Dataset>
             if (customTermsOfUseOrLicense.getTermsOfUse() == null || customTermsOfUseOrLicense.getTermsOfUse().isBlank()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
             }
-            TermsOfUseOrLicense termsToUpdate = datasetVersion.getTermsOfUseOrLicense();
+            TermsOfUseOrLicense termsToUpdate = datasetVersion.getDefaultTermsOfUseOrLicense();
             applyCustomTerms(termsToUpdate, customTermsOfUseOrLicense);
             termsToUpdate.setLicense(null);
-            datasetVersion.setTermsOfUseOrLicense(termsToUpdate);
+            datasetVersion.setDefaultTermsOfUseOrLicense(termsToUpdate);
             savedDataset = ctxt.engine().submit(new UpdateDatasetVersionCommand(getDataset(), getRequest()));
         }
         return savedDataset;

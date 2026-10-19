@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -153,7 +152,7 @@ public class OREMap {
         }
 
         TermsOfAccess termsOfAccess = version.getTermsOfAccess();
-        TermsOfUseOrLicense termsOfUseOrLicense = version.getTermsOfUseOrLicense();
+        TermsOfUseOrLicense termsOfUseOrLicense = version.getDefaultTermsOfUseOrLicense();
         if (termsOfUseOrLicense.getLicense() != null) {
             aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
                 termsOfUseOrLicense.getLicense().getUri().toString());

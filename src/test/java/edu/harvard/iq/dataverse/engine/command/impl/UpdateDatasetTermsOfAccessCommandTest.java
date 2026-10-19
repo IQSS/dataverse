@@ -59,10 +59,10 @@ public class UpdateDatasetTermsOfAccessCommandTest {
         when(commandContextMock.engine()).thenReturn(dataverseEngineMock);
         when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
         when(datasetVersionMock.getTermsOfAccess()).thenReturn(termsOfAccessMock);
-        when(datasetVersionMock.getTermsOfUseOrLicense()).thenReturn(termsOUAL.copyTermsOfUseOrLicense());
+        when(datasetVersionMock.getDefaultTermsOfUseOrLicense()).thenReturn(termsOUAL.copyTermsOfUseOrLicense());
         dataset = new Dataset();
         dataset.getOrCreateEditVersion().setTermsOfAccess(new TermsOfAccess());
-        dataset.getOrCreateEditVersion().setTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        dataset.getOrCreateEditVersion().setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
         termsOA = new TermsOfAccess();
         termsOUAL = new TermsOfUseOrLicense();
 
@@ -79,7 +79,7 @@ public class UpdateDatasetTermsOfAccessCommandTest {
 
         // Assert
         assertEquals(termsOA, datasetVersionMock.getTermsOfAccess());
-        assertEquals(termsOUAL, datasetVersionMock.getTermsOfUseOrLicense());
+        assertEquals(termsOUAL, datasetVersionMock.getDefaultTermsOfUseOrLicense());
         verify(dataverseEngineMock).submit(updateDatasetVersionCommand);
         verify(datasetVersionMock).setVersionState(DatasetVersion.VersionState.DRAFT);
         verify(commandContextMock).engine();

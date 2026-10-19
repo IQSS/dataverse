@@ -53,7 +53,7 @@ public class UpdateDatasetLicenseCommandTest {
         MockitoAnnotations.openMocks(this);
 
         when(datasetMock.getOrCreateEditVersion()).thenReturn(datasetVersionMock);
-        when(datasetVersionMock.getTermsOfUseOrLicense()).thenReturn(termsOfUseOrLicenseSpy);
+        when(datasetVersionMock.getDefaultTermsOfUseOrLicense()).thenReturn(termsOfUseOrLicenseSpy);
         when(dataverseEngineMock.submit(updateDatasetVersionCommandStub)).thenReturn(datasetMock);
         when(commandContextMock.engine()).thenReturn(dataverseEngineMock);
 
@@ -131,7 +131,7 @@ public class UpdateDatasetLicenseCommandTest {
         assertEquals(disclaimer, termsOfUseOrLicenseSpy.getDisclaimer());
         assertEquals(null, termsOfUseOrLicenseSpy.getLicense());
 
-        verify(datasetVersionMock).setTermsOfUseOrLicense(termsOfUseOrLicenseSpy);
+        verify(datasetVersionMock).setDefaultTermsOfUseOrLicense(termsOfUseOrLicenseSpy);
         verify(commandContextMock).engine();
     }
 

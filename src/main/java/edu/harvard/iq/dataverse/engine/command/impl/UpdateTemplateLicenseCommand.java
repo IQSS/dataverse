@@ -49,7 +49,7 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
             if (!license.isActive()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
             }
-            TermsOfUseOrLicense termsOfUseAndAccess = template.getTermsOfUseOrLicense();
+            TermsOfUseOrLicense termsOfUseAndAccess = template.getDefaultTermsOfUseOrLicense();
             termsOfUseAndAccess.setLicense(license);
             savedTemplate = ctxt.templates().save(template);
 
@@ -57,10 +57,10 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
             if (customTermsOfUseOrLicense.getTermsOfUse() == null || customTermsOfUseOrLicense.getTermsOfUse().isBlank()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
             }
-            TermsOfUseOrLicense termsToUpdate = template.getTermsOfUseOrLicense();
+            TermsOfUseOrLicense termsToUpdate = template.getDefaultTermsOfUseOrLicense();
             applyCustomTerms(termsToUpdate, customTermsOfUseOrLicense);
-            template.setTermsOfUseOrLicense(termsToUpdate);
-            template.getTermsOfUseOrLicense().setLicense(null);
+            template.setDefaultTermsOfUseOrLicense(termsToUpdate);
+            template.getDefaultTermsOfUseOrLicense().setLicense(null);
             savedTemplate = ctxt.templates().save(template);
         }
         

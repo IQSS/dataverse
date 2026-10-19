@@ -25,7 +25,6 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -146,7 +145,7 @@ public class DatasetVersion implements Serializable {
     
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
     @JoinColumn(name = "default_termsofuseorlicense_id")
-    private TermsOfUseOrLicense termsOfUseOrLicense;
+    private TermsOfUseOrLicense defaultTermsOfUseOrLicense;
 
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetField> datasetFields = new ArrayList();
@@ -318,12 +317,12 @@ public class DatasetVersion implements Serializable {
         this.termsOfAccess = termsOfAccess;
     }
 
-    public TermsOfUseOrLicense getTermsOfUseOrLicense() {
-        return termsOfUseOrLicense;
+    public TermsOfUseOrLicense getDefaultTermsOfUseOrLicense() {
+        return defaultTermsOfUseOrLicense;
     }
 
-    public void setTermsOfUseOrLicense(TermsOfUseOrLicense termsOfUseOrLicense) {
-        this.termsOfUseOrLicense = termsOfUseOrLicense;
+    public void setDefaultTermsOfUseOrLicense(TermsOfUseOrLicense defaultTermsOfUseOrLicense) {
+        this.defaultTermsOfUseOrLicense = defaultTermsOfUseOrLicense;
     }
 
     public List<DatasetField> getDatasetFields() {
@@ -679,10 +678,10 @@ public class DatasetVersion implements Serializable {
             terms.setDatasetVersion(this);
             this.setTermsOfAccess(terms);
         }
-        if (template.getTermsOfUseOrLicense() != null) {
-            TermsOfUseOrLicense terms = template.getTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+        if (template.getDefaultTermsOfUseOrLicense() != null) {
+            TermsOfUseOrLicense terms = template.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
             terms.setDatasetVersion(this);
-            this.setTermsOfUseOrLicense(terms);
+            this.setDefaultTermsOfUseOrLicense(terms);
         }
     }
     
@@ -719,15 +718,15 @@ public class DatasetVersion implements Serializable {
                 dsv.setTermsOfAccess(terms);
             }
 
-            if (this.getTermsOfUseOrLicense() != null){
-                TermsOfUseOrLicense terms = this.getTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+            if (this.getDefaultTermsOfUseOrLicense() != null){
+                TermsOfUseOrLicense terms = this.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
                 terms.setDatasetVersion(dsv);
-                dsv.setTermsOfUseOrLicense(terms);
+                dsv.setDefaultTermsOfUseOrLicense(terms);
             } else {
                 TermsOfUseOrLicense terms = new TermsOfUseOrLicense();
                 terms.setDatasetVersion(dsv);
                 // terms.setLicense(License.CC0);
-                dsv.setTermsOfUseOrLicense(terms);
+                dsv.setDefaultTermsOfUseOrLicense(terms);
             }
 
         dsv.setDataset(this.getDataset());
@@ -746,7 +745,7 @@ public class DatasetVersion implements Serializable {
         termsOfUseOrLicense.setLicense(license);
         termsOfAccess.setFileAccessRequest(true);
         this.setTermsOfAccess(termsOfAccess);
-        this.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        this.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
 
     }
 
@@ -2080,7 +2079,7 @@ public class DatasetVersion implements Serializable {
          * We used to include "https://schema.org/version/3.3" in the output for
          * "schemaVersion".
          */
-        if (this.getTermsOfUseOrLicense() != null) {
+        if (this.getDefaultTermsOfUseOrLicense() != null) {
             job.add("license",DatasetUtil.getLicenseURI(this));
         }
         

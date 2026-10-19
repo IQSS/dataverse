@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.persistence.CascadeType;
@@ -125,15 +124,15 @@ public class Template implements Serializable {
     }
 
     @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
-    @JoinColumn(name = "termsofuseorlicense_id")
-    private TermsOfUseOrLicense termsOfUseOrLicense;
+    @JoinColumn(name = "default_termsofuseorlicense_id")
+    private TermsOfUseOrLicense defaultTermsOfUseOrLicense;
 
-    public TermsOfUseOrLicense getTermsOfUseOrLicense() {
-        return termsOfUseOrLicense;
+    public TermsOfUseOrLicense getDefaultTermsOfUseOrLicense() {
+        return defaultTermsOfUseOrLicense;
     }
 
-    public void setTermsOfUseOrLicense(TermsOfUseOrLicense termsOfUseOrLicense) {
-        this.termsOfUseOrLicense = termsOfUseOrLicense;
+    public void setDefaultTermsOfUseOrLicense(TermsOfUseOrLicense defaultTermsOfUseOrLicense) {
+        this.defaultTermsOfUseOrLicense = defaultTermsOfUseOrLicense;
     }
 
     @OneToMany(mappedBy = "template", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -382,14 +381,14 @@ public class Template implements Serializable {
         newTemplate.setTermsOfAccess(termsOfAccess);
         
         TermsOfUseOrLicense termsOfUseOrLicense = null;
-        if(source.getTermsOfUseOrLicense() != null){
-            termsOfUseOrLicense = source.getTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+        if(source.getDefaultTermsOfUseOrLicense() != null){
+            termsOfUseOrLicense = source.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
         } else {
             termsOfUseOrLicense = new TermsOfUseOrLicense();
            // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
         }
         termsOfUseOrLicense.setTemplate(newTemplate);
-        newTemplate.setTermsOfUseOrLicense(termsOfUseOrLicense);
+        newTemplate.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
 
         newTemplate.getInstructionsMap().putAll(source.getInstructionsMap());
         newTemplate.updateInstructions();
