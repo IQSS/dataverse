@@ -195,7 +195,7 @@ public class FileMetadata implements Serializable {
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
         fmd.setProvFreeForm(getProvFreeForm());
-        fmd.setTermsOfUseOrLicense(null);
+        fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense());
         dsv.getFileMetadatas().add(fmd);
         return fmd;
     }

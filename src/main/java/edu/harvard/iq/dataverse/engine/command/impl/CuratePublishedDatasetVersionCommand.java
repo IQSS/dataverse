@@ -72,9 +72,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // final DatasetVersion editVersion = getDataset().getEditVersion();
         DatasetFieldUtil.tidyUpFields(updateVersion.getDatasetFields(), true);
 
-        // Merge the new version into our JPA context
-        ctxt.em().merge(updateVersion);
-
         TermsOfAccess oldTermsOfAccess = updateVersion.getTermsOfAccess();
         TermsOfAccess newTermsOfAccess = newVersion.getTermsOfAccess();
         newTermsOfAccess.setDatasetVersion(updateVersion);

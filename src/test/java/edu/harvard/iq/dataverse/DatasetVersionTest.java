@@ -249,7 +249,7 @@ public class DatasetVersionTest {
 
     @Test
     @Disabled("implemented explicitly in webUI  and  datasets/{id}/license")
-    public void testInValidLicense() {
+    public void testInvalidLicense() {
         var datasetVersion = new DatasetVersion();
 
         var termsOfUseOrLicense = new TermsOfUseOrLicense();

@@ -1846,13 +1846,7 @@ public class DatasetVersion implements Serializable {
                 returnSet.add(getViolation(violations, this.termsOfAccess.getValidationMessage()));
             }
         }
-        if (this.termsOfUseOrLicense != null) {
-            var violations = validator.validate(this.termsOfUseOrLicense);
-            if (violations.size() > 0) {
-                returnSet.add(getViolation(violations, this.termsOfUseOrLicense.getValidationMessage()));
-            }
-        }
-        
+
         return returnSet;
     }
 
