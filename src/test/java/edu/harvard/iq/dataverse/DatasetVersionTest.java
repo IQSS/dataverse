@@ -243,23 +243,4 @@ public class DatasetVersionTest {
         assertEquals(1, violations.size());
         assertThat(violations.iterator().next().getMessage()).isEqualTo(expectedMessge);
     }
-
-    @Test
-    @Disabled("implemented explicitly in webUI  and  datasets/{id}/license")
-    public void testInvalidLicense() {
-        var datasetVersion = new DatasetVersion();
-
-        var termsOfUseOrLicense = new TermsOfUseOrLicense();
-        termsOfUseOrLicense.setLicense(null);
-        termsOfUseOrLicense.setTermsOfUse(null);
-        datasetVersion.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
-        termsOfUseOrLicense.setDatasetVersion(datasetVersion);
-
-        var violations = datasetVersion.validate();
-
-        var expectedByDatasetPageValidateTerms = BundleUtil.getStringFromBundle("dataset.license.custom.blankterms");
-        var expectedByFilePageAndDatasetPageInit = BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message");
-        var expectedByAPI = BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided");
-        assertEquals(1, violations.size());
-    }
 }

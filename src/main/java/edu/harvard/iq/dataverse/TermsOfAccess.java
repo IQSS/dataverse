@@ -21,7 +21,6 @@ import jakarta.persistence.Transient;
  * @author skraffmi
  */
 @Entity
-@Table(name = "termsofaccess")
 @ValidateTermsOfAccess
 public class TermsOfAccess implements Serializable {
 
@@ -60,28 +59,28 @@ public class TermsOfAccess implements Serializable {
     }
     
 
-    @Column(name = "termsofaccess", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String termsOfAccess;
     
-    @Column(name = "dataaccessplace", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String dataAccessPlace;
     
-    @Column(name = "originalarchive", columnDefinition = "TEXT")
+    @Column( columnDefinition = "TEXT")
     private String originalArchive;
     
-    @Column(name = "availabilitystatus", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String availabilityStatus;
     
-    @Column(name = "contactforaccess", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String contactForAccess;
     
-    @Column(name = "sizeofcollection", columnDefinition = "TEXT")
+    @Column( columnDefinition = "TEXT")
     private String sizeOfCollection;
     
-    @Column(name = "studycompletion", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String studyCompletion;
 
-    @Column(name = "fileaccessrequest")
+    @Column(columnDefinition = "BOOLEAN")
     private boolean fileAccessRequest;
 
     public boolean isFileAccessRequest() {

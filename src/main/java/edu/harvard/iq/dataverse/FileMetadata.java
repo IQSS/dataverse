@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.Column;
@@ -152,7 +153,7 @@ public class FileMetadata implements Serializable {
     @BatchFetch(BatchFetchType.IN)
     private DataFile dataFile;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "termsofuseorlicense_id")
     private TermsOfUseOrLicense termsOfUseOrLicense;
 

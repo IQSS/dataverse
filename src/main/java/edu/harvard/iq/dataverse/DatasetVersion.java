@@ -1839,25 +1839,7 @@ public class DatasetVersion implements Serializable {
             }
         }
 
-        if (this.termsOfAccess != null) {
-            var violations = validator.validate(this.termsOfAccess);
-            if (violations.size() > 0) {
-                returnSet.add(getViolation(violations, this.termsOfAccess.getValidationMessage()));
-            }
-        }
-
         return returnSet;
-    }
-
-    private <T> ConstraintViolation<T> getViolation(Set<ConstraintViolation<T>> violations, String msg) {
-        String validationMessage = violations.stream()
-            .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
-            .collect(joining(", ", "Validation Failed: ", "."));
-        logger.info(validationMessage);
-        return violations.stream()
-            .filter(v -> Objects.equals(v.getMessage(), msg))
-            .findFirst()
-            .orElseGet(() -> violations.iterator().next());
     }
 
     public List<WorkflowComment> getWorkflowComments() {

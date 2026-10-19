@@ -46,7 +46,6 @@ import jakarta.persistence.NamedQuery;
  * @author skraffmi
  */
 @Entity
-@Table(name = "termsofuseorlicense")
 public class TermsOfUseOrLicense implements Serializable {
     public static final String DEFAULT_NOTERMS = "This dataset is made available without information on how it can be used. You should communicate with the Contact(s) specified before use.";
 
@@ -88,28 +87,28 @@ public class TermsOfUseOrLicense implements Serializable {
     @JoinColumn(name = "license_id")
     private License license;
 
-    @Column(name = "termsofuse", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String termsOfUse;
 
-    @Column(name = "confidentialitydeclaration", columnDefinition = "TEXT")
+    @Column( columnDefinition = "TEXT")
     private String confidentialityDeclaration;
 
-    @Column(name = "specialpermissions", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String specialPermissions;
 
-    @Column(name = "restrictions", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String restrictions;
 
-    @Column(name = "citationrequirements", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String citationRequirements;
 
-    @Column(name = "depositorrequirements", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String depositorRequirements;
 
-    @Column(name = "conditions", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String conditions;
 
-    @Column(name = "disclaimer", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String disclaimer;
 
     public License getLicense() {
