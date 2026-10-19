@@ -62,9 +62,13 @@
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}"></span>
                                             </label>
                                             <div>
-                                                <button class="btn btn-default" onclick="PF('selectFileThumbnail').show()" type="button">
-                                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}
-                                                </button>
+                                                <p:commandButton value="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}"
+                                                                 styleClass="btn btn-default">
+                                                    <p:ajax event="click"
+                                                            listener="#{DatasetWidgetsPage.loadThumbnails}"
+                                                            update=":themeWidgetsForm:selectFileThumbnail:customPanel"
+                                                            oncomplete="PF('selectFileThumbnail').show()"/>
+                                                </p:commandButton>
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -160,7 +164,6 @@
                     </div> 
                 </p:dialog>
                 <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true" dynamic="true">
-                    <p:ajax event="dialogShow" listener="#{DatasetWidgetsPage.loadThumbnails}" update="customPanel"/>
                     <div class="form-horizontal col-sm-12">
                         <div class="form-group">
                             <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
