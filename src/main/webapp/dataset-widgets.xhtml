@@ -159,28 +159,42 @@
                         </button>
                     </div> 
                 </p:dialog>
-                <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true" dynamic="true">
+                <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true" dynamic="true" width="700">
+                    <style>
+                        .thumbnail-data-scroller .ui-datascroller-list {
+                            list-style: none;
+                            padding: 0;
+                            margin: 0;
+                            display: flex;
+                            flex-wrap: wrap;
+                        }
+                        .thumbnail-data-scroller .ui-datascroller-item {
+                            width: 33.3333%;
+                            padding: 5px;
+                            box-sizing: border-box;
+                        }
+                    </style>
                     <div class="form-horizontal col-sm-12">
                         <div class="form-group">
                             <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
                             <p:outputPanel id="customPanel">
-                                <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
-                                    <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb}" itemValue="#{thumb.dataFile}"/>
-                                </p:selectOneRadio>
-                                <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
-                                    <div class="col-xs-4 text-center radio">
-                                        <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
-                                        <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
-                                            <div><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
-                                            <h:outputText value="#{thumbnail.filename}"/>
-                                        </h:outputLabel>
+                                <p:dataScroller id="thumbnailDataScroller" value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" chunkSize="24" mode="inline" scrollHeight="350" styleClass="thumbnail-data-scroller">
+                                    <div class="text-center radio" style="min-height: 120px; margin-bottom: 15px;">
+                                        <label>
+                                            <input type="radio" name="selectedThumbnailId" value="#{thumbnail.dataFile.id}"
+                                                   checked="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo != null and DatasetWidgetsPage.datasetFileThumbnailToSwitchTo.id == thumbnail.dataFile.id ? 'checked' : null}" />
+                                            <div class="margin-bottom-half">
+                                                <img src="/api/access/datafile/#{thumbnail.dataFile.id}?imageThumb=true" loading="lazy" alt="#{thumbnail.filename}"/>
+                                            </div>
+                                            <span class="small" style="display: block; word-break: break-all;">#{thumbnail.filename}</span>
+                                        </label>
                                     </div>
-                                </c:forEach>
+                                </p:dataScroller>
                             </p:outputPanel>
                         </div>
                     </div>
                     <div class="button-block">
-                        <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
+                        <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}" oncomplete="PF('selectFileThumbnail').hide()"/>
                         <button class="btn btn-link" onclick="PF('selectFileThumbnail').hide()" type="button">
                                     #{bundle.cancel}
                         </button>

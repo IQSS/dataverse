@@ -36,6 +36,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     DatasetServiceBean datasetService;
 
     @EJB
+    DataFileServiceBean dataFileService;
+
+    @EJB
     EjbDataverseEngine commandEngine;
     
     @EJB
@@ -127,6 +130,30 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
+        String selectedIdStr = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("selectedThumbnailId");
+        if (selectedIdStr != null && !selectedIdStr.isEmpty()) {
+            try {
+                Long fileId = Long.parseLong(selectedIdStr);
+                if (datasetThumbnails != null) {
+                    for (DatasetThumbnail thumb : datasetThumbnails) {
+                        if (thumb.getDataFile() != null && fileId.equals(thumb.getDataFile().getId())) {
+                            datasetFileThumbnailToSwitchTo = thumb.getDataFile();
+                            break;
+                        }
+                    }
+                }
+                if (datasetFileThumbnailToSwitchTo == null || !fileId.equals(datasetFileThumbnailToSwitchTo.getId())) {
+                    if (dataFileService != null) {
+                        datasetFileThumbnailToSwitchTo = dataFileService.find(fileId);
+                    }
+                }
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid selectedThumbnailId: " + selectedIdStr);
+            }
+        }
+        if (datasetFileThumbnailToSwitchTo == null) {
+            return;
+        }
         updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
         String base64image = ImageThumbConverter.getImageThumbnailAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
