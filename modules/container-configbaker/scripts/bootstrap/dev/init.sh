@@ -7,7 +7,7 @@ DATAVERSE_URL=${DATAVERSE_URL:-"http://dataverse:8080"}
 export DATAVERSE_URL
 
 echo "Running base setup-all.sh (INSECURE MODE)..."
-"${BOOTSTRAP_DIR}"/base/setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
+"${BOOTSTRAP_DIR}"/base/setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out || SETUP_STATUS=$?
 
 echo "Setting DOI provider to \"FAKE\"..."
 curl "${DATAVERSE_URL}/api/admin/settings/:DoiProvider" -X PUT -d FAKE
@@ -27,4 +27,8 @@ echo "Checking Dataverse version..."
 curl "${DATAVERSE_URL}/api/info/version"
 
 echo ""
-echo "Done, your instance has been configured for development. Have a nice day!"
+if [[ "$SETUP_STATUS" -eq 0 ]]; then
+  echo "Done, your instance has been configured for development. Have a nice day!"
+else
+  echo "Development configuration finished with setup errors; see the diagnostics above." >&2
+fi
