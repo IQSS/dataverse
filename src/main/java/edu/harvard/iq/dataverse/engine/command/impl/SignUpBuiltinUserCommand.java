@@ -34,14 +34,21 @@ public class SignUpBuiltinUserCommand extends AbstractCommand<AuthenticatedUser>
     public static final String FIELD_EMAIL_ADDRESS = "emailAddress";
     public static final String FIELD_PASSWORD = "password";
     public static final String FIELD_TERMS_ACCEPTED = "termsAccepted";
+    public static final String FIELD_ORCID = "orcid";
 
     private final UserDTO userDTO;
     private final String password;
+    private final String orcidUrl;
 
     public SignUpBuiltinUserCommand(DataverseRequest aRequest, UserDTO userDTO, String password) {
+        this(aRequest, userDTO, password, null);
+    }
+
+    public SignUpBuiltinUserCommand(DataverseRequest aRequest, UserDTO userDTO, String password, String orcidUrl) {
         super(aRequest, (DvObject) null);
         this.userDTO = userDTO;
         this.password = password;
+        this.orcidUrl = orcidUrl;
     }
 
     @Override
@@ -74,6 +81,11 @@ public class SignUpBuiltinUserCommand extends AbstractCommand<AuthenticatedUser>
         }
 
         ctxt.builtinUsers().save(builtinUser);
+
+        if (orcidUrl != null) {
+            authenticatedUser.setAuthenticatedOrcid(orcidUrl);
+            authenticatedUser = ctxt.em().merge(authenticatedUser);
+        }
 
         ctxt.notifications().sendNotification(
                 authenticatedUser,
@@ -120,6 +132,10 @@ public class SignUpBuiltinUserCommand extends AbstractCommand<AuthenticatedUser>
             if (!passwordErrors.isEmpty()) {
                 fieldErrors.put(FIELD_PASSWORD, String.join(" ", passwordErrors));
             }
+        }
+
+        if (orcidUrl != null && ctxt.authentication().lookupUserByOrcid(orcidUrl) != null) {
+            fieldErrors.put(FIELD_ORCID, BundleUtil.getStringFromBundle("signUpBuiltinUserCommand.errors.orcidInUse"));
         }
 
         if (!userDTO.isTermsAccepted()) {

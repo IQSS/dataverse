@@ -19,6 +19,11 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OrcidSignUpTokens;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 
 import static edu.harvard.iq.dataverse.api.auth.AuthUtil.extractBearerTokenFromHeaderParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -26,6 +31,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -380,17 +386,14 @@ public class Users extends AbstractApiBean {
     @Operation(summary = "Signs up a new builtin user",
             description = "Creates a builtin user account from the supplied user JSON and password, and sends the welcome email with the email confirmation link. Requires the api-builtin-user-signup feature flag and :AllowSignUp.")
     public Response signUpBuiltinUser(
-            @RequestBody(description = "User JSON with username, firstName, lastName, emailAddress, password, termsAccepted, and optional affiliation and position.")
+            @RequestBody(description = "User JSON with username, firstName, lastName, emailAddress, password, termsAccepted, and optional affiliation, position, and orcidToken.")
             String body) {
-        if (!FeatureFlags.API_BUILTIN_USER_SIGNUP.enabled()) {
-            return forbidden(BundleUtil.getStringFromBundle("users.api.signup.errors.featureFlagDisabled"));
-        }
-        if (!settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, true)) {
-            return forbidden(BundleUtil.getStringFromBundle("users.api.signup.errors.signUpNotAllowed"));
+        Response unavailable = signUpUnavailableResponse();
+        if (unavailable != null) {
+            return unavailable;
         }
         DataverseRequest dataverseRequest = createDataverseRequest(GuestUser.get());
-        int capacityPerHour = JvmSettings.API_SIGNUP_RATE_LIMIT_PER_HOUR.lookupOptional(Integer.class).orElse(10);
-        if (capacityPerHour > 0 && !cacheFactory.checkRate("signup:" + dataverseRequest.getSourceAddress(), capacityPerHour)) {
+        if (isSignUpRateLimited("signup", dataverseRequest)) {
             return rateLimited(BundleUtil.getStringFromBundle("users.api.signup.errors.rateLimited"));
         }
         try {
@@ -398,8 +401,19 @@ public class Users extends AbstractApiBean {
             if (userJson.containsKey("affiliationRor")) {
                 return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.affiliationRorNotSupported"));
             }
-            String password = userJson.containsKey("password") && !userJson.isNull("password") ? userJson.getString("password") : null;
-            AuthenticatedUser authenticatedUser = execCommand(new SignUpBuiltinUserCommand(dataverseRequest, jsonParser().parseUserDTO(userJson), password));
+            String orcidUrl = null;
+            String orcidToken = getOptionalString(userJson, "orcidToken");
+            if (orcidToken != null) {
+                OrcidOAuth2AP orcidProvider = authSvc.getOrcidAuthenticationProvider();
+                orcidUrl = orcidProvider == null ? null
+                        : OrcidSignUpTokens.readOrcidToken(orcidToken, orcidProvider.getClientSecret(), System.currentTimeMillis()).orElse(null);
+                if (orcidUrl == null) {
+                    String message = BundleUtil.getStringFromBundle("users.api.signup.errors.orcidTokenInvalid");
+                    return badRequest(message, Map.of(SignUpBuiltinUserCommand.FIELD_ORCID, message));
+                }
+            }
+            String password = getOptionalString(userJson, "password");
+            AuthenticatedUser authenticatedUser = execCommand(new SignUpBuiltinUserCommand(dataverseRequest, jsonParser().parseUserDTO(userJson), password, orcidUrl));
             return created("/api/admin/authenticatedUsers/" + authenticatedUser.getUserIdentifier(),
                     JsonUtil.createObjectBuilder().add("identifier", authenticatedUser.getIdentifier()));
         } catch (JsonParseException | JsonParsingException | ClassCastException e) {
@@ -407,5 +421,108 @@ public class Users extends AbstractApiBean {
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    @GET
+    @Path("signup/orcid/authorize")
+    @Operation(summary = "Gets the ORCID authorization URL for signing up",
+            description = "Returns the URL that sends a new user to ORCID to authenticate their ORCID iD while signing up. The redirectUri must be listed in dataverse.api.signup.orcid-redirect-uris.")
+    public Response getOrcidSignUpAuthorizationUrl(
+            @Parameter(description = "The SPA URL that ORCID redirects back to.")
+            @QueryParam("redirectUri") String redirectUri) {
+        Response unavailable = signUpUnavailableResponse();
+        if (unavailable != null) {
+            return unavailable;
+        }
+        OrcidOAuth2AP orcidProvider = authSvc.getOrcidAuthenticationProvider();
+        if (orcidProvider == null) {
+            return notFound(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidNotConfigured"));
+        }
+        if (!isAllowedOrcidSignUpRedirectUri(redirectUri)) {
+            return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidRedirectUriNotAllowed"));
+        }
+        String state = OrcidSignUpTokens.createState(redirectUri, orcidProvider.getClientSecret(), System.currentTimeMillis());
+        return ok(JsonUtil.createObjectBuilder().add("authorizationUrl", orcidProvider.buildAuthzUrl(state, redirectUri)));
+    }
+
+    @POST
+    @Path("signup/orcid")
+    @Operation(summary = "Authenticates an ORCID iD for signing up",
+            description = "Exchanges the authorization code returned by ORCID for the user's ORCID iD and profile details, and returns a short-lived orcidToken to include in the sign-up request.")
+    public Response connectOrcidForSignUp(
+            @RequestBody(description = "JSON with the code and state returned by ORCID, and the redirectUri used for authorization.")
+            String body) {
+        Response unavailable = signUpUnavailableResponse();
+        if (unavailable != null) {
+            return unavailable;
+        }
+        OrcidOAuth2AP orcidProvider = authSvc.getOrcidAuthenticationProvider();
+        if (orcidProvider == null) {
+            return notFound(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidNotConfigured"));
+        }
+        DataverseRequest dataverseRequest = createDataverseRequest(GuestUser.get());
+        if (isSignUpRateLimited("signup-orcid", dataverseRequest)) {
+            return rateLimited(BundleUtil.getStringFromBundle("users.api.signup.errors.rateLimited"));
+        }
+        String code;
+        String state;
+        String redirectUri;
+        try {
+            JsonObject json = JsonUtil.getJsonObject(body);
+            code = getOptionalString(json, "code");
+            state = getOptionalString(json, "state");
+            redirectUri = getOptionalString(json, "redirectUri");
+        } catch (JsonParsingException | ClassCastException e) {
+            return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidInvalidRequest"));
+        }
+        if (code == null || !isAllowedOrcidSignUpRedirectUri(redirectUri)
+                || !OrcidSignUpTokens.isValidState(state, redirectUri, orcidProvider.getClientSecret(), System.currentTimeMillis())) {
+            return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidInvalidRequest"));
+        }
+        OAuth2UserRecord orcidRecord;
+        try {
+            orcidRecord = orcidProvider.getUserRecord(code, state, redirectUri);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Could not authenticate ORCID iD for sign-up", e);
+            return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidAuthenticationFailed"));
+        }
+        String orcidUrl = orcidProvider.getOrcidUrl(orcidRecord.getIdInService());
+        if (authSvc.lookupUserByOrcid(orcidUrl) != null) {
+            return conflict(BundleUtil.getStringFromBundle("signUpBuiltinUserCommand.errors.orcidInUse"));
+        }
+        AuthenticatedUserDisplayInfo displayInfo = orcidRecord.getDisplayInfo();
+        return ok(NullSafeJsonBuilder.jsonObjectBuilder()
+                .add("orcid", orcidUrl)
+                .add("firstName", displayInfo.getFirstName())
+                .add("lastName", displayInfo.getLastName())
+                .add("emailAddress", displayInfo.getEmailAddress())
+                .add("affiliation", displayInfo.getAffiliation())
+                .add("position", displayInfo.getPosition())
+                .add("orcidToken", OrcidSignUpTokens.createOrcidToken(orcidUrl, orcidProvider.getClientSecret(), System.currentTimeMillis())));
+    }
+
+    private Response signUpUnavailableResponse() {
+        if (!FeatureFlags.API_BUILTIN_USER_SIGNUP.enabled()) {
+            return forbidden(BundleUtil.getStringFromBundle("users.api.signup.errors.featureFlagDisabled"));
+        }
+        if (!settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, true)) {
+            return forbidden(BundleUtil.getStringFromBundle("users.api.signup.errors.signUpNotAllowed"));
+        }
+        return null;
+    }
+
+    private boolean isSignUpRateLimited(String bucket, DataverseRequest dataverseRequest) {
+        int capacityPerHour = JvmSettings.API_SIGNUP_RATE_LIMIT_PER_HOUR.lookupOptional(Integer.class).orElse(10);
+        return capacityPerHour > 0 && !cacheFactory.checkRate(bucket + ":" + dataverseRequest.getSourceAddress(), capacityPerHour);
+    }
+
+    private static boolean isAllowedOrcidSignUpRedirectUri(String redirectUri) {
+        return redirectUri != null && JvmSettings.API_SIGNUP_ORCID_REDIRECT_URIS.lookupOptional(String[].class)
+                .map(allowed -> Arrays.stream(allowed).map(String::trim).anyMatch(redirectUri::equals))
+                .orElse(false);
+    }
+
+    private static String getOptionalString(JsonObject json, String key) {
+        return json.containsKey(key) && !json.isNull(key) ? json.getString(key) : null;
     }
 }

@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import jakarta.persistence.EntityManager;
+
 import java.util.Date;
 import java.util.List;
 
@@ -42,6 +44,7 @@ class SignUpBuiltinUserCommandTest {
     private BuiltinUserServiceBean builtinUserService;
     private PasswordValidatorServiceBean passwordValidator;
     private UserNotificationServiceBean notificationService;
+    private EntityManager entityManager;
     private UserDTO userDTO;
 
     @BeforeEach
@@ -51,11 +54,14 @@ class SignUpBuiltinUserCommandTest {
         builtinUserService = mock(BuiltinUserServiceBean.class);
         passwordValidator = mock(PasswordValidatorServiceBean.class);
         notificationService = mock(UserNotificationServiceBean.class);
+        entityManager = mock(EntityManager.class);
 
         when(context.authentication()).thenReturn(authService);
         when(context.builtinUsers()).thenReturn(builtinUserService);
         when(context.passwordValidation()).thenReturn(passwordValidator);
         when(context.notifications()).thenReturn(notificationService);
+        when(context.em()).thenReturn(entityManager);
+        when(entityManager.merge(any(AuthenticatedUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(passwordValidator.validate(anyString(), any(Date.class), anyBoolean())).thenReturn(List.of());
 
         userDTO = new UserDTO();
@@ -153,6 +159,44 @@ class SignUpBuiltinUserCommandTest {
                 .isInstanceOf(InvalidFieldsCommandException.class)
                 .satisfies(e -> assertThat(((InvalidFieldsCommandException) e).getFieldErrors())
                         .containsEntry(SignUpBuiltinUserCommand.FIELD_USERNAME, BundleUtil.getStringFromBundle("user.username.taken")));
+
+        verify(builtinUserService, never()).save(any());
+    }
+
+    @Test
+    void execute_savesAuthenticatedOrcidWhenProvided() throws Exception {
+        String orcidUrl = "https://orcid.org/0000-0002-1825-0097";
+        AuthenticatedUser createdUser = new AuthenticatedUser();
+        when(authService.createAuthenticatedUser(any(UserRecordIdentifier.class), eq("alovelace"), any(AuthenticatedUserDisplayInfo.class), eq(false)))
+                .thenReturn(createdUser);
+
+        AuthenticatedUser result = new SignUpBuiltinUserCommand(makeRequest(), userDTO, PASSWORD, orcidUrl).execute(context);
+
+        assertThat(result.getAuthenticatedOrcid()).isEqualTo(orcidUrl);
+        verify(entityManager).merge(createdUser);
+    }
+
+    @Test
+    void execute_doesNotTouchOrcidWhenNotProvided() throws Exception {
+        AuthenticatedUser createdUser = new AuthenticatedUser();
+        when(authService.createAuthenticatedUser(any(UserRecordIdentifier.class), eq("alovelace"), any(AuthenticatedUserDisplayInfo.class), eq(false)))
+                .thenReturn(createdUser);
+
+        AuthenticatedUser result = new SignUpBuiltinUserCommand(makeRequest(), userDTO, PASSWORD).execute(context);
+
+        assertThat(result.getAuthenticatedOrcid()).isNull();
+        verify(entityManager, never()).merge(any());
+    }
+
+    @Test
+    void execute_rejectsOrcidAlreadyLinkedToAnotherAccount() {
+        String orcidUrl = "https://orcid.org/0000-0002-1825-0097";
+        when(authService.lookupUserByOrcid(orcidUrl)).thenReturn(new AuthenticatedUser());
+
+        assertThatThrownBy(() -> new SignUpBuiltinUserCommand(makeRequest(), userDTO, PASSWORD, orcidUrl).execute(context))
+                .isInstanceOf(InvalidFieldsCommandException.class)
+                .satisfies(e -> assertThat(((InvalidFieldsCommandException) e).getFieldErrors())
+                        .containsEntry(SignUpBuiltinUserCommand.FIELD_ORCID, BundleUtil.getStringFromBundle("signUpBuiltinUserCommand.errors.orcidInUse")));
 
         verify(builtinUserService, never()).save(any());
     }

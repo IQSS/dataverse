@@ -3974,6 +3974,15 @@ Default: ``10``
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNUP_RATE_LIMIT_PER_HOUR``.
 
+.. _dataverse.api.signup.orcid-redirect-uris:
+
+dataverse.api.signup.orcid-redirect-uris
+++++++++++++++++++++++++++++++++++++++++
+
+A comma-separated list of the exact URLs that ORCID may redirect to when a new user connects their ORCID iD while signing up through the :ref:`sign-up-builtin-user` API, typically the SPA's sign-up page, e.g. ``https://dataverse.example.edu/spa/sign-up``. Each URL must also be registered as a redirect URI of the ORCID client configured in Dataverse. If unset, connecting an ORCID iD during sign-up is not possible.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNUP_ORCID_REDIRECT_URIS``.
+
 .. _dataverse.legacy.schemaorg-in-html-head:
 
 dataverse.legacy.schemaorg-in-html-head

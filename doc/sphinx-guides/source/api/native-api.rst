@@ -6524,6 +6524,21 @@ The fields are validated with the same rules as the "Sign Up" page: the username
 
 On success, the account is created right away with a ``201 Created`` response that includes the new user's identifier, and the user receives the standard welcome email with a link to confirm their email address. No API token is returned; the new user logs in as usual.
 
+Connecting an ORCID iD While Signing Up
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When an ORCID OAuth2 provider is configured (see :doc:`/installation/orcid`; it may be registered with ``"enabled": false`` so it is not offered as a login option), a new user can authenticate their ORCID iD during sign-up, and it is saved to their account as an authenticated ORCID. This takes three requests, none of which need an API token:
+
+1. ``GET $SERVER_URL/api/users/signup/orcid/authorize?redirectUri=$REDIRECT_URI`` returns an ``authorizationUrl``. Send the user's browser there. ``$REDIRECT_URI`` must be listed in :ref:`dataverse.api.signup.orcid-redirect-uris`.
+2. After the user signs in at ORCID, ORCID redirects back to ``$REDIRECT_URI`` with ``code`` and ``state`` query parameters. Post them, with the same ``redirectUri``, to ``POST $SERVER_URL/api/users/signup/orcid``:
+
+   .. code-block:: bash
+
+     curl -X POST -H "Content-Type: application/json" "$SERVER_URL/api/users/signup/orcid" --data '{"code": "'$CODE'", "state": "'$STATE'", "redirectUri": "'$REDIRECT_URI'"}'
+
+   The response contains the ORCID iD (``orcid``), any name, email, affiliation, and position the user shares on their ORCID record, which can be used to pre-fill the sign-up form, and an ``orcidToken``. A 409 response means the ORCID iD is already linked to another account.
+3. Include the ``orcidToken`` in the sign-up request above. It is valid for 30 minutes.
+
 Note that this endpoint is not to be confused with ``POST /api/users/register`` (see :ref:`bearer-tokens`), which creates an account for a user who has already authenticated with an OIDC identity provider.
 
 Roles

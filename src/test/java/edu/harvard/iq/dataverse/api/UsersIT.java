@@ -21,6 +21,7 @@ import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -811,7 +812,8 @@ public class UsersIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.email", equalTo(email))
                 .body("data.affiliation", equalTo("Harvard University"))
-                .body("data.authenticationProviderId", equalTo("builtin"));
+                .body("data.authenticationProviderId", equalTo("builtin"))
+                .body("data.authenticatedOrcid", nullValue());
 
         Response duplicate = UtilIT.signUpBuiltinUser(validJson);
         duplicate.then().assertThat()
@@ -849,6 +851,19 @@ public class UsersIT {
         UtilIT.signUpBuiltinUser(withRor).then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo(BundleUtil.getStringFromBundle("users.api.signup.errors.affiliationRorNotSupported")));
+
+        String withInvalidOrcidToken = JsonUtil.createObjectBuilder()
+                .add("username", username + "y")
+                .add("firstName", "Ada")
+                .add("lastName", "Lovelace")
+                .add("emailAddress", "y" + email)
+                .add("password", password)
+                .add("orcidToken", "not-a-valid-token")
+                .add("termsAccepted", true)
+                .build().toString();
+        UtilIT.signUpBuiltinUser(withInvalidOrcidToken).then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("fieldErrors.orcid", equalTo(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidTokenInvalid")));
 
         UtilIT.deleteUser(username).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.deleteUser(superuserUsername).then().assertThat().statusCode(OK.getStatusCode());

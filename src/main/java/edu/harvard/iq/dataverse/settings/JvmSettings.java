@@ -99,6 +99,7 @@ public enum JvmSettings {
     // API: Builtin user sign-up
     SCOPE_API_SIGNUP(SCOPE_API, "signup"),
     API_SIGNUP_RATE_LIMIT_PER_HOUR(SCOPE_API_SIGNUP, "rate-limit-per-hour"),
+    API_SIGNUP_ORCID_REDIRECT_URIS(SCOPE_API_SIGNUP, "orcid-redirect-uris"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
