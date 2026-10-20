@@ -25,11 +25,6 @@ and a symlink ``docker`` pointing to ``podman`` executable exists, run this:
 
 ``DOCKER_HOST=unix:///run/user/1000/podman/podman.sock mvn -Pct clean package docker:run``
 
-If using Podman, assuming ``podman.sock`` is located at ``/run/user/1000/podman/podman.sock``
-and a symlink ``docker`` pointing to ``podman`` executable exists, run this:
-
-``DOCKER_HOST=unix:///run/user/1000/podman/podman.sock mvn -Pct clean package docker:run``
-
 After some time you should be able to log in to the classic, Java Server Faces (JSF) user interface:
 
 - url: http://localhost:8080
