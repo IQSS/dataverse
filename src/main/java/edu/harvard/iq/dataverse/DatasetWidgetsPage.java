@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,7 +46,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     private Long datasetId;
     private Dataset dataset;
-    private List<DatasetThumbnail> datasetThumbnails;
+    private List<DatasetThumbnail> datasetThumbnails = new ArrayList<>();
     /**
      * A preview image of either the current or (potentially unsaved) future
      * thumbnail.
@@ -123,20 +124,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
 
-    /**
-     * Called via AJAX when the thumbnail selection dialog opens.
-     * Triggers lazy loading of base64 thumbnails for all candidates.
-     * This defers expensive storage I/O from page load to dialog open time.
-     */
-    public void loadThumbnails() {
-        // Accessing getBase64image() on each lazy thumbnail triggers
-        // the on-demand base64 generation in DatasetThumbnail.
-        if (datasetThumbnails != null) {
-            for (DatasetThumbnail thumb : datasetThumbnails) {
-                thumb.getBase64image();
-            }
-        }
-    }
 
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");

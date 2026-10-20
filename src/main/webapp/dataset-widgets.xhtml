@@ -62,13 +62,9 @@
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}"></span>
                                             </label>
                                             <div>
-                                                <p:commandButton value="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}"
-                                                                 styleClass="btn btn-default">
-                                                    <p:ajax event="click"
-                                                            listener="#{DatasetWidgetsPage.loadThumbnails}"
-                                                            update=":themeWidgetsForm:selectFileThumbnail:customPanel"
-                                                            oncomplete="PF('selectFileThumbnail').show()"/>
-                                                </p:commandButton>
+                                                <button class="btn btn-default" onclick="PF('selectFileThumbnail').show()" type="button">
+                                                    #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}
+                                                </button>
                                             </div>
                                         </div>
                                         <div class="form-group">
