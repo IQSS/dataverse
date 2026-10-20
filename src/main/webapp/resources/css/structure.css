@@ -649,15 +649,42 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 }
 .thumbnail-candidate .thumb-img-container {
     height: 64px;
+    width: 64px;
+    margin: 0 auto 5px auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 5px;
+    background-color: #f7f7f9;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+.thumbnail-candidate .thumb-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #ddd;
+    border-top-color: #337ab7;
+    border-radius: 50%;
+    animation: thumb-spin 0.8s linear infinite;
+    position: absolute;
+    z-index: 1;
+}
+@keyframes thumb-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 .thumbnail-candidate .thumb-img-container img {
     max-height: 64px;
     max-width: 64px;
     object-fit: contain;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
+}
+.thumbnail-candidate .thumb-img-container img.loaded {
+    opacity: 1;
 }
 .thumbnail-candidate .thumb-filename {
     display: block;

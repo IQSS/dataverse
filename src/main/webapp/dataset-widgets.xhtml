@@ -172,7 +172,10 @@
                                                        checked="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo != null and DatasetWidgetsPage.datasetFileThumbnailToSwitchTo.id == thumbnail.dataFile.id ? 'checked' : null}" />
                                             </div>
                                             <div class="thumb-img-container">
-                                                <img src="/api/access/datafile/#{thumbnail.dataFile.id}?imageThumb=true" loading="lazy" alt="#{thumbnail.filename}"/>
+                                                <span class="thumb-spinner" aria-hidden="true"></span>
+                                                <img src="/api/access/datafile/#{thumbnail.dataFile.id}?imageThumb=true" loading="lazy" alt="#{thumbnail.filename}"
+                                                     onload="this.classList.add('loaded'); var s = this.previousElementSibling; if (s) s.style.display='none';"
+                                                     onerror="var s = this.previousElementSibling; if (s) { s.className='glyphicon glyphicon-picture text-muted'; s.style.display='inline-block'; } this.style.display='none';"/>
                                             </div>
                                             <span class="small thumb-filename">#{thumbnail.filename}</span>
                                         </label>
