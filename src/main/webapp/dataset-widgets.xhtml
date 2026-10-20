@@ -160,33 +160,21 @@
                     </div> 
                 </p:dialog>
                 <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true" dynamic="true" width="700">
-                    <style>
-                        .thumbnail-data-scroller .ui-datascroller-list {
-                            list-style: none;
-                            padding: 0;
-                            margin: 0;
-                            display: flex;
-                            flex-wrap: wrap;
-                        }
-                        .thumbnail-data-scroller .ui-datascroller-item {
-                            width: 33.3333%;
-                            padding: 5px;
-                            box-sizing: border-box;
-                        }
-                    </style>
                     <div class="form-horizontal col-sm-12">
                         <div class="form-group">
                             <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
                             <p:outputPanel id="customPanel">
                                 <p:dataScroller id="thumbnailDataScroller" value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" chunkSize="24" mode="inline" scrollHeight="350" styleClass="thumbnail-data-scroller">
-                                    <div class="text-center radio" style="min-height: 120px; margin-bottom: 15px;">
+                                    <div class="thumbnail-candidate text-center">
                                         <label>
-                                            <input type="radio" name="selectedThumbnailId" value="#{thumbnail.dataFile.id}"
-                                                   checked="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo != null and DatasetWidgetsPage.datasetFileThumbnailToSwitchTo.id == thumbnail.dataFile.id ? 'checked' : null}" />
-                                            <div class="margin-bottom-half">
+                                            <div>
+                                                <input type="radio" name="selectedThumbnailId" value="#{thumbnail.dataFile.id}"
+                                                       checked="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo != null and DatasetWidgetsPage.datasetFileThumbnailToSwitchTo.id == thumbnail.dataFile.id ? 'checked' : null}" />
+                                            </div>
+                                            <div class="thumb-img-container">
                                                 <img src="/api/access/datafile/#{thumbnail.dataFile.id}?imageThumb=true" loading="lazy" alt="#{thumbnail.filename}"/>
                                             </div>
-                                            <span class="small" style="display: block; word-break: break-all;">#{thumbnail.filename}</span>
+                                            <span class="small thumb-filename">#{thumbnail.filename}</span>
                                         </label>
                                     </div>
                                 </p:dataScroller>
