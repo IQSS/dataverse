@@ -467,32 +467,61 @@ function addMenuDelays() {
     });
 }
 
+function expandPanelAndScroll($panel, $target, centerOffset) {
+    $panel.collapse('show');
+    $panel.one('shown.bs.collapse', function () {
+        // After panel is expanded, re-fetch target position (DOM shifted) and scroll to center
+        $('html, body').animate({
+            scrollTop: $target.offset().top - centerOffset
+        }, 500);
+    });
+}
+
 function scrollToFirstError() {
     // delay to let other oncomplete scripts finish (like scrollTop(0))
     setTimeout(function () {
         // Find all potential error indicators, including PrimeFaces and Bootstrap classes
         var $errors = $('.ui-message-error, .ui-state-error, .has-error, .ui-message-fatal');
-        
+
         // Filter out the main alert at the top if there are field-specific errors
         var $fieldErrors = $errors.not('.alert-danger .ui-message-error').not('.alert-danger');
         var $target = $fieldErrors.length > 0 ? $fieldErrors.first() : $errors.first();
 
         if ($target.length > 0) {
-            // Check if it's inside a collapsed panel
+            // Calculate the centered scroll position
+            var viewportHeight = $(window).height();
+            var centerOffset = viewportHeight / 2;
+
+            // Check if the error is inside a collapsed metadata block panel
+            // Metadata blocks are siblings (not nested), so there is at most one collapsed ancestor
             var $panel = $target.closest('.collapse:not(.in)');
             if ($panel.length > 0) {
-                // Find the heading that controls this panel and click it to expand
-                // or just use bootstrap's collapse method
-                $panel.collapse('show');
-                $panel.one('shown.bs.collapse', function () {
-                    $('html, body').animate({
-                        scrollTop: $target.offset().top - 150
-                    }, 500);
-                });
+                // Expand the single collapsed panel containing the error
+                expandPanelAndScroll($panel, $target, centerOffset);
             } else {
-                $('html, body').animate({
-                    scrollTop: $target.offset().top - 150
-                }, 500);
+                // Check if the panel is currently animating (has "collapsing" class)
+                // Bootstrap ignores collapse() calls on transitioning elements, so we must wait
+                var $collapsingPanel = $target.closest('.collapsing');
+                if ($collapsingPanel.length > 0) {
+                    // Wait for the animation to finish, then decide whether to expand
+                    $collapsingPanel.one('shown.bs.collapse hidden.bs.collapse', function () {
+                        // After animation, re-check if the panel is now collapsed
+                        var $nowCollapsed = $target.closest('.collapse:not(.in)');
+                        if ($nowCollapsed.length > 0) {
+                            expandPanelAndScroll($nowCollapsed, $target, centerOffset);
+                        } else {
+                            // Panel is now open, just scroll to the error
+                            $('html, body').animate({
+                                scrollTop: $target.offset().top - centerOffset
+                            }, 500);
+                        }
+                    });
+                } else {
+                    // No collapsed panels, scroll to center the error in the viewport
+                    $('html, body').animate({
+                        scrollTop: $target.offset().top - centerOffset
+                    }, 500);
+                }
             }
         }
     }, 250);
