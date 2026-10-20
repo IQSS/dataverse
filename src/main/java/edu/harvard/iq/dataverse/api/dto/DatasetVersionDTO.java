@@ -41,7 +41,8 @@ public class DatasetVersionDTO {
     String citation;
     LicenseDTO license;
     boolean inReview;
-    
+    String siteUrl;
+
     Map<String,MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
     List<FileDTO> files;
@@ -320,6 +321,15 @@ public class DatasetVersionDTO {
         //TODO: finish this
         return null;
     }
+    
+    public String getSiteUrl() {
+        return siteUrl;
+    }
+
+    public void setSiteUrl(String siteUrl) {
+        this.siteUrl = siteUrl;
+    }
+    
 
     public String getVersionNote() {
         return versionNote;

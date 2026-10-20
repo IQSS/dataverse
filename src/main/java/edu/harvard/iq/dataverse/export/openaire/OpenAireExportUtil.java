@@ -89,13 +89,17 @@ public class OpenAireExportUtil {
             }
         }
     }
-
-    private static void createOpenAire(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
-        DatasetVersionDTO version = datasetDto.getDatasetVersion();
+    
+    private static GlobalId getGlobalIdFromDatasetDTO(DatasetDTO datasetDto){
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
+        return PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
+    }
+
+    private static void createOpenAire(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
+        DatasetVersionDTO version = datasetDto.getDatasetVersion();
+        GlobalId globalId = getGlobalIdFromDatasetDTO(datasetDto);
 
         // The sequence is revied using sample:
         // https://schema.datacite.org/meta/kernel-4.0/example/datacite-example-full-v4.0.xml
@@ -159,7 +163,7 @@ public class OpenAireExportUtil {
         writeVersionElement(xmlw, version, language);
 
         // 16 Rights (O), rights
-        writeAccessRightsElement(xmlw, version/*, version.getTermsOfAccess(), version.getRestrictions()*/, language);
+        writeAccessRightsElement(xmlw, version, datasetDto, language);
 
         // 17 Description (R), description
         writeDescriptionsElement(xmlw, version, language);
@@ -1230,7 +1234,7 @@ public class OpenAireExportUtil {
      * @param language current language
      * @throws XMLStreamException
      */
-    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
+    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, DatasetDTO datasetDto, String language) throws XMLStreamException {
         // rightsList -> rights with rightsURI attribute
         xmlw.writeStartElement("rightsList"); // <rightsList>
 
@@ -1261,9 +1265,17 @@ public class OpenAireExportUtil {
         xmlw.writeEndElement(); // </rights>
 
         writeRightsHeader(xmlw, language);
-        if (datasetVersionDTO.getLicense() != null) {
+        if (datasetVersionDTO.getLicense() != null) {           
             xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
             xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
+        } else if (datasetVersionDTO.getTermsOfUse() != null){
+        /* 12329 add custom Terms of use rights uri  */
+            GlobalId globalId = getGlobalIdFromDatasetDTO(datasetDto);
+            String rightsURI =  datasetVersionDTO.getSiteUrl() + "/api/datasets/:persistentId/versions/" + datasetVersionDTO.getVersionNumber()
+                                + "." + datasetVersionDTO.getMinorVersionNumber() + "/customlicense?persistentId="
+                                + globalId.asString();
+            xmlw.writeAttribute("rightsURI", rightsURI);
+            xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeEndElement(); // </rightsList>

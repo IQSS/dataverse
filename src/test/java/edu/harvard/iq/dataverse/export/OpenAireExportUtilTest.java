@@ -856,7 +856,7 @@ assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">do
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
         // when
-        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
@@ -885,7 +885,7 @@ assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">do
         dto.setFileAccessRequest(true);
 
         // when
-        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
@@ -913,13 +913,48 @@ assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">do
         dto.setFileAccessRequest(false);
 
         // when
-        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
         assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
                 + "<rights></rights></rightsList>",
+                stringWriter.toString());
+    }
+    
+    /**
+     * Test: 16 Rights (O)
+     *
+     * rights
+     *
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testWriteCustomTermsOfUseRightElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        dto.setLicense(null);
+        dto.setTermsOfUse("Here are some Custom Terms of Use");
+        dto.setFileAccessRequest(false);
+        dto.setSiteUrl("http://localhost:8080");
+        dto.setVersionNumber(3L);
+        dto.setMinorVersionNumber(2L);
+
+        datasetDto.setProtocol("doi");
+        datasetDto.setAuthority("10.5072");
+        datasetDto.setIdentifier("FK2/8WABZX");
+        // when
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
+        xmlWriter.flush();
+
+        //then
+        assertEquals("<rightsList>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
+                + "<rights rightsURI=\"http://localhost:8080/api/datasets/:persistentId/versions/3.2/customlicense?persistentId=doi:10.5072/FK2/8WABZX\">Here are some Custom Terms of Use</rights>" 
+                + "</rightsList>",
                 stringWriter.toString());
     }
 

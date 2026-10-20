@@ -695,7 +695,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
         boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean forExportDataProvider, boolean ignoreSettingExcludeEmailFromExport) {
         Dataset dataset = dsv.getDataset();
-        DataCitation citation = new DataCitation(dsv);
+        DataCitation citation = new DataCitation(dsv);       
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
@@ -717,7 +717,9 @@ public class JsonPrinter {
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", citation.getYear())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
-                .add("versionNote", dsv.getVersionNote());
+                .add("versionNote", dsv.getVersionNote())
+                .add("siteUrl", dsv.getDataverseSiteUrl());
+                 
         if (dsv.getDataset().isLinked()) {
             bld.add("isLinked", true);
         }
@@ -829,6 +831,7 @@ public class JsonPrinter {
         JsonObjectBuilder datasetDtoAsJson = JsonPrinter.json(dsv.getDataset());
         datasetDtoAsJson.add("publicationDate", citationMap.get("datacite.publicationyear"));
         datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv, true));
+       // datasetDtoAsJson.add("siteUrl", dsv.getDataverseSiteUrl());
         return datasetDtoAsJson;
     }
 
