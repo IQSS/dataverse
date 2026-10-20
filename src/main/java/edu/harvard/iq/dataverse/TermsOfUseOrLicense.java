@@ -31,7 +31,7 @@ import jakarta.persistence.NamedQuery;
     @NamedQuery(name = "TermsOfUseOrLicense.findByDatasetVersionIdAndDefaultTerms",
                 query = "SELECT o FROM TermsOfUseOrLicense o, DatasetVersion dv WHERE "
                         + "dv.id =:id "
-                        + "AND dv.termsOfUseOrLicense.id = o.id "
+                        + "AND dv.defaultTermsOfUseOrLicense.id = o.id "
                         + "AND o.termsOfUse =:defaultTerms "
                         + "AND o.confidentialityDeclaration IS null "
                         + "AND o.specialPermissions IS null "
