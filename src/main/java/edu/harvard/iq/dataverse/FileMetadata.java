@@ -204,7 +204,7 @@ public class FileMetadata implements Serializable {
                 // TODO we need the same copy for all files in the new dataset version, not a copy for each fileMetadata
                 fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense().copyTermsOfUseOrLicense());
             }
-            fmd.getTermsOfUseOrLicense().setFileMetadata(fmd);
+            // TODO fmd.getTermsOfUseOrLicense().setFileMetadata(fmd);
         }
         dsv.getFileMetadatas().add(fmd);
         return fmd;
