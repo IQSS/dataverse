@@ -1192,14 +1192,8 @@ public class XmlMetadataTemplate {
     private void writeSize(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
         // sizes -> size
         boolean sizesWritten = false;
-        List<DataFile> dataFiles = new ArrayList<DataFile>();
-
-        if (dvObject instanceof Dataset dataset) {
-            dataFiles = dataset.getFiles();
-        } else if (dvObject instanceof DataFile df) {
-            dataFiles.add(df);
-        }
-        if (dataFiles != null && !dataFiles.isEmpty()) {
+        List<DataFile> dataFiles = getDataFilesForMetadata(dvObject);
+        if (!dataFiles.isEmpty()) {
             for (DataFile dataFile : dataFiles) {
                 Long size = dataFile.getFilesize();
                 if (size != -1) {
@@ -1217,14 +1211,8 @@ public class XmlMetadataTemplate {
     private void writeFormats(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
 
         boolean formatsWritten = false;
-        List<DataFile> dataFiles = new ArrayList<DataFile>();
-
-        if (dvObject instanceof Dataset dataset) {
-            dataFiles = dataset.getFiles();
-        } else if (dvObject instanceof DataFile df) {
-            dataFiles.add(df);
-        }
-        if (dataFiles != null && !dataFiles.isEmpty()) {
+        List<DataFile> dataFiles = getDataFilesForMetadata(dvObject);
+        if (!dataFiles.isEmpty()) {
             for (DataFile dataFile : dataFiles) {
                 String format = dataFile.getContentType();
                 if (StringUtils.isNotBlank(format)) {
@@ -1243,6 +1231,21 @@ public class XmlMetadataTemplate {
             xmlw.writeEndElement();
         }
 
+    }
+
+    private List<DataFile> getDataFilesForMetadata(DvObject dvObject) {
+        List<DataFile> dataFiles = new ArrayList<>();
+        if (dvObject instanceof Dataset dataset) {
+            List<FileMetadata> fileMetadatas = dataset.getLatestVersionForCopy().getFileMetadatas();
+            if (fileMetadatas != null) {
+                for (FileMetadata fileMetadata : fileMetadatas) {
+                    dataFiles.add(fileMetadata.getDataFile());
+                }
+            }
+        } else if (dvObject instanceof DataFile df) {
+            dataFiles.add(df);
+        }
+        return dataFiles;
     }
 
     private void writeVersion(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
