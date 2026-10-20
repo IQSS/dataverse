@@ -47,12 +47,12 @@ BEGIN
         WHEN duplicate_object THEN RAISE NOTICE 'Table constraint fk_datasetversion_default_termsofuseorlicense_id already exists';
     END;
     BEGIN
-        ALTER TABLE datasetversion ADD CONSTRAINT fk_datasetversion_termsofaccess_id FOREIGN KEY (termsofaccess_id) REFERENCES termsofaccess(id);
+        ALTER TABLE datasetversion ADD CONSTRAINT fk_datasetversion_default_termsofaccess_id FOREIGN KEY (default_termsofaccess_id) REFERENCES termsofaccess(id);
     EXCEPTION
         WHEN duplicate_object THEN RAISE NOTICE 'Table constraint fk_datasetversion_termsofaccess_id already exists';
     END;
     BEGIN
-        ALTER TABLE template ADD CONSTRAINT fk_template_termsofuseorlicense_id FOREIGN KEY (termsofuseorlicense_id) REFERENCES termsofuseorlicense(id);
+        ALTER TABLE template ADD CONSTRAINT fk_template_default_termsofuseorlicense_id FOREIGN KEY (default_termsofuseorlicense_id) REFERENCES termsofuseorlicense(id);
     EXCEPTION
         WHEN duplicate_object THEN RAISE NOTICE 'Table constraint fk_template_termsofuseorlicense_id already exists';
     END;
