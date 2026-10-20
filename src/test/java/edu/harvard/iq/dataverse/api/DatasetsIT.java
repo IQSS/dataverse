@@ -5328,6 +5328,105 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
+    public void testFileDirectorySearch() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        try {
+            Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+            createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+            String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+            try {
+                Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+                createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+                Integer datasetId = createDataset.jsonPath().getInt("data.id");
+                try {
+                    String textPath = "scripts/search/data/replace_test/003.txt";
+                    String imagePath = "src/test/resources/images/coffeeshop.png";
+                    Response uploadTopLevel = UtilIT.uploadFileViaNative(datasetId.toString(), textPath,
+                            JsonUtil.createObjectBuilder().add("directoryLabel", "Figure1").build(), apiToken);
+                    uploadTopLevel.then().assertThat().statusCode(OK.getStatusCode());
+                    int topLevelFileId = uploadTopLevel.jsonPath().getInt("data.files[0].dataFile.id");
+
+                    Response uploadNested = UtilIT.uploadFileViaNative(datasetId.toString(), imagePath,
+                            JsonUtil.createObjectBuilder().add("directoryLabel", "results/Figure1").build(), apiToken);
+                    uploadNested.then().assertThat().statusCode(OK.getStatusCode());
+                    int nestedFileId = uploadNested.jsonPath().getInt("data.files[0].dataFile.id");
+
+                    Response uploadRoot = UtilIT.uploadFileViaNative(datasetId.toString(),
+                            "scripts/search/data/replace_test/004.txt",
+                            JsonUtil.createObjectBuilder().add("description", "Distinct root description control").build(), apiToken);
+                    uploadRoot.then().assertThat().statusCode(OK.getStatusCode());
+                    int rootFileId = uploadRoot.jsonPath().getInt("data.files[0].dataFile.id");
+
+                    // A mixed-case substring matches both directory depths, but not the root file.
+                    String searchText = "iGuRe1";
+                    UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, 1, 0, null, null, null, null,
+                            searchText, null, false, apiToken).then().assertThat()
+                            .statusCode(OK.getStatusCode())
+                            .body("data.dataFile.id", contains(topLevelFileId))
+                            .body("totalCount", equalTo(2));
+                    UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, 1, 1, null, null, null, null,
+                            searchText, null, false, apiToken).then().assertThat()
+                            .statusCode(OK.getStatusCode())
+                            .body("data.dataFile.id", contains(nestedFileId))
+                            .body("totalCount", equalTo(2));
+
+                    UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST, null, null, null, null,
+                            searchText, false, apiToken).then().assertThat()
+                            .statusCode(OK.getStatusCode())
+                            .body("data.total", equalTo(2))
+                            .body("data.perContentType", equalTo(Map.of("text/plain", 1, "image/png", 1)))
+                            .body("data.perAccessStatus", equalTo(Map.of(FileSearchCriteria.FileAccessStatus.Public.toString(), 2)));
+                    Response downloadSize = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST,
+                            null, null, null, null, searchText,
+                            DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
+                    downloadSize.then().assertThat().statusCode(OK.getStatusCode());
+                    assertEquals(Files.size(Paths.get(textPath)) + Files.size(Paths.get(imagePath)),
+                            downloadSize.jsonPath().getLong("data.storageSize"));
+
+                    // Content type remains an AND filter, excluding the image and the root text file.
+                    UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, "text/plain", null, null, null,
+                            searchText, null, false, apiToken).then().assertThat()
+                            .statusCode(OK.getStatusCode())
+                            .body("data.dataFile.id", contains(topLevelFileId))
+                            .body("totalCount", equalTo(1));
+                    UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST, "text/plain", null, null, null,
+                            searchText, false, apiToken).then().assertThat()
+                            .statusCode(OK.getStatusCode())
+                            .body("data.total", equalTo(1))
+                            .body("data.perContentType", equalTo(Map.of("text/plain", 1)))
+                            .body("data.perAccessStatus", equalTo(Map.of(FileSearchCriteria.FileAccessStatus.Public.toString(), 1)));
+
+                    // A missing directory does not prevent existing filename or description matches.
+                    UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null,
+                            "004", null, false, apiToken).then().assertThat()
+                            .statusCode(OK.getStatusCode())
+                            .body("data.dataFile.id", contains(rootFileId))
+                            .body("totalCount", equalTo(1));
+                    UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null,
+                            "ROOT DESCRIPTION", null, false, apiToken).then().assertThat()
+                            .statusCode(OK.getStatusCode())
+                            .body("data.dataFile.id", contains(rootFileId))
+                            .body("totalCount", equalTo(1));
+
+                    // Directory matches must not expose files in an unpublished dataset to guests.
+                    UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null,
+                            searchText, null, false, null).then().assertThat()
+                            .statusCode(NOT_FOUND.getStatusCode());
+                } finally {
+                    UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+                }
+            } finally {
+                UtilIT.deleteDataverse(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+            }
+        } finally {
+            UtilIT.deleteUser(username).then().assertThat().statusCode(OK.getStatusCode());
+        }
+    }
+
+    @Test
     public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
