@@ -347,7 +347,7 @@ public class ExternalTool implements Serializable {
         String allowedCallsModified = allowedApiCalls;
         if (guestbookResponseId != null) {
             // gbrecs was written if the guestbookResponseId exists
-            String guestbookResponseParams = "gbrecs=true&gbrids=" + guestbookResponseId;
+            String guestbookResponseParams = "gbrecs=true&gbrids=" + guestbookResponseId + "&externalToolId=" + getId();
             allowedCallsModified = allowedCallsModified
                     .replaceAll("(?i)" + Pattern.quote("gbrecs=true"),guestbookResponseParams)
                     .replaceAll("(?i)" + Pattern.quote("gbrecs=false"), guestbookResponseParams);
