@@ -42,7 +42,6 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +60,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -1022,7 +1020,7 @@ public class Files extends AbstractApiBean {
 
             // Determine if we need an API token for authentication
             ApiToken apiToken = null;
-            if (user.isAuthenticated() && isRestricted) {
+            if (user.isAuthenticated() && (isRestricted || guestbookResponseId != null)) {
                 apiToken = authSvc.getValidApiTokenForUser(user);
             }
 
