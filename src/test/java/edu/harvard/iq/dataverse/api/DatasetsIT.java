@@ -856,11 +856,51 @@ public class DatasetsIT {
         updateSemantic.prettyPrint();
         updateSemantic.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
+        // The delete path has its own loop in JSONLDUtil, so cover it explicitly.
+        Response deleteSemantic = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken, childAsPrimitiveJsonLd);
+        deleteSemantic.prettyPrint();
+        deleteSemantic.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
         // The dataset should be untouched - in particular there should be no parentless authorName.
         Response getDataset = UtilIT.nativeGet(datasetId, apiToken);
         getDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.metadataBlocks.citation.fields.typeName", not(hasItem("authorName")));
+
+        // parseField() also runs on the create path. A dataset whose top-level citation fields
+        // include a child field must be rejected with a clean 400 rather than a persistence error.
+        String datasetWithChildAsPrimitive = """
+        {
+          "datasetVersion": {
+            "license": {"name": "CC0 1.0", "uri": "http://creativecommons.org/publicdomain/zero/1.0"},
+            "metadataBlocks": {
+              "citation": {
+                "fields": [
+                  {"typeName": "title", "value": "Test Dataset"},
+                  {"typeName": "authorName", "value": "Poe, Edgar Allan"}
+                ]
+              }
+            }
+          }
+        }
+        """;
+        Response createDatasetWithChild = UtilIT.createDataset(dataverseAlias, datasetWithChildAsPrimitive, apiToken);
+        createDatasetWithChild.prettyPrint();
+        createDatasetWithChild.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // The template metadata API also calls parseField(). A template with a child field at
+        // top level must be rejected.
+        String templateWithChildAsPrimitive = """
+        {
+          "name": "Bad Template",
+          "fields": [
+            {"typeName": "authorName", "value": "Poe, Edgar Allan"}
+          ]
+        }
+        """;
+        Response createTemplateWithChild = UtilIT.createTemplate(dataverseAlias, templateWithChildAsPrimitive, apiToken);
+        createTemplateWithChild.prettyPrint();
+        createTemplateWithChild.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
