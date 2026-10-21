@@ -1158,7 +1158,7 @@ public class FilePage implements java.io.Serializable {
         Long guestbookResponseId = guestbookResponse != null ? guestbookResponse.getId() : null;
         if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted())
                 || fileMetadata.getDatasetVersion().isDeaccessioned() || (FileUtil.isActivelyEmbargoed(fileMetadata))
-                || (FileUtil.isRetentionExpired(fileMetadata))) {
+                || (FileUtil.isRetentionExpired(fileMetadata)) || guestbookResponseId != null) {
             apiToken = authService.getValidApiTokenForUser(user);
         }
         if(externalTool == null){

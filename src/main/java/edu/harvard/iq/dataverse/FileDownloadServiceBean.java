@@ -509,7 +509,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         Long guestbookResponseId = guestbookResponse != null ? guestbookResponse.getId() :  null;
         DatasetVersion version = fmd.getDatasetVersion();
         if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted())
-                || (FileUtil.isActivelyEmbargoed(fmd)) || (FileUtil.isRetentionExpired(fmd))) {
+                || (FileUtil.isActivelyEmbargoed(fmd)) || (FileUtil.isRetentionExpired(fmd)) || guestbookResponseId != null) {
             apiToken = authService.getValidApiTokenForUser(user);
         }
         DataFile dataFile = null;
