@@ -876,8 +876,12 @@ public class DatasetsIT {
             "metadataBlocks": {
               "citation": {
                 "fields": [
-                  {"typeName": "title", "value": "Test Dataset"},
-                  {"typeName": "authorName", "value": "Poe, Edgar Allan"}
+                  {
+                    "typeName": "authorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Poe, Edgar Allan"
+                  }
                 ]
               }
             }
