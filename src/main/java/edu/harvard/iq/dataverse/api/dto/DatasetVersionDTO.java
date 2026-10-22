@@ -42,6 +42,7 @@ public class DatasetVersionDTO {
     LicenseDTO license;
     boolean inReview;
     String siteUrl;
+    String citationDate;
 
     Map<String,MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
@@ -328,6 +329,14 @@ public class DatasetVersionDTO {
 
     public void setSiteUrl(String siteUrl) {
         this.siteUrl = siteUrl;
+    }
+    
+    public String getCitationDate() {
+        return citationDate;
+    }
+
+    public void setCitationDate(String citationDate) {
+        this.citationDate = citationDate;
     }
     
 

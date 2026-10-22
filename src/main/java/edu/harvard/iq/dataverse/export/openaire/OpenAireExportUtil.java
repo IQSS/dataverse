@@ -811,7 +811,15 @@ public class OpenAireExportUtil {
     public static void writeDatesElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
         boolean date_check = false;
         String dateOfDistribution = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.distributionDate);
-        if (StringUtils.isNotBlank(dateOfDistribution)) {
+        //per 12361 this should be the citation date if available
+        //modified by embargo date if applicable
+        String citationDate = datasetVersionDTO.getCitationDate();
+        if (StringUtils.isNotBlank(citationDate)) {
+            date_check = writeOpenTag(xmlw, "dates", date_check);
+            Map<String, String> date_map = new HashMap<String, String>();
+            date_map.put("dateType", "Issued");
+            writeFullElement(xmlw, null, "date", date_map, citationDate, language);
+        } else if (StringUtils.isNotBlank(dateOfDistribution)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
 
             Map<String, String> date_map = new HashMap<String, String>();

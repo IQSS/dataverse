@@ -695,7 +695,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
         boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean forExportDataProvider, boolean ignoreSettingExcludeEmailFromExport) {
         Dataset dataset = dsv.getDataset();
-        DataCitation citation = new DataCitation(dsv);       
+        DataCitation citation = new DataCitation(dsv); 
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
