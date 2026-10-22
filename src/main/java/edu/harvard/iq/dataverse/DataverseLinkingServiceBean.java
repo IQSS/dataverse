@@ -89,19 +89,19 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
         }
     }
     
-    public DataverseLinkingDataverse findDataverseLinkingDataverse(Long linkingDataverseId, Long linkedDataverseId) {
+    public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkingDataverseId) {
         try {
             return em.createNamedQuery("DataverseLinkingDataverse.findByDataverseIdAndLinkingDataverseId", DataverseLinkingDataverse.class)
-                .setParameter("dataverseId", linkedDataverseId)
+                .setParameter("dataverseId", dataverseId)
                 .setParameter("linkingDataverseId", linkingDataverseId)
                 .getSingleResult();
         } catch (jakarta.persistence.NoResultException e) {
-            logger.fine("No DataverseLinkingDataverse found for linkingDataverseId " + linkingDataverseId + " and linkedDataverseId " + linkedDataverseId);
+            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);        
             return null;
         }
     }
 
-    public boolean alreadyLinked(Dataverse linkingDataverse, Dataverse linkedDataverse) {
-        return findDataverseLinkingDataverse(linkingDataverse.getId(), linkedDataverse.getId()) != null;
+    public boolean alreadyLinked(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
+        return findDataverseLinkingDataverse(dataverseToLinkTo.getId(), definitionPoint.getId()) != null;
     }
 }

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
 
+import static edu.harvard.iq.dataverse.util.MarkupCheckerUtil.htmlEqualTo;
 import static jakarta.ws.rs.core.Response.Status.*;
 import java.io.File;
 import java.io.IOException;
@@ -408,7 +409,7 @@ public class DataverseFeaturedItemsIT {
     private void verifyUpdatedFeaturedItem(Response response, String expectedContent, String expectedImageFileName, int expectedDisplayOrder, String type, String dvObject, String dvObjectDisplayName) {
         response.prettyPrint();
         response.then().assertThat()
-                .body("data.content", equalTo(expectedContent))
+                .body("data.content", htmlEqualTo(expectedContent))
                 .body("data.imageFileName", equalTo(expectedImageFileName))
                 .body("data.displayOrder", equalTo(expectedDisplayOrder))
                 .body("data.type", equalTo(type))

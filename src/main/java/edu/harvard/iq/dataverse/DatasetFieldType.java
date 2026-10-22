@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import java.io.Serializable;
@@ -97,7 +98,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     private String searchValue;
     
     @Transient
-    private List<String> listValues;
+    private List<ControlledVocabularyValue> listValues = new ArrayList<>();
 
     @Transient
     private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
@@ -424,11 +425,11 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.searchValue = searchValue;
     }
 
-    public List<String> getListValues() {
+    public List<ControlledVocabularyValue> getListValues() {
         return listValues;
     }
 
-    public void setListValues(List<String> listValues) {
+    public void setListValues(List<ControlledVocabularyValue> listValues) {
         this.listValues = listValues;
     }
     /**

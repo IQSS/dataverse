@@ -46,6 +46,7 @@
         <openapi.infoDescription>Open source research data repository software.</openapi.infoDescription>
         <!-- https://download.eclipse.org/microprofile/microprofile-open-api-3.1.1/microprofile-openapi-spec-3.1.1.html#_location_and_formats -->
         <openapi.outputDirectory>${project.build.outputDirectory}/META-INF</openapi.outputDirectory>
+        <maven.smallrye.skip>false</maven.smallrye.skip>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -514,7 +515,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.15.3</version>
+            <version>1.23.2</version>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>
@@ -700,7 +701,7 @@
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>dataverse-spi</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.1.0-M1</version>
         </dependency>
         <dependency>
             <groupId>javax.cache</groupId>
@@ -923,6 +924,9 @@
                     <signaturesFiles>
                         <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
                     </signaturesFiles>
+                    <excludes>
+                        <exclude>edu/harvard/iq/dataverse/util/xml/XmlUtil.class</exclude>
+                    </excludes>
                     <targetVersion>${target.java.version}</targetVersion>
                 </configuration>
                 <executions>
@@ -1179,6 +1183,7 @@
                         <!-- Plugin scans class files, not sources. Execute after compile phase but before package -->
                         <phase>process-classes</phase>
                         <configuration>
+                            <skip>${maven.smallrye.skip}</skip>
                             <outputDirectory>${openapi.outputDirectory}</outputDirectory>
                             <schemaFilename>openapi</schemaFilename>
                             <infoTitle>${openapi.infoTitle}</infoTitle>

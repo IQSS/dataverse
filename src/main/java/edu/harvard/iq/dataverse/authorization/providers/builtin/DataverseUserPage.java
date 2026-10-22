@@ -69,6 +69,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackin
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.util.StringUtil;
 import org.json.JSONObject;
 import org.primefaces.event.TabChangeEvent;
 
@@ -253,7 +254,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userEmail = (String) value;
-        boolean emailValid = EMailValidator.isEmailValid(userEmail);
+        boolean emailValid = StringUtil.isNotBlank(userEmail) && EMailValidator.isEmailValid(userEmail);
         if (!emailValid) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
