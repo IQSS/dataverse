@@ -44,7 +44,7 @@
                                        <h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.view.description']}" escape="false"/>
                                    </p>
                                </ui:fragment>
-                               <ui:fragment rendered="#{datasetPage == true and empty editMode and empty termsOfUseOrLicense.license}">
+                               <ui:fragment rendered="#{datasetPage == true and empty editMode and empty defaultTermsOfUseOrLicense.license}">
                                    <p>
                                        <h:outputText value="#{DatasetUtil:getLicenseName(DatasetPage.workingVersion).concat(' ')}" escape="false"/>
                                        <h:outputText rendered="#{!datasetVersionServiceBean.isVersionDefaultCustomTerms(DatasetPage.workingVersion)}" value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}" escape="false"/>
@@ -53,7 +53,7 @@
                                <ui:fragment rendered="#{!empty editMode}">
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.edit.description']}" escape="false"/></p>
 
-                                   <p:selectOneMenu id="licenses" value="#{termsOfUseOrLicense.license}" style="width: 40%" converter="licenseConverter">
+                                   <p:selectOneMenu id="licenses" value="#{defaultTermsOfUseOrLicense.license}" style="width: 40%" converter="licenseConverter">
                                        <c:if test="#{!datasetPage}">
                                        <f:selectItems value="#{licenseServiceBean.listAllActive()}" 
                                                    var="license" itemLabel="#{DatasetUtil:getLocalizedLicenseDetails(license, 'NAME')}" itemValue="#{license}"/>
@@ -69,17 +69,17 @@
                                        <f:passThroughAttribute name="aria-label" value="#{bundle['file.dataFilesTab.terms.list.license']}"/>
                                    </p:selectOneMenu>
                                </ui:fragment>
-                               <ui:fragment rendered="#{!empty termsOfUseOrLicense.license}">
+                               <ui:fragment rendered="#{!empty defaultTermsOfUseOrLicense.license}">
                                    <p>
-                                       <img src="#{termsOfUseOrLicense.license.iconUrl}" title="#{DatasetUtil:getLocalizedLicenseDetails(termsOfUseOrLicense.license, 'DESCRIPTION')}"  style="display:none"  onload="this.style.display='inline'" />
-                                       <a href="#{termsOfUseOrLicense.license.uri}" title="#{DatasetUtil:getLocalizedLicenseDetails(termsOfUseOrLicense.license,'DESCRIPTION')}" target="_blank">#{DatasetUtil:getLocalizedLicenseDetails(termsOfUseOrLicense.license,'NAME')}</a>
+                                       <img src="#{termsOfUseOrLicense.license.iconUrl}" title="#{DatasetUtil:getLocalizedLicenseDetails(defaultTermsOfUseOrLicense.license, 'DESCRIPTION')}"  style="display:none"  onload="this.style.display='inline'" />
+                                       <a href="#{termsOfUseOrLicense.license.uri}" title="#{DatasetUtil:getLocalizedLicenseDetails(defaultTermsOfUseOrLicense.license,'DESCRIPTION')}" target="_blank">#{DatasetUtil:getLocalizedLicenseDetails(termsOfUseOrLicense.license,'NAME')}</a>
                                    </p>
                                </ui:fragment>
                            </div>
                        </div>
 
                        <!-- Additional Information -->
-                        <ui:fragment rendered="#{empty editMode and empty termsOfUseOrLicense.license}">
+                        <ui:fragment rendered="#{empty editMode and empty defaultTermsOfUseOrLicense.license}">
                             <div class="form-group" jsf:rendered="#{!empty defaultTermsOfUseOrLicense.termsOfUse}">
                                 <label for="datasetForm:tabView:metadata_TermsUse" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
@@ -87,7 +87,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(defaultTermsOfUseOrLicense.termsOfUse)}" escape="false"/>
+                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseOrLicense.termsOfUse)}" escape="false"/>
                                </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseOrLicense.confidentialityDeclaration}">
@@ -161,7 +161,7 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!empty editMode and termsOfUseOrLicense.license == null}">
+                        <ui:fragment rendered="#{!empty editMode and defaultTermsOfUseOrLicense.license == null}">
                             <div class="form-group">
                                 <label jsf:for="dlTermsdOfUse" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
