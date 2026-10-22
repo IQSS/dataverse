@@ -47,7 +47,7 @@ BEGIN
         WHEN duplicate_object THEN RAISE NOTICE 'Table constraint fk_datasetversion_default_termsofuseorlicense_id already exists';
     END;
     BEGIN
-        ALTER TABLE datasetversion ADD CONSTRAINT fk_datasetversion_default_termsofaccess_id FOREIGN KEY (default_termsofaccess_id) REFERENCES termsofaccess(id);
+        ALTER TABLE datasetversion ADD CONSTRAINT fk_datasetversion_termsofaccess_id FOREIGN KEY (termsofaccess_id) REFERENCES termsofaccess(id);
     EXCEPTION
         WHEN duplicate_object THEN RAISE NOTICE 'Table constraint fk_datasetversion_termsofaccess_id already exists';
     END;
@@ -94,7 +94,7 @@ BEGIN
         UPDATE template
         SET termsofaccess_id = termsofuseandaccess_id,
             default_termsofuseorlicense_id = termsofuseandaccess_id
-        WHERE termsofaccess_id IS NULL OR termsofuseorlicense_id IS NULL;
+        WHERE termsofaccess_id IS NULL OR default_termsofuseorlicense_id IS NULL;
     END IF;
 
     -- Drop the old termsofuseandaccess references, since we have migrated the data to the new tables.
