@@ -314,7 +314,7 @@ public class DatasetField implements Serializable {
         if(format.equals("#EMAIL")) {
             format = format.replace("#EMAIL", edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"));
         } else if(format.contains("#EMAIL")) {
-            format = format.replace("#EMAIL", value).replace("@", ":[at]").replace(".", "[dot]");
+            format = format.replace("#EMAIL", value).replace("@", "[at]").replace(".", "[dot]");
         }
         return format;
     }
