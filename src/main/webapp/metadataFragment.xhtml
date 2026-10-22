@@ -236,6 +236,22 @@
                 <div class="form-group">
                     <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
                 </div>
+                
+                <p:outputPanel id="metadataErrorSummaryPanel">
+                    <p:autoUpdate/>
+                    <div jsf:id="metadataErrorSummary" jsf:rendered="#{datasetVersionUI.invalidEntities.size() > 1}" class="alert alert-danger">
+                        <p><h:outputText value="#{bundle['dataset.metadata.invalid.summary']}"/></p>
+                        <ul class="no-bullet">
+                            <ui:repeat value="#{datasetVersionUI.invalidEntities}" var="entity" varStatus="valCount">
+                                <li>
+                                    <h:outputLink value="#" onclick="scrollToError(#{valCount.index}); return false;">
+                                        #{datasetVersionUI.getDisplayName(entity)}
+                                    </h:outputLink>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </div>
+                </p:outputPanel>
                 <ui:repeat value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
                 <div class="panel panel-default" jsf:rendered="#{(editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
                                                                  or metadataBlockVal.key.isHasRequired())
@@ -346,6 +362,12 @@
                                                             </h:panelGroup>
                                                             <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
                                                                 <span class="ui-message-error-detail">#{dsf.validationMessage}</span>
+                                                                <ui:fragment rendered="#{datasetVersionUI.getInvalidEntityIndex(dsf) != -1 and datasetVersionUI.getInvalidEntityIndex(dsf) lt datasetVersionUI.getInvalidEntities().size() - 1}">
+                                                                    &#160;
+                                                                    <h:outputLink value="#" onclick="scrollToError(#{datasetVersionUI.getInvalidEntityIndex(dsf) + 1}); return false;">
+                                                                        #{bundle['dataset.metadata.invalid.next']}
+                                                                    </h:outputLink>
+                                                                </ui:fragment>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -455,6 +477,12 @@
 
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty subdsf.validationMessage}">
                                                                     <span class="ui-message-error-detail">#{subdsf.validationMessage}</span>
+                                                                    <ui:fragment rendered="#{datasetVersionUI.getInvalidEntityIndex(subdsf) != -1 and datasetVersionUI.getInvalidEntityIndex(subdsf) lt datasetVersionUI.getInvalidEntities().size() - 1}">
+                                                                        &#160;
+                                                                        <h:outputLink value="#" onclick="scrollToError(#{datasetVersionUI.getInvalidEntityIndex(subdsf) + 1}); return false;">
+                                                                            #{bundle['dataset.metadata.invalid.next']}
+                                                                        </h:outputLink>
+                                                                    </ui:fragment>
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -85,10 +85,22 @@
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
         <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
+        <ui:fragment rendered="#{datasetVersionUI.getInvalidEntityIndex(dsfv.datasetField) != -1 and datasetVersionUI.getInvalidEntityIndex(dsfv.datasetField) lt datasetVersionUI.getInvalidEntities().size() - 1}">
+            &#160;
+            <h:outputLink value="#" onclick="scrollToError(#{datasetVersionUI.getInvalidEntityIndex(dsfv.datasetField) + 1}); return false;">
+                #{bundle['dataset.metadata.invalid.next']}
+            </h:outputLink>
+        </ui:fragment>
     </div>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsfv.validationMessage}">
         <span class="ui-message-error-detail">#{dsfv.validationMessage}</span>
+        <ui:fragment rendered="#{datasetVersionUI.getInvalidEntityIndex(dsfv) != -1 and datasetVersionUI.getInvalidEntityIndex(dsfv) lt datasetVersionUI.getInvalidEntities().size() - 1}">
+            &#160;
+            <h:outputLink value="#" onclick="scrollToError(#{datasetVersionUI.getInvalidEntityIndex(dsfv) + 1}); return false;">
+                #{bundle['dataset.metadata.invalid.next']}
+            </h:outputLink>
+        </ui:fragment>
     </div>
 
     <!-- This button / script is for replication data for the title field and is client side only -->

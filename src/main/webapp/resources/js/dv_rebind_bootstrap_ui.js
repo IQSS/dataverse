@@ -478,6 +478,10 @@ function expandPanelAndScroll($panel, $target, centerOffset) {
 }
 
 function scrollToFirstError() {
+    scrollToError(0);
+}
+
+function scrollToError(index) {
     // delay to let other oncomplete scripts finish (like scrollTop(0))
     setTimeout(function () {
         // Find all potential error indicators, including PrimeFaces and Bootstrap classes
@@ -485,7 +489,7 @@ function scrollToFirstError() {
 
         // Filter out the main alert at the top if there are field-specific errors
         var $fieldErrors = $errors.not('.alert-danger .ui-message-error').not('.alert-danger');
-        var $target = $fieldErrors.length > 0 ? $fieldErrors.first() : $errors.first();
+        var $target = index < $fieldErrors.length ? $($fieldErrors.get(index)) : $errors.first();
 
         if ($target.length > 0) {
             // Calculate the centered scroll position

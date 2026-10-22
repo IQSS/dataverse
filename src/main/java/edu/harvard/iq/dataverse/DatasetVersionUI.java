@@ -57,6 +57,64 @@ public class DatasetVersionUI implements Serializable {
         return metadataBlocksForEdit;
     }
 
+    private List<Object> invalidEntities;
+
+    public List<Object> getInvalidEntities() {
+        if (invalidEntities == null) {
+            invalidEntities = new ArrayList<>();
+            if (metadataBlocksForEdit != null) {
+                for (List<DatasetField> fields : metadataBlocksForEdit.values()) {
+                    for (DatasetField dsf : fields) {
+                        collectInvalidEntities(dsf, invalidEntities);
+                    }
+                }
+            }
+        }
+        return invalidEntities;
+    }
+
+    private void collectInvalidEntities(DatasetField dsf, List<Object> entities) {
+        if (dsf.getValidationMessage() != null && !dsf.getValidationMessage().isEmpty()) {
+            entities.add(dsf);
+        }
+        for (DatasetFieldValue dsfv : dsf.getDatasetFieldValues()) {
+            if (dsfv.getValidationMessage() != null && !dsfv.getValidationMessage().isEmpty()) {
+                entities.add(dsfv);
+            }
+        }
+
+        if (dsf.getDatasetFieldType().isCompound()) {
+            for (DatasetFieldCompoundValue dfcv : dsf.getDatasetFieldCompoundValues()) {
+                for (DatasetField childField : dfcv.getChildDatasetFields()) {
+                    collectInvalidEntities(childField, entities);
+                }
+            }
+        }
+    }
+
+    public int getInvalidEntityIndex(Object entity) {
+        List<Object> entities = getInvalidEntities();
+        for (int i = 0; i < entities.size(); i++) {
+            if (entities.get(i) == entity) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public String getDisplayName(Object entity) {
+        if (entity instanceof DatasetField) {
+            return ((DatasetField) entity).getDatasetFieldType().getLocaleTitle();
+        } else if (entity instanceof DatasetFieldValue) {
+            return ((DatasetFieldValue) entity).getDatasetField().getDatasetFieldType().getLocaleTitle();
+        }
+        return "";
+    }
+
+    public void resetInvalidFields() {
+        this.invalidEntities = null;
+    }
+
     public void setMetadataBlocksForEdit(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
