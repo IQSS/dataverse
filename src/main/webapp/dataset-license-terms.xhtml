@@ -80,14 +80,14 @@
 
                        <!-- Additional Information -->
                         <ui:fragment rendered="#{empty editMode and empty termsOfUseOrLicense.license}">
-                            <div class="form-group" jsf:rendered="#{!empty termsOfUseOrLicense.termsOfUse}">
+                            <div class="form-group" jsf:rendered="#{!empty defaultTermsOfUseOrLicense.termsOfUse}">
                                 <label for="datasetForm:tabView:metadata_TermsUse" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseOrLicense.termsOfUse)}" escape="false"/>
+                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(defaultTermsOfUseOrLicense.termsOfUse)}" escape="false"/>
                                </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseOrLicense.confidentialityDeclaration}">
@@ -170,7 +170,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputTextarea id="dlTermsdOfUse" value="#{termsOfUseOrLicense.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}"
+                                    <p:inputTextarea id="dlTermsdOfUse" value="#{defaultTermsOfUseOrLicense.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}"
                                                      validator="#{DatasetPage.validateTerms}">
                                     </p:inputTextarea>
                                     <h:message for="metadata_TermsUse" styleClass="bg-danger text-danger"/>
