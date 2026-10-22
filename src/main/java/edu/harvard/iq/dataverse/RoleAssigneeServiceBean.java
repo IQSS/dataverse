@@ -432,10 +432,27 @@ public class RoleAssigneeServiceBean {
     }
     
 
-    public List<String> findAssigneesWithPermissionOnDvObject(Long objectId, Permission permission) {
-        int bitpos = 63 - permission.ordinal();
-        return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionOnDvObject", String.class)
-                 .setParameter(1, bitpos)
+    /**
+     * Finds all role assignees who have any of the given permissions on the specified DvObject.
+     * Uses a single bitmask to check all permissions in one query.
+     *
+     * @param objectId the ID of the DvObject
+     * @param permissions the set of permissions to check
+     * @return list of assignee identifiers
+     */
+    public List<String> findAssigneesWithPermissionsOnDvObject(Long objectId, Set<Permission> permissions) {
+        if (permissions == null || permissions.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // Build a bitmask by OR-ing together the bit for each permission
+        long mask = 0;
+        for (Permission p : permissions) {
+            mask |= (1L << (63 - p.ordinal()));
+        }
+        
+        return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionsOnDvObject", String.class)
+                 .setParameter(1, mask)
                  .setParameter(2, objectId)
                  .getResultList();
     }
