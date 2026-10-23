@@ -118,6 +118,10 @@ public class ImageThumbConverter {
 
         if (isThumbnailCached(storageIO, size)) {
             logger.fine("Found cached thumbnail for " + file.getId());
+            // Thumbnail exists in storage but the database flag may not be set — persist it now
+            if (!file.isPreviewImageAvailable()) {
+                markThumbnailGenerationStatus(file, true);
+            }
             return true;
         }
         return generateThumbnail(file, storageIO, size);
@@ -134,10 +138,11 @@ public class ImageThumbConverter {
             } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
                 thumbnailGenerated = generatePDFThumbnail(storageIO, size);
             }
-            if (!thumbnailGenerated) {
-                file.setPreviewImageFail(true);
-                file.setPreviewImageAvailable(false);
-                logger.fine("No thumbnail generated for " + file.getId());
+            if (thumbnailGenerated) {
+                markThumbnailGenerationStatus(file, true);
+            } else {
+                markThumbnailGenerationStatus(file, false);
+                return false;
             }
         }
 
@@ -155,15 +160,18 @@ public class ImageThumbConverter {
         if (file == null) {
             return;
         }
+        if (success) {
+            file.setPreviewImageAvailable(true);
+            file.setPreviewImageFail(false);
+            logger.fine("Marking thumbnail as available for file " + file.getId());
+        } else {
+            file.setPreviewImageFail(true);
+            file.setPreviewImageAvailable(false);
+            logger.fine("Marking thumbnail as failed for file " + file.getId());
+        }
         try {
             DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
-            if (success) {
-                logger.fine("Marking thumbnail as available for file " + file.getId());
-                datafileService.updatePreviewImageFlags(file.getId(), true, false);
-            } else {
-                logger.fine("Marking thumbnail as failed for file " + file.getId());
-                datafileService.updatePreviewImageFlags(file.getId(), false, true);
-            }
+            datafileService.save(file);
         } catch (Exception ex) {
             logger.warning("Failed to persist thumbnail status for file " + file.getId() + ": " + ex.getMessage());
         }
@@ -211,10 +219,7 @@ public class ImageThumbConverter {
                     // We found an older 0 length thumbnail. Newer image uploads will not have this issue.
                     // Once cleaned up, this thumbnail will no longer have this issue
                     logger.warning("Cleaning up zero sized thumbnail ID: "+ storageIO.getDataFile().getId());
-                    storageIO.getDataFile().setPreviewImageFail(true);
-                    storageIO.getDataFile().setPreviewImageAvailable(false);
-                    DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
-                    datafileService.save(storageIO.getDataFile());
+                    markThumbnailGenerationStatus(storageIO.getDataFile(), false);
                     
                     // Now that we have marked this File as a thumbnail failure, 
                     // no reason not to try and delete this 0-size cache here: 
@@ -479,10 +484,12 @@ public class ImageThumbConverter {
             storageIO = file.getStorageIO();
         } catch (Exception ioEx) {
             logger.fine("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
+            markThumbnailGenerationStatus(file, false);
             return null;
         }
 
         if (storageIO == null) {
+            markThumbnailGenerationStatus(file, false);
             return null;
         }
 
