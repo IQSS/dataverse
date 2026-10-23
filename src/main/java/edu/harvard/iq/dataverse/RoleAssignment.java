@@ -75,7 +75,7 @@ import jakarta.persistence.UniqueConstraint;
                     "FROM roleassignment ra " +
                     "JOIN dataverserole dr ON ra.role_id = dr.id " +
                     "JOIN owner_hierarchy oh ON ra.definitionpoint_id = oh.id " +
-                    "WHERE (dr.permissionbits::bit(64) & ?1) != 0::bit(64)",
+                    "WHERE (dr.permissionbits::bit(64) & (?1::bigint)::bit(64)) != 0::bit(64)",
             resultSetMapping = "AssigneeIdentifierMapping"
         )
 })

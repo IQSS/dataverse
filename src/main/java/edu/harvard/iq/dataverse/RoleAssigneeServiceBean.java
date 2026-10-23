@@ -448,7 +448,7 @@ public class RoleAssigneeServiceBean {
         // Build a bitmask by OR-ing together the bit for each permission
         long mask = 0;
         for (Permission p : permissions) {
-            mask |= (1L << (63 - p.ordinal()));
+            mask |= (1L << p.ordinal());
         }
         
         return em.createNamedQuery("RoleAssignment.findAssigneesWithPermissionsOnDvObject", String.class)
