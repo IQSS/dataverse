@@ -3,11 +3,16 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  *
@@ -27,7 +32,7 @@ public class UpdateHarvestingClientCommand extends AbstractCommand<HarvestingCli
 
     @Override
     public HarvestingClient execute(CommandContext ctxt) throws CommandException {
-        // TODO: check that the harvesting client config is attached to a legit 
+        // TODO: check that the harvesting client config is attached to a legit
         // dataverse; and that we are in fact modifying a config that already 
         // exists. -- L.A. 4.4
         return ctxt.em().merge(this.harvestingClient);

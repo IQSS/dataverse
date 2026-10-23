@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -213,6 +214,15 @@ public class CreateDataverseCommandTest {
             @Override
             public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels() {
                 return dfils;
+            }
+            @Override
+            public PermissionServiceBean permissions() {
+                return new PermissionServiceBean() {
+                    @Override
+                    public boolean isPowerUserOn(AuthenticatedUser user, edu.harvard.iq.dataverse.DvObject dvo) {
+                        return user != null && user.isSuperuser();
+                    }
+                };
             }
             
         } );

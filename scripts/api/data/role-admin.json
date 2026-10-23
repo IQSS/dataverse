@@ -3,6 +3,21 @@
     "name":"Admin",
     "description":"A person who has all permissions for dataverses, datasets, and files.",
     "permissions":[
-        "ALL"
+        "AddDataverse",
+        "AddDataset",
+        "ViewUnpublishedDataverse",
+        "ViewUnpublishedDataset",
+        "DownloadFile",
+        "EditDataverse",
+        "EditDataset",
+        "ManageDataversePermissions",
+        "ManageDatasetPermissions",
+        "ManageFilePermissions",
+        "PublishDataverse",
+        "PublishDataset",
+        "LinkDataverse",
+        "LinkDataset",
+        "DeleteDataverse",
+        "DeleteDatasetDraft"
     ]
 }

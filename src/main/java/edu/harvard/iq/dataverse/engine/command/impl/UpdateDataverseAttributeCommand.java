@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -104,8 +105,8 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
      * @throws PermissionException if the user doesn't have permission to modify this attribute.
      */
     private void setBooleanAttribute(CommandContext ctxt, boolean adminOnly) throws CommandException {
-        if (adminOnly && !getRequest().getUser().isSuperuser()) {
-            throw new PermissionException("You must be a superuser to change this setting",
+        if (adminOnly && !(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataverse))) {
+            throw new PermissionException("You must be a superuser or power user to change this setting",
                     this, Collections.singleton(Permission.EditDataset), dataverse);
         }
 
@@ -128,8 +129,8 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
     }
 
     private void setAllowedDatasetTypes(CommandContext ctxt, Object allowedDatasetTypesIn) throws CommandException {
-        if (!getRequest().getUser().isSuperuser()) {
-            throw new PermissionException("You must be a superuser to change this setting",
+        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataverse))) {
+            throw new PermissionException("You must be a superuser or power user to change this setting",
                     this, null, dataverse);
         }
         if (!(allowedDatasetTypesIn instanceof String stringValue)) {

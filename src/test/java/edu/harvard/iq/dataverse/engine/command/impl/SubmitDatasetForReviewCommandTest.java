@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -129,7 +130,16 @@ public class SubmitDatasetForReviewCommandTest {
                         // We only need permissions for notifications, which we are testing in InReviewWorkflowIT.
                         return Collections.emptyList();
                     }
+                    @Override
+                    public boolean isPowerUserOn(AuthenticatedUser user, edu.harvard.iq.dataverse.DvObject dvo) {
+                        return user != null && user.isSuperuser();
+                    }
                 };
+            }
+
+            @Override
+            public GroupServiceBean groups() {
+                return new GroupServiceBean();
             }
 
         }

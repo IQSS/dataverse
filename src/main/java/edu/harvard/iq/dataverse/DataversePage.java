@@ -1399,7 +1399,7 @@ public class DataversePage implements java.io.Serializable {
             ));
         }
     }
-    
+
     /* Get/set methods to keep the local locallyFARIRoleAssigneesList in sync with the Dataverse's locallyFAIRRoleAssigneeIdentifiers set.
      */
     public List<RoleAssignee> getLocallyFAIRRoleAssigneesList() {

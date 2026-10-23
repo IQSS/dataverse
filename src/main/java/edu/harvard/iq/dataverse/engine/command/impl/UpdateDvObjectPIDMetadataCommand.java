@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -37,8 +36,8 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
 
-        if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.auth.mustBeSuperUser"),
+        if (!(getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), target))) {
+            throw new PermissionException(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.auth.mustBePowerUser"),
                     this, Collections.singleton(Permission.EditDataset), target);
         }
         if (!this.target.isReleased()){

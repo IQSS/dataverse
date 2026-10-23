@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author landreev
  *
- * A superuser-only command:
+ * A power-user-only command:
  */
 @RequiredPermissions({})
 public class SetCollectionQuotaCommand  extends AbstractVoidCommand {
@@ -34,9 +34,9 @@ public class SetCollectionQuotaCommand  extends AbstractVoidCommand {
         
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
-        // Check if user is a superuser:
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException(BundleUtil.getStringFromBundle("dataverse.storage.quota.superusersonly"),
+        // Check if user is a power user:
+        if ( (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataverse) ) ) {
+            throw new PermissionException(BundleUtil.getStringFromBundle("dataverse.storage.quota.powerusersonly"),
                 this,  null, dataverse);                
         }
         

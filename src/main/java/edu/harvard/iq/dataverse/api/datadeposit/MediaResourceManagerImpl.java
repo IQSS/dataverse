@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -346,7 +345,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     ConstraintViolation violation = constraintViolations.iterator().next();
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
-                    boolean ignoreUploadFileLimits = user != null ? user.isSuperuser() : false;
+                    boolean ignoreUploadFileLimits = user != null ? permissionService.isPowerUserOn(user, dataset) : false;
                     ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, null, true, ignoreUploadFileLimits);
                 }
             } else {
