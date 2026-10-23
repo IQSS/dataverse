@@ -14,4 +14,4 @@ services:
     ports:
       - "8090:8080"
     volumes:
-      - './test-realm.json:/opt/keycloak/data/import/test-realm.json'
+      - './test-realm-include-spi.json:/opt/keycloak/data/import/test-realm-include-spi.json'

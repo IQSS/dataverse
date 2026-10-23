@@ -16,7 +16,7 @@ public class CustomizationIT {
     static String docroot;
     @BeforeAll
     public static void setup() {
-        // setup docroot for running test either in docker or in Jenkins
+        // setup docroot for running tests in Docker
         if (Files.exists(Paths.get("docker-dev-volumes"))) {
             docroot = "./appserver/glassfish/domains/domain1/docroot/";
         } else {
