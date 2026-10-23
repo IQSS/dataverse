@@ -109,6 +109,10 @@ Scripts
   * - ``solr-driver.sh``
     - Automate updates to a ``schema.xml`` in a Solr Core. Either run in watch mode or as a oneshot script.
       See ``solr-driver.sh -h`` for usage details. Best used as a sidecar or a one-off job.
+  * - ``update-metadata.sh``
+    - Update the standard metadata blocks and the Solr schema of a running, already bootstrapped instance by
+      reloading the metadata block TSV files. Idempotent, best used as a one-off job.
+      See ``update-metadata.sh -h`` for usage details and :ref:`dev-fast-redeploy` for an example use case.
 
 Solr Template
 ^^^^^^^^^^^^^
