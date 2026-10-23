@@ -2884,14 +2884,14 @@ public class DatasetPage implements java.io.Serializable {
                 for (DatasetVersion dv : this.dataset.getVersions()) {
                     if (dv.isReleased()) {
                         DatasetVersion deaccession = datasetVersionService.find(dv.getId());
-                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession), true);
+                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession));
                         DatasetVersion datasetv = commandEngine.submit(cmd);
                     }
                 }
             } else {
                 for (DatasetVersion dv : selectedDeaccessionVersions) {
                     DatasetVersion deaccession = datasetVersionService.find(dv.getId());
-                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession), false);
+                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(deaccession));
                     DatasetVersion datasetv = commandEngine.submit(cmd);
                 }
             }

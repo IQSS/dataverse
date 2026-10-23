@@ -23,8 +23,6 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import io.gdcc.spi.export.ExportException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,40 +40,19 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
    private static final Logger logger = Logger.getLogger(DeaccessionDatasetVersionCommand.class.getCanonicalName());
 
    final DatasetVersion theVersion;
-   final boolean deleteDOIIdentifier;
-    
-    public DeaccessionDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
+
+    public DeaccessionDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion deaccessionVersion) {
         super(aRequest, deaccessionVersion.getDataset());
         theVersion = deaccessionVersion;
-        deleteDOIIdentifier = deleteDOIIdentifierIn;
     }
 
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        Dataset ds = theVersion.getDataset();        
+        Dataset ds = theVersion.getDataset();
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
-        /* We do not want to delete the identifier if the dataset is completely deaccessioned
-        
-        logger.fine("deleteDOIIdentifier=" + deleteDOIIdentifier);
-        if (deleteDOIIdentifier) {
-            String nonNullDefaultIfKeyNotFound = "";
-            String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-            ArrayList<String> currentProtocol = new ArrayList<>();
-            currentProtocol.add(protocol);
-            IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
-
-            logger.fine("protocol=" + protocol);
-            try {
-                idServiceBean.deleteIdentifier(ds);
-            } catch (Exception e) {
-                if (e.toString().contains("Internal Server Error")) {
-                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
-                }
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.delete.error", currentProtocol),this); 
-            }
-        }*/
+        // PID changes, if any, are made in onSuccess()
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         boolean doNormalSolrDocCleanUp = true;
