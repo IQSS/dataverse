@@ -49,7 +49,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
         // first check if user is a power user
-        if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), uningest)) {
+        if (!ctxt.permissions().isPowerUserOn(getUser(), uningest)) {
             throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"), this,
                     Collections.singleton(Permission.EditDataset), uningest);
         }

@@ -31,7 +31,7 @@ public class ReservePidCommand extends AbstractDatasetCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
-        if (!(getUser() instanceof AuthenticatedUser) || !ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), dataset)) {
+        if (!ctxt.permissions().isPowerUserOn(getUser(), dataset)) {
             throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"),
                     this, Collections.singleton(Permission.EditDataset), dataset);
         }

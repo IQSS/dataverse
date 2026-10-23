@@ -214,7 +214,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
 
             User u = getRequestUser(crc);
-            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, ownerDataverse))) {
+            if (!permissionSvc.isPowerUserOn(u, ownerDataverse)) {
                 return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can create harvesting clients.");
             }
             
@@ -270,7 +270,7 @@ public class HarvestingClients extends AbstractApiBean {
             if (harvestingClient == null) {
                 return error( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
             }
-            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, harvestingClient.getDataverse()))) {
+            if (!permissionSvc.isPowerUserOn(u, harvestingClient.getDataverse())) {
                 return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can modify harvesting clients.");
             }
             
@@ -347,7 +347,7 @@ public class HarvestingClients extends AbstractApiBean {
         if (harvestingClient == null) {
             return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
-        if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, harvestingClient.getDataverse()))) {
+        if (!permissionSvc.isPowerUserOn(u, harvestingClient.getDataverse())) {
             return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can delete harvesting clients.");
         }
 

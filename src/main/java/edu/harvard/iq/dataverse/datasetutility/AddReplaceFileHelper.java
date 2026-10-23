@@ -1592,7 +1592,7 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        boolean ignoreUploadFileLimits = dvRequest.getAuthenticatedUser() != null ? permissionService.isPowerUserOn(dvRequest.getAuthenticatedUser(), workingVersion.getDataset()) : false;
+        boolean ignoreUploadFileLimits = permissionService.isPowerUserOn(dvRequest.getAuthenticatedUser(), workingVersion.getDataset());
         finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest, ignoreUploadFileLimits);
 
         if (nFiles != finalFileList.size()) {
@@ -2033,7 +2033,7 @@ public class AddReplaceFileHelper{
      * @param jsonData - an array of jsonData entries (one per file) using the single add file jsonData format
      * @param dataset
      * @param authUser
-     * @param trustSuppliedSizes - whether to accept the fileSize values passed 
+     * @param trustSuppliedFileSizes - whether to accept the fileSize values passed
      *        in jsonData (we don't want to trust the users of the S3 direct 
      *        upload API with that information - we will verify the status of
      *        the files in the S3 bucket and confirm the sizes in the process. 
@@ -2063,7 +2063,7 @@ public class AddReplaceFileHelper{
                 workingVersion = dataset.getOrCreateEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
 
-                if (!(authUser instanceof AuthenticatedUser) || !permissionService.isPowerUserOn((AuthenticatedUser) authUser, dataset)) {
+                if (!permissionService.isPowerUserOn(authUser, dataset)) {
                     Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
                     boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
                     if (hasFileCountLimit) {
@@ -2205,7 +2205,7 @@ public class AddReplaceFileHelper{
      * jsonData. Works with direct upload, Globus, and other out-of-band methods.
      * 
      * @param jsonData - must include fileToReplaceId key with file ID and may include forceReplace key with true/false(default) 
-     * @param dataset
+     * @param ds
      * @param authUser
      * @return
      */

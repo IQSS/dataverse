@@ -266,7 +266,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (dvo == null || u == null || u instanceof GuestUser || !(dvo instanceof Dataset)) {
             return false; // guests can not publish
         }
-        if (u instanceof AuthenticatedUser && permissionService.isPowerUserOn((AuthenticatedUser) u, dvo)) {
+        if (permissionService.isPowerUserOn(u, dvo)) {
             return true;
         }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
@@ -334,7 +334,7 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     public boolean isPowerUserOn(DvObject dvo) {
         User u = session.getUser();
-        return (u instanceof AuthenticatedUser && permissionService.isPowerUserOn((AuthenticatedUser) u, dvo));
+        return (permissionService.isPowerUserOn(u, dvo));
     }
 
     public boolean isPowerUserOnSomeDvObject() {

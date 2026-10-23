@@ -341,7 +341,7 @@ public class Datasets extends AbstractApiBean {
             boolean destroy = false;
 
             if (doomed.getVersions().size() == 1) {
-                if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) u, doomed))) {
+                if (doomed.isReleased() && !permissionSvc.isPowerUserOn(u, doomed)) {
                     throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser")));
                 }
                 destroy = true;
@@ -382,7 +382,7 @@ public class Datasets extends AbstractApiBean {
             // first check if dataset is released, and if so, if user is a poweruser
             Dataset doomed = findDatasetOrDie(id);
 
-            if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) u, doomed))) {
+            if (doomed.isReleased() && !permissionSvc.isPowerUserOn(u, doomed)) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser")));
             }
 
@@ -3028,7 +3028,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND,
                         "Direct upload not supported for files in this dataset: " + dataset.getId());
             }
-            if (!(user instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) user, dataset)) {
+            if (!permissionSvc.isPowerUserOn(user, dataset)) {
                 Integer effectiveDatasetFileCountLimit = dataset.getEffectiveDatasetFileCountLimit();
                 boolean hasFileCountLimit = dataset.isDatasetFileCountLimitSet(effectiveDatasetFileCountLimit);
                 if (hasFileCountLimit) {

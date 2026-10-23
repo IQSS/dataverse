@@ -1526,7 +1526,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        return permissionService.isPowerUserOn((AuthenticatedUser) session.getUser(), dataset);
+        return permissionService.isPowerUserOn(session.getUser(), dataset);
     }
     /**
      * Check Dataset related permissions

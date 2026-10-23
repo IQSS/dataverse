@@ -334,7 +334,7 @@ public class PermissionServiceBean {
         User user = req.getUser();
         
         // quick cases
-        if (user instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) user, dvo)) {
+        if (isPowerUserOn(user, dvo)) {
             return children; // it's good to be king/power user
             
         } else if (!user.isAuthenticated()) {
@@ -399,7 +399,7 @@ public class PermissionServiceBean {
 
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
         User user = req.getUser();
-        if (user instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) user, dvo)) {
+        if (isPowerUserOn(user, dvo)) {
             return true;
         } else if (!user.isAuthenticated()) {
             Set<Permission> requiredCopy = EnumSet.copyOf(required);
@@ -454,7 +454,7 @@ public class PermissionServiceBean {
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
     public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
-        if (req.getUser() instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) req.getUser(), dvo)) {
+        if (isPowerUserOn(req.getUser(), dvo)) {
             return EnumSet.allOf(Permission.class);
         }
 
@@ -495,6 +495,13 @@ public class PermissionServiceBean {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
         return permissions;
+    }
+
+    public boolean isPowerUserOn(User user, DvObject dvo) {
+        if(user == null || !user.isAuthenticated()) {
+            return false;
+        }
+        return isPowerUserOn((AuthenticatedUser) user, dvo);
     }
 
     public boolean isPowerUserOn(AuthenticatedUser user, DvObject dvo) {

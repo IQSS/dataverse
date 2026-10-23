@@ -54,7 +54,7 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         
-        if ( ! (getUser() instanceof AuthenticatedUser && ctxt.permissions().isPowerUserOn((AuthenticatedUser) getUser(), getDataset().getOwner())) ) {
+        if ( !ctxt.permissions().isPowerUserOn(getUser(), getDataset().getOwner())) {
             throw new PermissionException("ImportDatasetCommand can only be issued by a super-user or power user.", this, Collections.emptySet(), getDataset());
         }
         

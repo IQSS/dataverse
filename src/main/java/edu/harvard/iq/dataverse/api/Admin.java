@@ -1793,7 +1793,7 @@ public class Admin extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataset ds = findDatasetOrDie(id);
             
-            if (!(u instanceof AuthenticatedUser) || !permissionSvc.isPowerUserOn((AuthenticatedUser) u, ds)) {
+            if (!permissionSvc.isPowerUserOn(u, ds)) {
                 logger.info("Bad Request Unauthor " );
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
@@ -1835,7 +1835,7 @@ public class Admin extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             DataFile df = findDataFileOrDie(id);
-            if (!(u instanceof AuthenticatedUser && permissionSvc.isPowerUserOn((AuthenticatedUser) u, df))) {
+            if (!permissionSvc.isPowerUserOn(u, df)) {
                 return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
             DataverseRequest r = createDataverseRequest(u);
