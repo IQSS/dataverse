@@ -80,7 +80,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         }
         // Use lazy thumbnail candidates to defer expensive base64 generation
         // until the thumbnail selection dialog is actually opened.
-        datasetThumbnails = DatasetUtil.getLazyThumbnailCandidates(dataset);
+        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, false, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();

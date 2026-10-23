@@ -105,56 +105,11 @@ public class DatasetUtil {
             DataFile dataFile = fileMetadata.getDataFile();
 
             if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
-                    && ImageThumbConverter.isThumbnailAvailable(dataFile)
-                    && !dataFile.isRestricted()
-                    && !FileUtil.isActivelyEmbargoed(dataFile)) {
-                String imageSourceBase64 = null;
-                imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, size);
-
-                if (imageSourceBase64 != null) {
-                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
-                    thumbnails.add(datasetThumbnail);
-                }
-            }
-        }
-        return thumbnails;
-    }
-
-    /**
-     * Returns thumbnail candidates as lazy DatasetThumbnail objects that hold
-     * only DataFile references. Base64 images are generated on-demand when
-     * getBase64image() is called, deferring expensive storage I/O until the
-     * thumbnail is actually displayed.
-     *
-     * @param dataset the dataset to find thumbnail candidates for
-     * @return list of lazy DatasetThumbnail objects (base64 not pre-computed)
-     */
-    public static List<DatasetThumbnail> getLazyThumbnailCandidates(Dataset dataset) {
-        List<DatasetThumbnail> thumbnails = new ArrayList<>();
-        if (dataset == null) {
-            return thumbnails;
-        }
-        // Use database-level filtering to get only thumbnail-candidate files (images, PDFs)
-        // instead of iterating through all files in the dataset.
-        // Fall back to iterating all files if CDI is not available (e.g., unit tests).
-        List<FileMetadata> candidateFileMetadatas;
-        try {
-            DataFileServiceBean dataFileService = CDI.current().select(DataFileServiceBean.class).get();
-            candidateFileMetadatas = dataFileService.findThumbnailCandidateFileMetadatasByDatasetVersionId(dataset.getLatestVersion().getId());
-        } catch (IllegalStateException ex) {
-            // CDI not available (e.g., unit tests) - fall back to iterating all files
-            candidateFileMetadatas = dataset.getLatestVersion().getFileMetadatas();
-        }
-        for (FileMetadata fileMetadata : candidateFileMetadatas) {
-            DataFile dataFile = fileMetadata.getDataFile();
-
-            if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
                     && !dataFile.isRestricted()
                     && !FileUtil.isActivelyEmbargoed(dataFile)
-                    && ImageThumbConverter.isThumbnailAvailable(dataFile)
                     ) {
-                // Create lazy thumbnail — base64 will be generated on first access
-                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(dataFile);
+                // Create lazy thumbnail with the requested size — base64 will be generated on first access
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(dataFile, size);
                 thumbnails.add(datasetThumbnail);
             }
         }
@@ -171,7 +126,7 @@ public class DatasetUtil {
      * @return DatasetThumbnail object, or null if not available
      */
     public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, int size) {
-        if (dataset == null) {
+        if (dataset == null || dataset.getStorageIdentifier()==null) {
             return null;
         }
 
@@ -179,14 +134,14 @@ public class DatasetUtil {
             // Size 0 will fail (and set the failure flag) and should never be sent
             logger.warning("getThumbnail called with size 0");
             return null;
-        }        
+        }
         StorageIO<Dataset> dataAccess = null;
                 
         try{
             dataAccess = DataAccess.getStorageIO(dataset);
         }
-        catch(IOException ioex){
-            logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        catch(IOException | RuntimeException ex){
+            logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ex.getMessage() + ")");
         }
         
         InputStream in = null;
@@ -278,18 +233,6 @@ public class DatasetUtil {
             return false;
         }
         return true;
-                
-        //TODO: Is this required? 
-//        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
-//        boolean originalFileDeleted = originalFile.delete();
-//        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-//        boolean thumb48Deleted = thumb48.delete();
-//        if (originalFileDeleted && thumb48Deleted) {
-//            return true;
-//        } else {
-//            logger.info("One of the files wasn't deleted. Original deleted: " + originalFileDeleted + ". thumb48 deleted: " + thumb48Deleted + ".");
-//            return false;
-//        }
     }
 
     /**
@@ -394,7 +337,7 @@ public class DatasetUtil {
             dest = fos.getChannel();
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-        	IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(inputStream);
             logger.severe("Error occurred during transfer using FileChannels: " + ex.getMessage());
             return null;
         }

@@ -339,13 +339,14 @@ public class DataFileServiceBean implements java.io.Serializable {
      */
     public List<FileMetadata> findThumbnailCandidateFileMetadatasByDatasetVersionId(Long datasetVersionId) {
         String jpql = "SELECT fm FROM FileMetadata fm " +
+                "JOIN FETCH fm.dataFile df " +
+                "LEFT JOIN FETCH df.embargo " +
                 "WHERE fm.datasetVersion.id = :datasetVersionId " +
-                "AND (LOWER(fm.dataFile.contentType) LIKE 'image/%' " +
-                "OR LOWER(fm.dataFile.contentType) = 'application/pdf' " +
-                "OR LOWER(fm.dataFile.contentType) = 'application/zipped-shapefile') " +
-                "AND fm.dataFile.restricted = false " +
-                "AND fm.dataFile.harvested = false " +
-                "AND (fm.dataFile.previewImageFail IS NULL OR fm.dataFile.previewImageFail = false)";
+                "AND (LOWER(df.contentType) LIKE 'image/%' " +
+                "OR LOWER(df.contentType) = 'application/pdf' " +
+                "OR LOWER(df.contentType) = 'application/zipped-shapefile') " +
+                "AND df.restricted = false " +
+                "AND (df.previewImageFail IS NULL OR df.previewImageFail = false)";
         return em.createQuery(jpql, FileMetadata.class)
                 .setParameter("datasetVersionId", datasetVersionId)
                 .getResultList();

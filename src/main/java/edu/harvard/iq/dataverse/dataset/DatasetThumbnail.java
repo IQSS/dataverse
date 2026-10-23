@@ -9,6 +9,8 @@ public class DatasetThumbnail {
     private final DataFile dataFile;
     /** Whether the base64 image has been lazily loaded yet. */
     private boolean base64Loaded;
+    /** Size of the thumbnail to load lazily (0 means use default). */
+    private final int thumbnailSize;
 
     /**
      * Constructor with pre-computed base64 image (eager mode).
@@ -17,21 +19,38 @@ public class DatasetThumbnail {
         this.base64image = base64image;
         this.dataFile = dataFile;
         this.base64Loaded = base64image != null;
+        this.thumbnailSize = 0;
     }
 
     /**
      * Constructor with only DataFile reference (lazy mode).
      * Base64 image will be generated on first access via getBase64image().
+     * Uses DEFAULT_DATASETLOGO_SIZE for the thumbnail.
      */
     public DatasetThumbnail(DataFile dataFile) {
         this.base64image = null;
         this.dataFile = dataFile;
         this.base64Loaded = false;
+        this.thumbnailSize = ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE;
+    }
+
+    /**
+     * Constructor with DataFile reference and custom thumbnail size (lazy mode).
+     * Base64 image will be generated on first access via getBase64image().
+     *
+     * @param dataFile the data file to generate the thumbnail from
+     * @param size the thumbnail size in pixels
+     */
+    public DatasetThumbnail(DataFile dataFile, int size) {
+        this.base64image = null;
+        this.dataFile = dataFile;
+        this.base64Loaded = false;
+        this.thumbnailSize = size;
     }
 
     public String getBase64image() {
         if (!base64Loaded && dataFile != null) {
-            base64image = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+            base64image = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, thumbnailSize);
             base64Loaded = true;
         }
         return base64image;
