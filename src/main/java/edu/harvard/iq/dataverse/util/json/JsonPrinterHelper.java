@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import jakarta.annotation.PostConstruct;
@@ -37,6 +38,9 @@ public class JsonPrinterHelper {
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
 
+    @EJB
+    DatasetExternalCitationsServiceBean datasetExternalCitationsService;
+
     @PostConstruct
     public void injectService() {
         JsonPrinter.injectSettingsService(
@@ -46,7 +50,8 @@ public class JsonPrinterHelper {
                 datasetSvc,
                 mailSvc,
                 inAppNotificationsJsonPrinter,
-                roleAssigneeService
+                roleAssigneeService,
+                datasetExternalCitationsService
         );
     }
 }
