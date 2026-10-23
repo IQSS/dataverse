@@ -6,10 +6,10 @@
 
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -119,11 +119,12 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
         // Let the PID provider(s) know, e.g. so that DataCite DOIs of datasets/files
         // no longer in any released version move from "findable" to "registered".
+        // Only files in this version can have changed state.
         // Done after the transaction has committed and not treated as fatal.
         if (!dataset.isHarvested()) {
             deaccessionPid(dataset);
-            for (DataFile df : dataset.getFiles()) {
-                deaccessionPid(df);
+            for (FileMetadata fmd : version.getFileMetadatas()) {
+                deaccessionPid(fmd.getDataFile());
             }
         }
         return retVal;
