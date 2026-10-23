@@ -134,7 +134,7 @@ Running Non-Essential (Excluded) Unit Tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You should be aware that some unit tests have been deemed "non-essential" and have been annotated with ``@Tag(Tags.NOT_ESSENTIAL_UNITTESTS)`` and are excluded from the "dev" Maven profile, which is the default profile.
-All unit tests (that have not been annotated with ``@Disable``), including these non-essential tests, are run from continuous integration systems such as Jenkins and GitHub Actions with the following ``mvn`` command that invokes a non-default profile:
+All unit tests (that have not been annotated with ``@Disable``), including these non-essential tests, are run from continuous integration systems such as GitHub Actions with the following ``mvn`` command that invokes a non-default profile:
 
 ``mvn test -P all-unit-tests``
 
@@ -453,9 +453,7 @@ The script requires a file called ``files.txt`` to operate and database IDs for 
 Continuous Integration
 ----------------------
 
-The Dataverse Project currently makes use of two Continuous Integration platforms, Jenkins and GitHub Actions.
-
-Our Jenkins config is a work in progress and may be viewed at https://github.com/IQSS/dataverse-jenkins/ A corresponding GitHub webhook is required. Build output is viewable at https://jenkins.dataverse.org/
+The Dataverse Project currently uses GitHub Actions for continuous integration testing.
 
 GitHub Actions jobs can be found in ``.github/workflows``.
 
