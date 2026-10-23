@@ -64,10 +64,9 @@ public class ConfigCheckService {
             return;
         }
         if (!FeatureFlags.API_SESSION_AUTH.enabled()) {
-            logger.log(Level.WARNING, () -> "Feature flag " + FeatureFlags.API_SESSION_AUTH_HARDENING.name()
-                    + " is enabled, but " + FeatureFlags.API_SESSION_AUTH.name()
-                    + " is not. Only the Access API authenticates by session cookie in that case, so the"
-                    + " hardening covers nothing else. Enable dataverse.feature.api-session-auth as well.");
+            logger.log(Level.INFO, () -> "Feature flag " + FeatureFlags.API_SESSION_AUTH_HARDENING.name()
+                    + " is enabled without " + FeatureFlags.API_SESSION_AUTH.name()
+                    + ", so the origin check applies to the Access API only.");
         }
         String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
         if (UrlOriginUtil.toOrigin(siteUrl) == null) {

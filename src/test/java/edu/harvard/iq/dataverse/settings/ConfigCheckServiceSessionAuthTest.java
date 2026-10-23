@@ -79,11 +79,12 @@ class ConfigCheckServiceSessionAuthTest {
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-session-auth-hardening")
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "false", varArgs = "api-session-auth")
     @JvmSetting(key = JvmSettings.SITE_URL, value = SITE_URL)
-    void testCheckSessionAuthHardening_warnsWhenSessionAuthIsOff() {
+    void testCheckSessionAuthHardening_infoWhenSessionAuthIsOff() {
         sut.checkSessionAuthHardening();
 
-        assertEquals(1, countAtLevel(Level.WARNING));
-        assertTrue(logRecords.get(0).getMessage().contains("API_SESSION_AUTH"));
+        assertEquals(0, countAtLevel(Level.WARNING));
+        assertEquals(1, countAtLevel(Level.INFO));
+        assertTrue(logRecords.get(0).getMessage().contains("Access API"));
     }
 
     @Test
