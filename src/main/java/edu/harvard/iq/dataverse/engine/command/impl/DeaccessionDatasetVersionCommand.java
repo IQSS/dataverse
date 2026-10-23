@@ -40,7 +40,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
    private static final Logger logger = Logger.getLogger(DeaccessionDatasetVersionCommand.class.getCanonicalName());
 
    final DatasetVersion theVersion;
-
+    
     public DeaccessionDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion deaccessionVersion) {
         super(aRequest, deaccessionVersion.getDataset());
         theVersion = deaccessionVersion;
@@ -49,7 +49,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        Dataset ds = theVersion.getDataset();
+        Dataset ds = theVersion.getDataset();        
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         // PID changes, if any, are made in onSuccess()
