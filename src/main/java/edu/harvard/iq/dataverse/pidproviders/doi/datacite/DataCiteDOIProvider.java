@@ -363,6 +363,10 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         metadata.put("_target", getTargetUrl(dvObject));
         try {
             String updated = doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
+            if (REGISTERED.equals(getPidStatus(dvObject))) {
+                // Posting metadata can make a DOI findable again, keep deaccessioned ones hidden
+                doiDataCiteRegisterService.hideIdentifier(identifier);
+            }
             if(updated.length()!=0) {
                 logger.info(identifier + "updated: " + updated );
                 return true;
