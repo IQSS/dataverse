@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -275,11 +276,13 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         boolean returnVal = false;
 
         try {
-            Float west = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.westLongitude, westLon);
-            Float east = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.eastLongitude, eastLon);
-            Float north = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.northLatitude, northLat);
-            Float south = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.southLatitude, southLat);
-            returnVal = west <= east && south <= north;
+            BigDecimal west = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.westLongitude, westLon);
+            BigDecimal east = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.eastLongitude, eastLon);
+            BigDecimal north = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.northLatitude, northLat);
+            BigDecimal south = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.southLatitude, southLat);
+            // Compare with BigDecimal to avoid Float precision loss that let invalid
+            // high-decimal bounding boxes pass validation and then fail Solr indexing.
+            returnVal = west.compareTo(east) <= 0 && south.compareTo(north) <= 0;
         } catch (IllegalArgumentException e) {
             returnVal = false;
         }
@@ -287,13 +290,25 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         return returnVal;
     }
 
-    private static Float verifyBoundingBoxCoordinatesWithinRange(final String name, final String value) throws IllegalArgumentException {
+    private static BigDecimal verifyBoundingBoxCoordinatesWithinRange(final String name, final String value) throws IllegalArgumentException {
         int max = name.equals(DatasetFieldConstant.westLongitude) || name.equals(DatasetFieldConstant.eastLongitude) ? 180 : 90;
         int min = max * -1;
 
-        final Float returnVal = value != null ? Float.parseFloat(value) : Float.NaN;
-        if (returnVal.isNaN() || returnVal < min || returnVal > max) {
-            throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", returnVal.isNaN() ? "missing" : returnVal, min, max));
+        if (value == null) {
+            throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", "missing", min, max));
+        }
+
+        final BigDecimal returnVal;
+        try {
+            returnVal = new BigDecimal(value.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", value, min, max), e);
+        }
+
+        final BigDecimal minVal = BigDecimal.valueOf(min);
+        final BigDecimal maxVal = BigDecimal.valueOf(max);
+        if (returnVal.compareTo(minVal) < 0 || returnVal.compareTo(maxVal) > 0) {
+            throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", returnVal, min, max));
         }
         return returnVal;
     }
