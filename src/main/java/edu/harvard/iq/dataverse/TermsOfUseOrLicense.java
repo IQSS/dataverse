@@ -6,6 +6,9 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,24 +16,24 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 
 import edu.harvard.iq.dataverse.license.License;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
-
 @NamedQueries({
-    // TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms 
-    // is used to determine if the dataset terms were set by the multi license support update 
+    // TermsOfUseOrLicense.findByDatasetVersionIdAndDefaultTerms
+    // is used to determine if the dataset terms were set by the multi license support update
     // as part of the 5.10 release.
-    
-    @NamedQuery(name = "TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms", 
-                query = "SELECT o FROM TermsOfUseAndAccess o, DatasetVersion dv WHERE "
+
+    @NamedQuery(name = "TermsOfUseOrLicense.findByDatasetVersionIdAndDefaultTerms",
+                query = "SELECT o FROM TermsOfUseOrLicense o, DatasetVersion dv WHERE "
                         + "dv.id =:id "
-                        + "AND dv.termsOfUseAndAccess.id = o.id "
+                        + "AND dv.defaultTermsOfUseOrLicense.id = o.id "
                         + "AND o.termsOfUse =:defaultTerms "
-                        + "AND o.confidentialityDeclaration IS null " 
+                        + "AND o.confidentialityDeclaration IS null "
                         + "AND o.specialPermissions IS null "
                         + "AND o.restrictions IS null "
                         + "AND o.citationRequirements IS null "
@@ -42,13 +45,11 @@ import jakarta.persistence.NamedQuery;
 
 /**
  *
- * 
+ *
  * @author skraffmi
  */
 @Entity
-@ValidateTermsOfUseAndAccess
-public class TermsOfUseAndAccess implements Serializable {
-    
+public class TermsOfUseOrLicense implements Serializable {
     public static final String DEFAULT_NOTERMS = "This dataset is made available without information on how it can be used. You should communicate with the Contact(s) specified before use.";
 
     @Id
@@ -62,8 +63,8 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    @OneToOne(mappedBy = "termsOfUseAndAccess")
+
+    @OneToOne(mappedBy = "defaultTermsOfUseOrLicense")
     private DatasetVersion datasetVersion;
 
     public DatasetVersion getDatasetVersion() {
@@ -73,9 +74,12 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setDatasetVersion(DatasetVersion datasetVersion) {
         this.datasetVersion = datasetVersion;
     }
-    
-    @OneToOne(mappedBy = "termsOfUseAndAccess")
+
+    @OneToOne(mappedBy = "defaultTermsOfUseOrLicense")
     private Template template;
+
+    @OneToMany(mappedBy = "termsOfUseOrLicense")
+    private List<FileMetadata> fileMetadataList = new ArrayList<>();
 
     public Template getTemplate() {
         return template;
@@ -84,66 +88,35 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setTemplate(Template template) {
         this.template = template;
     }
-    
+
     @ManyToOne
-    @JoinColumn(name="license_id")
+    @JoinColumn(name = "license_id")
     private License license;
 
-    @Column(columnDefinition="TEXT")      
+    @Column(columnDefinition = "TEXT")
     private String termsOfUse;
-    
-    @Column(columnDefinition="TEXT") 
-    private String termsOfAccess;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column( columnDefinition = "TEXT")
     private String confidentialityDeclaration;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String specialPermissions;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String restrictions;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String citationRequirements;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String depositorRequirements;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String conditions;
-    
-    @Column(columnDefinition="TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String disclaimer;
-    
-    @Column(columnDefinition="TEXT") 
-    private String dataAccessPlace;
-    
-    @Column(columnDefinition="TEXT") 
-    private String originalArchive;
-    
-    @Column(columnDefinition="TEXT") 
-    private String availabilityStatus;
-    
-    @Column(columnDefinition="TEXT") 
-    private String contactForAccess;
-    
-    @Column(columnDefinition="TEXT") 
-    private String sizeOfCollection;
-    
-    @Column(columnDefinition="TEXT") 
-    private String studyCompletion;
-    
-    private boolean fileAccessRequest;
 
-    public boolean isFileAccessRequest() {
-        return fileAccessRequest;
-    }
-
-    public void setFileAccessRequest(boolean fileAccessRequest) {
-        this.fileAccessRequest = fileAccessRequest;
-    }
-    
     public License getLicense() {
         return license;
     }
@@ -166,14 +139,6 @@ public class TermsOfUseAndAccess implements Serializable {
             //Enforce restriction that customTerms can't be used with a license
             this.license = null;
         }
-    }
-
-    public String getTermsOfAccess() {
-        return termsOfAccess;
-    }
-
-    public void setTermsOfAccess(String termsOfAccess) {
-        this.termsOfAccess = termsOfAccess;
     }
 
     public String getConfidentialityDeclaration() {
@@ -260,66 +225,9 @@ public class TermsOfUseAndAccess implements Serializable {
         }
     }
 
-    public String getDataAccessPlace() {
-        return dataAccessPlace;
-    }
+    public TermsOfUseOrLicense copyTermsOfUseOrLicense(){
 
-    public void setDataAccessPlace(String dataAccessPlace) {
-        this.dataAccessPlace = dataAccessPlace;
-    }
-
-    public String getOriginalArchive() {
-        return originalArchive;
-    }
-
-    public void setOriginalArchive(String originalArchive) {
-        this.originalArchive = originalArchive;
-    }
-
-    public String getAvailabilityStatus() {
-        return availabilityStatus;
-    }
-
-    public void setAvailabilityStatus(String availabilityStatus) {
-        this.availabilityStatus = availabilityStatus;
-    }
-
-    public String getContactForAccess() {
-        return contactForAccess;
-    }
-
-    public void setContactForAccess(String contactForAccess) {
-        this.contactForAccess = contactForAccess;
-    }
-
-    public String getSizeOfCollection() {
-        return sizeOfCollection;
-    }
-
-    public void setSizeOfCollection(String sizeOfCollection) {
-        this.sizeOfCollection = sizeOfCollection;
-    }
-
-    public String getStudyCompletion() {
-        return studyCompletion;
-    }
-
-    public void setStudyCompletion(String studyCompletion) {
-        this.studyCompletion = studyCompletion;
-    }
-    
-        
-    public TermsOfUseAndAccess copyTermsOfUseAndAccess(){
-
-        TermsOfUseAndAccess retVal = new TermsOfUseAndAccess();
-        retVal.setAvailabilityStatus(this.getAvailabilityStatus());
-        retVal.setContactForAccess(this.getContactForAccess());
-        retVal.setDataAccessPlace(this.getDataAccessPlace());
-        retVal.setOriginalArchive(this.getOriginalArchive());
-        retVal.setSizeOfCollection(this.getSizeOfCollection());
-        retVal.setStudyCompletion(this.getStudyCompletion());
-        retVal.setTermsOfAccess(this.getTermsOfAccess());
-        retVal.setFileAccessRequest(this.isFileAccessRequest());
+        TermsOfUseOrLicense retVal = new TermsOfUseOrLicense();
         retVal.setLicense(this.getLicense());
         if (license == null) {
             retVal.setTermsOfUse(this.getTermsOfUse());
@@ -345,7 +253,7 @@ public class TermsOfUseAndAccess implements Serializable {
         conditions = null;
         disclaimer = null;
     }
-    
+
     @Transient
     private String validationMessage;
 
@@ -356,7 +264,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -367,10 +275,10 @@ public class TermsOfUseAndAccess implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof TermsOfUseAndAccess)) {
+        if (!(object instanceof TermsOfUseOrLicense)) {
             return false;
         }
-        TermsOfUseAndAccess other = (TermsOfUseAndAccess) object;
+        TermsOfUseOrLicense other = (TermsOfUseOrLicense) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -379,7 +287,15 @@ public class TermsOfUseAndAccess implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.TermsOfUseAndAccess[ id=" + id + " ]";
+        return this.getClass().getCanonicalName() + "[ id=" + id + " ]";
     }
-    
+
+    public List<FileMetadata> getFileMetadataList() {
+        return fileMetadataList;
+    }
+
+    public void setFileMetadataList(List<FileMetadata> fileMetadataList) {
+        this.fileMetadataList = fileMetadataList;
+    }
 }
+

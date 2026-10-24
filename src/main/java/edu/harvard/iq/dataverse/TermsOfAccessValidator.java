@@ -13,35 +13,35 @@ import jakarta.validation.ConstraintValidatorContext;
  *
  * @author skraffmi
  */
-public class TermsOfUseAndAccessValidator implements ConstraintValidator<ValidateTermsOfUseAndAccess, TermsOfUseAndAccess> {
+public class TermsOfAccessValidator implements ConstraintValidator<ValidateTermsOfAccess, TermsOfAccess> {
 
     @Override
-    public void initialize(ValidateTermsOfUseAndAccess constraintAnnotation) {
+    public void initialize(ValidateTermsOfAccess constraintAnnotation) {
 
     }
 
     @Override
-    public boolean isValid(TermsOfUseAndAccess value, ConstraintValidatorContext context) {
-        
+    public boolean isValid(TermsOfAccess value, ConstraintValidatorContext context) {
+
         return isTOUAValid(value, context);
 
     }
-    
-    public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context){
-        
+
+    public static boolean isTOUAValid(TermsOfAccess value, ConstraintValidatorContext context){
+
         //if part of a template it is valid
         if (value.getTemplate() != null){
             return true;
         }
-        
-         //If there are no restricted files then terms are valid 
+
+         //If there are no restricted files then terms are valid
         if (!value.getDatasetVersion().isHasRestrictedFile()) {
             return true;
         }
         /*If there are restricted files then the version
-        must allow access requests or have terms of access filled in.
+        must have terms of access filled in.
          */
-        boolean valid = value.isFileAccessRequest() == true || (value.getTermsOfAccess() != null && !value.getTermsOfAccess().isEmpty());
+        boolean valid = value.isFileAccessRequest() || (value.getTermsOfAccess() != null && !value.getTermsOfAccess().isEmpty());
         if (!valid) {
             try {
                 if (context != null) {
@@ -57,3 +57,4 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
         return valid;
     }
 }
+
