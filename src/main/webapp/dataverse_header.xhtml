@@ -174,7 +174,7 @@
                                             <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
+                                    <li class="divider" jsf:rendered="#{permissionsWrapper.powerUserOnSomeDvObject}"></li>
                                     <li class="logout" tabindex="-1">
                                         <o:form useRequestURI="true" pt:role="logout">
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
