@@ -1833,12 +1833,12 @@ public class Admin extends AbstractApiBean {
         logger.info("Starting to register  " + id + " file id. " + new Date());
 
         try {
-            User u = getRequestUser(crc);
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             DataFile df = findDataFileOrDie(id);
-            if (!permissionSvc.isPowerUserOn(u, df)) {
+            if (!permissionSvc.isPowerUserOn(au, df)) {
                 return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
-            DataverseRequest r = createDataverseRequest(u);
+            DataverseRequest r = createDataverseRequest(au);
             if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
                 return forbidden("PIDs are not enabled for this file's collection.");
             }
