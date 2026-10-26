@@ -5379,7 +5379,7 @@ public class UtilIT {
     public static Response getExternalVocabularies() {
         RequestSpecification requestSpec = given();
 
-        Response resp = requestSpec.contentType("text/html; charset=UTF-8")
+        Response resp = requestSpec.contentType("application/json")
                 .get("/api/info/settings/externalVocabularies");
 
         return resp;
