@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.AfterEach;
@@ -40,7 +42,7 @@ public class PermissionsWrapperTest {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         
         Mockito.when(this.permissionWrapper.session.getUser()).thenReturn(user);
-        Mockito.when(this.permissionWrapper.permissionService.isPowerUserOn(user, dv)).thenReturn(true);
+        Mockito.when(this.permissionWrapper.permissionService.isPowerUserOn(any(User.class), eq(dv))).thenReturn(true);
         
         assertTrue(this.permissionWrapper.isPowerUserOn(dv));
     }
