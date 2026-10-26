@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -9,7 +7,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -18,10 +15,8 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
@@ -104,7 +99,7 @@ public class SearchPermissionsServiceBean {
         Set<Permission> permissions = new HashSet<>();
         permissions.add(p);
         permissions.add(Permission.ScopedPowerUser);
-        
+
         List<String> assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionsOnDvObject(dvObject.getId(), permissions);
         for (String id : assigneeIdStrings) {
             RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
@@ -189,7 +184,18 @@ public String convertToIndexableString(String identifier) {
     } else if (prefix == '&') {
         // Group alias - can use directly
         // Format: &groupAlias -> group_groupAlias
+        // The identifier/alias mapping is different for explicit groups
+        if (value.startsWith("explicit/")) {
+            value = value.substring("explicit/".length());
+        }
         return IndexServiceBean.getGroupPrefix() + value;
+    } else if (prefix == ':') {
+        //No db lookup here
+        RoleAssignee ra = roleAssigneeService.getRoleAssignee(identifier);
+        if (ra instanceof Group) {
+            return IndexServiceBean.getGroupPrefix() + ((Group) ra).getAlias();
+        }
+        return null;
     } else {
         logger.warning("Unknown role assignee identifier format: " + identifier);
         return null;
