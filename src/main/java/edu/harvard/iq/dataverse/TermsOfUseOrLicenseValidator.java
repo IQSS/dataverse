@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.apache.commons.lang3.StringUtils;
 
 public class TermsOfUseOrLicenseValidator implements ConstraintValidator<ValidateTermsOfUseOrLicense, TermsOfUseOrLicense> {
 
@@ -24,7 +26,7 @@ public class TermsOfUseOrLicenseValidator implements ConstraintValidator<Validat
             return true;
         }
         if (value.getLicense() != null) {
-            if (value.getTermsOfUse() != null && !value.getTermsOfUse().isEmpty()) {
+            if (StringUtils.isBlank(value.getTermsOfUse())) {
                 if (context != null) {
                     context.buildConstraintViolationWithTemplate("Terms of use and license cannot both be set.").addConstraintViolation();
                 }
@@ -32,7 +34,7 @@ public class TermsOfUseOrLicenseValidator implements ConstraintValidator<Validat
             }
             // TODO no other values too
         } else {
-            if (value.getTermsOfUse() == null || value.getTermsOfUse().isEmpty()) {
+            if (StringUtils.isBlank(value.getTermsOfUse())) {
                 if (context != null) {
                     context.buildConstraintViolationWithTemplate("Either terms of use or license must be set.").addConstraintViolation();
                 }

@@ -49,6 +49,7 @@ import jakarta.persistence.NamedQuery;
  * @author skraffmi
  */
 @Entity
+@ValidateTermsOfUseOrLicense
 public class TermsOfUseOrLicense implements Serializable {
     public static final String DEFAULT_NOTERMS = "This dataset is made available without information on how it can be used. You should communicate with the Contact(s) specified before use.";
 
@@ -78,9 +79,6 @@ public class TermsOfUseOrLicense implements Serializable {
     @OneToOne(mappedBy = "defaultTermsOfUseOrLicense")
     private Template template;
 
-    @OneToMany(mappedBy = "termsOfUseOrLicense")
-    private List<FileMetadata> fileMetadataList = new ArrayList<>();
-
     public Template getTemplate() {
         return template;
     }
@@ -88,6 +86,10 @@ public class TermsOfUseOrLicense implements Serializable {
     public void setTemplate(Template template) {
         this.template = template;
     }
+
+    @OneToMany(mappedBy = "termsOfUseOrLicense")
+    private List<FileMetadata> fileMetadataList = new ArrayList<>();
+    // TODO need getters and setters when actually implementing file specific licenses
 
     @ManyToOne
     @JoinColumn(name = "license_id")
