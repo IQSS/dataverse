@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.google.api.client.auth.oauth2.BearerToken;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
@@ -20,7 +19,10 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import jakarta.json.*;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -5370,6 +5372,15 @@ public class UtilIT {
 
         Response resp = requestSpec.contentType("text/html; charset=UTF-8")
                 .get("/api/info/settings/customization/" + fileType);
+
+        return resp;
+    }
+
+    public static Response getExternalVocabularies() {
+        RequestSpecification requestSpec = given();
+
+        Response resp = requestSpec.contentType("text/html; charset=UTF-8")
+                .get("/api/info/settings/externalVocabularies");
 
         return resp;
     }

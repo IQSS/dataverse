@@ -1,52 +1,45 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import java.io.File;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import org.hamcrest.CoreMatchers;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import javax.imageio.ImageIO;
-
-import org.hamcrest.Matchers;
-
-import jakarta.json.JsonObjectBuilder;
 
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.Matchers.hasKey;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SearchIT {
 
@@ -2528,6 +2521,14 @@ public class SearchIT {
             // a few seconds; minutes when every lookup checks the whole dataset
             assertTrue(UtilIT.sleepForReindex(datasetId.toString(), apiToken, 30),
                     "a dataset with " + terms + " vocabulary terms should be indexed within 30 seconds");
+
+            // Verify that the info endpoint returns the correctly formatted cvoc config
+            Response getExternalVocabs = UtilIT.getExternalVocabularies();
+            getExternalVocabs.prettyPrint();
+            getExternalVocabs.then().assertThat().statusCode(OK.getStatusCode());
+            getExternalVocabs.then()
+                    .body("data", everyItem(hasKey("field-name")))
+                    .body("data", everyItem(hasKey("managed-fields")));
 
             UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken).then().assertThat().statusCode(OK.getStatusCode());
             UtilIT.deleteDataverse(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
