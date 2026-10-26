@@ -157,9 +157,9 @@ public class FileUtilTest {
             FileMetadata nonRestrictedFileMetadata = new FileMetadata();
             nonRestrictedFileMetadata.setDataFile(new DataFile());
             DatasetVersion dsv = new DatasetVersion();
-            TermsOfUseOrLicense setTermsOfUseOrLicense = new TermsOfUseOrLicense();
-            setTermsOfUseOrLicense.setTermsOfUse("be excellent to each other");
-            dsv.setDefaultTermsOfUseOrLicense(setTermsOfUseOrLicense);
+            TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+            termsOfUseOrLicense.setTermsOfUse("be excellent to each other");
+            dsv.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
             dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
             nonRestrictedFileMetadata.setDatasetVersion(dsv);
             Dataset dataset = new Dataset();
