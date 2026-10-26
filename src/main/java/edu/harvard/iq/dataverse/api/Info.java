@@ -1,23 +1,24 @@
 package edu.harvard.iq.dataverse.api;
 
-import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import io.gdcc.spi.export.Exporter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
 import jakarta.ejb.EJB;
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -26,6 +27,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
+import java.util.logging.Logger;
 
 @Path("info")
 @Tag(name = "Info", description = "General information about the Dataverse installation.")
@@ -193,6 +196,22 @@ public class Info extends AbstractApiBean {
         } else {
             return response;
         }
+    }
+
+    @GET
+    @Path("settings/externalVocabularies")
+    @Operation(summary = "Returns a sanitized view of the :CVocConf",
+            description = "Returns a sanitized view of the :CVocConf for metadata fields wired to an external controlled vocabulary.")
+    public Response getControlledVocabularyConfig() {
+        String setting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
+        if (setting != null) {
+            try {
+                return ok(JsonUtil.getJsonArray(setting));
+            } catch (Exception ex) {
+                return notFound("Failed to get External Vocabularies: " + ex.getLocalizedMessage());
+            }
+        }
+        return notFound("External Vocabularies not found");
     }
 
     private Response getSettingResponseByKey(SettingsServiceBean.Key key) {
