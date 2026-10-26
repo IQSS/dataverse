@@ -4045,6 +4045,7 @@ public class DatasetPage implements java.io.Serializable {
         
         //Clear cached info
         clearCachedPopupRequiredValues();
+        datasetVersionUI.resetInvalidFields();
         
         //Before dataset saved, write cached prov freeform to version
         if (systemConfig.isProvCollectionEnabled()) {
