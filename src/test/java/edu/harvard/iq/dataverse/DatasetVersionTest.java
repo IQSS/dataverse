@@ -238,9 +238,9 @@ public class DatasetVersionTest {
 
         var violations = datasetVersion.validate();
 
-        var expectedMessge = BundleUtil.getStringFromBundle("dataset.message.toua.invalid");
-        assertThat(termsOfAccess.getValidationMessage()).isEqualTo(expectedMessge);
+        var expectedMessage = BundleUtil.getStringFromBundle("dataset.message.toua.invalid");
+        assertThat(termsOfAccess.getValidationMessage()).isEqualTo(expectedMessage);
         assertEquals(1, violations.size());
-        assertThat(violations.iterator().next().getMessage()).isEqualTo(expectedMessge);
+        assertThat(violations.iterator().next().getMessage()).isEqualTo(expectedMessage);
     }
 }
