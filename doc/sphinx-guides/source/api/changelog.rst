@@ -10,8 +10,9 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.13
 -----
 - The introduction of the new ScopedPowerUser permission and the change to allow endpoints that were previously restricted to superuser only to also allow users who have the ScopedPowerUser permission on the relevant collection, dataset, or data file, results in changes to error codes and messages on the affected endpoints. Success responses are not changed.
-  - Error messages which used to report that superuser was required now note that people with the ScopedPowerUser permission are also allowed
+  - Error messages which used to report that superuser was required now note that people with the ScopedPowerUser permission are also allowed.
   - Many endpoints that previously checked superuser status before looking up the target object now look up the object first and then check for the ScopedPowerUser permission. This means that a request that previously returned 401/Unauthenticated or 403/Forbidden (when the user was not a superuser) may now return 400/Bad Request or 404/Not Found (when the object does not exist), with 403/Forbidden only returned when the object exists but the user lacks the required permission.
+  - Specific endpoints with error code changes:
     - The /api/admin/registerDataFiles/{alias} and /api/admin/{id}/registerDataFile endpoints now require authenticating as a superuser or someone with the ScopedPowerUser permission and will respond with a 401/Unauthenticated if the user doesn't authenticate or 403/Forbidden if the user doesn't meet the requirement.
     - The /api/admin/validateDataFileHashValue/{fileId} endpoint now responds with a 403/Forbidden if the user is authenticated but is not a superuser or someone with the ScopedPowerUser permission.
     - The /api/admin/computeDataFileHashValue/{fileId}/{alg} endpoint now responds with a 404/Not Found if the file does not exist, and 403/Forbidden if the file exists but the user is not a superuser or someone with the ScopedPowerUser permission (previously returned 401/Unauthenticated for non-superusers regardless of whether the file existed).
