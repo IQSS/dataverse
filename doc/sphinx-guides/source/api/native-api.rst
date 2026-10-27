@@ -6536,7 +6536,7 @@ When an ORCID OAuth2 provider is configured (see :doc:`/installation/orcid`; it 
 
      curl -X POST -H "Content-Type: application/json" "$SERVER_URL/api/users/signup/orcid" --data '{"code": "'$CODE'", "state": "'$STATE'", "redirectUri": "'$REDIRECT_URI'"}'
 
-   The response contains the ORCID iD (``orcid``), any name, email, affiliation, and position the user shares on their ORCID record, which can be used to pre-fill the sign-up form, and an ``orcidToken``. A 409 response means the ORCID iD is already linked to another account.
+   The response contains the ORCID iD (``orcid``), any name, email, affiliation, and position the user shares on their ORCID record, which can be used to pre-fill the sign-up form, and an ``orcidToken``. It also suggests a ``username`` (the part of the primary email before the "@", or the given and family names joined with a dot) when that username is valid and not already taken. The affiliation and position come from the user's current employment on their ORCID record (the one with the latest start date); when ORCID identifies that organization with a ROR ID, it is returned as ``affiliationRor`` (for example ``https://ror.org/03vek6s52``). ``affiliationRor`` is informational for now: the sign-up request doesn't accept it yet. A 409 response means the ORCID iD is already linked to another account.
 3. Include the ``orcidToken`` in the sign-up request above. It is valid for 30 minutes.
 
 Note that this endpoint is not to be confused with ``POST /api/users/register`` (see :ref:`bearer-tokens`), which creates an account for a user who has already authenticated with an OIDC identity provider.

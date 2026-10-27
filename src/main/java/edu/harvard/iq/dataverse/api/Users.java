@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.validation.UserNameValidator;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OrcidSignUpTokens;
@@ -491,12 +492,18 @@ public class Users extends AbstractApiBean {
             return conflict(BundleUtil.getStringFromBundle("signUpBuiltinUserCommand.errors.orcidInUse"));
         }
         AuthenticatedUserDisplayInfo displayInfo = orcidRecord.getDisplayInfo();
+        String username = orcidRecord.getUsername();
+        if (username != null && (!UserNameValidator.isUserNameValid(username) || authSvc.identifierExists(username))) {
+            username = null;
+        }
         return ok(NullSafeJsonBuilder.jsonObjectBuilder()
                 .add("orcid", orcidUrl)
+                .add("username", username)
                 .add("firstName", displayInfo.getFirstName())
                 .add("lastName", displayInfo.getLastName())
                 .add("emailAddress", displayInfo.getEmailAddress())
                 .add("affiliation", displayInfo.getAffiliation())
+                .add("affiliationRor", displayInfo.getAffiliationRor())
                 .add("position", displayInfo.getPosition())
                 .add("orcidToken", OrcidSignUpTokens.createOrcidToken(orcidUrl, orcidProvider.getClientSecret(), System.currentTimeMillis())));
     }
