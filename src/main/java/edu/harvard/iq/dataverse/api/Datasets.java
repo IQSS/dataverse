@@ -982,7 +982,9 @@ public class Datasets extends AbstractApiBean {
             return ok(ore.getOREMapBuilder(true));
 
         } catch (WrappedResponse ex) {
-            ex.printStackTrace();
+            if(logger.isLoggable(Level.FINE)) {
+                ex.printStackTrace();
+            }
             return ex.getResponse();
         } catch (Exception jpe) {
             logger.log(Level.SEVERE, "Error getting jsonld metadata for dsv: ", jpe.getLocalizedMessage());
