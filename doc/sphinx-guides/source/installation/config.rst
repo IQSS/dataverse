@@ -223,13 +223,13 @@ To inspect cookie attributes like SameSite, you can use ``curl -s -I http://loca
 Session Cookie API Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Access API has always accepted the session cookie (JSESSIONID), and :ref:`dataverse.feature.api-session-auth` extends that to the rest of the API. Even with the :ref:`samesite-cookie-attribute` set to Lax, the browser attaches the cookie to some requests started by other sites, such as top-level link navigations, and to every request from a page on a sibling subdomain. That is the cross-site request forgery (CSRF) risk. :ref:`dataverse.feature.api-session-auth-hardening` closes it with a same-origin check: the ``Origin`` and ``Referer`` headers, which browsers set and page scripts cannot change, must match ``dataverse.siteUrl``. A cross-site request with a mismatching header is rejected, one that carries neither header is treated as a guest request, and same-origin traffic from the JSF UI is unaffected.
+When a user logs into Dataverse, the browser receives a session cookie (``JSESSIONID``). The Access API -- which handles file downloads -- has always accepted this cookie to identify the user. The :ref:`dataverse.feature.api-session-auth` flag extends that behavior to the entire API, so that front-end code served by the Dataverse installation (for example, React components embedded in the JSF pages) can call any API endpoint on behalf of the logged-in user.
 
-Compared with a JSF-only installation, enabling both flags does not open a new CSRF path and closes an existing one on the Access API. The JSF UI protects its POST forms with an unguessable ``jakarta.faces.ViewState`` value but does not enable ``<protected-views>``, so its GET requests carry no equivalent check, while the origin check applies to every HTTP method.
+The problem with session cookies is that the browser sends them automatically with every request to the site, even when the request is triggered by a different website. That different site can therefore force a logged-in user's browser to perform actions on Dataverse without their knowledge -- a cross-site request forgery (CSRF) attack. The :ref:`dataverse.feature.api-session-auth-hardening` flag prevents this by checking that the request actually came from a page on the Dataverse site itself, using the ``Origin`` and ``Referer`` headers that browsers set automatically.
 
-What does grow is the surface a cross-site scripting (XSS) flaw can reach. A script running at the site's own origin passes the origin check and can call any API endpoint the user is authorized for, where before it was limited to the Access API and to driving the JSF pages. Keeping the ``JSESSIONID`` cookie ``HttpOnly`` remains important for the same reason.
+With hardening enabled, a request from another site is rejected. A request that carries no ``Origin`` or ``Referer`` header at all -- such as a bookmarked or shared link opened directly -- is treated as an anonymous (guest) request rather than being rejected outright. This means public files remain accessible from shared links, while restricted files require the request to originate from the site.
 
-Bearer tokens are the mechanism for a front end served from its own origin. The browser never sends them automatically, so CSRF does not apply to them, but they have to be stored where page scripts can read them, so a single XSS flaw yields a credential that can be replayed from elsewhere, whereas an ``HttpOnly`` session cookie cannot leave the browser. Each is a different trade rather than a strict improvement over the other.
+**Choosing between session cookies and bearer tokens.** If your front end is served from a different origin than the Dataverse backend, use bearer tokens instead. Bearer tokens are not sent automatically by the browser, so CSRF does not apply. However, they must be stored where page scripts can read them, which means a cross-site scripting (XSS) flaw on the front end can steal the token and replay it from anywhere. An ``HttpOnly`` session cookie cannot be read by page scripts, so it is less exposed to theft via XSS -- but enabling session auth for the full API does increase the damage an XSS flaw on the Dataverse site itself can do. Each mechanism is a different trade-off rather than a strict improvement over the other.
 
 
 .. _dataverse.cors:
@@ -4041,32 +4041,35 @@ To check the status of feature flags via API, see :ref:`list-all-feature-flags` 
 dataverse.feature.api-session-auth
 ++++++++++++++++++++++++++++++++++
 
-Enables API authentication via session cookie (JSESSIONID). This lets front-end code served by the installation itself, such as React components mounted inside the JSF pages, call the API as the logged-in user without handling a separate credential. See `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_ for background.
+Enables API authentication via session cookie (``JSESSIONID``). When a user is logged into Dataverse, the browser holds a session cookie. This flag allows that cookie to authenticate API requests, so that front-end code served by the Dataverse installation -- such as React components embedded in the JSF pages -- can call the API on behalf of the logged-in user without managing a separate credential. See `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_ for background.
 
-**Caution: Enabling this feature flag on its own exposes the installation to CSRF risks!** Enable :ref:`dataverse.feature.api-session-auth-hardening` alongside it.
+The Access API (used for file downloads) has always accepted the session cookie, so this flag does not change file download behavior. It extends session authentication to the rest of the API.
+
+**Important:** Without the companion :ref:`dataverse.feature.api-session-auth-hardening` flag, enabling this setting allows any website to force a logged-in user's browser to make API calls on Dataverse -- a cross-site request forgery (CSRF) attack. For that reason, this flag was historically recommended only for local testing. Enabling the hardening flag alongside it blocks cross-site requests, making session-based API authentication safe for production use.
 
 .. _dataverse.feature.api-session-auth-hardening:
 
 dataverse.feature.api-session-auth-hardening
 ++++++++++++++++++++++++++++++++++++++++++++
 
-Adds cross-site request forgery (CSRF) protection to API requests authenticated via session cookie (JSESSIONID). The protection is a same-origin rule: the request must come from a page served by the installation itself, on the same scheme, host and port as ``dataverse.siteUrl``. A page on another subdomain, or on the same host over a different scheme or port, is a different origin and must use bearer-token or API-token authentication instead. Nothing has to be added to the request by the client; the check relies on headers the browser sets itself.
+Adds a same-site check to API requests authenticated via session cookie (``JSESSIONID``). When enabled, the browser must prove the request originated from the same site configured in ``dataverse.siteUrl`` (same scheme, host, and port). The check uses the ``Origin`` and ``Referer`` headers, which browsers set automatically and which page scripts cannot forge -- no client-side code changes are needed.
 
-With the flag enabled, an API request authenticated by session cookie on behalf of a logged-in user is handled as follows:
+**What this means in practice:**
 
-- If it carries an ``Origin`` or ``Referer`` header that does not match ``dataverse.siteUrl``, it is rejected with 403.
-- If it carries neither header, it is treated as a guest request instead of being rejected. A public file stays downloadable from a bookmarked or shared link, while a restricted file needs a request that proves it came from the site.
+- Requests from the Dataverse site itself work exactly as before.
+- Requests triggered by a different website are rejected with a 403 error.
+- Requests with no ``Origin`` or ``Referer`` header -- such as a bookmarked or shared link opened directly in the browser -- are treated as anonymous (guest) requests. Public files remain downloadable from shared links; restricted files will not download because the request cannot prove it came from the site.
 
-Guest sessions and private URL preview sessions (``PrivateUrlUser``) are exempt. Bearer-token, API-token and signed-URL authentication are not affected.
+Guest sessions and private URL preview sessions are exempt from this check. Authentication via bearer token, API token, or signed URL is not affected.
 
-Use this flag:
+**When to use this flag:**
 
-- On its own, to harden the Access API, which has always accepted the session cookie without any origin check.
-- Together with :ref:`dataverse.feature.api-session-auth`, when same-origin front-end code, such as React components mounted in the JSF pages, needs session API access in production.
+- **On its own** to harden the Access API (file downloads), which has always accepted session cookies without any same-site check.
+- **Together with** :ref:`dataverse.feature.api-session-auth` to safely enable session-based API authentication in production. This is the recommended configuration when front-end code -- such as React components embedded in the JSF pages -- needs to call the full API on behalf of the logged-in user.
 
-Because every check is made against ``dataverse.siteUrl``, an installation reachable under more than one hostname should confirm that setting matches the origin browsers actually use before enabling this flag.
+**Configuration note:** Because every check is compared against ``dataverse.siteUrl``, confirm that this setting matches the URL users actually type into their browser. If your installation is reachable under multiple hostnames, ensure ``dataverse.siteUrl`` matches the one browsers use.
 
-See :ref:`session-cookie-api-authentication` for the reasoning behind the check and how it compares with other mechanisms.
+See :ref:`session-cookie-api-authentication` for background on how this check works and how session cookies compare with bearer tokens.
 
 .. _dataverse.feature.api-bearer-auth:
 
