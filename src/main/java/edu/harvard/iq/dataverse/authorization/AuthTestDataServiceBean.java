@@ -28,7 +28,7 @@ public class AuthTestDataServiceBean {
      */
     public Map<String, String> getRandomUser() throws JsonSyntaxException, JsonIOException {
         Map<String, String> fakeUser = new HashMap<>();
-        String sURL = "https://api.randomuser.me/0.8";
+        String sURL = "https://api.randomuser.me/1.4";
         URL url = null;
         try {
             url = new URL(sURL);
@@ -63,12 +63,12 @@ public class AuthTestDataServiceBean {
         logger.fine(results.toString());
         JsonElement firstResult = results.getAsJsonArray().get(0);
         logger.fine(firstResult.toString());
-        JsonElement user = firstResult.getAsJsonObject().get("user");
-        JsonElement username = user.getAsJsonObject().get("username");
-        JsonElement salt = user.getAsJsonObject().get("salt");
-        JsonElement email = user.getAsJsonObject().get("email");
-        JsonElement password = user.getAsJsonObject().get("password");
-        JsonElement name = user.getAsJsonObject().get("name");
+        JsonElement email = firstResult.getAsJsonObject().get("email");
+        JsonElement login = firstResult.getAsJsonObject().get("login");
+        JsonElement username = login.getAsJsonObject().get("username");
+        JsonElement salt = login.getAsJsonObject().get("salt");
+        JsonElement password = login.getAsJsonObject().get("password");
+        JsonElement name = firstResult.getAsJsonObject().get("name");
         JsonElement firstName = name.getAsJsonObject().get("first");
         JsonElement lastName = name.getAsJsonObject().get("last");
         String firstNameString = StringUtils.capitalize(firstName.getAsString());
