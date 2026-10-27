@@ -483,6 +483,10 @@ public class Users extends AbstractApiBean {
         OAuth2UserRecord orcidRecord;
         try {
             orcidRecord = orcidProvider.getUserRecord(code, state, redirectUri);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.log(Level.WARNING, "Interrupted while authenticating ORCID iD for sign-up", e);
+            return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidAuthenticationFailed"));
         } catch (Exception e) {
             logger.log(Level.WARNING, "Could not authenticate ORCID iD for sign-up", e);
             return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidAuthenticationFailed"));
