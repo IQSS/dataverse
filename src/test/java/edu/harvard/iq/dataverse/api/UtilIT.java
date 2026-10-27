@@ -5377,12 +5377,8 @@ public class UtilIT {
     }
 
     public static Response getExternalVocabularies() {
-        RequestSpecification requestSpec = given();
-
-        Response resp = requestSpec.contentType("application/json")
+        return given().contentType("application/json")
                 .get("/api/info/settings/externalVocabularies");
-
-        return resp;
     }
 
     static Response getUserSelectableRoles(String apiToken) {
