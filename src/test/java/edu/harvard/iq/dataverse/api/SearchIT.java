@@ -2524,7 +2524,6 @@ public class SearchIT {
 
             // Verify that the info endpoint returns the correctly formatted cvoc config
             Response getExternalVocabs = UtilIT.getExternalVocabularies();
-            getExternalVocabs.prettyPrint();
             getExternalVocabs.then().assertThat().statusCode(OK.getStatusCode());
             getExternalVocabs.then()
                     .body("data", everyItem(hasKey("field-name")))
