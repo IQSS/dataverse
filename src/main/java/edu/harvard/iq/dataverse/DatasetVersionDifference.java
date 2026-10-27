@@ -222,7 +222,7 @@ public final class DatasetVersionDifference {
         // newTerms should never be null
         TermsOfAccess newTerms = newVersion.getTermsOfAccess();
         if(newTerms == null) {
-            logger.warning("New version does not have TermsOfUseAndAccess");
+            logger.warning("New version does not have TermsOfAccess");
             newTerms = new TermsOfAccess();
         }
         
@@ -251,7 +251,7 @@ public final class DatasetVersionDifference {
         // newTerms should never be null
         TermsOfUseOrLicense newTerms = newVersion.getDefaultTermsOfUseOrLicense();
         if(newTerms == null) {
-            logger.warning("New version does not have TermsOfUseAndAccess");
+            logger.warning("New version does not have TermsOfAccess");
             newTerms = new TermsOfUseOrLicense();
         }
 

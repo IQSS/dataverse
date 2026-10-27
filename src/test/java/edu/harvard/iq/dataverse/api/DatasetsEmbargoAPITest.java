@@ -76,7 +76,7 @@ public class DatasetsEmbargoAPITest {
     private TermsOfAccess termsOfAccess;
 
     @Mock
-    private TermsOfUseOrLicense termsOfUseAndLicense;
+    private TermsOfUseOrLicense termsOfUseOrLicense;
 
     @Mock
     private StaticPermissionQuery permissionQuery;
@@ -105,10 +105,10 @@ public class DatasetsEmbargoAPITest {
         when(dataset.getLatestVersion()).thenReturn(datasetVersion);
         when(dataset.getFiles()).thenReturn(List.of(file));
         when(datasetVersion.getTermsOfAccess()).thenReturn(termsOfAccess);
-        when(datasetVersion.getDefaultTermsOfUseOrLicense()).thenReturn(termsOfUseAndLicense);
+        when(datasetVersion.getDefaultTermsOfUseOrLicense()).thenReturn(termsOfUseOrLicense);
         when(datasetVersion.getVersionState()).thenReturn(DatasetVersion.VersionState.DRAFT);
         when(termsOfAccess.getDatasetVersion()).thenReturn(datasetVersion);
-        when(termsOfUseAndLicense.getDatasetVersion()).thenReturn(datasetVersion);
+        when(termsOfUseOrLicense.getDatasetVersion()).thenReturn(datasetVersion);
 
         // Mock file lookup
         when(fileService.find(2L)).thenReturn(file);

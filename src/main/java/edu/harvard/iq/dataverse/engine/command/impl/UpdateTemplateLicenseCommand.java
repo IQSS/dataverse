@@ -49,8 +49,8 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
             if (!license.isActive()) {
                 throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.licenseNotActive", List.of(license.getName())), this);
             }
-            TermsOfUseOrLicense termsOfUseAndAccess = template.getDefaultTermsOfUseOrLicense();
-            termsOfUseAndAccess.setLicense(license);
+            TermsOfUseOrLicense termsOfUseOrLicense = template.getDefaultTermsOfUseOrLicense();
+            termsOfUseOrLicense.setLicense(license);
             savedTemplate = ctxt.templates().save(template);
 
         } else  {
@@ -72,8 +72,8 @@ public class UpdateTemplateLicenseCommand extends AbstractCommand<Template>{
      * Copies all custom term-related fields from the 'source' object
      * to the 'target' object.
      *
-     * @param target The TermsOfUseAndAccess object to be modified
-     * @param source The TermsOfUseAndAccess object containing the new data
+     * @param target The TermsOfUseOrLicense object to be modified
+     * @param source The TermsOfUseOrLicense object containing the new data
      */
     private void applyCustomTerms(TermsOfUseOrLicense target, TermsOfUseOrLicense source) {
         target.setTermsOfUse(source.getTermsOfUse());

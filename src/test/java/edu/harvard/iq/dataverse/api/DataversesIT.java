@@ -2808,7 +2808,7 @@ public class DataversesIT {
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
                 .body("data.instructions.size()", equalTo(1))
                 .body("data.instructions[0].instructionField", equalTo("author"))
@@ -2844,7 +2844,7 @@ public class DataversesIT {
                 .body("data[0].name", equalTo("Dataverse template"))
                 .body("data[0].isDefault", equalTo(true))
                 .body("data[0].usageCount", equalTo(0))
-                .body("data[0].termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data[0].defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data[0].datasetFields.citation.fields.size()", equalTo(1))
                 .body("data[0].instructions.size()", equalTo(1))
                 .body("data[0].instructions[0].instructionField", equalTo("author"))
@@ -2943,7 +2943,7 @@ public class DataversesIT {
                 .body("data.name", equalTo("Dataverse template - No Fields"))
                 .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.instructions.size()", equalTo(1))
                 .body("data.instructions[0].instructionField", equalTo("author"))
                 .body("data.instructions[0].instructionText", equalTo("The author data"))
@@ -3189,7 +3189,7 @@ public class DataversesIT {
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
                 .body("data.instructions.size()", equalTo(1))
                 .body("data.instructions[0].instructionField", equalTo("author"))
@@ -3206,7 +3206,7 @@ public class DataversesIT {
         updateTemplateResponse.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
                 .body("data.instructions.size()", equalTo(2))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
@@ -3218,7 +3218,7 @@ public class DataversesIT {
         updateTemplateReplaceResponse.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template - edited"))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
                 .body("data.instructions.size()", equalTo(1))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
@@ -3230,7 +3230,7 @@ public class DataversesIT {
         updateTemplateUpdateInstructionsOnly.then().log().body().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Dataverse template - edited"))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.size()", equalTo(0))
                 .body("data.instructions.flatten().size()", equalTo(2))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
@@ -3242,7 +3242,7 @@ public class DataversesIT {
         updateTemplateUpdateNameOnly.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Template - Just Name"))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.size()", equalTo(0))
                 .body("data.instructions.flatten().size()", equalTo(2))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));
@@ -3254,7 +3254,7 @@ public class DataversesIT {
         updateTemplateUpdateFieldsOnly.then().assertThat().statusCode(CREATED.getStatusCode())
                 .body("data.name", equalTo("Template - Just Name"))
                 .body("data.usageCount", equalTo(0))
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC0 1.0"))
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.size()", equalTo(1))
                 .body("data.instructions.flatten().size()", equalTo(2))
                 .body("data.dataverseAlias", equalTo(dataverseAlias));        
@@ -3270,7 +3270,7 @@ public class DataversesIT {
         getTemplate.prettyPrint();
         getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.termsOfUseAndAccess.license.name", equalTo("CC BY 4.0"));
+                .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC BY 4.0"));
         
         Response updateTermsResponse = UtilIT.updateTemplateLicenseTerms(templateId.toString(), jsonStringForUpdateTerms, apiToken);
         updateTermsResponse.prettyPrint();
@@ -3279,7 +3279,7 @@ public class DataversesIT {
         getTemplate.prettyPrint();
         getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.termsOfUseAndAccess", Matchers.not(Matchers.hasKey("license")));
+                .body("data.defaultTermsOfUseOrLicense", Matchers.not(Matchers.hasKey("license")));
 
         updateTermsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3289,7 +3289,7 @@ public class DataversesIT {
         getTemplate.prettyPrint();
                 getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.termsOfUseAndAccess.termsOfUse", equalTo("testTermsOfUse"));
+                .body("data.defaultTermsOfUseOrLicense.termsOfUse", equalTo("testTermsOfUse"));
                 
         Response updateAccessResponse = UtilIT.updateTemplateAccessTerms(templateId.toString(), jsonStringForUpdateAccess, apiToken);
 
@@ -3303,7 +3303,7 @@ public class DataversesIT {
         getTemplate.prettyPrint();
                 getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.termsOfUseAndAccess.termsOfAccess", equalTo("Here are the terms..."));        
+                .body("data.defaultTermsOfUseOrLicense.termsOfAccess", equalTo("Here are the terms..."));
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);

@@ -385,7 +385,7 @@ public class Template implements Serializable {
             termsOfUseOrLicense = source.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
         } else {
             termsOfUseOrLicense = new TermsOfUseOrLicense();
-           // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+           // terms.setLicense(TermsOfUseOrLicense.defaultLicense);
         }
         termsOfUseOrLicense.setTemplate(newTemplate);
         newTemplate.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);

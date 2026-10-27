@@ -169,7 +169,7 @@ public class DatasetVersionDifferenceTest {
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
-        // Set the published version's TermsOfUseAndAccess to a non-null value
+        // Set the published version's Terms to a non-null value
         datasetVersion.setTermsOfAccess(new TermsOfAccess());
         datasetVersion.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
         datasetVersion.getDefaultTermsOfUseOrLicense().setLicense(license);
@@ -177,7 +177,7 @@ public class DatasetVersionDifferenceTest {
         compareResults(datasetVersion, datasetVersion2, expectedAddedFiles, expectedRemovedFiles,
                 expectedChangedFileMetadata, expectedChangedVariableMetadata, expectedReplacedFiles, changedTerms);
 
-        // Set the draft version's TermsOfUseAndAccess to a non-null value
+        // Set the draft version's Terms to a non-null value
 
         datasetVersion2.setTermsOfAccess(new TermsOfAccess());
         datasetVersion2.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());

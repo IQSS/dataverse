@@ -1093,7 +1093,7 @@
                                    rendered="#{!deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
                                 <ui:include src="dataset-license-terms.xhtml">
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? 'LICENSE': ''}"/>
-                                    <ui:param name="termsOfUseOrLicense" value="#{version.defaultTermsOfUseOrLicense}"/>
+                                    <ui:param name="defaultTermsOfUseOrLicense" value="#{workingVersion.defaultTermsOfUseOrLicense}"/>
                                     <ui:param name="termsOfAccess" value="#{workingVersion.termsOfAccess}"/>
                                     <ui:param name="datasetPage" value="true"/>
                                     <ui:param name="publicStore" value="DatasetPage.hasPublicStore"/>

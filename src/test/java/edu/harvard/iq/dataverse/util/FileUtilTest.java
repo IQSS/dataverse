@@ -88,11 +88,11 @@ public class FileUtilTest {
         public void testIsDownloadPopupRequiredLicenseCC0() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-            TermsOfUseOrLicense termsOfUseAndAccess = new TermsOfUseOrLicense();
+            TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
             License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 1l);
             license.setDefault(true);
-            termsOfUseAndAccess.setLicense(license);
-            dsv1.setDefaultTermsOfUseOrLicense(termsOfUseAndAccess);
+            termsOfUseOrLicense.setLicense(license);
+            dsv1.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
             assertFalse(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
@@ -111,9 +111,9 @@ public class FileUtilTest {
         public void testIsDownloadPopupRequiredHasTermsOfAccess() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-            TermsOfAccess termsOfUseAndAccess = new TermsOfAccess();
-            termsOfUseAndAccess.setTermsOfAccess("Terms of *Access* is different than Terms of Use");
-            dsv1.setTermsOfAccess(termsOfUseAndAccess);
+            TermsOfAccess termsOfAccess = new TermsOfAccess();
+            termsOfAccess.setTermsOfAccess("Terms of *Access* is different than Terms of Use");
+            dsv1.setTermsOfAccess(termsOfAccess);
             assertTrue(FileUtil.isDownloadPopupRequired(dsv1));
         }
 

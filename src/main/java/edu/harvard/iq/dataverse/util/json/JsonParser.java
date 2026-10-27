@@ -357,20 +357,6 @@ public class JsonParser {
         }
         return enums;
     }
-    
-    public TermsOfUseOrLicense parseTermsOfUseAndLicesne(JsonObject obj) throws JsonParseException {
-        JsonObject terms = obj.getJsonObject("termsOfUseOrLicense");
-        TermsOfUseOrLicense toal = new TermsOfUseOrLicense();
-        toal.setTermsOfUse(terms.getString("termsOfUse", null));
-        toal.setConfidentialityDeclaration(terms.getString("confidentialityDeclaration", null));
-        toal.setSpecialPermissions(terms.getString("specialPermissions", null));
-        toal.setRestrictions(terms.getString("restrictions", null));
-        toal.setCitationRequirements(terms.getString("citationRequirements", null));
-        toal.setDepositorRequirements(terms.getString("depositorRequirements", null));
-        toal.setConditions(terms.getString("conditions", null));
-        toal.setDisclaimer(terms.getString("disclaimer", null));
-        return toal;
-    }
 
     public TermsOfAccess parseTermsOfAccess(JsonObject obj) throws JsonParseException {
         return parseTermsOfAccess(obj, null);

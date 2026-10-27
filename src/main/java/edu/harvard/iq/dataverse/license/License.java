@@ -91,7 +91,7 @@ public class License {
     private String languageCode;
 
     @OneToMany(mappedBy="license")
-    private List<TermsOfUseOrLicense> termsOfUseOrLicense;
+    private List<TermsOfUseOrLicense> termsOfUseOrLicenses;
 
     public License() {
     }
@@ -181,12 +181,12 @@ public class License {
         this.isDefault = isDefault;
     }
 
-    public List<TermsOfUseOrLicense> getTermsOfUseOrLicense() {
-        return termsOfUseOrLicense;
+    public List<TermsOfUseOrLicense> getTermsOfUseOrLicenses() {
+        return termsOfUseOrLicenses;
     }
 
-    public void setTermsOfUseOrLicense(List<TermsOfUseOrLicense> termsOfUseOrLicense) {
-        this.termsOfUseOrLicense = termsOfUseOrLicense;
+    public void setTermsOfUseOrLicenses(List<TermsOfUseOrLicense> termsOfUseOrLicenses) {
+        this.termsOfUseOrLicenses = termsOfUseOrLicenses;
     }
 
     public Long getSortOrder() {

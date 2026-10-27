@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.license.License;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TermsOfUseAndAccessTest {
+public class TermsOfUseOrLicenseTest {
 
     @Test
     public void testLicenseAndTermsMutualExclusivity() {
@@ -35,7 +35,7 @@ public class TermsOfUseAndAccessTest {
     }
 
     @Test
-    public void testCopyTermsOfUseAndAccess() {
+    public void testCopyTermsOfUseOrLicense() {
         License license = new License();
         license.setName("CC0");
 
