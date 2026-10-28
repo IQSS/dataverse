@@ -45,8 +45,7 @@ function bind_bsui_components(){
     
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
-        var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
-        handleResizeDialog(dialog_id);
+        handleResizeDialog(this);
     }
     
     //Fly-out sub-menu accessibility
@@ -348,59 +347,72 @@ function selectText(ele) {
  * Dialog Height-Scrollable
  */
 function handleResizeDialog(dialog) {
-        var el = $('div[id$="' + dialog + '"]');
-        var doc = $('body');
-        var win = $(window);
-        var elPos = '';
-        
-        function calculateResize() {
-            var overlay = $('#' + dialog + '_modal');
-            var bodyHeight = '';
-            var bodyWidth = '';
-        
-            // position:fixed is maybe cool, but it makes the dialog not scrollable on browser level, even if document is big enough
-            if (el.height() > win.height()) {
-                bodyHeight = el.height() + 'px';
-                elPos = 'absolute';
-            }
-            if (el.width() > win.width()) {
-                bodyWidth = el.width() + 'px';
-                elPos = 'absolute';
-            }
-            el.css('position', elPos);
-            doc.css('width', bodyWidth);
-            doc.css('height', bodyHeight);
-            
-            var pos = el.offset();
-            if (pos.top + el.height() > doc.height()) {
-                    pos.top = doc.height() - el.height();
-                    overlay.css('height', bodyHeight);
-                }
-            if (pos.left + el.width() > doc.width()) {
-                    pos.left = doc.width() - el.width();
-                    overlay.css('width', bodyWidth);
-                }
-            var offsetX = 0;
-            var offsetY = 0;
-            if (elPos != 'absolute') {
-                offsetX = $(window).scrollLeft();
-                offsetY = $(window).scrollTop();
-            }
-            // scroll fix for position fixed
-            if (pos.left < offsetX)
-                pos.left = offsetX;
-            if (pos.top < offsetY)
-                pos.top = offsetY;
-            el.offset(pos);
+    var el = (typeof dialog === 'string') ? $('div[id$="' + dialog + '"]') : (dialog.jq ? dialog.jq : $(dialog));
+    if (!el || el.length === 0) {
+        return;
+    }
+    var doc = $('body');
+    var win = $(window);
+
+    // Extract a suffix-based ID for overlay finding
+    var elId = el.attr('id');
+    var idSuffix = elId ? elId.split(':').pop() : (typeof dialog === 'string' ? dialog : '');
+
+    function calculateResize() {
+        if (!el || el.length === 0) return;
+
+        // If the dialog fits within the viewport, leave it alone entirely to preserve PrimeFaces centering
+        if (el.height() <= win.height() && el.width() <= win.width()) return;
+
+        // Dialog exceeds viewport - need to adjust positioning
+        // Try to find the overlay using the full ID first, then the suffix
+        var overlay = elId ? $(document.getElementById(elId + '_modal')) : $();
+        if (!overlay.length && idSuffix) {
+            overlay = $('div[id$="' + idSuffix + '_modal"]');
         }
-        
+
+        var bodyHeight = '';
+        var bodyWidth = '';
+
+        // position:fixed is maybe cool, but it makes the dialog not scrollable on browser level, even if document is big enough
+        if (el.height() > win.height()) {
+            bodyHeight = el.height() + 'px';
+        }
+        if (el.width() > win.width()) {
+            bodyWidth = el.width() + 'px';
+        }
+
+        el.css('position', 'absolute');
+        doc.css('width', bodyWidth);
+        doc.css('height', bodyHeight);
+
+        var pos = el.offset();
+        if (!pos) return;
+
+        if (pos.top + el.height() > doc.height()) {
+            pos.top = doc.height() - el.height();
+            if (overlay.length) overlay.css('height', bodyHeight);
+        }
+        if (pos.left + el.width() > doc.width()) {
+            pos.left = doc.width() - el.width();
+            if (overlay.length) overlay.css('width', bodyWidth);
+        }
+        var offsetX = $(window).scrollLeft();
+        var offsetY = $(window).scrollTop();
+        // scroll fix for position fixed
+        if (pos.left < offsetX)
+            pos.left = offsetX;
+        if (pos.top < offsetY)
+            pos.top = offsetY;
+
+        el.offset(pos);
+    }
+    
+    calculateResize();
+    
+    el.find('textarea').off('keyup.resize change.resize cut.resize paste.resize focus.resize').on('keyup.resize change.resize cut.resize paste.resize focus.resize', function(){
         calculateResize();
-        
-        el.find('textarea').each(function(index){
-            $(this).on('keyup change cut paste focus', function(){
-                calculateResize();
-            });
-        });
+    });
 }
 
 /*
@@ -433,14 +445,12 @@ if ( event.key == ' ' || event.key == 'Enter' ) {
 }
 
 function closeOnTab(event) {
-        console.log(event.key);
         if ( event.key == 'Tab') {
         $(this).parent().parent().parent().removeClass('open');
         }
 }
 
 function closeOnShiftTab(event) {
-        console.log(event.key);
         if ( event.key == 'Tab' && event.shiftKey) {
         $(this).parent().parent().parent().removeClass('open');
         }
