@@ -21,6 +21,8 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelation;
+import edu.harvard.iq.dataverse.datasetrelation.DatasetRelationIndexing;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,6 +43,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
     private static final Logger logger = Logger.getLogger(CuratePublishedDatasetVersionCommand.class.getCanonicalName());
     final private boolean validateLenient = false;
+    private List<DatasetRelation> previousRelations = List.of();
 
     public CuratePublishedDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -186,6 +189,23 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             }
         }
 
+        // Replace the published relations with the draft's current state
+        if (newVersion.getRelations() == null) {
+            newVersion.setRelations(new ArrayList<>());
+        }
+        if (updateVersion.getRelations() == null) {
+            updateVersion.setRelations(new ArrayList<>());
+        }
+        // Keep a copy of previous relations, since we need it for scheduling re-indexes later
+        previousRelations = new ArrayList<>(updateVersion.getRelations());
+        // Flush to remove relations of previously published version before persisting copies that may have the same unique keys
+        updateVersion.getRelations().clear();
+        ctxt.em().flush();
+        DatasetVersion publishedVersion = updateVersion;
+        updateVersion.setRelations(newVersion.getRelations().stream()
+                .map(relation -> relation.copy(publishedVersion))
+                .toList());
+
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
@@ -245,7 +265,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         boolean retVal = true;
         Dataset d = (Dataset) r;
         
-        ctxt.index().asyncIndexDataset(d, true);
+        List<DatasetRelation> currentRelations = d.getLatestVersion().getRelations();
+        DatasetRelationIndexing.scheduleChanges(ctxt, d, previousRelations, currentRelations);
         
         // And the exported metadata files
         try {

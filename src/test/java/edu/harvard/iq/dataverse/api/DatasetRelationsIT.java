@@ -181,6 +181,64 @@ public class DatasetRelationsIT {
     }
 
     @Test
+    public void testPublishUpdateCurrentReplacesRelations() {
+        String dataverseAlias = UtilIT.createRandomCollectionGetAlias(apiTokenSuperuser);
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiTokenSuperuser);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        String pid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        JsonObject retainedRelation = Json.createObjectBuilder()
+                .add("externalIdentifier", "https://example.org/retained")
+                .add("identifierScheme", "URL")
+                .add("relationType", Json.createObjectBuilder().add("name", "isRelatedTo"))
+                .build();
+        JsonArray initialRelations = Json.createArrayBuilder()
+                .add(retainedRelation)
+                .add(Json.createObjectBuilder()
+                        .add("externalIdentifier", "https://doi.org/10.1234/example")
+                        .add("identifierScheme", "URL")
+                        .add("relationType", Json.createObjectBuilder().add("name", "isRelatedTo")))
+                .build();
+        UtilIT.replaceDatasetRelations(pid, initialRelations.toString(), apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(pid, "major", apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Keep first relation unchanged (same unique key) and replace the second relation
+        JsonArray draftRelations = Json.createArrayBuilder()
+                .add(retainedRelation)
+                .add(Json.createObjectBuilder()
+                        .add("externalIdentifier", "10.1234/example")
+                        .add("identifierScheme", "DOI")
+                        .add("relationType", Json.createObjectBuilder().add("name", "isCitedBy")))
+                .build();
+        UtilIT.replaceDatasetRelations(pid, draftRelations.toString(), apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish with "updatecurrent" to replace the old with the new relations
+        UtilIT.publishDatasetViaNativeApi(pid, "updatecurrent", apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.listDatasetRelations(pid, ":latest-published", null, null, null, null, null, apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode())
+                .body("totalCount", equalTo(2))
+                .body("data.items.externalIdentifier", containsInAnyOrder("https://example.org/retained", "10.1234/example"))
+                .body("data.items.find { it.externalIdentifier == '10.1234/example' }.identifierScheme", equalTo("DOI"))
+                .body("data.items.find { it.externalIdentifier == '10.1234/example' }.relationType.name", equalTo("isCitedBy"));
+
+        // An empty draft relation list must also overwrite the published relations
+        UtilIT.replaceDatasetRelations(pid, "[]", apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(pid, "updatecurrent", apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.listDatasetRelations(pid, ":latest-published", null, null, null, null, null, apiTokenSuperuser)
+                .then().assertThat().statusCode(OK.getStatusCode())
+                .body("totalCount", equalTo(0))
+                .body("data.items", empty());
+    }
+
+    @Test
     public void testListDatasetRelationsFilteringByDatasetType() {
         String dataverseAlias = UtilIT.createRandomCollectionGetAlias(apiTokenSuperuser);
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiTokenSuperuser).then().assertThat().statusCode(OK.getStatusCode());
