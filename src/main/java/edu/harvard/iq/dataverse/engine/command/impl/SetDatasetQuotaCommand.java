@@ -35,7 +35,7 @@ public class SetDatasetQuotaCommand   extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         // Check if user is a poweruser:
-        if (!ctxt.permissions().isPowerUserOn(getRequest().getAuthenticatedUser(), dataset) ) {
+        if (!ctxt.permissions().isSuperuserOn(getRequest().getAuthenticatedUser(), dataset) ) {
             throw new PermissionException(BundleUtil.getStringFromBundle("dataset.storage.quota.powerusersonly"),
                 this,  null, dataset);                
         }

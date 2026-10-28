@@ -214,7 +214,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
 
             User u = getRequestUser(crc);
-            if (!permissionSvc.isPowerUserOn(u, ownerDataverse)) {
+            if (!permissionSvc.isSuperuserOn(u, ownerDataverse)) {
                 return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can create harvesting clients.");
             }
             
@@ -270,7 +270,7 @@ public class HarvestingClients extends AbstractApiBean {
             if (harvestingClient == null) {
                 return error( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
             }
-            if (!permissionSvc.isPowerUserOn(u, harvestingClient.getDataverse())) {
+            if (!permissionSvc.isSuperuserOn(u, harvestingClient.getDataverse())) {
                 return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can modify harvesting clients.");
             }
             
@@ -347,7 +347,7 @@ public class HarvestingClients extends AbstractApiBean {
         if (harvestingClient == null) {
             return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
-        if (!permissionSvc.isPowerUserOn(u, harvestingClient.getDataverse())) {
+        if (!permissionSvc.isSuperuserOn(u, harvestingClient.getDataverse())) {
             return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can delete harvesting clients.");
         }
 
@@ -401,7 +401,7 @@ public class HarvestingClients extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "No such client: "+clientNickname);
             }
             
-            if (!permissionSvc.isPowerUserOn(authenticatedUser, harvestingClient.getDataverse())) {
+            if (!permissionSvc.isSuperuserOn(authenticatedUser, harvestingClient.getDataverse())) {
                 return error(Response.Status.FORBIDDEN, "Only admin or power users can run harvesting jobs");
             }
             

@@ -266,7 +266,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (dvo == null || u == null || u instanceof GuestUser || !(dvo instanceof Dataset)) {
             return false; // guests can not publish
         }
-        if (permissionService.isPowerUserOn(u, dvo)) {
+        if (permissionService.isSuperuserOn(u, dvo)) {
             return true;
         }
         // Return false if dataset has 0 files and user want to 'publish' or 'submit for review' and 'publish dataset requires files' flag is set
@@ -332,12 +332,12 @@ public class PermissionsWrapper implements java.io.Serializable {
         return authenticatedUsersCanIssueCommand(dataverse, CreateDataverseCommand.class);
     }
 
-    public boolean isPowerUserOn(DvObject dvo) {
+    public boolean isSuperuserOn(DvObject dvo) {
         User u = session.getUser();
-        return (permissionService.isPowerUserOn(u, dvo));
+        return (permissionService.isSuperuserOn(u, dvo));
     }
 
-    public boolean isPowerUserOnSomeDvObject() {
+    public boolean isSuperuserOnSomeDvObject() {
         User u = session.getUser();
         if (u.isSuperuser()) {
             return true;
@@ -345,7 +345,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (!(u instanceof AuthenticatedUser)) {
             return false;
         }
-        return permissionService.isPowerUserOnSomeDvObject((AuthenticatedUser) u);
+        return permissionService.isSuperuserOnSomeDvObject((AuthenticatedUser) u);
     }
 
     // todo: move any calls to this to call NavigationWrapper

@@ -54,7 +54,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         if (destroy) {
             //todo: clean this logic up!
             //for now, if called as destroy, will check for superuser acess
-            if (doomed.getOwner().isReleased() && !ctxt.permissions().isPowerUserOn(getUser(), doomed)) {
+            if (doomed.getOwner().isReleased() && !ctxt.permissions().isSuperuserOn(getUser(), doomed)) {
                 throw new PermissionException("Destroy can only be called by superusers or users with ScopedPowerUser permission on the file.",
                         this, Collections.singleton(Permission.DeleteDatasetDraft), doomed);
             }

@@ -34,7 +34,7 @@ public class DeleteDatasetQuotaCommand extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         // first check if user is a power user
-        if ( (!ctxt.permissions().isPowerUserOn(getUser(), targetDataset) ) ) {
+        if ( (!ctxt.permissions().isSuperuserOn(getUser(), targetDataset) ) ) {
             throw new PermissionException(BundleUtil.getStringFromBundle("dataset.storage.quota.powerusersonly"),
                 this,  null, targetDataset);                
         }

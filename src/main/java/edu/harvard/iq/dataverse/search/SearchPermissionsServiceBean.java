@@ -98,7 +98,7 @@ public class SearchPermissionsServiceBean {
         // Query for both the view unpublished permission and ScopedPowerUser in a single query
         Set<Permission> permissions = new HashSet<>();
         permissions.add(p);
-        permissions.add(Permission.ScopedPowerUser);
+        permissions.add(Permission.ActAsSuperuser);
 
         List<String> assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionsOnDvObject(dvObject.getId(), permissions);
         for (String id : assigneeIdStrings) {

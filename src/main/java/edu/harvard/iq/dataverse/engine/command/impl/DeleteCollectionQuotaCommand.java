@@ -34,7 +34,7 @@ public class DeleteCollectionQuotaCommand  extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         // first check if user is a power user
-        if (!ctxt.permissions().isPowerUserOn(getUser(), targetDataverse) ) {
+        if (!ctxt.permissions().isSuperuserOn(getUser(), targetDataverse) ) {
             throw new PermissionException(BundleUtil.getStringFromBundle("dataverse.storage.quota.powerusersonly"),
                 this,  null, targetDataverse);                
         }

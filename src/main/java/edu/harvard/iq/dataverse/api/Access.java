@@ -1952,7 +1952,7 @@ public class Access extends AbstractApiBean {
         }
 
 
-        if (!(permissionService.isPowerUserOn(dataverseRequest.getAuthenticatedUser(), dataFile) || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
+        if (!(permissionService.isSuperuserOn(dataverseRequest.getAuthenticatedUser(), dataFile) || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
@@ -2172,7 +2172,7 @@ public class Access extends AbstractApiBean {
 
         dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
-        if (!(permissionService.isPowerUserOn(dataverseRequest.getAuthenticatedUser(), dataFile) || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
+        if (!(permissionService.isSuperuserOn(dataverseRequest.getAuthenticatedUser(), dataFile) || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
         FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);

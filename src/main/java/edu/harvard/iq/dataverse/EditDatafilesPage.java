@@ -557,7 +557,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return systemConfig.isStorageQuotasEnforced() && uploadSessionQuota != null && uploadSessionQuota.getRemainingQuotaInBytes() == 0;
     }
     public boolean isFileUploadCountExceeded() {
-        boolean ignoreLimit = permissionService.isPowerUserOn(session.getUser(), dataset);
+        boolean ignoreLimit = permissionService.isSuperuserOn(session.getUser(), dataset);
         return !ignoreLimit && !isFileReplaceOperation() && fileUploadsAvailable != null && fileUploadsAvailable == 0;
     }
 
@@ -1121,7 +1121,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
             }
-            boolean ignoreUploadFileLimits = permissionService.isPowerUserOn(session.getUser(), dataset);
+            boolean ignoreUploadFileLimits = permissionService.isSuperuserOn(session.getUser(), dataset);
             // Try to save the NEW files permanently: 
             List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true, ignoreUploadFileLimits);
             if (filesAdded.size() < nNewFiles) {

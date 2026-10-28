@@ -320,7 +320,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     // To block Publishing dataset or Submitting dataset for review
     protected boolean getRequiresFilesToPublishOrReviewDataset(CommandContext ctxt) {
-        if (ctxt.permissions().isPowerUserOn(getUser(), getDataset())) {
+        if (ctxt.permissions().isSuperuserOn(getUser(), getDataset())) {
             return false;
         } else {
             Dataverse dv = getDataset().getOwner();

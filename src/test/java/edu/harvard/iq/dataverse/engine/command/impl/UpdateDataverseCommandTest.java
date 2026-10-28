@@ -51,7 +51,7 @@ public class UpdateDataverseCommandTest {
     @BeforeEach
     public void setUp() {
         permissionService = Mockito.mock(PermissionServiceBean.class);
-        Mockito.when(permissionService.isPowerUserOn(Mockito.any(), Mockito.any())).thenReturn(false);
+        Mockito.when(permissionService.isSuperuserOn(Mockito.any(), Mockito.any())).thenReturn(false);
 
         engine = new TestDataverseEngine(new TestCommandContext() {
             @Override

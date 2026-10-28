@@ -345,7 +345,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     ConstraintViolation violation = constraintViolations.iterator().next();
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
-                    boolean ignoreUploadFileLimits = user != null ? permissionService.isPowerUserOn(user, dataset) : false;
+                    boolean ignoreUploadFileLimits = user != null ? permissionService.isSuperuserOn(user, dataset) : false;
                     ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, null, true, ignoreUploadFileLimits);
                 }
             } else {

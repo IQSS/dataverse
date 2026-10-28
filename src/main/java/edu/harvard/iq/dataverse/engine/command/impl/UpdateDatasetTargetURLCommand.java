@@ -34,7 +34,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
-        if (!ctxt.permissions().isPowerUserOn(getUser(), target)) {
+        if (!ctxt.permissions().isSuperuserOn(getUser(), target)) {
             throw new PermissionException("Update Target URL can only be called by superusers or power users.",
                     this, Collections.singleton(Permission.EditDataset), target);
         }

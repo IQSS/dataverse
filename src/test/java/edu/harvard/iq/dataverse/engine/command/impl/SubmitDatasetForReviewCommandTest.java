@@ -131,7 +131,7 @@ public class SubmitDatasetForReviewCommandTest {
                         return Collections.emptyList();
                     }
                     @Override
-                    public boolean isPowerUserOn(AuthenticatedUser user, edu.harvard.iq.dataverse.DvObject dvo) {
+                    public boolean isSuperuserOn(AuthenticatedUser user, edu.harvard.iq.dataverse.DvObject dvo) {
                         return user != null && user.isSuperuser();
                     }
                 };

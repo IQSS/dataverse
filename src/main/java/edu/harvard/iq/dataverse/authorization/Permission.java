@@ -54,7 +54,7 @@ public enum Permission implements java.io.Serializable {
     // Delete
     DeleteDataverse(BundleUtil.getStringFromBundle("permission.deleteDataverse"), true, Dataverse.class),
     DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class),
-    ScopedPowerUser(BundleUtil.getStringFromBundle("permission.scopedPowerUser"), true, DvObject.class);
+    ActAsSuperuser(BundleUtil.getStringFromBundle("permission.actAsSuperuser"), true, DvObject.class);
 
 
     // FUTURE:

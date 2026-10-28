@@ -334,7 +334,7 @@ public class PermissionServiceBean {
         User user = req.getUser();
         
         // quick cases
-        if (isPowerUserOn(user, dvo)) {
+        if (isSuperuserOn(user, dvo)) {
             return children; // it's good to be king/power user
             
         } else if (!user.isAuthenticated()) {
@@ -378,7 +378,7 @@ public class PermissionServiceBean {
         return children.stream().filter( child -> 
                 ((includeReleased && child.isReleased()) 
                         || ((roleMap.containsKey(child)) &&
-                            (roleMap.get(child).contains(Permission.ScopedPowerUser) ||
+                            (roleMap.get(child).contains(Permission.ActAsSuperuser) ||
                              roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
         ).collect( toList() );
         
@@ -399,7 +399,7 @@ public class PermissionServiceBean {
 
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
         User user = req.getUser();
-        if (isPowerUserOn(user, dvo)) {
+        if (isSuperuserOn(user, dvo)) {
             return true;
         } else if (!user.isAuthenticated()) {
             Set<Permission> requiredCopy = EnumSet.copyOf(required);
@@ -416,7 +416,7 @@ public class PermissionServiceBean {
 
     public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
         if (ra instanceof AuthenticatedUser au) {
-            if (isPowerUserOn(au, dvo)) {
+            if (isSuperuserOn(au, dvo)) {
                 return true;
             }
         } else if (ra instanceof User user) {
@@ -454,7 +454,7 @@ public class PermissionServiceBean {
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
     public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
-        if (isPowerUserOn(req.getUser(), dvo)) {
+        if (isSuperuserOn(req.getUser(), dvo)) {
             return EnumSet.allOf(Permission.class);
         }
 
@@ -481,7 +481,7 @@ public class PermissionServiceBean {
      * @return the set of permissions {@code ra} has over {@code dvo}.
      */
     public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
-        if (ra instanceof AuthenticatedUser && isPowerUserOn((AuthenticatedUser) ra, dvo)) {
+        if (ra instanceof AuthenticatedUser && isSuperuserOn((AuthenticatedUser) ra, dvo)) {
             return EnumSet.allOf(Permission.class);
         }
 
@@ -497,14 +497,14 @@ public class PermissionServiceBean {
         return permissions;
     }
 
-    public boolean isPowerUserOn(User user, DvObject dvo) {
+    public boolean isSuperuserOn(User user, DvObject dvo) {
         if(user == null || !user.isAuthenticated()) {
             return false;
         }
-        return isPowerUserOn((AuthenticatedUser) user, dvo);
+        return isSuperuserOn((AuthenticatedUser) user, dvo);
     }
 
-    public boolean isPowerUserOn(AuthenticatedUser user, DvObject dvo) {
+    public boolean isSuperuserOn(AuthenticatedUser user, DvObject dvo) {
         if (user == null) {
             return false;
         }
@@ -516,10 +516,10 @@ public class PermissionServiceBean {
         }
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(user, dvo));
         ras.add(user);
-        return hasGroupPermissionsFor(ras, dvo, EnumSet.of(Permission.ScopedPowerUser));
+        return hasGroupPermissionsFor(ras, dvo, EnumSet.of(Permission.ActAsSuperuser));
     }
 
-    public boolean isPowerUserOnSomeDvObject(AuthenticatedUser user) {
+    public boolean isSuperuserOnSomeDvObject(AuthenticatedUser user) {
         if (user == null) {
             return false;
         }
@@ -535,7 +535,7 @@ public class PermissionServiceBean {
         identifiers.add(user.getIdentifier());
 
         // Get all roles that have ScopedPowerUser permission
-        List<DataverseRole> powerRoles = roleService.findAllWithPermission(Permission.ScopedPowerUser);
+        List<DataverseRole> powerRoles = roleService.findAllWithPermission(Permission.ActAsSuperuser);
         if (powerRoles.isEmpty()) {
             return false;
         }
@@ -1141,7 +1141,7 @@ public class PermissionServiceBean {
         Set<RoleAssignee> userAndGroups = new HashSet<>(groupService.groupsFor(req));
         User user = req.getUser();
         if (user instanceof AuthenticatedUser authUser) {
-            if (isPowerUserOn(authUser, dvObject)) {
+            if (isSuperuserOn(authUser, dvObject)) {
                 return true;
             }
             userAndGroups.add(authUser);

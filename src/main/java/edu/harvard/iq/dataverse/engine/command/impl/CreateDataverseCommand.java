@@ -55,7 +55,7 @@ public class CreateDataverseCommand extends AbstractWriteDataverseCommand {
                 throw new IllegalCommandException("Root Dataverse already exists. Cannot create another one", this);
             }
         }
-        if (!ctxt.permissions().isPowerUserOn(getUser(), owner) && dataverse.isDatasetFileCountLimitSet(dataverse.getDatasetFileCountLimit())) {
+        if (!ctxt.permissions().isSuperuserOn(getUser(), owner) && dataverse.isDatasetFileCountLimitSet(dataverse.getDatasetFileCountLimit())) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("file.dataset.error.set.file.count.limit"), this);
         }
 

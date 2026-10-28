@@ -775,7 +775,7 @@ public class Files extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
         }
 
-        if (!permissionSvc.isPowerUserOn(u, dataFile)) {
+        if (!permissionSvc.isSuperuserOn(u, dataFile)) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
         }
 
@@ -865,7 +865,7 @@ public class Files extends AbstractApiBean {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             DataFile dataFileIn = findDataFileOrDie(id);
-            if (!permissionSvc.isPowerUserOn(au, dataFileIn)) {
+            if (!permissionSvc.isSuperuserOn(au, dataFileIn)) {
                 return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
             }
             java.nio.file.Path tempLocationPath = null;

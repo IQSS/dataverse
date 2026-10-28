@@ -42,9 +42,9 @@ public class PermissionsWrapperTest {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         
         Mockito.when(this.permissionWrapper.session.getUser()).thenReturn(user);
-        Mockito.when(this.permissionWrapper.permissionService.isPowerUserOn(any(User.class), eq(dv))).thenReturn(true);
+        Mockito.when(this.permissionWrapper.permissionService.isSuperuserOn(any(User.class), eq(dv))).thenReturn(true);
         
-        assertTrue(this.permissionWrapper.isPowerUserOn(dv));
+        assertTrue(this.permissionWrapper.isSuperuserOn(dv));
     }
 
     @Test
@@ -54,9 +54,9 @@ public class PermissionsWrapperTest {
         Mockito.when(user.isAuthenticated()).thenReturn(true);
         
         Mockito.when(this.permissionWrapper.session.getUser()).thenReturn(user);
-        Mockito.when(this.permissionWrapper.permissionService.isPowerUserOnSomeDvObject(user)).thenReturn(true);
+        Mockito.when(this.permissionWrapper.permissionService.isSuperuserOnSomeDvObject(user)).thenReturn(true);
         
-        assertTrue(this.permissionWrapper.isPowerUserOnSomeDvObject());
+        assertTrue(this.permissionWrapper.isSuperuserOnSomeDvObject());
     }
 
     @Test

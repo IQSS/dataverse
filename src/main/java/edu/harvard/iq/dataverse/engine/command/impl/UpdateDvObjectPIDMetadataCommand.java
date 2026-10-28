@@ -36,7 +36,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
 
-        if (!ctxt.permissions().isPowerUserOn(getUser(), target)) {
+        if (!ctxt.permissions().isSuperuserOn(getUser(), target)) {
             throw new PermissionException(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.auth.mustBePowerUser"),
                     this, Collections.singleton(Permission.EditDataset), target);
         }

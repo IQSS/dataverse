@@ -57,7 +57,7 @@ public class DashboardPage implements java.io.Serializable {
     public String init() {
         if (!isSessionUserAuthenticated()) {
             return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
-        } else if (!(isSuperUser() || permissionsWrapper.isPowerUserOnSomeDvObject())) {
+        } else if (!(isSuperUser() || permissionsWrapper.isSuperuserOnSomeDvObject())) {
             return navigationWrapper.notAuthorized();
         }
 
