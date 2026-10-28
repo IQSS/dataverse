@@ -106,7 +106,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
      */
     private void setBooleanAttribute(CommandContext ctxt, boolean adminOnly) throws CommandException {
         if (adminOnly && !ctxt.permissions().isSuperuserOn(getUser(), dataverse)) {
-            throw new PermissionException("You must be a superuser or power user to change this setting",
+            throw new PermissionException("You must be a superuser or scoped superuser to change this setting",
                     this, Collections.singleton(Permission.EditDataset), dataverse);
         }
 
@@ -130,7 +130,7 @@ public class UpdateDataverseAttributeCommand extends AbstractCommand<Dataverse> 
 
     private void setAllowedDatasetTypes(CommandContext ctxt, Object allowedDatasetTypesIn) throws CommandException {
         if (!ctxt.permissions().isSuperuserOn(getUser(), dataverse)) {
-            throw new PermissionException("You must be a superuser or power user to change this setting",
+            throw new PermissionException("You must be a superuser or scoped superuser to change this setting",
                     this, null, dataverse);
         }
         if (!(allowedDatasetTypesIn instanceof String stringValue)) {

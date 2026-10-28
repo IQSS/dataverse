@@ -335,7 +335,7 @@ public class PermissionServiceBean {
         
         // quick cases
         if (isSuperuserOn(user, dvo)) {
-            return children; // it's good to be king/power user
+            return children; // it's good to be king/scoped superuser
             
         } else if (!user.isAuthenticated()) {
             if ( required.stream().anyMatch(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY::contains) ){
@@ -534,7 +534,7 @@ public class PermissionServiceBean {
                 .collect(Collectors.toSet());
         identifiers.add(user.getIdentifier());
 
-        // Get all roles that have ScopedPowerUser permission
+        // Get all roles that have ActAsSuperuser permission
         List<DataverseRole> powerRoles = roleService.findAllWithPermission(Permission.ActAsSuperuser);
         if (powerRoles.isEmpty()) {
             return false;

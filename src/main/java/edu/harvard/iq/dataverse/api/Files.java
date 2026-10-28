@@ -699,7 +699,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/uningest")
     @Operation(summary = "Uningests a data file",
-            description = "Converts an ingested tabular data file back to a regular file when there was a failure or the requester is a power user.")
+            description = "Converts an ingested tabular data file back to a regular file when there was a failure or the requester is a scoped superuser.")
     public Response uningestDatafile(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         DataFile dataFile;
@@ -759,7 +759,7 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/reingest")
     @Operation(summary = "Reingests a data file",
-            description = "Starts ingest processing for a data file when the requester is a power user.")
+            description = "Starts ingest processing for a data file when the requester is a scoped superuser.")
     public Response reingest(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         AuthenticatedUser u;
         try {
@@ -776,7 +776,7 @@ public class Files extends AbstractApiBean {
         }
 
         if (!permissionSvc.isSuperuserOn(u, dataFile)) {
-            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         Dataset dataset = dataFile.getOwner();
@@ -860,13 +860,13 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/extractNcml")
     @Operation(summary = "Extracts NcML metadata",
-            description = "Extracts NcML metadata from a data file when the requester is a power user.")
+            description = "Extracts NcML metadata from a data file when the requester is a scoped superuser.")
     public Response extractNcml(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             DataFile dataFileIn = findDataFileOrDie(id);
             if (!permissionSvc.isSuperuserOn(au, dataFileIn)) {
-                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
             java.nio.file.Path tempLocationPath = null;
             boolean successOrFail = ingestService.extractMetadataNcml(dataFileIn, tempLocationPath);

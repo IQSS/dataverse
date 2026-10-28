@@ -342,7 +342,7 @@ public class Datasets extends AbstractApiBean {
 
             if (doomed.getVersions().size() == 1) {
                 if (doomed.isReleased() && !permissionSvc.isSuperuserOn(u, doomed)) {
-                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser")));
+                    throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser")));
                 }
                 destroy = true;
             } else {
@@ -379,11 +379,11 @@ public class Datasets extends AbstractApiBean {
 
         User u = getRequestUser(crc);
         return response(req -> {
-            // first check if dataset is released, and if so, if user is a poweruser
+            // first check if dataset is released, and if so, if user is a scoped superuser
             Dataset doomed = findDatasetOrDie(id);
 
             if (doomed.isReleased() && !permissionSvc.isSuperuserOn(u, doomed)) {
-                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser")));
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser")));
             }
 
             // Gather the locations of the physical files that will need to be
@@ -1380,7 +1380,7 @@ public class Datasets extends AbstractApiBean {
                     if (permissionSvc.isSuperuserOn(user, ds)) {
                         updateCurrent = true;
                     } else {
-                        return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                        return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
                     }
                     break;
                 default:
@@ -1497,7 +1497,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
     @Operation(summary = "Publishes a migrated dataset",
-            description = "Publishes a migrated dataset using supplied JSON-LD publication metadata when the requester is a poweruser.")
+            description = "Publishes a migrated dataset using supplied JSON-LD publication metadata when the requester is a scoped superuser.")
     @RequestBody(description = "JSON-LD metadata containing the migrated dataset publication date.")
     public Response publishMigratedDataset(@Context ContainerRequestContext crc,
             @RequestBody(description = "JSON-LD metadata containing the migrated dataset publication date.")
@@ -1506,7 +1506,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             Dataset ds = findDatasetOrDie(id);
             if (!permissionSvc.isSuperuserOn(user, ds)) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
             try {
                 JsonObject metadata = JSONLDUtil.decontextualizeJsonLD(jsonldBody);
@@ -1660,7 +1660,7 @@ public class Datasets extends AbstractApiBean {
          */
 
         if ((!permissionSvc.isSuperuserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
-            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopeedPowerUser permission, or user does not have EditDataset permissions");
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ActAsSuperuser permission, or user does not have EditDataset permissions");
         }
 
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
@@ -1737,10 +1737,10 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(filesToEmbargo)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
+            boolean isScopedSuperuser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
             for (DataFile datafile : filesToEmbargo) {
-                // power users can overrule an existing embargo, even on released files
-                if (datafile.isReleased() && !isPowerUser) {
+                // scoped superusers can overrule an existing embargo, even on released files
+                if (datafile.isReleased() && !isScopedSuperuser) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
                 }
@@ -1774,7 +1774,7 @@ public class Datasets extends AbstractApiBean {
                     embargoService.deleteById(emb.getId(), authenticatedUser.getIdentifier());
                 }
             }
-            //If poweruser, report changes to any released files
+            //If scoped superuser, report changes to any released files
             if (permissionSvc.isSuperuserOn(authenticatedUser, dataset)) {
                 String releasedFiles = filesToEmbargo.stream().filter(d -> d.isReleased())
                         .map(d -> d.getId().toString()).collect(Collectors.joining(","));
@@ -1822,7 +1822,7 @@ public class Datasets extends AbstractApiBean {
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
         if ((!permissionSvc.isSuperuserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
-            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerUser permission, or user does not have EditDataset permissions");
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ActAsSuperuser permission, or user does not have EditDataset permissions");
         }
 
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
@@ -1863,10 +1863,10 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(embargoFilesToUnset)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
+            boolean isScopedSuperuser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
             for (DataFile datafile : embargoFilesToUnset) {
-                // power users can overrule an existing embargo, even on released files
-                if (datafile.getEmbargo()==null || ((datafile.isReleased() && datafile.getEmbargo() != null) && !isPowerUser)) {
+                // scoped superusers can overrule an existing embargo, even on released files
+                if (datafile.getEmbargo()==null || ((datafile.isReleased() && datafile.getEmbargo() != null) && !isScopedSuperuser)) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
                 }
@@ -1943,7 +1943,7 @@ public class Datasets extends AbstractApiBean {
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
         if ((!permissionSvc.isSuperuserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
-            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ScopedPowerUser permission, or user does not have EditDataset permissions");
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or have ActAsSuperuser permission, or user does not have EditDataset permissions");
         }
 
         // check if retentions are allowed(:MinRetentionDurationInMonths), gets the :MinRetentionDurationInMonths setting variable, if 0 or not set(null) return 400
@@ -2040,10 +2040,10 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(filesToRetention)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
+            boolean isScopedSuperuser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
             for (DataFile datafile : filesToRetention) {
-                // power users can overrule an existing retention, even on released files
-                if (datafile.isReleased() && !isPowerUser) {
+                // scoped superusers can overrule an existing retention, even on released files
+                if (datafile.isReleased() && !isScopedSuperuser) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
                 }
@@ -2077,8 +2077,8 @@ public class Datasets extends AbstractApiBean {
                     retentionService.delete(ret, authenticatedUser.getIdentifier());
                 }
             }
-            //If power user, report changes to any released files
-            if (isPowerUser) {
+            //If scoped superuser, report changes to any released files
+            if (isScopedSuperuser) {
                 String releasedFiles = filesToRetention.stream().filter(d -> d.isReleased())
                         .map(d -> d.getId().toString()).collect(Collectors.joining(","));
                 if (!releasedFiles.isBlank()) {
@@ -2124,7 +2124,7 @@ public class Datasets extends AbstractApiBean {
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
         if ((!permissionSvc.isSuperuserOn(authenticatedUser, dataset) && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
-            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser/power user or user does not have EditDataset permissions");
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser/scoped superuser or user does not have EditDataset permissions");
         }
 
         // check if retentions are allowed(:MinRetentionDurationInMonths), gets the :MinRetentionDurationInMonths setting variable, if 0 or not set(null) return 400
@@ -2176,10 +2176,10 @@ public class Datasets extends AbstractApiBean {
         if (datasetFiles.containsAll(retentionFilesToUnset)) {
             JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
-            boolean isPowerUser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
+            boolean isScopedSuperuser = permissionSvc.isSuperuserOn(authenticatedUser, dataset);
             for (DataFile datafile : retentionFilesToUnset) {
-                // superuser/power user can overrule an existing retention, even on released files
-                if (datafile.getRetention()==null || ((datafile.isReleased() && datafile.getRetention() != null) && !isPowerUser)) {
+                // superuser/scoped superuser can overrule an existing retention, even on released files
+                if (datafile.getRetention()==null || ((datafile.isReleased() && datafile.getRetention() != null) && !isScopedSuperuser)) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
                 }
@@ -2226,7 +2226,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/files/uploadlimit/{limit}")
     @Operation(summary = "Sets dataset file upload limit",
-            description = "Sets the file count upload limit for a dataset when the requester is a poweruser.")
+            description = "Sets the file count upload limit for a dataset when the requester is a scoped superuser.")
     public Response updateDatasetFilesLimits(@Context ContainerRequestContext crc,
                                                 @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id,
                                                 @Parameter(description = "Maximum number of results or configured limit value.") @PathParam("limit") int datasetFileCountLimit) {
@@ -2247,7 +2247,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         if (!permissionSvc.isSuperuserOn(authenticatedUser, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         dataset.setDatasetFileCountLimit(datasetFileCountLimit);
@@ -2259,7 +2259,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/files/uploadlimit")
     @Operation(summary = "Clears dataset file upload limit",
-            description = "Removes the file count upload limit from a dataset when the requester is a power user.")
+            description = "Removes the file count upload limit from a dataset when the requester is a scoped superuser.")
     public Response deleteDatasetFilesLimits(@Context ContainerRequestContext crc,
                                              @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         // user is authenticated
@@ -2278,7 +2278,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         if (!permissionSvc.isSuperuserOn(authenticatedUser, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         dataset.setDatasetFileCountLimit(null);
@@ -2732,7 +2732,7 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(id);
             if (!permissionSvc.isSuperuserOn(authenticatedUser, dataset)) {
-                return error(Response.Status.FORBIDDEN, "Superusers or power users only.");
+                return error(Response.Status.FORBIDDEN, "Superusers or scoped superusers only.");
             }
             if ("validation passed".equals(statusMessageFromDcm)) {
                 logger.log(Level.INFO, "Checksum Validation passed for DCM.");
@@ -3648,7 +3648,7 @@ public class Datasets extends AbstractApiBean {
                 AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 Dataset dataset = findDatasetOrDie(id);
                 if (!permissionSvc.isSuperuserOn(user, dataset)) {
-                    return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                    return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
                 }
 
                 if (lockType == null) {
@@ -3700,7 +3700,7 @@ public class Datasets extends AbstractApiBean {
                 AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 Dataset dataset = findDatasetOrDie(id);
                 if (!permissionSvc.isSuperuserOn(user, dataset)) {
-                    return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                    return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
                 }
                 DatasetLock lock = dataset.getLockFor(lockType);
                 if (lock != null) {
@@ -4017,7 +4017,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/storageDriver")
     @Operation(summary = "Sets the dataset storage driver",
-            description = "Sets a dataset-specific storage driver by label when the requester is a power user.")
+            description = "Sets a dataset-specific storage driver by label when the requester is a scoped superuser.")
     @RequestBody(description = "Storage driver label to assign to the dataset.")
     public Response setFileStore(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @RequestBody(description = "Storage driver label to assign to the dataset.")
@@ -4039,7 +4039,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         // We don't want to allow setting this to a store id that does not exist:
@@ -4077,7 +4077,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         dataset.setStorageDriverId(null);
@@ -4089,7 +4089,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/curationLabelSet")
     @Operation(summary = "Returns the dataset curation label set",
-            description = "Returns the effective curation label set name for a dataset when the requester is a power user.")
+            description = "Returns the effective curation label set name for a dataset when the requester is a scoped superuser.")
     public Response getCurationLabelSet(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
@@ -4099,7 +4099,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(user);
             dataset = findDatasetUserCanSeeOrDie(dvIdtf, req);
             if (!permissionSvc.isSuperuserOn(user, dataset)) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -4111,7 +4111,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/curationLabelSet")
     @Operation(summary = "Sets the dataset curation label set",
-            description = "Sets the curation label set for a dataset when the requester is a power user.")
+            description = "Sets the curation label set for a dataset when the requester is a scoped superuser.")
     public Response setCurationLabelSet(@Context ContainerRequestContext crc,
                                         @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
                                         @Parameter(description = "Curation label set name.") @QueryParam("name") String curationLabelSet,
@@ -4133,7 +4133,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
         if (SystemConfig.CURATIONLABELSDISABLED.equals(curationLabelSet) || SystemConfig.DEFAULTCURATIONLABELSET.equals(curationLabelSet)) {
             dataset.setCurationLabelSetName(curationLabelSet);
@@ -4175,7 +4175,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         dataset.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
@@ -5380,7 +5380,7 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Returns archival status for a dataset version",
-            description = "Returns stored archival status information for a dataset version when the requester is a power user.")
+            description = "Returns stored archival status information for a dataset version when the requester is a scoped superuser.")
     public Response getDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                     @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                                     @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
@@ -5392,7 +5392,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(au);
             Dataset ds = findDatasetUserCanSeeOrDie(datasetId, req);
             if (!permissionSvc.isSuperuserOn(au, ds)) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, ds, uriInfo,
                     headers, true);
@@ -5412,7 +5412,7 @@ public class Datasets extends AbstractApiBean {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Sets dataset version archival status",
-            description = "Sets the archival status payload for a dataset version when the requester is a power user.")
+            description = "Sets the archival status payload for a dataset version when the requester is a scoped superuser.")
     @RequestBody(description = "JSON archival status payload to store for the dataset version.")
     public Response setDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                     @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
@@ -5427,7 +5427,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             Dataset dataset = findDatasetOrDie(datasetId);
             if (!permissionSvc.isSuperuserOn(au, dataset)) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
 
             //Verify we have valid json after removing any HTML tags (the status gets displayed in the UI, so we want plain text).
@@ -5474,7 +5474,7 @@ public class Datasets extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     @Operation(summary = "Deletes archival status for a dataset version",
-            description = "Removes stored archival status information from a dataset version when the requester is a power user.")
+            description = "Removes stored archival status information from a dataset version when the requester is a scoped superuser.")
     public Response deleteDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
                                                        @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId,
                                                        @Parameter(description = "Dataset version selector.") @PathParam("version") String versionNumber,
@@ -5485,7 +5485,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             Dataset ds = findDatasetOrDie(datasetId);
             if (!permissionSvc.isSuperuserOn(au, ds)) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
             DataverseRequest req = createDataverseRequest(au);
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, ds, uriInfo,
@@ -5917,7 +5917,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/guestbookEntryAtRequest")
     @Operation(summary = "Sets the dataset guestbook-entry policy",
-            description = "Sets whether a dataset requires guestbook entry at request time when the requester is a power user.")
+            description = "Sets whether a dataset requires guestbook entry at request time when the requester is a scoped superuser.")
     @RequestBody(description = "Boolean guestbook-entry-at-request value to store for the dataset.")
     public Response setguestbookEntryAtRequest(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf,
                                                @RequestBody(description = "Boolean guestbook-entry-at-request value to store for the dataset.")
@@ -5939,7 +5939,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
         Optional<Boolean> gbAtRequestOpt = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
         if (!gbAtRequestOpt.isPresent()) {
@@ -5974,7 +5974,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         dataset.setGuestbookEntryAtRequest(DvObjectContainer.UNDEFINED_CODE);
@@ -6027,7 +6027,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/pidReconcile")
     @Operation(summary = "Reconciles a dataset persistent identifier",
-            description = "Reconciles a dataset persistent identifier with its effective PID provider when the requester is a power user.")
+            description = "Reconciles a dataset persistent identifier with its effective PID provider when the requester is a scoped superuser.")
     public Response reconcilePid(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String datasetId) throws WrappedResponse {
         AuthenticatedUser user;
         try {
@@ -6042,7 +6042,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
         return response(req -> {
             execCommand(new ReconcileDatasetPidCommand(req, dataset, dataset.getEffectivePidGenerator()));
@@ -6085,7 +6085,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{identifier}/pidGenerator")
     @Operation(summary = "Sets the dataset PID generator",
-            description = "Sets a managed PID generator for a dataset when the requester is a power user.")
+            description = "Sets a managed PID generator for a dataset when the requester is a scoped superuser.")
     @RequestBody(description = "Managed PID generator id to assign to the dataset.")
     public Response setPidGenerator(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String datasetId,
             @RequestBody(description = "Managed PID generator id to assign to the dataset.")
@@ -6106,7 +6106,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
         if (PidUtil.getManagedProviderIds().contains(generatorId)) {
             dataset.setPidGeneratorId(generatorId);
@@ -6141,7 +6141,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         if (!permissionSvc.isSuperuserOn(user, dataset)) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
         }
 
         dataset.setPidGenerator(null);
@@ -6603,7 +6603,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     @Operation(summary = "Store a dataset version note",
-            description = "Adds or replaces the note on a draft or power-user-selected published dataset version.")
+            description = "Adds or replaces the note on a draft or scoped-superuser-selected published dataset version.")
     public Response addVersionNote(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String datasetId,
@@ -6620,7 +6620,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
                 AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 Dataset ds = findDatasetOrDie(datasetId);
                 if (!permissionSvc.isSuperuserOn(user, ds)) {
-                    return forbidden(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                    return forbidden(BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
                 }
                 return response(req -> {
                     DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, ds, uriInfo, headers);
@@ -6645,7 +6645,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     @AuthRequired
     @Path("{id}/versions/{versionId}/versionNote")
     @Operation(summary = "Clear a dataset version note",
-            description = "Deletes the note from a draft or power-user-selected published dataset version.")
+            description = "Deletes the note from a draft or scoped-superuser-selected published dataset version.")
     public Response deleteVersionNote(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String datasetId,
@@ -6659,7 +6659,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             Dataset ds = findDatasetOrDie(datasetId);
             if (!permissionSvc.isSuperuserOn(user, ds)) {
-                return forbidden(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return forbidden(BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
         }
         return response(req -> {

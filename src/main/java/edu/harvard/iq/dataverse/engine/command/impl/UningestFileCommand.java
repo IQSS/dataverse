@@ -48,9 +48,9 @@ public class UningestFileCommand extends AbstractVoidCommand  {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
-        // first check if user is a power user
+        // first check if user is a scoped superuser
         if (!ctxt.permissions().isSuperuserOn(getUser(), uningest)) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"), this,
+            throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"), this,
                     Collections.singleton(Permission.EditDataset), uningest);
         }
         

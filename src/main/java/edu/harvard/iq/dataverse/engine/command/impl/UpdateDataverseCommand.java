@@ -55,11 +55,11 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
 
     @Override
     protected Dataverse innerExecute(CommandContext ctxt) throws IllegalCommandException {
-        boolean isPowerUser = ctxt.permissions().isSuperuserOn(getUser(), dataverse);
+        boolean isScopedSuperuser = ctxt.permissions().isSuperuserOn(getUser(), dataverse);
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled:
-            if (!(isPowerUser && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+            if (!(isScopedSuperuser && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
                 String executable = ctxt.systemConfig().getDataverseValidationExecutable();
                 boolean result = validateDataverseMetadataExternally(dataverse, executable, getRequest());
 
@@ -69,7 +69,7 @@ public class UpdateDataverseCommand extends AbstractWriteDataverseCommand {
                 }
             }
         }
-        if (!(isPowerUser) && updatedDataverseDTO != null) {
+        if (!(isScopedSuperuser) && updatedDataverseDTO != null) {
             // default if not set
             if (updatedDataverseDTO.getDatasetFileCountLimit() == null) {
                 updatedDataverseDTO.setDatasetFileCountLimit(dataverse.getDatasetFileCountLimit());

@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author landreev
  * 
- * A power-user-only command:
+ * A scoped-superuser-only command:
  */
 @RequiredPermissions({})
 public class SetDatasetQuotaCommand   extends AbstractVoidCommand {
@@ -34,9 +34,9 @@ public class SetDatasetQuotaCommand   extends AbstractVoidCommand {
         
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
-        // Check if user is a poweruser:
+        // Check if user is a scoped superuser:
         if (!ctxt.permissions().isSuperuserOn(getRequest().getAuthenticatedUser(), dataset) ) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("dataset.storage.quota.powerusersonly"),
+            throw new PermissionException(BundleUtil.getStringFromBundle("dataset.storage.quota.scopedSuperuserOnly"),
                 this,  null, dataset);                
         }
         

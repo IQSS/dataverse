@@ -35,9 +35,9 @@ public class UpdatePublishedDatasetVersionCommand extends AbstractCommand<Datase
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        // Check if the user is a superuser or power user
+        // Check if the user is a superuser or scoped superuser
         if (!ctxt.permissions().isSuperuserOn(getUser(), datasetVersion.getDataset())) {
-            throw new IllegalCommandException("Only superusers or power users can update published dataset versions", this);
+            throw new IllegalCommandException("Only superusers or scoped superusers can update published dataset versions", this);
         }
 
         // Ensure the version is published

@@ -428,7 +428,7 @@ public class Dataverses extends AbstractApiBean {
             }
             
             if (!ds.getFiles().isEmpty() && !permissionSvc.isSuperuserOn(u, owner)){
-                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.powerUserFiles"));
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.scopedSuperuserFiles"));
             }
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
@@ -554,7 +554,7 @@ public class Dataverses extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             if (!permissionSvc.isSuperuserOn(u, owner)) {
-                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
             Dataset ds = parseDataset(jsonBody, owner);
 
@@ -644,7 +644,7 @@ public class Dataverses extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             if (!permissionSvc.isSuperuserOn(u, owner)) {
-                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
             Dataset ds;
             try {
@@ -725,7 +725,7 @@ public class Dataverses extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             if (!permissionSvc.isSuperuserOn(u, owner)) {
-                return error(Status.FORBIDDEN, "Not a superuser or power user");
+                return error(Status.FORBIDDEN, "Not a superuser or scoped superuser");
             }
 
             Dataset ds = new Dataset();
@@ -1935,7 +1935,7 @@ public class Dataverses extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(u);
             Dataverse dv = findDataverseUserCanSeeOrDie(dvIdtf, req);
             if (!permissionSvc.isSuperuserOn(u, dv)) {
-                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
 
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
@@ -2641,7 +2641,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!permissionSvc.isSuperuserOn(user, dataverse)) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2669,7 +2669,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!permissionSvc.isSuperuserOn(user, dataverse)) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"));
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"));
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2717,7 +2717,7 @@ public class Dataverses extends AbstractApiBean {
             User user = getRequestUser(crc);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             if (!permissionSvc.isSuperuserOn(user, dataverse)) {
-                return error(Status.FORBIDDEN, "Not a superuser or power user");
+                return error(Status.FORBIDDEN, "Not a superuser or scoped superuser");
             }
             JsonArrayBuilder assignees = JsonUtil.createArrayBuilder();
             dataverse.getLocallyFAIRRoleAssigneeIdentifiers().stream()
@@ -2746,7 +2746,7 @@ public class Dataverses extends AbstractApiBean {
             User user = getRequestUser(crc);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             if (!permissionSvc.isSuperuserOn(user, dataverse)) {
-                return error(Status.FORBIDDEN, "Not a superuser or power user");
+                return error(Status.FORBIDDEN, "Not a superuser or scoped superuser");
             }
             Set<String> validatedIdentifiers = validateLocallyFairRoleAssigneeIdentifiers(roleAssigneeIdentifiers);
             dataverse.setLocallyFAIRRoleAssigneeIdentifiers(validatedIdentifiers);
@@ -2774,7 +2774,7 @@ public class Dataverses extends AbstractApiBean {
             User user = getRequestUser(crc);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             if (!permissionSvc.isSuperuserOn(user, dataverse)) {
-                return error(Status.FORBIDDEN, "Not a superuser or power user");
+                return error(Status.FORBIDDEN, "Not a superuser or scoped superuser");
             }
             if (findAssignee(roleAssigneeIdentifier) == null) {
                 return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);
@@ -2805,7 +2805,7 @@ public class Dataverses extends AbstractApiBean {
             User user = getRequestUser(crc);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             if (!permissionSvc.isSuperuserOn(user, dataverse)) {
-                return error(Status.FORBIDDEN, "Not a superuser or power user");
+                return error(Status.FORBIDDEN, "Not a superuser or scoped superuser");
             }
             if(StringUtils.isBlank(roleAssigneeIdentifier) || !dataverse.getLocallyFAIRRoleAssigneeIdentifiers().contains(roleAssigneeIdentifier)) {
                 return badRequest("Invalid role assignee identifier: " + roleAssigneeIdentifier);

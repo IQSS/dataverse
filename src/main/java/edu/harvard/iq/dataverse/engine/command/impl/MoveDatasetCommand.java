@@ -65,7 +65,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     public void executeImpl(CommandContext ctxt) throws CommandException {
         boolean removeGuestbook = false, removeLinkDs = false;
         if (!ctxt.permissions().isSuperuserOn(getUser(), moved)) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("command.exception.only.powerusers", Arrays.asList(this.toString())),
+            throw new PermissionException(BundleUtil.getStringFromBundle("command.exception.only.scopedSuperusers", Arrays.asList(this.toString())),
                     this, Collections.singleton(Permission.DeleteDatasetDraft), moved);
         }
 

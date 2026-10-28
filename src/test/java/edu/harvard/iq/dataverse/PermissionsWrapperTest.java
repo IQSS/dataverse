@@ -36,7 +36,7 @@ public class PermissionsWrapperTest {
     }
 
     @Test
-    public void testIsPowerUserOn() {
+    public void testIsSuperuserOn() {
         Dataverse dv = new Dataverse();
         dv.setId(1L);
         AuthenticatedUser user = mock(AuthenticatedUser.class);
@@ -48,7 +48,7 @@ public class PermissionsWrapperTest {
     }
 
     @Test
-    public void testIsPowerUserOnSomeDvObject() {
+    public void testIsSuperuserOnSomeDvObject() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         Mockito.when(user.isSuperuser()).thenReturn(false);
         Mockito.when(user.isAuthenticated()).thenReturn(true);

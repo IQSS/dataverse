@@ -37,7 +37,7 @@ public class DeletePidCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
         if (!ctxt.permissions().isSuperuserOn(getUser(), dataset)) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBePowerUser"), this,
+            throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"), this,
                     Collections.singleton(Permission.EditDataset), dataset);
         }
 

@@ -95,7 +95,7 @@ public class SearchPermissionsServiceBean {
         Set<String> permStringsSet = new HashSet<>();
         Permission p = getRequiredSearchPermission(dvObject);
 
-        // Query for both the view unpublished permission and ScopedPowerUser in a single query
+        // Query for both the view unpublished permission and ActAsSuperuser in a single query
         Set<Permission> permissions = new HashSet<>();
         permissions.add(p);
         permissions.add(Permission.ActAsSuperuser);

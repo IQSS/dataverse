@@ -47,7 +47,7 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testIsPowerUserOn_Superuser() {
+    public void testIsSuperuserOn_Superuser() {
         AuthenticatedUser superuser = mock(AuthenticatedUser.class);
         when(superuser.isSuperuser()).thenReturn(true);
         Dataverse dv = new Dataverse();
@@ -56,19 +56,19 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testIsPowerUserOn_NullUser() {
+    public void testIsSuperuserOn_NullUser() {
         Dataverse dv = new Dataverse();
         assertFalse(permissionService.isSuperuserOn(null, dv));
     }
 
     @Test
-    public void testIsPowerUserOn_NullDvObject() {
+    public void testIsSuperuserOn_NullDvObject() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         assertFalse(permissionService.isSuperuserOn(user, null));
     }
 
     @Test
-    public void testIsPowerUserOn_WithAssignment() {
+    public void testIsSuperuserOn_WithAssignment() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -79,10 +79,10 @@ public class PermissionServiceBeanTest {
 
         when(groupService.groupsFor(eq(user), eq(dv))).thenReturn(Collections.emptySet());
 
-        DataverseRole powerUserRole = new DataverseRole();
-        powerUserRole.addPermission(Permission.ActAsSuperuser);
+        DataverseRole scopedSuperuserRole = new DataverseRole();
+        scopedSuperuserRole.addPermission(Permission.ActAsSuperuser);
         
-        RoleAssignment assignment = new RoleAssignment(powerUserRole, user, dv, null);
+        RoleAssignment assignment = new RoleAssignment(scopedSuperuserRole, user, dv, null);
         
         when(roleService.directRoleAssignments(anySet(), anySet())).thenReturn(new ArrayList<>(Collections.singletonList(assignment)));
 
@@ -90,7 +90,7 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testIsPowerUserOn_WithParentAssignment() {
+    public void testIsSuperuserOn_WithParentAssignment() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -106,10 +106,10 @@ public class PermissionServiceBeanTest {
 
         when(groupService.groupsFor(eq(user), any())).thenReturn(Collections.emptySet());
 
-        DataverseRole powerUserRole = new DataverseRole();
-        powerUserRole.addPermission(Permission.ActAsSuperuser);
+        DataverseRole scopedSuperuserRole = new DataverseRole();
+        scopedSuperuserRole.addPermission(Permission.ActAsSuperuser);
         
-        RoleAssignment assignment = new RoleAssignment(powerUserRole, user, parent, null);
+        RoleAssignment assignment = new RoleAssignment(scopedSuperuserRole, user, parent, null);
         
         when(roleService.directRoleAssignments(anySet(), anySet())).thenReturn(new ArrayList<>(Collections.singletonList(assignment)));
 
@@ -117,7 +117,7 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testIsPowerUserOn_BlockedNormalAdmin() {
+    public void testIsSuperuserOn_BlockedNormalAdmin() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -138,7 +138,7 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testHasPermissionsFor_PowerUser() {
+    public void testHasPermissionsFor_ScopedSuperuser() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -146,16 +146,16 @@ public class PermissionServiceBeanTest {
         Dataverse dv = new Dataverse();
         dv.setId(1L);
 
-        DataverseRole powerUserRole = new DataverseRole();
-        powerUserRole.addPermission(Permission.ActAsSuperuser);
-        RoleAssignment assignment = new RoleAssignment(powerUserRole, user, dv, null);
+        DataverseRole scopedSuperuserRole = new DataverseRole();
+        scopedSuperuserRole.addPermission(Permission.ActAsSuperuser);
+        RoleAssignment assignment = new RoleAssignment(scopedSuperuserRole, user, dv, null);
         when(roleService.directRoleAssignments(anySet(), anySet())).thenReturn(new ArrayList<>(Collections.singletonList(assignment)));
 
         assertTrue(permissionService.hasPermissionsFor(user, dv, EnumSet.of(Permission.AddDataverse)));
     }
 
     @Test
-    public void testPermissionsFor_PowerUser() {
+    public void testPermissionsFor_ScopedSuperuser() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -163,9 +163,9 @@ public class PermissionServiceBeanTest {
         Dataverse dv = new Dataverse();
         dv.setId(1L);
 
-        DataverseRole powerUserRole = new DataverseRole();
-        powerUserRole.addPermission(Permission.ActAsSuperuser);
-        RoleAssignment assignment = new RoleAssignment(powerUserRole, user, dv, null);
+        DataverseRole scopedSuperuserRole = new DataverseRole();
+        scopedSuperuserRole.addPermission(Permission.ActAsSuperuser);
+        RoleAssignment assignment = new RoleAssignment(scopedSuperuserRole, user, dv, null);
         when(roleService.directRoleAssignments(anySet(), anySet())).thenReturn(new ArrayList<>(Collections.singletonList(assignment)));
 
         Set<Permission> perms = permissionService.permissionsFor(user, dv);
@@ -173,7 +173,7 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testWhichChildrenHasPermissionsFor_PowerUser() {
+    public void testWhichChildrenHasPermissionsFor_ScopedSuperuser() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -190,9 +190,9 @@ public class PermissionServiceBeanTest {
         List<DvObject> children = Arrays.asList(child1, child2);
         when(dvObjectServiceBean.findByOwnerId(1L)).thenReturn(children);
 
-        DataverseRole powerUserRole = new DataverseRole();
-        powerUserRole.addPermission(Permission.ActAsSuperuser);
-        RoleAssignment assignment = new RoleAssignment(powerUserRole, user, parent, null);
+        DataverseRole scopedSuperuserRole = new DataverseRole();
+        scopedSuperuserRole.addPermission(Permission.ActAsSuperuser);
+        RoleAssignment assignment = new RoleAssignment(scopedSuperuserRole, user, parent, null);
         when(roleService.directRoleAssignments(anySet(), anySet())).thenReturn(new ArrayList<>(Collections.singletonList(assignment)));
 
         DataverseRequest req = mock(DataverseRequest.class);
@@ -205,7 +205,7 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testWhichChildrenHasPermissionsFor_PowerUserOnSingleChild() {
+    public void testWhichChildrenHasPermissionsFor_ScopedSuperuserOnSingleChild() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -224,10 +224,10 @@ public class PermissionServiceBeanTest {
         List<DvObject> children = Arrays.asList(child1, child2);
         when(dvObjectServiceBean.findByOwnerId(1L)).thenReturn(children);
 
-        // Power User assignment only on child1
-        DataverseRole powerUserRole = new DataverseRole();
-        powerUserRole.addPermission(Permission.ActAsSuperuser);
-        RoleAssignment assignment = new RoleAssignment(powerUserRole, user, child1, null);
+        // Scoped Superuser assignment only on child1
+        DataverseRole scopedSuperuserRole = new DataverseRole();
+        scopedSuperuserRole.addPermission(Permission.ActAsSuperuser);
+        RoleAssignment assignment = new RoleAssignment(scopedSuperuserRole, user, child1, null);
 
         // Group service returns empty for both
         when(groupService.groupsFor(any(DataverseRequest.class))).thenReturn(Collections.emptySet());
@@ -254,7 +254,7 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void testHasLocallyFAIRAccess_PowerUser() {
+    public void testHasLocallyFAIRAccess_ScopedSuperuser() {
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         when(user.isSuperuser()).thenReturn(false);
         when(user.isAuthenticated()).thenReturn(true);
@@ -264,9 +264,9 @@ public class PermissionServiceBeanTest {
         dv.setId(1L);
         dv.setLocallyFAIRRoleAssigneeIdentifiers(Collections.singleton("@some_group"));
 
-        DataverseRole powerUserRole = new DataverseRole();
-        powerUserRole.addPermission(Permission.ActAsSuperuser);
-        RoleAssignment assignment = new RoleAssignment(powerUserRole, user, dv, null);
+        DataverseRole scopedSuperuserRole = new DataverseRole();
+        scopedSuperuserRole.addPermission(Permission.ActAsSuperuser);
+        RoleAssignment assignment = new RoleAssignment(scopedSuperuserRole, user, dv, null);
         when(roleService.directRoleAssignments(anySet(), anySet())).thenReturn(new ArrayList<>(Collections.singletonList(assignment)));
 
         DataverseRequest req = mock(DataverseRequest.class);

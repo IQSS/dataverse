@@ -215,7 +215,7 @@ public class HarvestingClients extends AbstractApiBean {
 
             User u = getRequestUser(crc);
             if (!permissionSvc.isSuperuserOn(u, ownerDataverse)) {
-                return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can create harvesting clients.");
+                return error(Response.Status.UNAUTHORIZED, "Only superusers or scoped superusers can create harvesting clients.");
             }
             
             // The nickname supplied as part of the Rest path takes precedence: 
@@ -271,7 +271,7 @@ public class HarvestingClients extends AbstractApiBean {
                 return error( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
             }
             if (!permissionSvc.isSuperuserOn(u, harvestingClient.getDataverse())) {
-                return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can modify harvesting clients.");
+                return error(Response.Status.UNAUTHORIZED, "Only superusers or scoped superusers can modify harvesting clients.");
             }
             
             String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
@@ -348,7 +348,7 @@ public class HarvestingClients extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
         if (!permissionSvc.isSuperuserOn(u, harvestingClient.getDataverse())) {
-            return error(Response.Status.UNAUTHORIZED, "Only superusers or power users can delete harvesting clients.");
+            return error(Response.Status.UNAUTHORIZED, "Only superusers or scoped superusers can delete harvesting clients.");
         }
 
         // Check if the client is in a state where it can be safely deleted:
@@ -402,7 +402,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             if (!permissionSvc.isSuperuserOn(authenticatedUser, harvestingClient.getDataverse())) {
-                return error(Response.Status.FORBIDDEN, "Only admin or power users can run harvesting jobs");
+                return error(Response.Status.FORBIDDEN, "Only admin or scoped superusers can run harvesting jobs");
             }
             
             DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
