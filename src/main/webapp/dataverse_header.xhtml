@@ -169,12 +169,12 @@
                                         </h:outputLink>
                                     </li>
                                     <li class="divider"></li>
-                                    <li jsf:rendered="#{dataverseSession.user.superuser}" tabindex="-1">
+                                    <li jsf:rendered="#{permissionsWrapper.superuserOnSomeDvObject}" tabindex="-1">
                                         <h:outputLink value="/dashboard.xhtml?dataverseId=#{settingsWrapper.rootDataverse.id}">
                                             <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
+                                    <li class="divider" jsf:rendered="#{permissionsWrapper.superuserOnSomeDvObject}"></li>
                                     <li class="logout" tabindex="-1">
                                         <o:form useRequestURI="true" pt:role="logout">
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">

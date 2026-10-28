@@ -31,8 +31,8 @@ public class ReservePidCommand extends AbstractDatasetCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
-        if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"),
+        if (!ctxt.permissions().isSuperuserOn(getUser(), dataset)) {
+            throw new PermissionException(BundleUtil.getStringFromBundle("api.auth.mustBeScopedSuperuser"),
                     this, Collections.singleton(Permission.EditDataset), dataset);
         }
         registerExternalIdentifier(getDataset(), ctxt, true);

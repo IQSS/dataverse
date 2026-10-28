@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -91,19 +92,23 @@ public class SearchPermissionsServiceBean {
     }
 
     private List<String> findDvObjectPerms(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
+        Set<String> permStringsSet = new HashSet<>();
         Permission p = getRequiredSearchPermission(dvObject);
 
-       List<String> assigneeIdStrings = null;
-           assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionOnDvObject(dvObject.getId(), p);
+        // Query for both the view unpublished permission and ActAsSuperuser in a single query
+        Set<Permission> permissions = new HashSet<>();
+        permissions.add(p);
+        permissions.add(Permission.ActAsSuperuser);
+
+        List<String> assigneeIdStrings = roleAssigneeService.findAssigneesWithPermissionsOnDvObject(dvObject.getId(), permissions);
         for (String id : assigneeIdStrings) {
             RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
             String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
             if (indexableUserOrGroupPermissionString != null) {
-                permStrings.add(indexableUserOrGroupPermissionString);
+                permStringsSet.add(indexableUserOrGroupPermissionString);
             }
         }
-        return permStrings;
+        return new ArrayList<>(permStringsSet);
     }
 
     private boolean hasBeenPublished(Dataverse dataverse) {
