@@ -6347,7 +6347,7 @@ Where a Guestbook Response is required to access the file an optional query para
   export FILE_ID=42
   export TOOL_ID=3
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/$FILE_ID/externalTool/$TOOL_ID/toolUrl \
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/$FILE_ID/externalTool/$TOOL_ID/toolUrl" \
   -H "Content-Type: application/json" \
   -d '{"preview": false, "locale": "en"}'
 
