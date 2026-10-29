@@ -101,6 +101,15 @@ Generally speaking you should use `fine` for everything that you don't want to s
 
 When adding logging, do not simply add `System.out.println()` lines because the logging level cannot be controlled.
 
+#### Log Level Escalation
+
+When ignoring or handling errors, often a debug-level error message is created.
+Low occurences of such errors may not warrant a sysadmin's attention.
+On the other hand, when such errors are more frequently encountered, log level escalation might be required.
+
+The `edu.harvard.iq.dataverse.util.logging.FailureEscalation` utility class helps you achieve such escalation patterns.
+An example on how to use the class is provided in its Javadocs.
+
 ### Avoid Hard-Coding Strings (Use Constants)
 
 Special strings should be defined as public constants. For example, `DatasetFieldConstant.java` contains a field for "title" and it's used in many places in the code (try "Find Usages" in Netbeans). This is better than writing the string "title" in all those places.
@@ -118,6 +127,11 @@ If you just downloaded Netbeans and are using the out-of-the-box settings, you s
 - "Raw Types" under "Standard Javac Warnings"
 
 If you know of a way to easily share Netbeans configuration across a team, please get in touch.
+
+### Temporary Files Security
+
+To avoid exposing potentially sensitive information in temporary files stored on the file system, use the
+`edu.harvard.iq.dataverse.util.SecureTempFiles` utility instead of Java mechanics as `Files.createTempFile` directly.
 
 ## Bash
 

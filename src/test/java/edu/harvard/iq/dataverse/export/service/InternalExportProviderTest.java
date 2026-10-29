@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.export;
+package edu.harvard.iq.dataverse.export.service;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;

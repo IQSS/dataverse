@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.ExporterRegistryBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
@@ -263,7 +265,17 @@ public class TestCommandContext implements CommandContext {
     public LicenseServiceBean licenses() {
         return null;
     }
-
+    
+    @Override
+    public ExportServiceBean exportService() {
+        return null;
+    }
+    
+    @Override
+    public ExporterRegistryBean exporterRegistry() {
+        return null;
+    }
+    
     @Override
     public void beginCommandSequence() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
