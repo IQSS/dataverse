@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.mydata.Pager;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
@@ -135,8 +136,8 @@ public class Access extends AbstractApiBean {
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
-    private static final int GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
-    private static final int GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES = 60;
+    private static final int DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
+    private static final int DEFAULT_GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES = 60;
     //@EJB
 
     @GET
@@ -627,7 +628,8 @@ public class Access extends AbstractApiBean {
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);
             if (apiToken == null) {
                 logger.fine("Generating temporary API token for user " + userIdentifier);
-                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES);
+                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES,
+                        JvmSettings.GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES));
             }
             if (apiToken != null) {
                 key = apiToken.getTokenString();
@@ -659,7 +661,9 @@ public class Access extends AbstractApiBean {
         baseUrl = baseUrl.replace(":persistentId", id);
         String signedUrl;
         try {
-            signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET",
+            signedUrl = UrlSignerUtil.signUrl(baseUrl,
+                    JvmSettings.GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES),
+                    userIdentifier, "GET",
                     signingSecretService.getSigningKey(key));
         } catch (IllegalArgumentException e) {
             // A reserved param can be smuggled past the builder-level removal above inside a
@@ -2291,7 +2295,9 @@ public class Access extends AbstractApiBean {
                     //  We don't know which call was made so we can't use the exact timeout that was configured.
                     //  We may not want the configured timeout to be as long as the tool configeror has specified so we will just give a reasonable extention
                     ExternalTool externalTool = externalToolId != null ? externalToolService.findById(externalToolId) : null;
-                    int timeout = externalTool != null ? GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES : GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES;
+                    int timeout = externalTool != null ?
+                            JvmSettings.GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES) :
+                            JvmSettings.GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES);
 
                     Date responseTime = (Date) gbrData[1];
                     Long delta = Instant.now().toEpochMilli() - responseTime.getTime();

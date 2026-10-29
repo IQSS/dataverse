@@ -96,6 +96,8 @@ public enum JvmSettings {
     // API: MDC Citation updates
     SCOPE_API_MDC(SCOPE_API, "mdc"),
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
+    GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES(SCOPE_API, "guestbook-response-timeout-minutes"),
+    GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES(SCOPE_API, "guestbook-response-external-tool-timeout-minutes"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
