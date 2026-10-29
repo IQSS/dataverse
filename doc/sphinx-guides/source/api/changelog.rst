@@ -7,6 +7,11 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.13
+-----
+
+- The :ref:`cleanup-storage-api` endpoint, ``/api/datasets/{id}/cleanStorage``, now requires ``PUT`` instead of ``GET``. Its ``dryrun`` parameter now defaults to ``true``, so pass ``dryrun=false`` to actually delete files.
+
 v6.12
 -----
 
