@@ -696,7 +696,7 @@ public class Datasets extends AbstractApiBean {
             // Null uriInfo on purpose: the lazy tree calls this once per folder
             // expansion and once per page, and the dataset view it belongs to has
             // already logged its Make Data Count investigation.
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), null, headers, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), null, headers, includeDeaccessioned);
             TreePage page;
             try {
                 page = datasetVersionTreeService.listChildren(datasetVersion, query);
