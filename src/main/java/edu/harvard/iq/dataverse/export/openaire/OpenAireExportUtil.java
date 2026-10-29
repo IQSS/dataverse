@@ -848,7 +848,7 @@ public class OpenAireExportUtil {
 
         String dateOfVersion = datasetVersionDTO.getReleaseTime();
         //12294 set date type depending whether the version is republished
-        String dateType = (datasetVersionDTO.getMinorVersionNumber() > 0 || datasetVersionDTO.getVersionNumber() > 1) ? "Updated" : "Available";
+         String   dateType = (datasetVersionDTO.getMinorVersionNumber() != null && datasetVersionDTO.getMinorVersionNumber() > 0 || (datasetVersionDTO.getVersionNumber() != null && datasetVersionDTO.getVersionNumber() > 1)) ? "Updated" : "Available";
 
         if (StringUtils.isNotBlank(dateOfVersion)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);

@@ -753,7 +753,7 @@ public class XmlMetadataTemplate {
             datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
             //12360 remove Available as the dateType
             //attributes.put("dateType", "Available");
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, publicationDate);
+            XmlWriterUtil.writeFullElement(xmlw, "date",  publicationDate);
         }
         if (isAnUpdate) {
             String date = Util.getDateFormat().format(releaseDate);

@@ -5007,7 +5007,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
                 .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+//                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available")) Removed per 12360
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
                 .body("resource.version", equalTo("1.0"));
 
@@ -5052,7 +5052,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
                 .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
+                // per 12294 version 1.0 is Available
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
                 .body("resource.publicationYear", CoreMatchers.equalTo(currentYear));
 
@@ -5143,20 +5144,24 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         exportDataciteV10NotDeaccessioned.prettyPrint();
         exportDataciteV10NotDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
-                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
-                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                //Per 12361 citation date should be type "Issued" citation date as calculated by dataset citation
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Issued"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo(today))
+                //per 12360 not using available
+                //.body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo("1999-12-31"))
                 .body("resource.version", equalTo("1.0"));
 
         Response exportDataciteLatestPublishedNotDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_LATEST_PUBLISHED, apiToken);
         exportDataciteLatestPublishedNotDeaccessioned.prettyPrint();
         exportDataciteLatestPublishedNotDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
-                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
-                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                //Per 12361 citation date should be type "Issued" citation date as calculated by dataset citation
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Issued"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo(today))
+                //per 12360 not using available
+                //.body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo("1999-12-31"))
                 .body("resource.version", equalTo("1.0"));
 
         Response deaccessionV10 = UtilIT.deaccessionDataset(datasetPid, "1.0", "retracted", null, apiToken);
