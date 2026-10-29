@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,7 +29,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Paging logic of {@link DatasetVersionTreeService} against a mocked
@@ -86,7 +84,7 @@ class DatasetVersionTreeServicePagingTest {
             String after = ((String) params.get(params.size() - 1 - afterOffset)).toLowerCase();
             candidates = rows.stream()
                     .filter(r -> ((String) r[0]).toLowerCase().compareTo(after) > 0)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         return candidates.subList(0, Math.min(limit, candidates.size()));
     }
@@ -110,7 +108,7 @@ class DatasetVersionTreeServicePagingTest {
     }
 
     private List<String> names(TreePage page) {
-        return page.items.stream().map(i -> i.name).collect(Collectors.toList());
+        return page.items.stream().map(i -> i.name).toList();
     }
 
     @Test
