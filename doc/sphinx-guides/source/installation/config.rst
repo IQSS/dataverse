@@ -3451,6 +3451,24 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 .. note::
    This setting will be ignored unless the :ref:`dataverse.api.blocked.policy` is set to ``unblock-key``.  Otherwise the deprecated :ref:`:BlockedApiKey` will be used
 
+.. _dataverse.api.guestbook-response-timeout-minutes:
+
+dataverse.api.guestbook-response-timeout-minutes
+++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting specifies the timeout between posting a Guestbook Response and downloading the file. The default, if not set, is 1 minute. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.api.guestbook-response-timeout-minutes=1'``
+
+. _dataverse.api.guestbook-response-timeout-minutes:
+
+dataverse.api.guestbook-response-external-tool-timeout-minutes
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting specifies the timeout between posting a Guestbook Response and downloading the file from an external tool. The default, if not set, is 60 minute. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.api.guestbook-response-external-tool-timeout-minutes=60'``
+
 
 .. _dataverse.legacy.api-response-message-style:
 
