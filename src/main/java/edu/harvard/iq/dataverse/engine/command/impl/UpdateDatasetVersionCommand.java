@@ -155,13 +155,21 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             		throw e;
             	}
             }
-            //Set creator and create date for files if needed
+            // Set creator, create date, and initial modification time for new files if needed.
+            // Do NOT touch modificationTime of existing files, as mutating them dirties every DataFile
+            // entity in JPA, triggering an O(N) cascade of UPDATE queries on flush for large datasets.
+            // See https://groups.google.com/g/dataverse-community/c/pzSjF1YPaJw/m/bQWX3W_kBwAJ
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
                     dataFile.setCreator((AuthenticatedUser) getUser());
+                    dataFile.setModificationTime(getTimestamp());
+                } else if (dataFile.getModificationTime() == null) {
+                    dataFile.setModificationTime(getTimestamp());
                 }
-                dataFile.setModificationTime(getTimestamp());
+            }
+            if (fmVarMet != null && fmVarMet.getDataFile() != null) {
+                fmVarMet.getDataFile().setModificationTime(getTimestamp());
             }
 
             // Remove / delete any files that were removed
