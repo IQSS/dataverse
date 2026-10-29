@@ -4573,6 +4573,8 @@ If you don't want to register file-based PIDs for your entire installation::
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
+If you are using DataCite as your PID provider, resourceTypeGeneral will be "Other". See discussion at https://github.com/IQSS/dataverse/issues/5086.
+
 .. _:AllowEnablingFilePIDsPerCollection:
 
 :AllowEnablingFilePIDsPerCollection

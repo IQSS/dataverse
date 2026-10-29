@@ -1,15 +1,21 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
+import org.eclipse.microprofile.metrics.Timer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
@@ -18,9 +24,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Indexing is requested from inside the transaction that changes a dataset or its
@@ -29,7 +37,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
  * (missing permissions, missing index time). The beans therefore only fire an
  * {@link IndexingRequest}; the observer starts the work after the commit. The
  * requests carry ids: the background job must not share entities with the
- * requesting thread.
+ * requesting thread. Batch reindexes are the exception: they index one dataset
+ * at a time, right away, as there is no transaction to wait for.
  */
 class IndexingAfterCommitTest {
 
@@ -106,6 +115,26 @@ class IndexingAfterCommitTest {
     }
 
     @Test
+    void batchReindexIndexesTheDatasetRightAway() throws Exception {
+        mockIndexing();
+
+        indexService.indexDatasetInNewTransaction(42L);
+
+        verify(indexService.self).indexDatasetNow(42L, false);
+        verifyNoInteractions(indexingRequests);
+    }
+
+    @Test
+    void backgroundJobIndexesTheDataset() throws Exception {
+        mockIndexing();
+
+        indexService.indexDatasetInBackground(42L, true);
+
+        verify(indexService.self).indexDatasetNow(42L, true);
+        verifyNoInteractions(indexingRequests);
+    }
+
+    @Test
     void observerStartsIndexingADataset() {
         observer.afterCommit(new IndexingRequest.IndexDataset(42L, true));
 
@@ -140,6 +169,33 @@ class IndexingAfterCommitTest {
         Observes observes = request.getAnnotation(Observes.class);
         assertNotNull(observes, "the observer must observe IndexingRequest events");
         assertEquals(TransactionPhase.AFTER_SUCCESS, observes.during());
+    }
+
+    @Test
+    void backgroundJobDoesNotFlushBeforeQueries() throws Exception {
+        EntityManager em = mock(EntityManager.class);
+        Field emField = IndexServiceBean.class.getDeclaredField("em");
+        emField.setAccessible(true);
+        emField.set(indexService, em);
+        indexService.datasetService = mock(DatasetServiceBean.class);
+
+        indexService.indexDatasetNow(42L, false);
+
+        InOrder inOrder = inOrder(em, indexService.datasetService);
+        inOrder.verify(em).setFlushMode(FlushModeType.COMMIT);
+        inOrder.verify(indexService.datasetService).find(42L);
+    }
+
+    private void mockIndexing() {
+        indexService.self = mock(IndexServiceBean.class);
+        indexService.indexPermitWaitTimer = noOpTimer();
+        indexService.indexTimer = noOpTimer();
+    }
+
+    private static Timer noOpTimer() {
+        Timer timer = mock(Timer.class);
+        when(timer.time()).thenReturn(mock(Timer.Context.class));
+        return timer;
     }
 
     private IndexingRequest firedRequest() {

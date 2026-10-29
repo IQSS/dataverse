@@ -4349,9 +4349,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode()).body("message", equalTo("File not found in dataset version: 1.0"));
     }
 
-    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
     @Test
-    @Disabled
     public void testDownloadFileWithGuestbookResponseUsingBearerToken() throws IOException, JsonParseException {
         msgt("testDownloadFileWithGuestbookResponseUsingBearerToken");
         UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
