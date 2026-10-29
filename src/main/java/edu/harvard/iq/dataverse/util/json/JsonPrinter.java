@@ -1096,6 +1096,7 @@ public class JsonPrinter {
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
         JsonObjectBuilder retention = df.getRetention() != null ? JsonPrinter.json(df.getRetention()) : null;
+        JsonObjectBuilder fileErasure = df.getFileErasure() != null ? JsonPrinter.json(df.getFileErasure()) : null;
 
         NullSafeJsonBuilder builder = jsonObjectBuilder()
                 .add("id", df.getId())
@@ -1109,6 +1110,7 @@ public class JsonPrinter {
                 .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
                 .add("retention", retention)
+                .add("fileErasure", fileErasure)
                 //.add("released", df.isReleased())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
@@ -1559,6 +1561,16 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(Retention retention) {
         return jsonObjectBuilder().add("dateUnavailable", retention.getDateUnavailable().toString()).add("reason",
                 retention.getReason());
+    }
+
+    public static JsonObjectBuilder json(FileErasure fileErasure) {
+        JsonObjectBuilder builder = jsonObjectBuilder()
+                .add("erasedOn", format(fileErasure.getErasedOn()))
+                .add("reason", fileErasure.getReason());
+        if (fileErasure.getErasedBy() != null) {
+            builder.add("erasedBy", fileErasure.getErasedBy().getId());
+        }
+        return builder;
     }
 
     public static JsonObjectBuilder json(License license) {

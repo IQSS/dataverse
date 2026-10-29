@@ -1255,6 +1255,9 @@ public class FileUtil implements java.io.Serializable  {
         if (isRetentionExpired(fileMetadata)) {
             return false;
         }
+        if (isErased(fileMetadata)) {
+            return false;
+        }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
             /**
@@ -1870,6 +1873,23 @@ public class FileUtil implements java.io.Serializable  {
     public static boolean isRetentionExpired(List<FileMetadata> fmdList) {
         for (FileMetadata fmd : fmdList) {
             if (isRetentionExpired(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isErased(DataFile df) {
+        return df.getFileErasure() != null;
+    }
+
+    public static boolean isErased(FileMetadata fileMetadata) {
+        return isErased(fileMetadata.getDataFile());
+    }
+
+    public static boolean isErased(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isErased(fmd)) {
                 return true;
             }
         }

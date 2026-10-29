@@ -331,6 +331,10 @@ public class Access extends AbstractApiBean {
             throw new NotFoundException(errorMessage);
             // (nobody should ever be using this API on a harvested DataFile)!
         }
+        
+        if (FileUtil.isErased(df)) {
+            throw new NotFoundException("Datafile " + fileId + " has been erased.");
+        }
                
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
@@ -1861,6 +1865,10 @@ public class Access extends AbstractApiBean {
 
         if (FileUtil.isRetentionExpired(dataFile)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.retentionExpired"));
+        }
+
+        if (FileUtil.isErased(dataFile)) {
+            return error(jakarta.ws.rs.core.Response.Status.GONE, "Datafile " + fileToRequestAccessId + " has been erased.");
         }
 
         if (!dataFile.getOwner().isFileAccessRequest()) {

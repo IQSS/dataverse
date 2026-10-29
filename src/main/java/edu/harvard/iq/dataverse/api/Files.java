@@ -422,6 +422,176 @@ public class Files extends AbstractApiBean {
 
         return ok(deletePhysicalFile);
     }
+
+    /**
+     * Erase a published file's physical content from storage while retaining
+     * the DataFile database record with audit metadata.
+     * 
+     * Uses a two-token confirmation flow to prevent accidental erasure:
+     * 1. First request without token returns 202 with a confirmation token
+     * 2. Second request with the token performs the actual erasure
+     * 
+     * @param id file ID or persistent ID
+     * @param maskLabel optional query param to replace file label with mask string
+     * @param jsonBody JSON body with reason and optional confirmationToken
+     */
+    @DELETE
+    @AuthRequired
+    @Path("{id}/erase")
+    @Operation(summary = "Erase a published file",
+            description = "Erases a published data file's physical content from storage while retaining the DataFile database record with audit metadata. Requires superuser. Uses two-token confirmation flow.")
+    public Response eraseFileInDataset(@Context ContainerRequestContext crc,
+                                        @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                        @PathParam("id") String id,
+                                        @Parameter(description = "Replace file label with mask string (default: *******).")
+                                        @QueryParam("maskLabel") boolean maskLabel,
+                                        String jsonBody) {
+        // (1) Get the user from the API key and create request
+        User authUser = getRequestUser(crc);
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+
+        // (2) Parse JSON body
+        String reason = null;
+        String confirmationToken = null;
+        if (jsonBody != null && !jsonBody.isEmpty()) {
+            try {
+                JsonObject jsonObj = new Gson().fromJson(jsonBody, JsonObject.class);
+                if (jsonObj.has("reason") && !jsonObj.get("reason").isJsonNull()) {
+                    reason = jsonObj.get("reason").getAsString();
+                }
+                if (jsonObj.has("confirmationToken") && !jsonObj.get("confirmationToken").isJsonNull()) {
+                    confirmationToken = jsonObj.get("confirmationToken").getAsString();
+                }
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Invalid JSON body: " + e.getMessage());
+            }
+        }
+
+        // (3) Find the data file
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(id);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        // (4) Check if already erased
+        if (dataFile.getFileErasure() != null) {
+            return error(Status.GONE, "File has already been erased.");
+        }
+
+        // (5) Validate reason is provided
+        if (reason == null || reason.trim().isEmpty()) {
+            return error(BAD_REQUEST, "A reason is required for erasure. Provide it in the JSON body as {\"reason\": \"...\"}");
+        }
+
+        // (6) If token provided, perform the erasure
+        if (confirmationToken != null && !confirmationToken.isEmpty()) {
+            return performFileErasure(dvRequest, dataFile, reason, confirmationToken, maskLabel);
+        }
+
+        // (7) No token - return 202 with confirmation token
+        String token = java.util.UUID.randomUUID().toString();
+        // Store token in a simple cache (5-minute TTL)
+        erasureTokenCache.put(token, System.currentTimeMillis() + 5 * 60 * 1000);
+
+        JsonObjectBuilder responseBuilder = JsonUtil.createObjectBuilder()
+                .add("status", "confirmation_required")
+                .add("message", "To complete the erasure, send another DELETE request with the confirmationToken included.")
+                .add("confirmationToken", token)
+                .add("tokenExpiresInSeconds", 300)
+                .add("fileId", dataFile.getId());
+        if (dataFile.getGlobalId() != null) {
+            responseBuilder.add("persistentId", dataFile.getGlobalId().asString());
+        }
+
+        return ok(responseBuilder.build());
+    }
+
+    // Simple cache for erasure confirmation tokens (token -> expiry timestamp)
+    private static final java.util.Map<String, Long> erasureTokenCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Perform the actual file erasure after token confirmation.
+     */
+    private Response performFileErasure(DataverseRequest dvRequest, DataFile dataFile, String reason,
+                                        String confirmationToken, boolean maskLabel) {
+        // Validate token
+        Long expiry = erasureTokenCache.get(confirmationToken);
+        if (expiry == null) {
+            return error(BAD_REQUEST, "Invalid or expired confirmation token.");
+        }
+        if (System.currentTimeMillis() > expiry) {
+            erasureTokenCache.remove(confirmationToken);
+            return error(BAD_REQUEST, "Confirmation token has expired. Please request a new one.");
+        }
+
+        // Check superuser
+        User authUser = dvRequest.getUser();
+        if (!(authUser instanceof AuthenticatedUser) || !((AuthenticatedUser) authUser).isSuperuser()) {
+            return error(Status.FORBIDDEN, "Erase can only be called by superusers.");
+        }
+
+        // Check if file is published
+        boolean isPublished = false;
+        for (FileMetadata fm : dataFile.getFileMetadatas()) {
+            if (fm.getDatasetVersion().isReleased()) {
+                isPublished = true;
+                break;
+            }
+        }
+        if (!isPublished) {
+            return error(BAD_REQUEST, "Cannot erase file: the DataFile has not been published. Use delete for draft-only files.");
+        }
+
+        // Check if harvested
+        if (dataFile.isHarvested()) {
+            return error(BAD_REQUEST, "Cannot erase harvested files. Erasure is not supported on harvested datasets.");
+        }
+
+        // Execute the erasure command
+        try {
+            EraseDataFileCommand cmd = new EraseDataFileCommand(dataFile, dvRequest, reason);
+            commandEngine.submit(cmd);
+
+            // Clear the token
+            erasureTokenCache.remove(confirmationToken);
+
+            // Optionally mask the label
+            if (maskLabel) {
+                String maskString = "*******";
+                for (FileMetadata fm : dataFile.getFileMetadatas()) {
+                    fm.setLabel(maskString);
+                    em.merge(fm);
+                }
+            }
+
+            // Build response
+            JsonObjectBuilder responseBuilder = JsonUtil.createObjectBuilder()
+                    .add("status", "erased")
+                    .add("fileId", dataFile.getId());
+            if (dataFile.getGlobalId() != null) {
+                responseBuilder.add("persistentId", dataFile.getGlobalId().asString());
+            }
+            if (cmd.isManualDeletionRequired()) {
+                responseBuilder.add("note", "Manual deletion required: The main file must be deleted manually from the Globus endpoint. The storage identifier is retained for locating the file.");
+            } else if (cmd.isRemoteOverlay()) {
+                responseBuilder.add("note", "Remote overlay file: Only cached auxiliary files were deleted. The main file remains at the remote location.");
+            }
+
+            return ok(responseBuilder.build());
+
+        } catch (CommandException ex) {
+            // Clear the token on failure
+            erasureTokenCache.remove(confirmationToken);
+            return error(BAD_REQUEST, "Erasure failed: " + ex.getMessage());
+        } catch (Exception ex) {
+            // Clear the token on failure
+            erasureTokenCache.remove(confirmationToken);
+            logger.log(Level.SEVERE, "Erasure failed for file " + dataFile.getId(), ex);
+            return error(Status.INTERNAL_SERVER_ERROR, "Erasure failed: " + ex.getMessage().replace("\n", " "));
+        }
+    }
     
     //Much of this code is taken from the replace command, 
     //simplified as we aren't actually switching files
