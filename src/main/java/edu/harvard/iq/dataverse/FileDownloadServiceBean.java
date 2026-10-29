@@ -506,9 +506,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
+        Long guestbookResponseId = guestbookResponse != null ? guestbookResponse.getId() :  null;
         DatasetVersion version = fmd.getDatasetVersion();
         if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted())
-                || (FileUtil.isActivelyEmbargoed(fmd)) || (FileUtil.isRetentionExpired(fmd))) {
+                || (FileUtil.isActivelyEmbargoed(fmd)) || (FileUtil.isRetentionExpired(fmd)) || guestbookResponseId != null) {
             apiToken = authService.getValidApiTokenForUser(user);
         }
         DataFile dataFile = null;
@@ -520,7 +521,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
         }
         String localeCode = session.getLocaleCode();
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode, guestbookResponseId);
         // Persist the name of the tool (i.e. "Data Explorer", etc.)
         guestbookResponse.setEventType(externalTool.getDisplayName());
         PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
