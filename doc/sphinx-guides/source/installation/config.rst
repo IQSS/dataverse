@@ -231,8 +231,6 @@ The :ref:`samesite-cookie-attribute` set to ``Lax`` (the Dataverse default) alre
 
 With hardening enabled, a session-authenticated API request from another site is rejected. A request that carries no ``Origin`` or ``Referer`` header at all -- such as a bookmarked or shared link opened directly -- is treated as an anonymous (guest) request rather than being rejected outright. This means public files remain accessible from shared links, while accessing a restricted file will fail unless the request originates from the Dataverse site.
 
-The check does not protect against cross-site scripting (XSS). A script running on the Dataverse site itself passes it, so with both flags enabled an XSS flaw can call any API endpoint the logged-in user is authorized for, not only the Access API. Keeping the ``JSESSIONID`` cookie ``HttpOnly`` remains important, so that such a script cannot read the cookie and reuse it elsewhere.
-
 
 .. _dataverse.cors:
 
