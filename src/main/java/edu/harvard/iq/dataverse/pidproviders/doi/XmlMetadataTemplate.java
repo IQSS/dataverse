@@ -1285,10 +1285,13 @@ public class XmlMetadataTemplate {
             dv = df.getOwner().getLatestVersionForCopy();
 
             closed = df.isRestricted();
+        } else {
+            var msg = "Expected Dataset or DataFile but got " + dvObject.getClass().getName();
+            logger.warning(msg);
+            throw new RuntimeException(msg);
         }
-        TermsOfUseAndAccess terms = dv.getTermsOfUseAndAccess();
-        boolean requestsAllowed = terms.isFileAccessRequest();
-        License license = terms.getLicense();
+        boolean requestsAllowed = dv.getTermsOfAccess().isFileAccessRequest();
+        License license = dv.getDefaultTermsOfUseOrLicense().getLicense();
 
         if (requestsAllowed && closed) {
             xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/restrictedAccess");
@@ -1372,7 +1375,7 @@ public class XmlMetadataTemplate {
                                 }
                             }
                         } else {
-                            
+
                             // No label or notice info - we'll still add a pointer to the project
                             xmlw.writeStartElement("rights"); // <rights>
                             xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv
@@ -1423,7 +1426,7 @@ public class XmlMetadataTemplate {
         }
         xmlw.writeEndElement(); // </rights>
     }
-    
+
     private void writeLocalContextLabelRightsElement(XMLStreamWriter xmlw, String projectUrl, JsonObject labelObject) throws XMLStreamException {
         xmlw.writeStartElement("rights"); // <rights>
         xmlw.writeAttribute("rightsURI", projectUrl); // repeated in @id in evv

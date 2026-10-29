@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.Column;
 import jakarta.persistence.ColumnResult;
@@ -46,6 +45,7 @@ import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.persistence.annotations.BatchFetch;
 import org.eclipse.persistence.annotations.BatchFetchType;
 
@@ -151,6 +151,10 @@ public class FileMetadata implements Serializable {
     @BatchFetch(BatchFetchType.IN)
     private DataFile dataFile;
 
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
+    @JoinColumn(name = "termsofuseorlicense_id")
+    private TermsOfUseOrLicense termsOfUseOrLicense;
+
     /**
      * There are two types of provenance types and this "free-form" type is
      * represented in the GUI as text box the user can type into. The other type
@@ -190,10 +194,36 @@ public class FileMetadata implements Serializable {
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
         fmd.setProvFreeForm(getProvFreeForm());
+        if (getTermsOfUseOrLicense()!= null) {
+            // TODO will be null until OptionalFileParams.loadParamsFromJson actually supports file specific licenses,
+            //  see also https://github.com/IQSS/dataverse/issues/12854
+            if (!StringUtils.isEmpty(getTermsOfUseOrLicense().getTermsOfUse())) {
+                // The DB model allows multiple custom TermsOfUse per FileMetadata.
+                // The first implementation will allow only one custom terms of use per DatasetVersion.
+                if (!StringUtils.isEmpty(dsv.getDefaultTermsOfUseOrLicense().getTermsOfUse())) {
+                    // getting here means the default is redefined at file level
+                    fmd.setTermsOfUseOrLicense(dsv.getDefaultTermsOfUseOrLicense());
+                    // when the default changes, it needs to make a copy, otherwise te files changes along
+                }
+                else {
+                    fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense().copyTermsOfUseOrLicense());
+                    // A new DatasetVersion should be able to define new terms of use for the file metadata.
+                    // TODO we need the same copy for all files in the new dataset version, not a copy for each fileMetadata
+                }
+            }
+            else {
+                fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense().copyTermsOfUseOrLicense());
+                // The DB model allows multiple custom TermsOfUse per FileMetadata.
+                // The first implementation will allow only one custom terms of use per DatasetVersion.
+                // A new DatasetVersion should be able to define new terms of use for the file metadata.
+                // TODO we need the same copy for all files in the new dataset version, not a copy for each fileMetadata
+            }
+            // TODO fmd.getTermsOfUseOrLicense().setFileMetadata(fmd);
+        }
         dsv.getFileMetadatas().add(fmd);
         return fmd;
     }
-    
+
     public String getLabel() {
         getLabelNoExtension();
         return label;
@@ -854,5 +884,12 @@ public class FileMetadata implements Serializable {
 
         return returnSet;
     }
-    
+
+    public TermsOfUseOrLicense getTermsOfUseOrLicense() {
+        return termsOfUseOrLicense;
+    }
+
+    public void setTermsOfUseOrLicense(TermsOfUseOrLicense termsOfUseOrLicense) {
+        this.termsOfUseOrLicense = termsOfUseOrLicense;
+    }
 }
