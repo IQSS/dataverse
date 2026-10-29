@@ -23,8 +23,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** HTTP contract of GET /api/datasets/{id}/versions/{versionId}/tree (#6691). */
 class DatasetsTreeIT {
@@ -360,9 +362,9 @@ class DatasetsTreeIT {
                 null, null, null, null, null, null, null, null);
         // Either 401 (no auth) or 403 (auth-required filter); both are acceptable.
         int status = response.getStatusCode();
-        assert status == UNAUTHORIZED.getStatusCode()
-                || status == FORBIDDEN.getStatusCode()
-                : "Expected 401 or 403, got " + status;
+        assertTrue(status == UNAUTHORIZED.getStatusCode()
+                || status == FORBIDDEN.getStatusCode(),
+                "Expected 401 or 403, got " + status);
     }
 
     @Test
@@ -477,8 +479,8 @@ class DatasetsTreeIT {
                 .header("Cache-Control", equalTo("private, no-cache"));
         String etag = first.getHeader("ETag");
         assertNotNull(etag, "Published versions must emit an ETag");
-        assert etag.startsWith("\"") && etag.endsWith("\"") : "ETag must be quoted exactly once: " + etag;
-        assert !etag.startsWith("\"\"") : "ETag must not be double-quoted: " + etag;
+        assertTrue(etag.startsWith("\"") && etag.endsWith("\""), "ETag must be quoted exactly once: " + etag);
+        assertFalse(etag.startsWith("\"\""), "ETag must not be double-quoted: " + etag);
 
         // Echo the ETag back exactly as received (the wire-quoted form) —
         // this is what a real HTTP cache sends in If-None-Match.
