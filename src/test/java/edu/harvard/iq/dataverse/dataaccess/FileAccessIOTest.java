@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.function.Predicate;
@@ -359,5 +360,17 @@ public class FileAccessIOTest {
 
         assertTrue(deleted.isEmpty());
         assertTrue(referenced.exists());
+    }
+
+    @Test
+    public void testCleanUp_leavesFilesOfUnknownAgeAlone() throws IOException {
+        // A dangling link is listed, but its modification time cannot be read.
+        Path dangling = Path.of("/tmp/files/tmp/dataset/orphan-undated");
+        Files.createSymbolicLink(dangling, Path.of("/tmp/files/tmp/dataset/no-such-target"));
+
+        List<String> deleted = datasetAccess.cleanUp(ORPHANS, Duration.ofDays(7), false);
+
+        assertTrue(deleted.isEmpty());
+        assertTrue(Files.isSymbolicLink(dangling));
     }
 }
