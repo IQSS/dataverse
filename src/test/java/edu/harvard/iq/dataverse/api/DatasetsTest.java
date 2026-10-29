@@ -3,16 +3,40 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@LocalJvmSettings
 public class DatasetsTest {
+
+    @Test
+    public void testCleanStorageDryRunUnlessExplicitlyFalse() {
+        assertTrue(Datasets.isCleanStorageDryRun(null), "omitting dryrun must not delete");
+        assertTrue(Datasets.isCleanStorageDryRun(true));
+        assertFalse(Datasets.isCleanStorageDryRun(false));
+    }
+
+    @Test
+    public void testCleanStorageMinimumAgeDefault() {
+        assertEquals(Duration.ofDays(7), Datasets.getCleanStorageMinimumAge());
+    }
+
+    @Test
+    @JvmSetting(key = JvmSettings.CLEAN_STORAGE_MIN_AGE_DAYS, value = "30")
+    public void testCleanStorageMinimumAgeSetting() {
+        assertEquals(Duration.ofDays(30), Datasets.getCleanStorageMinimumAge());
+    }
 
     /**
      * Test cleanup filter

@@ -3432,8 +3432,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN, "Access denied!");
         }
 
-        // Reporting is the default: deleting requires asking for it explicitly.
-        boolean doDryRun = dryrun == null || dryrun.booleanValue();
+        boolean doDryRun = isCleanStorageDryRun(dryrun);
 
         // check if no legacy files are present
         Set<String> datasetFilenames = getDatasetFilenames(dataset);
@@ -3501,7 +3500,12 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
-    private static Duration getCleanStorageMinimumAge() {
+    /** Reporting is the default: deleting requires asking for it explicitly. */
+    static boolean isCleanStorageDryRun(Boolean dryrun) {
+        return dryrun == null || dryrun.booleanValue();
+    }
+
+    static Duration getCleanStorageMinimumAge() {
         return Duration.ofDays(JvmSettings.CLEAN_STORAGE_MIN_AGE_DAYS.lookup(Integer.class));
     }
 
