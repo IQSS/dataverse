@@ -742,9 +742,9 @@ public class Datasets extends AbstractApiBean {
         JsonArrayBuilder items = JsonUtil.createArrayBuilder();
         for (TreeItem item : page.items) {
             JsonObjectBuilder ob = JsonUtil.createObjectBuilder()
-                    .add("type", item.type)
-                    .add("name", item.name)
-                    .add("path", item.path);
+                    .add("type", item.type())
+                    .add("name", item.name())
+                    .add("path", item.path());
             if (item instanceof FolderItem folder) {
                 ob.add("counts", jsonFolderCounts(folder));
             } else if (item instanceof FileItem file) {
@@ -769,28 +769,28 @@ public class Datasets extends AbstractApiBean {
 
     private static JsonObjectBuilder jsonFolderCounts(FolderItem folder) {
         return JsonUtil.createObjectBuilder()
-                .add("files", folder.fileCount)
-                .add("folders", folder.folderCount)
-                .add("bytes", folder.bytes)
-                .add("restricted", folder.restrictedCount)
-                .add("embargoed", folder.embargoedCount)
-                .add("retentionExpired", folder.retentionExpiredCount);
+                .add("files", folder.fileCount())
+                .add("folders", folder.folderCount())
+                .add("bytes", folder.bytes())
+                .add("restricted", folder.restrictedCount())
+                .add("embargoed", folder.embargoedCount())
+                .add("retentionExpired", folder.retentionExpiredCount());
     }
 
     private static void addFileFields(JsonObjectBuilder ob, FileItem file) {
-        ob.add("id", file.id).add("size", file.size);
-        if (file.contentType != null) {
-            ob.add("contentType", file.contentType);
+        ob.add("id", file.id()).add("size", file.size());
+        if (file.contentType() != null) {
+            ob.add("contentType", file.contentType());
         }
-        if (file.access != null) {
-            ob.add("access", file.access);
+        if (file.access() != null) {
+            ob.add("access", file.access());
         }
-        if (file.checksumType != null && file.checksumValue != null) {
+        if (file.checksumType() != null && file.checksumValue() != null) {
             ob.add("checksum", JsonUtil.createObjectBuilder()
-                    .add("type", file.checksumType)
-                    .add("value", file.checksumValue));
+                    .add("type", file.checksumType())
+                    .add("value", file.checksumValue()));
         }
-        ob.add("downloadUrl", file.downloadUrl);
+        ob.add("downloadUrl", file.downloadUrl());
     }
 
     @GET

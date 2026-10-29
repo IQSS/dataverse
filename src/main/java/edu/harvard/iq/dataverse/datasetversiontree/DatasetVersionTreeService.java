@@ -114,63 +114,36 @@ public class DatasetVersionTreeService {
         }
     }
 
-    public abstract static class TreeItem {
-        public final String type;
-        public final String name;
-        public final String path;
+    public sealed interface TreeItem permits FolderItem, FileItem {
+        String type();
 
-        protected TreeItem(String type, String name, String path) {
-            this.type = type;
-            this.name = name;
-            this.path = path;
+        String name();
+
+        String path();
+    }
+
+    /**
+     * @param bytes subtree bytes as served by the default {@code downloadUrl}; for ingested tabular files that is the TSV
+     * @param restrictedCount subtree file counts per access bucket, with {@code embargoedCount} and
+     *        {@code retentionExpiredCount}; public is {@code fileCount} minus the three
+     */
+    public record FolderItem(String name, String path,
+                             long fileCount, long folderCount, long bytes,
+                             long restrictedCount, long embargoedCount,
+                             long retentionExpiredCount) implements TreeItem {
+        @Override
+        public String type() {
+            return "folder";
         }
     }
 
-    public static class FolderItem extends TreeItem {
-        public final long fileCount;
-        public final long folderCount;
-        /** Subtree bytes as served by the default {@code downloadUrl}; for ingested tabular files that is the TSV. */
-        public final long bytes;
-        /** Subtree file counts per access bucket; public is {@code fileCount} minus the three. */
-        public final long restrictedCount;
-        public final long embargoedCount;
-        public final long retentionExpiredCount;
-
-        public FolderItem(String name, String path,
-                          long fileCount, long folderCount, long bytes,
-                          long restrictedCount, long embargoedCount,
-                          long retentionExpiredCount) {
-            super("folder", name, path);
-            this.fileCount = fileCount;
-            this.folderCount = folderCount;
-            this.bytes = bytes;
-            this.restrictedCount = restrictedCount;
-            this.embargoedCount = embargoedCount;
-            this.retentionExpiredCount = retentionExpiredCount;
-        }
-    }
-
-    public static class FileItem extends TreeItem {
-        public final long id;
-        public final long size;
-        public final String contentType;
-        public final String access;
-        public final String checksumType;
-        public final String checksumValue;
-        public final String downloadUrl;
-
-        public FileItem(long id, String name, String path, long size,
-                        String contentType, String access,
-                        String checksumType, String checksumValue,
-                        String downloadUrl) {
-            super("file", name, path);
-            this.id = id;
-            this.size = size;
-            this.contentType = contentType;
-            this.access = access;
-            this.checksumType = checksumType;
-            this.checksumValue = checksumValue;
-            this.downloadUrl = downloadUrl;
+    public record FileItem(long id, String name, String path, long size,
+                           String contentType, String access,
+                           String checksumType, String checksumValue,
+                           String downloadUrl) implements TreeItem {
+        @Override
+        public String type() {
+            return "file";
         }
     }
 
@@ -256,12 +229,12 @@ public class DatasetVersionTreeService {
      */
     private static TreeCursor nextCursor(Slice<FolderItem> folders, Slice<FileItem> files) {
         if (folders.hasMore()) {
-            return TreeCursor.folders(folders.last().name);
+            return TreeCursor.folders(folders.last().name());
         }
         if (files.hasMore()) {
             return files.rows().isEmpty()
-                    ? TreeCursor.folders(folders.last().name)
-                    : TreeCursor.files(files.last().name, files.last().id);
+                    ? TreeCursor.folders(folders.last().name())
+                    : TreeCursor.files(files.last().name(), files.last().id());
         }
         return null;
     }

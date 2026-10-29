@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Fil
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.FolderItem;
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Include;
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.Order;
+import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreeItem;
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreePage;
 import edu.harvard.iq.dataverse.datasetversiontree.DatasetVersionTreeService.TreeQuery;
 import jakarta.persistence.EntityManager;
@@ -108,7 +109,7 @@ class DatasetVersionTreeServicePagingTest {
     }
 
     private List<String> names(TreePage page) {
-        return page.items.stream().map(i -> i.name).toList();
+        return page.items.stream().map(TreeItem::name).toList();
     }
 
     @Test
@@ -123,13 +124,13 @@ class DatasetVersionTreeServicePagingTest {
         assertEquals(4, page.approximateCount);
         assertEquals(2, executedSql.size(), "no count queries on a complete page");
         FolderItem data = (FolderItem) page.items.get(0);
-        assertEquals("data", data.path);
-        assertEquals(300L, data.bytes);
+        assertEquals("data", data.path());
+        assertEquals(300L, data.bytes());
         FileItem a = (FileItem) page.items.get(2);
-        assertEquals("a.txt", a.path);
-        assertEquals("MD5", a.checksumType);
-        assertEquals("/api/access/datafile/1", a.downloadUrl);
-        assertNull(((FileItem) page.items.get(3)).checksumType);
+        assertEquals("a.txt", a.path());
+        assertEquals("MD5", a.checksumType());
+        assertEquals("/api/access/datafile/1", a.downloadUrl());
+        assertNull(((FileItem) page.items.get(3)).checksumType());
     }
 
     @Test
@@ -191,10 +192,10 @@ class DatasetVersionTreeServicePagingTest {
 
         TreePage page = list("a_b/c%", 10, null, Include.ALL, true);
 
-        assertEquals("a_b/c%/sub", page.items.get(0).path);
-        assertEquals("a_b/c%/f.txt", page.items.get(1).path);
-        assertEquals("/api/access/datafile/3?format=original", ((FileItem) page.items.get(1)).downloadUrl);
-        assertEquals("SHA-256", ((FileItem) page.items.get(1)).checksumType);
+        assertEquals("a_b/c%/sub", page.items.get(0).path());
+        assertEquals("a_b/c%/f.txt", page.items.get(1).path());
+        assertEquals("/api/access/datafile/3?format=original", ((FileItem) page.items.get(1)).downloadUrl());
+        assertEquals("SHA-256", ((FileItem) page.items.get(1)).checksumType());
         assertTrue(executedSql.get(0).contains("ESCAPE"));
         assertEquals("a\\_b/c\\%/%", boundParams.get(0).get(1));
     }

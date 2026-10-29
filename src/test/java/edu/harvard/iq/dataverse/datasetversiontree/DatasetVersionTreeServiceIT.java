@@ -84,16 +84,16 @@ class DatasetVersionTreeServiceIT {
                 var first = service.listChildren(fixture.currentVersion(),
                         new TreeQuery(parent, 1, null, Include.ALL, Order.NAME_AZ, false));
                 assertEquals(1, first.items.size());
-                assertEquals("aa", first.items.getFirst().name);
-                assertEquals(parent + "/aa", first.items.getFirst().path);
+                assertEquals("aa", first.items.getFirst().name());
+                assertEquals(parent + "/aa", first.items.getFirst().path());
                 assertEquals(2, first.approximateCount);
                 assertNotNull(first.nextCursor);
 
                 var second = service.listChildren(fixture.currentVersion(),
                         new TreeQuery(parent, 1, first.nextCursor, Include.ALL, Order.NAME_AZ, false));
                 assertEquals(1, second.items.size());
-                assertEquals("ba", second.items.getFirst().name);
-                assertEquals(parent + "/ba", second.items.getFirst().path);
+                assertEquals("ba", second.items.getFirst().name());
+                assertEquals(parent + "/ba", second.items.getFirst().path());
                 assertEquals(2, second.approximateCount);
                 assertNull(second.nextCursor);
             } finally {
@@ -130,18 +130,18 @@ class DatasetVersionTreeServiceIT {
                     assertEquals(2, page.items.size());
                     assertNull(page.nextCursor);
                     FileItem tabular = assertInstanceOf(FileItem.class, page.items.get(0));
-                    assertEquals(originals ? expectedType : "text/tab-separated-values", tabular.contentType);
-                    assertEquals("file-0.tab", tabular.name);
-                    assertEquals("file-0.tab", tabular.path);
-                    assertEquals(originals ? 2048L : 1024L, tabular.size);
-                    assertEquals("public", tabular.access);
-                    assertEquals(originals ? "fixture-checksum-0" : null, tabular.checksumValue);
+                    assertEquals(originals ? expectedType : "text/tab-separated-values", tabular.contentType());
+                    assertEquals("file-0.tab", tabular.name());
+                    assertEquals("file-0.tab", tabular.path());
+                    assertEquals(originals ? 2048L : 1024L, tabular.size());
+                    assertEquals("public", tabular.access());
+                    assertEquals(originals ? "fixture-checksum-0" : null, tabular.checksumValue());
 
                     FileItem regular = assertInstanceOf(FileItem.class, page.items.get(1));
-                    assertEquals("text/plain", regular.contentType);
-                    assertEquals("file-1.txt", regular.name);
-                    assertEquals(1025L, regular.size);
-                    assertEquals("fixture-checksum-1", regular.checksumValue);
+                    assertEquals("text/plain", regular.contentType());
+                    assertEquals("file-1.txt", regular.name());
+                    assertEquals(1025L, regular.size());
+                    assertEquals("fixture-checksum-1", regular.checksumValue());
                 }
             } finally {
                 em.getTransaction().rollback();
