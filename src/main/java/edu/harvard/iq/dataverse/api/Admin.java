@@ -2038,8 +2038,8 @@ public class Admin extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "Unknown algorithm");
         }
         logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
-        logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
-                + alg);
+        logger.info("Hashes not created with " + cType + " will be verified, and, if valid, replaced with a hash using "
+                + cType);
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser())
