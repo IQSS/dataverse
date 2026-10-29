@@ -3979,7 +3979,9 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.api.signup.orcid-redirect-uris
 ++++++++++++++++++++++++++++++++++++++++
 
-A comma-separated list of the exact URLs that ORCID may redirect to when a new user connects their ORCID iD while signing up through the :ref:`sign-up-builtin-user` API, typically the SPA's sign-up page, e.g. ``https://dataverse.example.edu/spa/sign-up``. Each URL must also be registered as a redirect URI of the ORCID client configured in Dataverse. If unset, connecting an ORCID iD during sign-up is not possible.
+A comma-separated list of the exact URLs that ORCID may redirect to when a new user connects their ORCID iD while signing up through the :ref:`sign-up-builtin-user` API, typically the SPA's sign-up page, e.g. ``https://dataverse.example.edu/spa/sign-up``. Each URL must also be registered as a redirect URI of the ORCID client configured in Dataverse.
+
+Only needed when the SPA's sign-up page is not at the default URL: if unset, the only allowed URL is the :ref:`dataverse.siteUrl` followed by ``/modern/sign-up``, e.g. ``https://dataverse.example.edu/modern/sign-up``.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNUP_ORCID_REDIRECT_URIS``.
 

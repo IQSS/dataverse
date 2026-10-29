@@ -194,6 +194,17 @@ class UsersSignUpTest {
     }
 
     @Test
+    @JvmSetting(key = JvmSettings.API_SIGNUP_ORCID_REDIRECT_URIS, method = "noValue")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://dataverse.example.edu")
+    void authorizeAllowsOnlyTheModernSignUpPageOfTheSiteWhenNoRedirectUrisAreSet() {
+        when(orcidProvider.buildAuthzUrl(anyString(), anyString())).thenReturn("https://orcid.org/oauth/authorize?x=1");
+
+        assertEquals(200, users.getOrcidSignUpAuthorizationUrl("https://dataverse.example.edu/modern/sign-up").getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI).getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl("https://dataverse.example.edu/modern/sign-up/").getStatus());
+    }
+
+    @Test
     void orcidEndpointsReturnNotFoundWhenOrcidIsNotConfigured() {
         when(authSvc.getOrcidAuthenticationProvider()).thenReturn(null);
 
@@ -276,6 +287,10 @@ class UsersSignUpTest {
 
     private static String signUpJson(String extraFields) {
         return String.format(SIGN_UP_JSON, extraFields);
+    }
+
+    static String noValue() {
+        return null;
     }
 
     private static String validState() {

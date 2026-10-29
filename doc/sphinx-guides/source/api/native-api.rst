@@ -6501,7 +6501,7 @@ Optionally, you may use a third query parameter "sendEmailNotification=false" to
 Sign Up as a Builtin User
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-New users can create their own builtin account without an API token or the ``:BuiltinUsersKey``. This is the API equivalent of the "Sign Up" page and is used by the modern, React-based, Single Page Application (SPA) sign-up form.
+New users can create their own builtin account without an API token or the ``:BuiltinUsersKey``.
 
 The endpoint is only available when the :ref:`dataverse.feature.api-builtin-user-signup` feature flag is enabled and :ref:`conf-allow-signup` is not set to "false". Requests are rate-limited per client IP address, see :ref:`dataverse.api.signup.rate-limit-per-hour`.
 
@@ -6510,10 +6510,10 @@ The endpoint is only available when the :ref:`dataverse.feature.api-builtin-user
   export SERVER_URL=https://demo.dataverse.org
 
   curl -X POST -H "Content-Type: application/json" "$SERVER_URL/api/users/signup" --data '{
-    "username": "alovelace",
-    "firstName": "Ada",
-    "lastName": "Lovelace",
-    "emailAddress": "ada@example.edu",
+    "username": "dataverse",
+    "firstName": "Test",
+    "lastName": "Dataverse",
+    "emailAddress": "dataverse@example.edu",
     "password": "Str0ngPassw0rd",
     "affiliation": "Harvard University",
     "position": "Researcher",
@@ -6529,7 +6529,7 @@ Connecting an ORCID iD While Signing Up
 
 When an ORCID OAuth2 provider is configured (see :doc:`/installation/orcid`; it may be registered with ``"enabled": false`` so it is not offered as a login option), a new user can authenticate their ORCID iD during sign-up, and it is saved to their account as an authenticated ORCID. This takes three requests, none of which need an API token:
 
-1. ``GET $SERVER_URL/api/users/signup/orcid/authorize?redirectUri=$REDIRECT_URI`` returns an ``authorizationUrl``. Send the user's browser there. ``$REDIRECT_URI`` must be listed in :ref:`dataverse.api.signup.orcid-redirect-uris`.
+1. ``GET $SERVER_URL/api/users/signup/orcid/authorize?redirectUri=$REDIRECT_URI`` returns an ``authorizationUrl``. Send the user's browser there. ``$REDIRECT_URI`` must be ``$SERVER_URL/modern/sign-up``, or one of the URLs listed in :ref:`dataverse.api.signup.orcid-redirect-uris` when that setting is used.
 2. After the user signs in at ORCID, ORCID redirects back to ``$REDIRECT_URI`` with ``code`` and ``state`` query parameters. Post them, with the same ``redirectUri``, to ``POST $SERVER_URL/api/users/signup/orcid``:
 
    .. code-block:: bash

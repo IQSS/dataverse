@@ -2,9 +2,7 @@
 
 New users can now create their own builtin account through a new API endpoint, `POST /api/users/signup`, which is used by the modern Single Page Application (SPA) sign-up form. The endpoint applies the same validation as the "Sign Up" page, honors the `:AllowSignUp` setting, and is rate-limited per client IP address.
 
-New users can also connect their ORCID iD while signing up. When an ORCID OAuth2 provider is configured (it can be registered with `"enabled": false`), the new `GET /api/users/signup/orcid/authorize` and `POST /api/users/signup/orcid` endpoints authenticate the user's ORCID iD, and the sign-up request saves it to the new account. The allowed redirect URLs are set with `dataverse.api.signup.orcid-redirect-uris`. The ORCID response includes the affiliation and position from the user's current employment and, when ORCID identifies that organization with a ROR ID, an `affiliationRor`.
-
-Affiliation and position are now also read correctly from ORCID records when an ORCID API v3.0 user endpoint is configured, which also affects "Log In with ORCID". The current employment (the one without an end date and with the latest start date) is used instead of the first one listed.
+New users can also connect their ORCID iD while signing up. When an ORCID OAuth2 provider is configured (it can be registered with `"enabled": false`), the new `GET /api/users/signup/orcid/authorize` and `POST /api/users/signup/orcid` endpoints authenticate the user's ORCID iD, and the sign-up request saves it to the new account. By default, ORCID redirects back to the site URL followed by `/modern/sign-up`; other redirect URLs can be allowed with `dataverse.api.signup.orcid-redirect-uris`. The ORCID response includes the affiliation and position from the user's current employment and, when ORCID identifies that organization with a ROR ID, an `affiliationRor`.
 
 The JSON representation of a user, for example from `GET /api/users/:me`, now includes `authenticatedOrcid` when the user has linked an ORCID iD.
 
