@@ -1344,7 +1344,7 @@ public class Datasets extends AbstractApiBean {
             @PathParam("id") String id,
             @Parameter(description = "Publication type: major, minor, or updatecurrent.", required = true)
             @QueryParam("type") String type ) {
-        logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
+        logger.info("publishDataseUsingGetDeprecated called on id " + id.replaceAll("[\r\n]", "_") + ". Encourage use of POST rather than GET, which is deprecated.");
         return publishDataset(crc, id, type, false);
     }
 

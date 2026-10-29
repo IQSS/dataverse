@@ -1790,7 +1790,7 @@ public class Admin extends AbstractApiBean {
     public Response reregisterHdlToPID(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String id) {
-        logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
+        logger.info("Starting to reregister  " + id.replaceAll("[\r\n]", "_") + " Dataset Id. (from hdl to doi)" + new Date());
         try {
 
             
@@ -1833,7 +1833,7 @@ public class Admin extends AbstractApiBean {
     public Response registerDataFile(@Context ContainerRequestContext crc,
             @Parameter(description = "Data file id or persistent identifier.", required = true)
             @PathParam("id") String id) {
-        logger.info("Starting to register  " + id + " file id. " + new Date());
+        logger.info("Starting to register  " + id.replaceAll("[\r\n]", "_") + " file id. " + new Date());
 
         try {
             User u = getRequestUser(crc);
