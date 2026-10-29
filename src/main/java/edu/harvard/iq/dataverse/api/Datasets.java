@@ -214,7 +214,7 @@ public class Datasets extends AbstractApiBean {
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
-    @Inject
+    @EJB
     DatasetVersionTreeService datasetVersionTreeService;
 
     @Inject
