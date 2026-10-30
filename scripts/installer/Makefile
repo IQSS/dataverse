@@ -1,5 +1,8 @@
+VERSION_NUMBER:=$(shell grep -m1 '<revision>' ../../modules/dataverse-parent/pom.xml | sed 's/ *<\/*revision>//g')
 INSTALLER_ZIP_DIR=dvinstall
-DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse.war
+INSTALLER_ZIP=dvinstall-${VERSION_NUMBER}.zip
+BUILT_WAR_FILE=../../target/dataverse-${VERSION_NUMBER}.war
+DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse-${VERSION_NUMBER}.war
 GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/as-setup.sh
 API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh ${INSTALLER_ZIP_DIR}/post-install-api-block.sh
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
@@ -8,16 +11,16 @@ SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/update-fields.s
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 PYTHON_FILES=${INSTALLER_ZIP_DIR}/README_python.txt ${INSTALLER_ZIP_DIR}/installConfig.py ${INSTALLER_ZIP_DIR}/installUtils.py ${INSTALLER_ZIP_DIR}/install.py ${INSTALLER_ZIP_DIR}/installAppServer.py ${INSTALLER_ZIP_DIR}/requirements.txt ${INSTALLER_ZIP_DIR}/default.config ${INSTALLER_ZIP_DIR}/interactive.config
 
-installer:	dvinstall.zip
+installer:	${INSTALLER_ZIP}
 
 clean: 
-	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
+	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip dvinstall-*.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
+${INSTALLER_ZIP}:	${GLASSFISH_SETUP_SCRIPT} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
+	zip -r ${INSTALLER_ZIP} ${GLASSFISH_SETUP_SCRIPT} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
 	@echo 
-	@echo "Done!"
+	@echo "Done! Created ${INSTALLER_ZIP}"
 
 ${INSTALLER_ZIP_DIR}:
 	mkdir -p ${INSTALLER_ZIP_DIR}
@@ -26,15 +29,13 @@ ${INSTALL_SCRIPT}: install ${INSTALLER_ZIP_DIR}
 	@echo copying the installer script
 	/bin/cp install ${INSTALLER_ZIP_DIR}
 
-${DISTRIBUTION_WAR_FILE}: 
+${DISTRIBUTION_WAR_FILE}: ${INSTALLER_ZIP_DIR}
 	@echo copying war file...
-	@VERSION_NUMBER=`grep -m1 '<revision>' ../../modules/dataverse-parent/pom.xml | sed 's/ *<\/*revision>//g'`; export VERSION_NUMBER; \
-	BUILT_WAR_FILE=../../target/dataverse-$$VERSION_NUMBER.war; export BUILT_WAR_FILE; \
-	if [ -f $$BUILT_WAR_FILE ]; \
+	@if [ -f ${BUILT_WAR_FILE} ]; \
 	then \
-		/bin/cp $$BUILT_WAR_FILE ${DISTRIBUTION_WAR_FILE}; \
+		/bin/cp ${BUILT_WAR_FILE} ${DISTRIBUTION_WAR_FILE}; \
 	else \
-		echo "ERROR: can't find application .war file ($${BUILT_WAR_FILE})!"; \
+		echo "ERROR: can't find application .war file (${BUILT_WAR_FILE})!"; \
 		echo "Build the Dataverse application war file, then try again."; \
 		exit 1; \
 	fi

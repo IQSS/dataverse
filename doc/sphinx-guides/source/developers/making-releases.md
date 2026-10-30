@@ -247,7 +247,7 @@ Go to <https://github.com/IQSS/dataverse/actions/workflows/generate_war_file.yml
 
 The build number will appear in `/api/info/version` (along with the commit mentioned above) from a running installation (e.g. `{"version":"6.10.1","build":"master-300d5b5"}`).
 
-## Build Installer (dvinstall.zip)
+## Build Installer (dvinstall-VERSION.zip)
 
 In a git checkout of the source, switch to the master branch and pull the latest.
 
@@ -271,7 +271,7 @@ make clean
 make
 ```
 
-A zip file called `dvinstall.zip` should be produced.
+A zip file named after the release version, such as `dvinstall-6.12.1.zip`, should be produced. The version number is taken from `modules/dataverse-parent/pom.xml`. The war file inside the installer keeps its versioned name (e.g. `dataverse-6.12.1.war`), so new installations deploy the application as `dataverse-VERSION`, the same name used for upgrades.
 
 ## Create a Draft Release on GitHub
 
