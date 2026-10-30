@@ -74,11 +74,13 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                 logger.info("Package file detected - physical deletion handled by caller for file " + dataFile.getId());
             } else {
                 try {
+                    // Get storage location for direct access deletion
                     StorageIO<DataFile> storageIO = dataFile.getStorageIO();
                     if (storageIO != null) {
                         storageIO.open();
+                        String storageLocation = storageIO.getStorageLocation();
 
-                        // Delete auxiliary files first
+                        // Delete auxiliary files first (uses getStorageIO which has dvObject set)
                         try {
                             storageIO.deleteAllAuxObjects();
                             logger.log(Level.FINE, "Deleted auxiliary files for DataFile {0}", dataFile.getId());
@@ -87,22 +89,24 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                                     new Object[]{dataFile.getId(), ioex.getMessage()});
                         }
 
-                        // Delete the main file if the store is accessible by Dataverse
+                        // Delete the main file if the store is writable by Dataverse
+                        // Use getDirectStorageIO for deletion since delete() requires isDirectAccess()
                         if (!manualDeletionAsserted) {
+                            StorageIO<DvObject> directStorageIO = DataAccess.getDirectStorageIO(storageLocation);
                             boolean physicalFileExists;
                             try {
-                                physicalFileExists = storageIO.exists();
+                                physicalFileExists = directStorageIO.exists();
                             } catch (IOException ioex) {
                                 physicalFileExists = false;
                             }
 
                             if (physicalFileExists) {
                                 try {
-                                    storageIO.delete();
+                                    directStorageIO.delete();
                                     logger.log(Level.FINE, "Deleted physical file for DataFile {0}", dataFile.getId());
                                 } catch (IOException ex) {
                                     throw new CommandExecutionException(
-                                            "Error deleting physical file for DataFile " + dataFile.getId(), ex, this);
+                                            "Error deleting physical file for DataFile " + dataFile.getId() + ": " + ex.getMessage(), ex, this);
                                 }
                             }
                         } else {
@@ -110,9 +114,10 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                             // verify the file is actually gone.
                             String driverId = DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier());
                             if (StorageIO.isDataverseAccessible(driverId)) {
+                                StorageIO<DvObject> directStorageIO = DataAccess.getDirectStorageIO(storageLocation);
                                 boolean physicalFileExists;
                                 try {
-                                    physicalFileExists = storageIO.exists();
+                                    physicalFileExists = directStorageIO.exists();
                                 } catch (IOException ioex) {
                                     logger.log(Level.WARNING, "Could not verify file existence for DataFile {0}: {1}",
                                             new Object[]{dataFile.getId(), ioex.getMessage()});

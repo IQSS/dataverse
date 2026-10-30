@@ -216,7 +216,7 @@ public class Files extends AbstractApiBean {
     /**
      * Replace an Existing File 
      * 
-     * @param datasetId
+     * @param fileIdOrPersistentId
      * @param testFileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
@@ -352,8 +352,8 @@ public class Files extends AbstractApiBean {
 
             try {
                 msgt("as String: " + addFileHelper.getSuccessResult());
-                /**
-                 * @todo We need a consistent, sane way to communicate a human
+                /*
+                  @todo We need a consistent, sane way to communicate a human
                  * readable message to an API client suitable for human
                  * consumption. Imagine if the UI were built in Angular or React
                  * and we want to return a message from the API as-is to the
@@ -376,7 +376,7 @@ public class Files extends AbstractApiBean {
     /**
      * Delete an Existing File 
      * 
-     * @param id file ID or peristent ID
+     * @param fileIdOrPersistentId file ID or peristent ID
      */
     @DELETE
     @AuthRequired
@@ -439,7 +439,7 @@ public class Files extends AbstractApiBean {
      * manuallyErased=true to complete the erasure. The erasure does not proceed until
      * the admin confirms the main file is deleted.
      * 
-     * @param id file ID or persistent ID
+     * @param fileIdOrPersistentId file ID or persistent ID
      * @param jsonBody JSON body with reason and optional confirmationToken and manuallyErased
      */
     @DELETE
@@ -448,14 +448,19 @@ public class Files extends AbstractApiBean {
     @Operation(summary = "Erase a published file",
             description = "Erases a published data file's physical content from storage while retaining the DataFile database record with audit metadata. Requires superuser. Uses two-token confirmation flow.")
     public Response eraseFileInDataset(@Context ContainerRequestContext crc,
-                                        @Parameter(description = "Data file id or persistent identifier.", required = true)
-                                        @PathParam("id") String id,
+                                        @Parameter(description = "Data file fileIdOrPersistentId or persistent identifier.", required = true)
+                                        @PathParam("id") String fileIdOrPersistentId,
                                         String jsonBody) {
         // (1) Get the user from the API key and create request
         User authUser = getRequestUser(crc);
         DataverseRequest dvRequest = createDataverseRequest(authUser);
 
-        // (2) Parse JSON body
+        // (2) Check superuser early — before any other validation or token generation
+        if (!(authUser instanceof AuthenticatedUser) || !((AuthenticatedUser) authUser).isSuperuser()) {
+            return error(Status.FORBIDDEN, "Erase can only be called by superusers.");
+        }
+
+        // (3) Parse JSON body
         String reason = null;
         String confirmationToken = null;
         boolean manuallyErased = false;
@@ -476,30 +481,30 @@ public class Files extends AbstractApiBean {
             }
         }
 
-        // (3) Find the data file
+        // (4) Find the data file
         DataFile dataFile;
         try {
-            dataFile = findDataFileOrDie(id);
+            dataFile = findDataFileOrDie(fileIdOrPersistentId);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
 
-        // (4) Check if already erased
+        // (5) Check if already erased
         if (dataFile.getFileErasure() != null) {
             return error(Status.GONE, "File has already been erased.");
         }
 
-        // (5) Validate reason is provided
+        // (6) Validate reason is provided
         if (reason == null || reason.trim().isEmpty()) {
             return error(BAD_REQUEST, "A reason is required for erasure. Provide it in the JSON body as {\"reason\": \"...\"}");
         }
 
-        // (6) If token provided, perform the erasure
+        // (7) If token provided, perform the erasure
         if (confirmationToken != null && !confirmationToken.isEmpty()) {
             return performFileErasure(dvRequest, dataFile, reason, confirmationToken, manuallyErased);
         }
 
-        // (7) No token - return 202 with confirmation token
+        // (8) No token - return 202 with confirmation token
         String token = java.util.UUID.randomUUID().toString();
         // Store token in a simple cache (5-minute TTL)
         erasureTokenCache.put(token, System.currentTimeMillis() + 5 * 60 * 1000);
@@ -545,12 +550,6 @@ public class Files extends AbstractApiBean {
         if (System.currentTimeMillis() > expiry) {
             erasureTokenCache.remove(confirmationToken);
             return error(BAD_REQUEST, "Confirmation token has expired. Please request a new one.");
-        }
-
-        // Check superuser
-        User authUser = dvRequest.getUser();
-        if (!(authUser instanceof AuthenticatedUser) || !((AuthenticatedUser) authUser).isSuperuser()) {
-            return error(Status.FORBIDDEN, "Erase can only be called by superusers.");
         }
 
         // Check if file is published using isReleased()
