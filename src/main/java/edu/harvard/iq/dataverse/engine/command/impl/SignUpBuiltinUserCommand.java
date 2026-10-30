@@ -77,7 +77,11 @@ public class SignUpBuiltinUserCommand extends AbstractCommand<AuthenticatedUser>
                 false
         );
         if (authenticatedUser == null) {
-            throwIfErrors(Map.of(FIELD_USERNAME, BundleUtil.getStringFromBundle("user.username.taken")));
+            throw new InvalidFieldsCommandException(
+                    BundleUtil.getStringFromBundle("signUpBuiltinUserCommand.errors.invalidFields"),
+                    this,
+                    Map.of(FIELD_USERNAME, BundleUtil.getStringFromBundle("user.username.taken"))
+            );
         }
 
         ctxt.builtinUsers().save(builtinUser);

@@ -63,13 +63,13 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("users")
 @Tag(name = "Users", description = "User account and authenticated user operations.")
 public class Users extends AbstractApiBean {
-
+    
     private static final Logger logger = Logger.getLogger(Users.class.getName());
     static final String DEFAULT_ORCID_SIGN_UP_REDIRECT_PATH = "/modern/sign-up";
 
     @EJB
     CacheFactoryBean cacheFactory;
-
+    
     @POST
     @AuthRequired
     @Path("{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
@@ -83,16 +83,16 @@ public class Users extends AbstractApiBean {
         User u;
         try {
             u = getRequestUser(crc);
-            if (!u.isSuperuser()) {
+            if(!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can merge users"));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-
-        if (null == baseIdentifier || baseIdentifier.isEmpty()) {
+        
+        if(null == baseIdentifier || baseIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
-        } else if (null == consumedIdentifier || consumedIdentifier.isEmpty()) {
+        } else if(null == consumedIdentifier || consumedIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Identifier to merge in is empty.");
         }
 
@@ -107,8 +107,8 @@ public class Users extends AbstractApiBean {
         }
 
         try {
-            execCommand(new MergeInAccountCommand(createDataverseRequest(u), consumedAuthenticatedUser, baseAuthenticatedUser));
-        } catch (Exception e) {
+            execCommand(new MergeInAccountCommand(createDataverseRequest(u), consumedAuthenticatedUser,  baseAuthenticatedUser));
+        } catch (Exception e){
             return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
         }
 
@@ -128,16 +128,17 @@ public class Users extends AbstractApiBean {
         User u;
         try {
             u = getRequestUser(crc);
-            if (!u.isSuperuser()) {
+            if(!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can change userIdentifiers"));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
 
-        if (null == oldIdentifier || oldIdentifier.isEmpty()) {
+        
+        if(null == oldIdentifier || oldIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
-        } else if (null == newIdentifier || newIdentifier.isEmpty()) {
+        } else if(null == newIdentifier || newIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "New identifier provided to change is empty.");
         }
 
@@ -147,14 +148,14 @@ public class Users extends AbstractApiBean {
         }
 
         try {
-            execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(u), authenticatedUser, newIdentifier));
-        } catch (Exception e) {
+            execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(u), authenticatedUser,  newIdentifier));
+        } catch (Exception e){
             return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
         }
 
         return ok("UserIdentifier changed from " + oldIdentifier + " to " + newIdentifier);
     }
-
+    
     @Path("token")
     @AuthRequired
     @DELETE
@@ -163,19 +164,19 @@ public class Users extends AbstractApiBean {
     public Response deleteToken(@Context ContainerRequestContext crc) {
         User u = getRequestUser(crc);
         AuthenticatedUser au;
-
-        try {
-            au = (AuthenticatedUser) u;
-        } catch (ClassCastException e) {
+       
+        try{
+             au = (AuthenticatedUser) u; 
+        } catch (ClassCastException e){ 
             //if we have a non-authenticated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " not eligible for deletion.");
-        }
-
+        }       
+       
         authSvc.removeApiToken(au);
         return ok("Token for " + au.getUserIdentifier() + " deleted.");
-
+        
     }
-
+    
     @Path("token")
     @AuthRequired
     @GET
@@ -196,7 +197,7 @@ public class Users extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-
+    
     @Path("token/recreate")
     @AuthRequired
     @POST
@@ -207,13 +208,14 @@ public class Users extends AbstractApiBean {
             @QueryParam("returnExpiration") boolean returnExpiration) {
         User u = getRequestUser(crc);
 
-        AuthenticatedUser au;
-        try {
-            au = (AuthenticatedUser) u;
-        } catch (ClassCastException e) {
+        AuthenticatedUser au;        
+        try{
+             au = (AuthenticatedUser) u; 
+        } catch (ClassCastException e){ 
             //if we have a non-authenticated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " is not eligible for recreation.");
-        }
+        } 
+        
 
         authSvc.removeApiToken(au);
 
@@ -227,7 +229,7 @@ public class Users extends AbstractApiBean {
 
         return ok(message);
     }
-
+    
     @GET
     @AuthRequired
     @Path(":me")
@@ -288,8 +290,8 @@ public class Users extends AbstractApiBean {
         }
     }
 
-    private List<String> elements = Arrays.asList("roleAssignments", "dataverseCreator", "dataversePublisher", "datasetCreator", "datasetPublisher", "dataFileCreator", "dataFilePublisher", "datasetVersionUsers", "explicitGroups", "guestbookEntries", "savedSearches");
-
+    private List<String> elements = Arrays.asList("roleAssignments","dataverseCreator", "dataversePublisher","datasetCreator", "datasetPublisher","dataFileCreator","dataFilePublisher","datasetVersionUsers","explicitGroups","guestbookEntries", "savedSearches");
+    
     @GET
     @AuthRequired
     @Path("{identifier}/traces/{element}")
@@ -303,11 +305,11 @@ public class Users extends AbstractApiBean {
             @PathParam("element") String element) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            if (!elements.contains(element)) {
+            if(!elements.contains(element)) {
                 throw new BadRequestException("Not a valid element");
             }
             JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, element));
-
+            
             List<Variant> vars = Variant
                     .mediaTypes(MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE)
                     .add()
@@ -315,12 +317,12 @@ public class Users extends AbstractApiBean {
             MediaType requestedType = req.selectVariant(vars).getMediaType();
             if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
                 return ok(jsonObj);
-
+            
             }
-            JsonArray items = null;
+            JsonArray items=null;
             try {
                 items = jsonObj.build().getJsonObject("traces").getJsonObject(element).getJsonArray("items");
-            } catch (Exception e) {
+            } catch(Exception e) {
                 return ok(jsonObj);
             }
             return ok(FileUtil.jsonArrayOfObjectsToCSV(items, items.getJsonObject(0).keySet().toArray(new String[0])), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), element + ".csv");
@@ -363,7 +365,8 @@ public class Users extends AbstractApiBean {
     @Operation(summary = "Registers an OIDC user",
             description = "Registers an OIDC user from the supplied user JSON when API bearer authentication is enabled and a bearer token is present.")
     public Response registerOIDCUser(
-            @RequestBody(description = "User JSON parsed into a new authenticated OIDC user registration.") String body) {
+            @RequestBody(description = "User JSON parsed into a new authenticated OIDC user registration.")
+            String body) {
         if (!FeatureFlags.API_BEARER_AUTH.enabled()) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, BundleUtil.getStringFromBundle("users.api.errors.bearerAuthFeatureFlagDisabled"));
         }
