@@ -947,7 +947,7 @@ public class DatasetsIT {
         Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
         exportFail.prettyPrint();
         exportFail.then().assertThat()
-                .body("message", equalTo("Export Failed"))
+                .body("message", equalTo("More Debugging: wr.getMessage(): Exporter not found"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
@@ -1601,7 +1601,7 @@ public class DatasetsIT {
         Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
         exportFail.prettyPrint();
         exportFail.then().assertThat()
-                .body("message", equalTo("Export Failed"))
+                .body("message", equalTo("More Debugging: wr.getMessage(): Exporter not found"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
