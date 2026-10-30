@@ -947,7 +947,7 @@ public class DatasetsIT {
         Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
         exportFail.prettyPrint();
         exportFail.then().assertThat()
-                .body("message", equalTo("More Debugging: wr.getMessage(): Exporter not found"))
+                .body("message", equalTo("Export Failed"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
@@ -1601,7 +1601,7 @@ public class DatasetsIT {
         Response exportFail = UtilIT.exportDataset(datasetPersistentId, "noSuchExporter", apiToken);
         exportFail.prettyPrint();
         exportFail.then().assertThat()
-                .body("message", equalTo("More Debugging: wr.getMessage(): Exporter not found"))
+                .body("message", equalTo("Export Failed"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
@@ -1629,7 +1629,7 @@ public class DatasetsIT {
        // assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
       //  assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
-                Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPersistentId, "DataCite", apiToken);
+                Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPersistentId, "Datacite", apiToken);
                 System.out.println("::group::--- EXPORT FAILURE DETAILS ---");
 exportDatasetAsDataCite.prettyPrint();
 System.out.println("::endgroup::");
