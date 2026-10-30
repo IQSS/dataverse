@@ -1630,6 +1630,10 @@ public class DatasetsIT {
       //  assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
                 Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPersistentId, "DataCite", apiToken);
+                System.out.println("::group::--- EXPORT FAILURE DETAILS ---");
+exportDatasetAsDataCite.prettyPrint();
+System.out.println("::endgroup::");
+                
       //  exportDatasetAsDataCite.prettyPrint();
         exportDatasetAsDataCite.then().assertThat()
                 .statusCode(OK.getStatusCode());
