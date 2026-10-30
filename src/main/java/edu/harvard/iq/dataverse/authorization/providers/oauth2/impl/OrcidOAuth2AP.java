@@ -21,6 +21,8 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.joining;
 import java.util.stream.IntStream;
@@ -52,7 +54,10 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     static final Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
 
     public static final String PROVIDER_ID = "orcid";
-    
+
+    private static final String ROR_URL_PREFIX = "https://ror.org/";
+    private static final Pattern ROR_ID = Pattern.compile("^(?:https?://ror\\.org/)?(0[a-z0-9]{8})$");
+
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
         this.id=PROVIDER_ID;
         if(userEndpoint != null && userEndpoint.startsWith("https://pub")) {
@@ -90,6 +95,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             if (orgData.isPresent()) {
                 parsed.displayInfo.setAffiliation(orgData.get().getAffiliation());
                 parsed.displayInfo.setPosition(orgData.get().getPosition());
+                parsed.displayInfo.setAffiliationRor(orgData.get().getAffiliationRor());
             }
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Could not get affiliation data from ORCiD due to an IO problem: {0}", ex.getLocalizedMessage());
@@ -285,20 +291,25 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         try ( StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = dbFact.newDocumentBuilder();
             Document doc = db.parse( new InputSource(reader) );
-            String organization = getNodes(doc, "activities:employments", 
-                                  "employment:employment-summary", "employment:organization", "common:name")
-                    .stream().findFirst().map( Node::getTextContent )
-                    .map( String::trim ).orElse(null);
-            
-            String department = getNodes(doc, "activities:employments", "employment:employment-summary", "employment:department-name").stream()
-                                    .findFirst().map( Node::getTextContent ).map( String::trim ).orElse(null);
-            String role = getNodes(doc, "activities:employments", "employment:employment-summary", "employment:role-title").stream()
-                                    .findFirst().map( Node::getTextContent ).map( String::trim ).orElse(null);
-            
+            // v2.x lists employment summaries directly, v3.0 wraps each one in an affiliation group,
+            // and the two use different prefixes for the same elements, so match on local names.
+            List<Node> employments = getEmploymentSummaries(doc);
+            Optional<Node> employment = employments.stream()
+                    .filter(summary -> getChildren(summary, "end-date").isEmpty())
+                    .max(Comparator.comparing(OrcidOAuth2AP::getStartDate))
+                    .or(() -> employments.stream().findFirst());
+
+            Optional<Node> organization = employment.flatMap(summary -> getChild(summary, "organization"));
+            String organizationName = organization.flatMap(org -> getChildText(org, "name")).orElse(null);
+            String department = employment.flatMap(summary -> getChildText(summary, "department-name")).orElse(null);
+            String role = employment.flatMap(summary -> getChildText(summary, "role-title")).orElse(null);
+
             String position = Stream.of(role, department).filter(Objects::nonNull).collect( joining(", "));
-            
-            return new AuthenticatedUserDisplayInfo(null, null, null, organization, position);
-            
+
+            AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(null, null, null, organizationName, position);
+            displayInfo.setAffiliationRor(organization.flatMap(OrcidOAuth2AP::getRorId).orElse(null));
+            return displayInfo;
+
         } catch (SAXException ex) {
             logger.log(Level.SEVERE, "XML error parsing response body from ORCiD: " + ex.getMessage(), ex);
         } catch (IOException ex) {
@@ -307,7 +318,56 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             logger.log(Level.SEVERE, "While parsing the ORCiD response: Bad parse configuration. " + ex.getMessage(), ex);
         }
         
-        return null;   
+        return null;
+    }
+
+    private static List<Node> getEmploymentSummaries(Document doc) {
+        List<Node> summaries = new ArrayList<>();
+        for (Node employments : getChildren(doc, "employments")) {
+            for (Node group : getChildren(employments, "affiliation-group")) {
+                summaries.addAll(getChildren(group, "employment-summary"));
+            }
+            summaries.addAll(getChildren(employments, "employment-summary"));
+        }
+        return summaries;
+    }
+
+    private static String getStartDate(Node employmentSummary) {
+        return getChild(employmentSummary, "start-date")
+                .map(date -> Stream.of("year", "month", "day")
+                        .map(part -> getChildText(date, part).orElse("00"))
+                        .collect(joining("-")))
+                .orElse("");
+    }
+
+    private static Optional<String> getRorId(Node organization) {
+        return getChild(organization, "disambiguated-organization")
+                .filter(disambiguated -> getChildText(disambiguated, "disambiguation-source").filter("ROR"::equalsIgnoreCase).isPresent())
+                .flatMap(disambiguated -> getChildText(disambiguated, "disambiguated-organization-identifier"))
+                .map(ROR_ID::matcher)
+                .filter(Matcher::matches)
+                .map(matcher -> ROR_URL_PREFIX + matcher.group(1));
+    }
+
+    private static List<Node> getChildren(Node node, String localName) {
+        NodeList children = node.getChildNodes();
+        return IntStream.range(0, children.getLength())
+                .mapToObj(children::item)
+                .filter(child -> child.getNodeType() == Node.ELEMENT_NODE && localName.equals(getLocalName(child)))
+                .collect(Collectors.toList());
+    }
+
+    private static Optional<Node> getChild(Node node, String localName) {
+        return getChildren(node, localName).stream().findFirst();
+    }
+
+    private static Optional<String> getChildText(Node node, String localName) {
+        return getChild(node, localName).map(Node::getTextContent).map(String::trim).filter(text -> !text.isEmpty());
+    }
+
+    private static String getLocalName(Node node) {
+        String name = node.getNodeName();
+        return name.substring(name.indexOf(':') + 1);
     }
 
     public String getOrcidUrl(String id) {

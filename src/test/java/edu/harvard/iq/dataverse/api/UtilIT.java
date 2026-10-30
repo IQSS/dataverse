@@ -5065,6 +5065,13 @@ public class UtilIT {
         return response;
     }
 
+    static Response signUpBuiltinUser(String jsonIn) {
+        return given()
+                .body(jsonIn)
+                .contentType(ContentType.JSON)
+                .post("/api/users/signup");
+    }
+
     static Response registerOidcUser(String jsonIn, String bearerToken) {
         return given()
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
