@@ -3272,6 +3272,7 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedNonDownloadableFiles = selectedNonDownloadableFiles;
     }
 
+
     private List<FileMetadata> selectedGlobusTransferableFiles;
 
     public List<FileMetadata> getSelectedGlobusTransferableFiles() {
@@ -3528,7 +3529,7 @@ public class DatasetPage implements java.io.Serializable {
         boolean globusDownloadEnabled = settingsWrapper.isGlobusDownload();
         for (FileMetadata fmd : this.selectedFiles){
             boolean downloadable=this.fileDownloadHelper.canDownloadFile(fmd);
-            
+
             boolean globusTransferable = false;
             if(globusDownloadEnabled) {
                 String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());

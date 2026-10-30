@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.persistence.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
 
@@ -101,6 +103,12 @@ public class FileErasure {
 
     public void setManuallyDeleted(boolean manuallyDeleted) {
         this.manuallyDeleted = manuallyDeleted;
+    }
+
+    public String getFormattedErasedOn() {
+        return java.sql.Timestamp.valueOf(erasedOn.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime())
+                .toLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("MMM d, yyyy 'at' h:mm a").withLocale(BundleUtil.getCurrentLocale()));
     }
 
     @Override

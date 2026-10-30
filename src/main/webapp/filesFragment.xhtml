@@ -543,6 +543,16 @@
               </div>
               <span jsf:rendered="#{empty fileMetadata.dataFile.storageIO.remoteStoreUrl}">#{fileMetadata.dataFile.storageIO.remoteStoreName}</span>
             </div>
+            <div class="bg-danger text-white text-center margin-bottom-half" jsf:rendered="#{not empty fileMetadata.dataFile.fileErasure}">
+                <!-- File Erased -->
+                <span class="glyphicon glyphicon-remove-sign"/>
+                <span> #{bundle['file.erased']}</span>
+                <span jsf:rendered="#{not empty fileMetadata.dataFile.fileErasure.reason}">
+                    <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon"
+                       data-toggle="popover" data-placement="auto top" data-trigger="focus" data-html="true"
+                       data-content="#{bundle['file.erased.reason']}: #{fileMetadata.dataFile.fileErasure.reason}"/>
+                </span>
+            </div>
             <!-- END: FILE LEVEL MSGs -->
                        
             <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}" jsf:rendered="#{showAccessFileButtonGroup}">

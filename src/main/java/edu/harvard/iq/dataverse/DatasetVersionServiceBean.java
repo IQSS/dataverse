@@ -839,7 +839,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.restricted = false "
                         + "AND df.embargo_id is null "
                         + "AND df.retention_id is null "
-                        + "AND df.fileerasure_id is null "
+                        + "AND NOT EXISTS (SELECT 1 FROM fileerasure fe WHERE fe.datafile_id = df.id) "
                         + "AND o.previewImageAvailable = true "
                         + "ORDER BY df.id LIMIT 1;").getSingleResult();
             } catch (Exception ex) {
@@ -867,7 +867,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                             + "AND df.restricted = false "
                             + "AND df.embargo_id is null "
                             + "AND df.retention_id is null "
-                            + "AND df.fileerasure_id is null "
+                            + "AND NOT EXISTS (SELECT 1 FROM fileerasure fe WHERE fe.datafile_id = df.id) "
                             + "AND df.contenttype LIKE 'image/%' "
                             + "AND NOT df.contenttype = 'image/fits' "
                             + "AND df.filesize < " + imageThumbnailSizeLimit + " "
@@ -903,7 +903,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                             + "AND df.restricted = false "
                             + "AND df.embargo_id is null "
                             + "AND df.retention_id is null "
-                            + "AND df.fileerasure_id is null "
+                            + "AND NOT EXISTS (SELECT 1 FROM fileerasure fe WHERE fe.datafile_id = df.id) "
                             + "AND df.contenttype = 'application/pdf' "
                             + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                             + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();

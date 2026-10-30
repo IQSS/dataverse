@@ -327,8 +327,7 @@ public class DataFile extends DvObject implements Comparable {
         this.retention = retention;
     }
 
-    @OneToOne
-    @JoinColumn(name="fileerasure_id")
+    @OneToOne(mappedBy = "dataFile")
     @BatchFetch(BatchFetchType.IN)
     private FileErasure fileErasure;
 
