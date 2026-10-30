@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -431,9 +433,14 @@ public class Files extends AbstractApiBean {
      * 1. First request without token returns 202 with a confirmation token
      * 2. Second request with the token performs the actual erasure
      * 
+     * For files on stores not accessible by Dataverse (RemoteOverlay, non-S3 Globus),
+     * the initial response indicates that manual deletion is required. The admin must
+     * delete the file manually and then call back with both the confirmationToken and
+     * manuallyErased=true to complete the erasure. The erasure does not proceed until
+     * the admin confirms the main file is deleted.
+     * 
      * @param id file ID or persistent ID
-     * @param maskLabel optional query param to replace file label with mask string
-     * @param jsonBody JSON body with reason and optional confirmationToken
+     * @param jsonBody JSON body with reason and optional confirmationToken and manuallyErased
      */
     @DELETE
     @AuthRequired
@@ -443,8 +450,6 @@ public class Files extends AbstractApiBean {
     public Response eraseFileInDataset(@Context ContainerRequestContext crc,
                                         @Parameter(description = "Data file id or persistent identifier.", required = true)
                                         @PathParam("id") String id,
-                                        @Parameter(description = "Replace file label with mask string (default: *******).")
-                                        @QueryParam("maskLabel") boolean maskLabel,
                                         String jsonBody) {
         // (1) Get the user from the API key and create request
         User authUser = getRequestUser(crc);
@@ -453,6 +458,7 @@ public class Files extends AbstractApiBean {
         // (2) Parse JSON body
         String reason = null;
         String confirmationToken = null;
+        boolean manuallyErased = false;
         if (jsonBody != null && !jsonBody.isEmpty()) {
             try {
                 JsonObject jsonObj = new Gson().fromJson(jsonBody, JsonObject.class);
@@ -461,6 +467,9 @@ public class Files extends AbstractApiBean {
                 }
                 if (jsonObj.has("confirmationToken") && !jsonObj.get("confirmationToken").isJsonNull()) {
                     confirmationToken = jsonObj.get("confirmationToken").getAsString();
+                }
+                if (jsonObj.has("manuallyErased") && !jsonObj.get("manuallyErased").isJsonNull()) {
+                    manuallyErased = jsonObj.get("manuallyErased").getAsBoolean();
                 }
             } catch (Exception e) {
                 return error(BAD_REQUEST, "Invalid JSON body: " + e.getMessage());
@@ -487,7 +496,7 @@ public class Files extends AbstractApiBean {
 
         // (6) If token provided, perform the erasure
         if (confirmationToken != null && !confirmationToken.isEmpty()) {
-            return performFileErasure(dvRequest, dataFile, reason, confirmationToken, maskLabel);
+            return performFileErasure(dvRequest, dataFile, reason, confirmationToken, manuallyErased);
         }
 
         // (7) No token - return 202 with confirmation token
@@ -495,14 +504,22 @@ public class Files extends AbstractApiBean {
         // Store token in a simple cache (5-minute TTL)
         erasureTokenCache.put(token, System.currentTimeMillis() + 5 * 60 * 1000);
 
+        // Determine if manual deletion is required for this file
+        boolean manualDeletionRequired = !StorageIO.isDataverseWritable(
+                DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()));
+
         JsonObjectBuilder responseBuilder = JsonUtil.createObjectBuilder()
                 .add("status", "confirmation_required")
-                .add("message", "To complete the erasure, send another DELETE request with the confirmationToken included.")
                 .add("confirmationToken", token)
                 .add("tokenExpiresInSeconds", 300)
                 .add("fileId", dataFile.getId());
         if (dataFile.getGlobalId() != null) {
             responseBuilder.add("persistentId", dataFile.getGlobalId().asString());
+        }
+        if (manualDeletionRequired) {
+            responseBuilder.add("message", "This file is stored on a location not directly accessible by Dataverse. Please delete the main file manually, then send another DELETE request with both the confirmationToken and manuallyErased=true to complete the erasure.");
+        } else {
+            responseBuilder.add("message", "To complete the erasure, send another DELETE request with the confirmationToken included.");
         }
 
         return ok(responseBuilder.build());
@@ -513,9 +530,13 @@ public class Files extends AbstractApiBean {
 
     /**
      * Perform the actual file erasure after token confirmation.
+     * 
+     * For files on stores accessible by Dataverse, the erasure proceeds immediately.
+     * For files on inaccessible stores, the admin must have manually deleted the file
+     * and set manuallyErased=true in the request; otherwise the request is rejected.
      */
     private Response performFileErasure(DataverseRequest dvRequest, DataFile dataFile, String reason,
-                                        String confirmationToken, boolean maskLabel) {
+                                        String confirmationToken, boolean manuallyErased) {
         // Validate token
         Long expiry = erasureTokenCache.get(confirmationToken);
         if (expiry == null) {
@@ -532,15 +553,8 @@ public class Files extends AbstractApiBean {
             return error(Status.FORBIDDEN, "Erase can only be called by superusers.");
         }
 
-        // Check if file is published
-        boolean isPublished = false;
-        for (FileMetadata fm : dataFile.getFileMetadatas()) {
-            if (fm.getDatasetVersion().isReleased()) {
-                isPublished = true;
-                break;
-            }
-        }
-        if (!isPublished) {
+        // Check if file is published using isReleased()
+        if (!dataFile.isReleased()) {
             return error(BAD_REQUEST, "Cannot erase file: the DataFile has not been published. Use delete for draft-only files.");
         }
 
@@ -549,22 +563,22 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "Cannot erase harvested files. Erasure is not supported on harvested datasets.");
         }
 
+        // Check if manual deletion is required for this file
+        boolean manualDeletionRequired = !StorageIO.isDataverseWritable(
+                DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()));
+
+        // If manual deletion is required, the admin must confirm they've deleted the file
+        if (manualDeletionRequired && !manuallyErased) {
+            return error(BAD_REQUEST, "This file is stored on a location not directly accessible by Dataverse. Please delete the main file manually, then send another DELETE request with both the confirmationToken and manuallyErased=true.");
+        }
+
         // Execute the erasure command
         try {
-            EraseDataFileCommand cmd = new EraseDataFileCommand(dataFile, dvRequest, reason);
+            EraseDataFileCommand cmd = new EraseDataFileCommand(dataFile, dvRequest, reason, manualDeletionRequired);
             commandEngine.submit(cmd);
 
             // Clear the token
             erasureTokenCache.remove(confirmationToken);
-
-            // Optionally mask the label
-            if (maskLabel) {
-                String maskString = "*******";
-                for (FileMetadata fm : dataFile.getFileMetadatas()) {
-                    fm.setLabel(maskString);
-                    em.merge(fm);
-                }
-            }
 
             // Build response
             JsonObjectBuilder responseBuilder = JsonUtil.createObjectBuilder()
@@ -573,10 +587,8 @@ public class Files extends AbstractApiBean {
             if (dataFile.getGlobalId() != null) {
                 responseBuilder.add("persistentId", dataFile.getGlobalId().asString());
             }
-            if (cmd.isManualDeletionRequired()) {
-                responseBuilder.add("note", "Manual deletion required: The main file must be deleted manually from the Globus endpoint. The storage identifier is retained for locating the file.");
-            } else if (cmd.isRemoteOverlay()) {
-                responseBuilder.add("note", "Remote overlay file: Only cached auxiliary files were deleted. The main file remains at the remote location.");
+            if (manualDeletionRequired) {
+                responseBuilder.add("note", "File erased. The main file was deleted manually by the admin. Auxiliary files have been removed.");
             }
 
             return ok(responseBuilder.build());

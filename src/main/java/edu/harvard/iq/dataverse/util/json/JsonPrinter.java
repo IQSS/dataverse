@@ -1566,7 +1566,8 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(FileErasure fileErasure) {
         JsonObjectBuilder builder = jsonObjectBuilder()
                 .add("erasedOn", format(fileErasure.getErasedOn()))
-                .add("reason", fileErasure.getReason());
+                .add("reason", fileErasure.getReason())
+                .add("manuallyDeleted", fileErasure.isManuallyDeleted());
         if (fileErasure.getErasedBy() != null) {
             builder.add("erasedBy", fileErasure.getErasedBy().getId());
         }

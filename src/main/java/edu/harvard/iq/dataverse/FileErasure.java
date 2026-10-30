@@ -40,15 +40,19 @@ public class FileErasure {
     @Column(columnDefinition = "TEXT")
     private String reason;
 
+    @Column(nullable = false)
+    private boolean manuallyDeleted = false;
+
     public FileErasure() {
         this.erasedOn = new Date();
     }
 
-    public FileErasure(DataFile dataFile, AuthenticatedUser erasedBy, String reason) {
+    public FileErasure(DataFile dataFile, AuthenticatedUser erasedBy, String reason, boolean manuallyDeleted) {
         this.dataFile = dataFile;
         this.erasedBy = erasedBy;
         this.erasedOn = new Date();
         this.reason = reason;
+        this.manuallyDeleted = manuallyDeleted;
     }
 
     public Long getId() {
@@ -91,6 +95,14 @@ public class FileErasure {
         this.reason = reason;
     }
 
+    public boolean isManuallyDeleted() {
+        return manuallyDeleted;
+    }
+
+    public void setManuallyDeleted(boolean manuallyDeleted) {
+        this.manuallyDeleted = manuallyDeleted;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -112,6 +124,7 @@ public class FileErasure {
                 ", erasedBy=" + (erasedBy != null ? erasedBy.getId() : "null") +
                 ", erasedOn=" + erasedOn +
                 ", reason='" + reason + '\'' +
+                ", manuallyDeleted=" + manuallyDeleted +
                 '}';
     }
 }

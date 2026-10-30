@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.EraseStoreBehavior;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -34,23 +33,13 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
 
     private final DataFile dataFile;
     private final String reason;
-    
-    // Output flags set during execution for the API layer to use
-    private boolean manualDeletionRequired;
-    private boolean isRemoteOverlay;
+    private final boolean manualDeletionAsserted;
 
-    public EraseDataFileCommand(DataFile dataFile, DataverseRequest aRequest, String reason) {
+    public EraseDataFileCommand(DataFile dataFile, DataverseRequest aRequest, String reason, boolean manualDeletionAsserted) {
         super(aRequest, dataFile.getOwner());
         this.dataFile = dataFile;
         this.reason = reason;
-    }
-
-    public boolean isManualDeletionRequired() {
-        return manualDeletionRequired;
-    }
-
-    public boolean isRemoteOverlay() {
-        return isRemoteOverlay;
+        this.manualDeletionAsserted = manualDeletionAsserted;
     }
 
     @Override
@@ -66,15 +55,8 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                     this, Collections.singleton(Permission.EditDataset), dataFile);
         }
 
-        // 3. Verify file is published (has at least one FileMetadata on a released DatasetVersion)
-        boolean isPublished = false;
-        for (FileMetadata fm : dataFile.getFileMetadatas()) {
-            if (fm.getDatasetVersion().isReleased()) {
-                isPublished = true;
-                break;
-            }
-        }
-        if (!isPublished) {
+        // 3. Verify file is published using DvObject.isReleased()
+        if (!dataFile.isReleased()) {
             throw new CommandExecutionException(
                     "Cannot erase file: the DataFile has not been published. Use delete for draft-only files.", this);
         }
@@ -85,10 +67,7 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                     "Cannot erase harvested files. Erasure is not supported on harvested datasets.", this);
         }
 
-        // 5. Determine store type and behavior
-        EraseStoreBehavior behavior = EraseStoreBehavior.getEraseBehavior(dataFile);
-
-        // 6. Physical file deletion (within transaction)
+        // 5. Physical file deletion (within transaction)
         if (!StringUtil.isEmpty(dataFile.getStorageIdentifier())) {
             if (FileUtil.isPackageFile(dataFile)) {
                 // Package files are handled specially - they use local filesystem only
@@ -98,7 +77,7 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                     StorageIO<DataFile> storageIO = dataFile.getStorageIO();
                     if (storageIO != null) {
                         storageIO.open();
-                        
+
                         // Delete auxiliary files first
                         try {
                             storageIO.deleteAllAuxObjects();
@@ -108,8 +87,8 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                                     new Object[]{dataFile.getId(), ioex.getMessage()});
                         }
 
-                        // Delete the main file if behavior allows it
-                        if (behavior == EraseStoreBehavior.FULL_ERASURE || behavior == EraseStoreBehavior.FULL_VIA_S3) {
+                        // Delete the main file if the store is accessible by Dataverse
+                        if (!manualDeletionAsserted) {
                             boolean physicalFileExists;
                             try {
                                 physicalFileExists = storageIO.exists();
@@ -126,12 +105,27 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
                                             "Error deleting physical file for DataFile " + dataFile.getId(), ex, this);
                                 }
                             }
-                        } else if (behavior == EraseStoreBehavior.MANUAL_REQUIRED) {
-                            manualDeletionRequired = true;
-                            logger.log(Level.INFO, "Manual deletion required for Globus non-S3 file {0}", dataFile.getId());
-                        } else if (behavior == EraseStoreBehavior.AUX_ONLY) {
-                            isRemoteOverlay = true;
-                            logger.log(Level.INFO, "Remote overlay file {0} - only auxiliary files deleted", dataFile.getId());
+                        } else {
+                            // Manual deletion was asserted by the admin. If the store is readable by Dataverse,
+                            // verify the file is actually gone.
+                            String driverId = DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier());
+                            if (StorageIO.isDataverseAccessible(driverId)) {
+                                boolean physicalFileExists;
+                                try {
+                                    physicalFileExists = storageIO.exists();
+                                } catch (IOException ioex) {
+                                    logger.log(Level.WARNING, "Could not verify file existence for DataFile {0}: {1}",
+                                            new Object[]{dataFile.getId(), ioex.getMessage()});
+                                    physicalFileExists = false;
+                                }
+                                if (physicalFileExists) {
+                                    throw new CommandExecutionException(
+                                            "Manual deletion asserted but the file still exists in storage for DataFile " + dataFile.getId(), this);
+                                }
+                                logger.log(Level.INFO, "Verified file {0} is deleted from storage", dataFile.getId());
+                            } else {
+                                logger.log(Level.INFO, "Manual deletion confirmed for file {0} - store is not readable by Dataverse, cannot verify", dataFile.getId());
+                            }
                         }
                     }
                 } catch (IOException ioex) {
@@ -140,11 +134,12 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
             }
         }
 
-        // 7. Create FileErasure entity
+        // 6. Create FileErasure entity
         FileErasure fileErasure = new FileErasure();
         fileErasure.setDataFile(dataFile);
         fileErasure.setErasedBy((AuthenticatedUser) getUser());
         fileErasure.setReason(reason);
+        fileErasure.setManuallyDeleted(manualDeletionAsserted);
         ctxt.em().persist(fileErasure);
         dataFile.setFileErasure(fileErasure);
 
@@ -161,18 +156,17 @@ public class EraseDataFileCommand extends AbstractVoidCommand {
             }
         }
 
-        // 9. Remove the file's FileMetadata from the latest draft DatasetVersion
+        // 9. Remove the file's FileMetadata from the latest version if it is a draft
         Dataset dataset = dataFile.getOwner();
-        DatasetVersion latestDraft = dataset.getOrCreateEditVersion();
-        if (latestDraft != null) {
+        DatasetVersion latestVersion = dataset.getLatestVersion();
+        if (latestVersion != null && latestVersion.isWorkingCopy()) {
             for (FileMetadata fm : dataFile.getFileMetadatas()) {
-                if (fm.getDatasetVersion().getId().equals(latestDraft.getId())) {
-                    DatasetVersion mergedDraft = ctxt.em().merge(latestDraft);
+                if (fm.getDatasetVersion().getId().equals(latestVersion.getId())) {
+                    DatasetVersion mergedDraft = ctxt.em().merge(latestVersion);
                     mergedDraft.getFileMetadatas().remove(fm);
-                    ctxt.em().merge(fm.getDatasetVersion());
                     ctxt.em().remove(ctxt.em().merge(fm));
                     logger.log(Level.INFO, "Removed FileMetadata from draft version {0} for DataFile {1}",
-                            new Object[]{latestDraft.getId(), dataFile.getId()});
+                            new Object[]{latestVersion.getId(), dataFile.getId()});
                     break;
                 }
             }

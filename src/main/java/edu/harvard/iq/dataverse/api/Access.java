@@ -333,7 +333,7 @@ public class Access extends AbstractApiBean {
         }
         
         if (FileUtil.isErased(df)) {
-            throw new NotFoundException("Datafile " + fileId + " has been erased.");
+            throw new WebApplicationException(Response.status(Response.Status.GONE).entity("Datafile " + fileId + " has been erased.").build());
         }
                
         // This will throw a ForbiddenException if access isn't authorized:
@@ -587,6 +587,10 @@ public class Access extends AbstractApiBean {
                     String errorMessage = "Datafile " + df.getId() + " is a harvested file that cannot be accessed in this Dataverse";
                     throw new NotFoundException(errorMessage);
                     // (nobody should ever be using this API on a harvested DataFile)!
+                }
+
+                if (FileUtil.isErased(df)) {
+                    throw new WebApplicationException(Response.status(Response.Status.GONE).entity("Datafile " + df.getId() + " has been erased.").build());
                 }
 
                 // Make sure all files are from the same dataset

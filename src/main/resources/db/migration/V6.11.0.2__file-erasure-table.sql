@@ -4,7 +4,8 @@ CREATE TABLE FILEERASURE (
     datafile_id BIGINT UNIQUE REFERENCES DATAFILE(id),
     erased_by_id BIGINT REFERENCES AUTHENTICATEDUSER(id),
     erased_on TIMESTAMP NOT NULL,
-    reason TEXT
+    reason TEXT,
+    manually_deleted BOOLEAN NOT NULL DEFAULT false
 );
 
 -- Add foreign key column to DATAFILE table to reference the erasure record
