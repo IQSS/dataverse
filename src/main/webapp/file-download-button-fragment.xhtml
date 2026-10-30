@@ -33,7 +33,8 @@
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
                              and fileMetadata.dataFile.owner.fileAccessRequest
                              and !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)
-                             and !dataFileServiceBean.isRetentionExpired(fileMetadata)}">
+                             and !dataFileServiceBean.isRetentionExpired(fileMetadata)
+                             and empty fileMetadata.dataFile.fileErasure}">
         <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.containsActiveFileAccessRequestFromUser(dataverseSession.user) ? 'disabled' : ''}"
                        rendered="#{fileDownloadHelper.session.user.authenticated}">
             <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.containsActiveFileAccessRequestFromUser(dataverseSession.user) ? 'italic'  : ''}"
