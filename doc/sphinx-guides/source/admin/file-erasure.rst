@@ -45,6 +45,40 @@ If hosting the application in a cloud environment, block storage devices are abs
 
 **Why this matters:** Cloud providers guarantee that when an encrypted volume or block is unallocated or deleted, the underlying physical infrastructure is sanitized or the specific block cryptographic keys are destroyed before hardware blocks are reassigned to other tenants.
 
+
+Pattern D: Amazon S3 & Object Storage (AWS S3, Azure Blob, MinIO)
+-----------------------------------------------------------------
+
+If the application is configured to store large files directly in Amazon S3 or an S3-compatible object storage repository, a standard application deletion command only removes the current object pointer. If features like Versioning or Object Locking are enabled on the bucket, the physical data blocks will remain permanently accessible unless explicit lifecycle controls are enforced by the cloud administrator.
+• Mandatory S3 Lifecycle Configuration: Administrators must configure an automated S3 Lifecycle Policy on the target bucket to guarantee permanent, unrecoverable erasure of all historical iterations and deleted files.
+• Noncurrent Version Expiration: If Bucket Versioning is active, deleting a file from the Java application creates a "Delete Marker" and moves the actual file to a "Noncurrent Version" state. To ensure full compliance, configure a lifecycle rule to permanently expire and permanently remove noncurrent versions after a strict compliance buffer window (e.g., 7 to 14 days).
+• Incomplete Multipart Upload Cleanups: Large files uploaded via multipart streams can leave orphaned, hidden data fragments if a network drop or timeout occurs mid-upload. Configure a rule to automatically abort and delete incomplete multipart uploads after 7 days to prevent residual data persistence.
+• Handling Object Lock & Compliance Mode: If your bucket utilizes S3 Object Lock in "Compliance Mode" for Write-Once-Read-Many (WORM) requirements, even system administrators cannot bypass retention dates. Ensure that the retention window configured on the bucket does not legally conflict with your organization’s strict GDPR erasure SLAs.
+
+Example: Compliant AWS S3 Lifecycle Policy (JSON)
+
+Administrators can apply this lifecycle configuration shell directly to the asset bucket via the AWS CLI or Terraform:
+json
+{
+  "Rules": [
+    {
+      "ID": "GDPR-Compliant-Erasure-Policy",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": ""
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 14
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 7
+      }
+    }
+  ]
+}
+Use code with caution.
+• Data at Rest Encryption (SSE-S3 / SSE-KMS): Ensure the bucket has default server-side encryption enabled. When objects or their underlying versions are permanently deleted via lifecycle rules, AWS automatically sanitizes the storage blocks and updates the internal block allocation, ensuring the data can never be read by another cloud tenant.
+
 Critical Requirement: Backup & Snapshot Lifecycle Policy
 --------------------------------------------------------
 
