@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.export;
 import com.google.gson.Gson;
 
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.api.dto.AlternativePersistentIdentifierDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -30,6 +32,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 public class OpenAireExportUtilTest {
 
@@ -42,6 +47,7 @@ public class OpenAireExportUtilTest {
     private void setup() throws XMLStreamException {
         xmlWriter = xmlOutputFactory.createXMLStreamWriter(stringWriter);
     }
+    
     @AfterEach
     private void teardown() throws XMLStreamException {
         stringWriter.flush();
@@ -449,7 +455,8 @@ public class OpenAireExportUtilTest {
         // then
         assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
-                + "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastContact1, FirstContact1</contributorName>"
+                + "<givenName>FirstContact1</givenName><familyName>LastContact1</familyName>"
                 + "<affiliation>ContactAffiliation1</affiliation>"
                 + "</contributor>"
                 + "<contributor contributorType=\"ContactPerson\">"
@@ -515,7 +522,9 @@ public class OpenAireExportUtilTest {
                 + "<date dateType=\"Issued\">1004-01-01</date>"
                 + "<date dateType=\"Created\">1003-01-01</date>"
                 + "<date dateType=\"Submitted\">1002-01-01</date>"
-                + "<date dateType=\"Updated\">2015-09-29</date>"
+                + "<date dateType=\"Available\">2015-09-29</date>"
+                + "<date dateType=\"Other\" dateInformation=\"Time period covered by the data\">1005-01-01/1005-01-02</date>"
+                + "<date dateType=\"Other\" dateInformation=\"Time period covered by the data\">1005-02-01/1005-02-02</date>"
                 + "<date dateType=\"Collected\">1006-01-01/1006-01-01</date>"
                 + "<date dateType=\"Collected\">1006-02-01/1006-02-02</date>"
                 + "</dates>",
@@ -583,7 +592,7 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
         // when
-        OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
@@ -592,6 +601,57 @@ public class OpenAireExportUtilTest {
                 + "OtherIDIdentifier1</alternateIdentifier>"
                 + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency2\">"
                 + "OtherIDIdentifier2</alternateIdentifier>"
+                + "</alternateIdentifiers>",
+                stringWriter.toString());
+    }
+    
+    /*
+    AlternativePersistentIdentifierDTO altPid = new AlternativePersistentIdentifierDTO();
+altPid.setProtocol("doi");
+altPid.setAuthority("10.5072");
+altPid.setIdentifier("FK2/ALT123");
+altPid.setGlobalId("doi:10.5072/FK2/ALT123");
+
+datasetDTO.setAlternativePersistentIdentifiers(Collections.singletonList(altPid));
+
+String xml = OpenAireExportUtil.datasetJson2OpenAire(datasetDTO);
+
+assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">doi:10.5072/FK2/ALT123</alternateIdentifier>"));
+    */
+    
+        /**
+     * Test: 11 AlternateIdentifier (with type sub-property) (O)
+     *
+     * alternateIdentifier
+     *
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testWriteAlternateIdentifierElementWithPreviousPersistentId() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+
+        AlternativePersistentIdentifierDTO altPid = new AlternativePersistentIdentifierDTO();
+        altPid.setProtocol("doi");
+        altPid.setAuthority("10.5072");
+        altPid.setIdentifier("FK2/ALT123");
+
+        datasetDto.setAlternativePersistentIdentifiers(Collections.singletonList(altPid));
+
+        // when
+        OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, datasetDto, null);
+        xmlWriter.flush();
+
+        //then
+        assertEquals("<alternateIdentifiers>"
+                + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency1\">"
+                + "OtherIDIdentifier1</alternateIdentifier>"
+                + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency2\">"
+                + "OtherIDIdentifier2</alternateIdentifier>"
+                + "<alternateIdentifier alternateIdentifierType=\"DOI\">"
+                + "10.5072/FK2/ALT123</alternateIdentifier>"
                 + "</alternateIdentifiers>",
                 stringWriter.toString());
     }
@@ -619,7 +679,7 @@ public class OpenAireExportUtilTest {
         assertEquals("<relatedIdentifiers>"
                 + "<relatedIdentifier relationType=\"IsSupplementTo\" relatedIdentifierType=\"ARK\">"
                 + "RelatedPublicationIDNumber1</relatedIdentifier>"
-                + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
+                + "<relatedIdentifier relationType=\"IsSupplementTo\" relatedIdentifierType=\"arXiv\">"
                 + "RelatedPublicationIDNumber2</relatedIdentifier>"
                 + "</relatedIdentifiers>",
                 stringWriter.toString());
@@ -796,7 +856,7 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
         // when
-        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
@@ -825,7 +885,7 @@ public class OpenAireExportUtilTest {
         dto.setFileAccessRequest(true);
 
         // when
-        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
@@ -853,13 +913,48 @@ public class OpenAireExportUtilTest {
         dto.setFileAccessRequest(false);
 
         // when
-        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
         xmlWriter.flush();
 
         //then
         assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
                 + "<rights></rights></rightsList>",
+                stringWriter.toString());
+    }
+    
+    /**
+     * Test: 16 Rights (O)
+     *
+     * rights
+     *
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testWriteCustomTermsOfUseRightElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        dto.setLicense(null);
+        dto.setTermsOfUse("Here are some Custom Terms of Use");
+        dto.setFileAccessRequest(false);
+        dto.setSiteUrl("http://localhost:8080");
+        dto.setVersionNumber(3L);
+        dto.setMinorVersionNumber(2L);
+
+        datasetDto.setProtocol("doi");
+        datasetDto.setAuthority("10.5072");
+        datasetDto.setIdentifier("FK2/8WABZX");
+        // when
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, datasetDto, null);
+        xmlWriter.flush();
+
+        //then
+        assertEquals("<rightsList>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"></rights>"
+                + "<rights rightsURI=\"http://localhost:8080/api/datasets/:persistentId/versions/3.2/customlicense?persistentId=doi:10.5072/FK2/8WABZX\">Here are some Custom Terms of Use</rights>" 
+                + "</rightsList>",
                 stringWriter.toString());
     }
 
@@ -948,10 +1043,17 @@ public class OpenAireExportUtilTest {
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Afghanistan, GeographicCoverageStateProvince1, GeographicCoverageCity1, GeographicCoverageOther1"
+                + "</geoLocationPlace>"
+                + "</geoLocation>" 
+                + "<geoLocation><geoLocationPlace>Albania, GeographicCoverageStateProvince2, GeographicCoverageCity2, GeographicCoverageOther2" 
+                + "</geoLocationPlace>"
+                + "</geoLocation>"   
                 + "</geoLocations>",
                 stringWriter.toString());
     }
-    
+   
     /**
      * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
      *
@@ -992,10 +1094,18 @@ public class OpenAireExportUtilTest {
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Afghanistan, GeographicCoverageStateProvince1, GeographicCoverageCity1, GeographicCoverageOther1"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Albania, GeographicCoverageStateProvince2, GeographicCoverageCity2, GeographicCoverageOther2"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
                 + "</geoLocations>",
                 stringWriter.toString());
     }
-
+    
     /**
      * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
      *
@@ -1023,7 +1133,16 @@ public class OpenAireExportUtilTest {
                 + "<southBoundLatitude>34</southBoundLatitude>"
                 + "<westBoundLongitude>45</westBoundLongitude>"
                 + "</geoLocationBox>"
-                + "</geoLocation></geoLocations>",
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>United States, MA, Arlington"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "<geoLocation>"
+                + "<geoLocationPlace>Aruba, beach, beachcity"
+                + "</geoLocationPlace>"
+                + "</geoLocation>"
+                + "</geoLocations>",
                 stringWriter.toString());
     }
 
@@ -1102,6 +1221,64 @@ public class OpenAireExportUtilTest {
                 + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH99999999</awardNumber></fundingReference>"
                 + "</fundingReferences>",
                 stringWriter.toString());
+    }
+    
+    /**
+     * Test 20, test author ROR affilaition
+     *
+     */
+    @Test
+    public void testWriteCreatorsElementWithRor() throws IOException, XMLStreamException {
+        // 1. Given: Parse the existing simplified JSON file
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-for-ror-export-test.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+
+        // 2. MOCK THE BEAN LAYER: Create the service bean that the CDI layer expects to fetch
+        edu.harvard.iq.dataverse.DatasetFieldServiceBean mockDatasetFieldService
+                = Mockito.mock(edu.harvard.iq.dataverse.DatasetFieldServiceBean.class);
+
+        // Explicitly force the service bean to return null, mimicking a missing DB record
+        Mockito.when(mockDatasetFieldService.getExternalVocabularyValue(Mockito.anyString()))
+                .thenReturn(null);
+
+        // 3. MOCK THE CDI CONTAINER LAYER:
+        jakarta.enterprise.inject.spi.CDI<Object> mockCdiContainer = Mockito.mock(jakarta.enterprise.inject.spi.CDI.class);
+        jakarta.enterprise.inject.Instance<Object> mockInstance = Mockito.mock(jakarta.enterprise.inject.Instance.class);
+
+        // Stub the single-argument select signature
+        Mockito.when(mockCdiContainer.select(Mockito.any(Class.class)))
+                .thenReturn(mockInstance);
+
+        // Stub the varargs select signature 
+        Mockito.when(mockCdiContainer.select(Mockito.any(Class.class), Mockito.any(java.lang.annotation.Annotation[].class)))
+                .thenReturn(mockInstance);
+
+        // CRITICAL FIX: Return our mocked service bean instead of null!
+        Mockito.when(mockInstance.get()).thenReturn(mockDatasetFieldService);
+
+        // 4. WHEN: Intercept CDI.current() statically and run the test
+        try (MockedStatic<jakarta.enterprise.inject.spi.CDI> cdiMockedStatic = Mockito.mockStatic(jakarta.enterprise.inject.spi.CDI.class)) {
+            cdiMockedStatic.when(jakarta.enterprise.inject.spi.CDI::current).thenReturn(mockCdiContainer);
+
+            // Execute utility method
+            OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
+            xmlWriter.flush();
+        }
+        String actualXml = stringWriter.toString();
+
+        // Verify the OpenAIRE attributes were appended because isROR triggered true
+        assertTrue(actualXml.contains("schemeURI=\"https://ror.org\""),
+                "XML should contain the correct ROR scheme URI attribute.");
+
+        assertTrue(actualXml.contains("affiliationIdentifierScheme=\"ROR\""),
+                "XML should identify ROR as the affiliation scheme.");
+
+        assertTrue(actualXml.contains("affiliationIdentifier=\"https://ror.org/03vek6s52\""),
+                "XML should bind the exact ROR URL string to the identifier attribute.");
+
+        // Verify the fallback handled the inner text content gracefully
+        assertTrue(actualXml.contains(">https://ror.org/03vek6s52</affiliation>"),
+                "XML element text should fall back to the raw ROR URL safely when lookup is missing.");
     }
 
     // private static final Jsonb jsonb = JsonbBuilder.create();

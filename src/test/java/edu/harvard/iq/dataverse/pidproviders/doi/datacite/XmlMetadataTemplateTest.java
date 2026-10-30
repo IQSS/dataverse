@@ -151,6 +151,8 @@ public class XmlMetadataTemplateTest {
      */
     @Test
     public void testDataCiteXMLCreation() throws IOException {
+        Dataverse collection = new Dataverse();
+        collection.setCitationDatasetFieldTypes(new ArrayList<>());
         DoiMetadata doiMetadata = new DoiMetadata();
         doiMetadata.setTitle("A Title");
         DatasetFieldType dft = new DatasetFieldType(DatasetFieldConstant.authorName, FieldType.TEXT, false);
@@ -210,6 +212,7 @@ public class XmlMetadataTemplateTest {
         toa.setTermsOfUse("Some terms");
         dv.setTermsOfUseAndAccess(toa);
         dv.setDataset(d);
+        d.setOwner(collection);
         DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
                 DatasetFieldType.FieldType.TEXT, false);
         DatasetField testDatasetField = new DatasetField();

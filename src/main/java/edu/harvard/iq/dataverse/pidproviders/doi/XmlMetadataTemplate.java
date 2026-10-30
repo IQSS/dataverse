@@ -256,7 +256,12 @@ public class XmlMetadataTemplate {
                     if (nameIdentifier != null) {
                         // Normalizes to the URL form of the identifier, returns null if the identifier
                         // is not valid given the type
-                        nameIdentifier = author.getIdentifierAsUrl();
+                        if (author.getIdentifierAsUrl() != null) {
+                            nameIdentifier = author.getIdentifierAsUrl();
+                            //12296 if it's DAI it's cool OK otherwise back to null 
+                        } else if (!author.getIdType().equals("DAI")) {
+                            nameIdentifier = null;
+                        }
                     }
                     nameIdentifierScheme = author.getIdType();
                 }
@@ -607,6 +612,10 @@ public class XmlMetadataTemplate {
                 attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
                 XmlWriterUtil.writeFullElementWithAttributes(xmlw, "nameIdentifier", attributeMap, nameIdentifier);
             } catch (MalformedURLException e) {
+                //122956  show DAI 
+                //if the nameIdentifier attribute is not a valid url (DAI) just show without schemeURL
+                attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "nameIdentifier", attributeMap, nameIdentifier);
                 logger.warning("DatasetAuthor.getIdentifierAsUrl returned a Malformed URL: " + nameIdentifier);
             }
         }
@@ -691,7 +700,7 @@ public class XmlMetadataTemplate {
             if (versionNumber != null && !(versionNumber.equals(1L) && dv.getMinorVersionNumber().equals(0L))) {
                 isAnUpdate = true;
             }
-            releaseDate = dv.getReleaseTime();
+            releaseDate = dv.getReleaseTime();            
             publicationDate = d.getPublicationDateFormattedYYYYMMDD();
             for (DatasetField dsf : dv.getDatasetFields()) {
                 switch (dsf.getDatasetFieldType().getName()) {
@@ -712,8 +721,16 @@ public class XmlMetadataTemplate {
                     break;
                 }
             }
+            //per 12361 this should be the citation date if available
+            //modified by embargo date if applicable
+            if (d.getCitationDateFormattedYYYYMMDD() != null){
+                dateOfDistribution = d.getCitationDateFormattedYYYYMMDD();
+            }
+            
         }
         Map<String, String> attributes = new HashMap<String, String>();
+ 
+        //per 12361 this should be the citation date       
         if (StringUtils.isNotBlank(dateOfDistribution)) {
             datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
             attributes.put("dateType", "Issued");
@@ -734,9 +751,9 @@ public class XmlMetadataTemplate {
 
         if (publicationDate != null) {
             datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
-
-            attributes.put("dateType", "Available");
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, publicationDate);
+            //12360 remove Available as the dateType
+            //attributes.put("dateType", "Available");
+            XmlWriterUtil.writeFullElement(xmlw, "date",  publicationDate);
         }
         if (isAnUpdate) {
             String date = Util.getDateFormat().format(releaseDate);
@@ -1088,6 +1105,14 @@ public class XmlMetadataTemplate {
                                 relatedIdentifier = null;
                             }
                             break;
+                        case "cstr":
+                            //12306 export cstr as Related Publication - no validation of PID
+                            if (!(relatedIdentifier.toLowerCase().startsWith("cstr:") || relatedIdentifier.startsWith("http"))) {
+                                relatedIdentifier = "cstr:" + relatedIdentifier;
+                            } else {
+                                 relatedIdentifier = null;                               
+                            }
+                            break;    
                         case "none":
                             //Try to identify PIDs and URLs and send them as related identifiers
                             if (relatedIdentifier != null) {

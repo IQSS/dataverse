@@ -1613,10 +1613,35 @@ public class DatasetsIT {
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
         exportDatasetAsDdi.prettyPrint();
         exportDatasetAsDdi.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode());       
+        
 
         assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+        Response exportDatasetAsOpenAIRE = UtilIT.exportDataset(datasetPersistentId, "oai_datacite", apiToken);
+        System.out.print("$$$$$$$$$$$$$$$$$$$$$");
+        exportDatasetAsOpenAIRE.prettyPrint();
+         System.out.print("$$$$$$$$$$$$$$$$$$$$$");
+      exportDatasetAsOpenAIRE.then().assertThat()
+            .statusCode(OK.getStatusCode());
+        
+       // assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+      //  assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+                Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPersistentId, "Datacite", apiToken);
+                System.out.println("::group::--- EXPORT FAILURE DETAILS ---");
+exportDatasetAsDataCite.prettyPrint();
+System.out.println("::endgroup::");
+                
+      //  exportDatasetAsDataCite.prettyPrint();
+        exportDatasetAsDataCite.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+      // assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+      //  assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+
 
         Response reexportAllFormats = UtilIT.reexportDatasetAllFormats(datasetPersistentId);
         reexportAllFormats.prettyPrint();
@@ -4986,7 +5011,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
                 .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+//                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available")) Removed per 12360
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
                 .body("resource.version", equalTo("1.0"));
 
@@ -5031,7 +5056,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
                 .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Updated"))
+                // per 12294 version 1.0 is Available
+                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
                 .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
                 .body("resource.publicationYear", CoreMatchers.equalTo(currentYear));
 
@@ -5122,20 +5148,24 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         exportDataciteV10NotDeaccessioned.prettyPrint();
         exportDataciteV10NotDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
-                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
-                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                //Per 12361 citation date should be type "Issued" citation date as calculated by dataset citation
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Issued"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo(today))
+                //per 12360 not using available
+                //.body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo("1999-12-31"))
                 .body("resource.version", equalTo("1.0"));
 
         Response exportDataciteLatestPublishedNotDeaccessioned = UtilIT.exportDataset(datasetPid, "Datacite", false, DS_VERSION_LATEST_PUBLISHED, apiToken);
         exportDataciteLatestPublishedNotDeaccessioned.prettyPrint();
         exportDataciteLatestPublishedNotDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Submitted"))
-                .body("resource.dates.date[0]", CoreMatchers.equalTo("1999-12-31"))
-                .body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
-                .body("resource.dates.date[1]", CoreMatchers.equalTo(today))
+                //Per 12361 citation date should be type "Issued" citation date as calculated by dataset citation
+                .body("resource.dates.date[0].@dateType", CoreMatchers.equalTo("Issued"))
+                .body("resource.dates.date[0]", CoreMatchers.equalTo(today))
+                //per 12360 not using available
+                //.body("resource.dates.date[1].@dateType", CoreMatchers.equalTo("Available"))
+                .body("resource.dates.date[1]", CoreMatchers.equalTo("1999-12-31"))
                 .body("resource.version", equalTo("1.0"));
 
         Response deaccessionV10 = UtilIT.deaccessionDataset(datasetPid, "1.0", "retracted", null, apiToken);
