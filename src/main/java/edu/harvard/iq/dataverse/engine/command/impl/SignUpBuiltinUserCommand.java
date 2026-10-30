@@ -100,14 +100,7 @@ public class SignUpBuiltinUserCommand extends AbstractCommand<AuthenticatedUser>
     private Map<String, String> validate(CommandContext ctxt) {
         Map<String, String> fieldErrors = new LinkedHashMap<>();
 
-        String username = userDTO.getUsername();
-        if (isBlank(username)) {
-            fieldErrors.put(FIELD_USERNAME, requiredMessage(FIELD_USERNAME));
-        } else if (!UserNameValidator.isUserNameValid(username)) {
-            fieldErrors.put(FIELD_USERNAME, BundleUtil.getStringFromBundle("user.username.invalid"));
-        } else if (ctxt.authentication().identifierExists(username) || ctxt.builtinUsers().findByUserName(username) != null) {
-            fieldErrors.put(FIELD_USERNAME, BundleUtil.getStringFromBundle("user.username.taken"));
-        }
+        putIfError(fieldErrors, FIELD_USERNAME, validateUsername(ctxt, userDTO.getUsername()));
 
         if (isBlank(userDTO.getFirstName())) {
             fieldErrors.put(FIELD_FIRST_NAME, requiredMessage(FIELD_FIRST_NAME));
@@ -116,23 +109,8 @@ public class SignUpBuiltinUserCommand extends AbstractCommand<AuthenticatedUser>
             fieldErrors.put(FIELD_LAST_NAME, requiredMessage(FIELD_LAST_NAME));
         }
 
-        String email = userDTO.getEmailAddress();
-        if (isBlank(email)) {
-            fieldErrors.put(FIELD_EMAIL_ADDRESS, requiredMessage(FIELD_EMAIL_ADDRESS));
-        } else if (!EMailValidator.isEmailValid(email)) {
-            fieldErrors.put(FIELD_EMAIL_ADDRESS, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"));
-        } else if (ctxt.authentication().getAuthenticatedUserByEmail(email) != null) {
-            fieldErrors.put(FIELD_EMAIL_ADDRESS, BundleUtil.getStringFromBundle("user.email.taken"));
-        }
-
-        if (isBlank(password)) {
-            fieldErrors.put(FIELD_PASSWORD, requiredMessage(FIELD_PASSWORD));
-        } else {
-            List<String> passwordErrors = ctxt.passwordValidation().validate(password, new Date(), false);
-            if (!passwordErrors.isEmpty()) {
-                fieldErrors.put(FIELD_PASSWORD, String.join(" ", passwordErrors));
-            }
-        }
+        putIfError(fieldErrors, FIELD_EMAIL_ADDRESS, validateEmail(ctxt, userDTO.getEmailAddress()));
+        putIfError(fieldErrors, FIELD_PASSWORD, validatePassword(ctxt));
 
         if (orcidUrl != null && ctxt.authentication().lookupUserByOrcid(orcidUrl) != null) {
             fieldErrors.put(FIELD_ORCID, BundleUtil.getStringFromBundle("signUpBuiltinUserCommand.errors.orcidInUse"));
@@ -143,6 +121,46 @@ public class SignUpBuiltinUserCommand extends AbstractCommand<AuthenticatedUser>
         }
 
         return fieldErrors;
+    }
+
+    private static String validateUsername(CommandContext ctxt, String username) {
+        if (isBlank(username)) {
+            return requiredMessage(FIELD_USERNAME);
+        }
+        if (!UserNameValidator.isUserNameValid(username)) {
+            return BundleUtil.getStringFromBundle("user.username.invalid");
+        }
+        if (ctxt.authentication().identifierExists(username) || ctxt.builtinUsers().findByUserName(username) != null) {
+            return BundleUtil.getStringFromBundle("user.username.taken");
+        }
+        return null;
+    }
+
+    private static String validateEmail(CommandContext ctxt, String email) {
+        if (isBlank(email)) {
+            return requiredMessage(FIELD_EMAIL_ADDRESS);
+        }
+        if (!EMailValidator.isEmailValid(email)) {
+            return BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid");
+        }
+        if (ctxt.authentication().getAuthenticatedUserByEmail(email) != null) {
+            return BundleUtil.getStringFromBundle("user.email.taken");
+        }
+        return null;
+    }
+
+    private String validatePassword(CommandContext ctxt) {
+        if (isBlank(password)) {
+            return requiredMessage(FIELD_PASSWORD);
+        }
+        List<String> passwordErrors = ctxt.passwordValidation().validate(password, new Date(), false);
+        return passwordErrors.isEmpty() ? null : String.join(" ", passwordErrors);
+    }
+
+    private static void putIfError(Map<String, String> fieldErrors, String field, String error) {
+        if (error != null) {
+            fieldErrors.put(field, error);
+        }
     }
 
     private void throwIfErrors(Map<String, String> fieldErrors) throws InvalidFieldsCommandException {
