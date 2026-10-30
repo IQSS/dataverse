@@ -93,7 +93,7 @@
                                     
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-9 button-block">
-                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@form,:messagePanel" action="#{LoginPage.login}"/>
+                                            <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@form,:messagePanel" action="#{LoginPage.login}" process="@form"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -218,7 +218,7 @@
                                 <h3>#{bundle['auth.providers.title']}</h3>
                                 <h:form>
                                     <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
-                                        <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container">
+                                        <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container" process="@this">
                                             <h:outputText value="#{provider.title}" />
                                         </p:commandLink>
                                     </ui:repeat>

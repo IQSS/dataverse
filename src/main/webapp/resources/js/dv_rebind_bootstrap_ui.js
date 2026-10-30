@@ -6,6 +6,8 @@ function bind_bsui_components(){
     $(document).on('click', '[data-toggle=offcanvas]', function() {
         $('.row-offcanvas').toggleClass('active', 200);
     });
+
+    bind_autocomplete_dropdowns();
     
     // Collapse Header Icons
     $('div[id^="panelCollapse"]').on('shown.bs.collapse', function () {
@@ -49,6 +51,63 @@ function bind_bsui_components(){
     
     //Fly-out sub-menu accessibility
     enableSubMenus();
+}
+
+function bind_autocomplete_dropdowns() {
+    var dropdownSelector = '.ui-autocomplete .ui-autocomplete-dropdown';
+    var autocompleteMouseUpCapture = function(event) {
+        var button = $(event.target).closest(dropdownSelector);
+
+        if (!button.length) {
+            return;
+        }
+
+        var autocomplete = button.closest('.ui-autocomplete');
+        var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
+        var panel = widget && widget.panel ? widget.panel : autocomplete.find('.ui-autocomplete-panel');
+
+        if (panel.is(':visible')) {
+            if (widget && widget.hide) {
+                widget.hide();
+            } else {
+                panel.hide();
+            }
+
+            button.find('.ui-icon')
+                .removeClass('ui-icon-triangle-1-n')
+                .addClass('ui-icon-triangle-1-s');
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+
+        button.find('.ui-icon')
+            .removeClass('ui-icon-triangle-1-s')
+            .addClass('ui-icon-triangle-1-n');
+    };
+
+    if (document.dataverseAutocompleteMouseUpCapture) {
+        document.removeEventListener('mouseup', document.dataverseAutocompleteMouseUpCapture, true);
+    }
+    document.dataverseAutocompleteMouseUpCapture = autocompleteMouseUpCapture;
+    document.addEventListener('mouseup', autocompleteMouseUpCapture, true);
+
+    $(document)
+        .off('click.dataverseAutocompleteSelection', '.ui-autocomplete-panel .ui-autocomplete-item')
+        .on('click.dataverseAutocompleteSelection', '.ui-autocomplete-panel .ui-autocomplete-item', function() {
+            var panel = $(this).closest('.ui-autocomplete-panel');
+
+            $('.ui-autocomplete').each(function() {
+                var autocomplete = $(this);
+                var widget = PrimeFaces.getWidgetById(autocomplete.attr('id'));
+
+                if (widget && widget.panel && widget.panel[0] === panel[0]) {
+                    autocomplete.find('.ui-autocomplete-dropdown .ui-icon')
+                        .removeClass('ui-icon-triangle-1-n')
+                        .addClass('ui-icon-triangle-1-s');
+                }
+            });
+        });
 }
 
 function bind_tooltip_popover(){

@@ -748,8 +748,8 @@ public class DatasetPage implements java.io.Serializable {
         if (isIndexedVersion() && StringUtil.isEmpty(fileLabelSearchTerm) && StringUtil.isEmpty(fileTypeFacet) && StringUtil.isEmpty(fileAccessFacet) && StringUtil.isEmpty(fileTagsFacet)) {
             // Indexed version: we need facets, they are set as a side effect of getFileIdsInVersionFromSolr method.
             // But, no search terms were specified, we will return the full
-            // list of the files in the version: we discard the result from getFileIdsInVersionFromSolr.
-            getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
+            // list of the files in the version: we only ask Solr for the facets, not for the file ids.
+            getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm, false);
             // Since the search results should include the full set of fmds if all the
             // terms/facets are empty, setting them to null should just be
             // an optimization to skip the loop below
@@ -953,6 +953,14 @@ public class DatasetPage implements java.io.Serializable {
      *
      */
     public Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern) {
+        return getFileIdsInVersionFromSolr(datasetVersionId, pattern, true);
+    }
+
+    /**
+     * @param idsNeeded false when only the facets are needed: Solr then returns no documents,
+     * which matters for versions with many files; the returned set is empty
+     */
+    private Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern, boolean idsNeeded) {
         logger.fine("searching for file ids, in solr");
 
         SolrQuery solrQuery = new SolrQuery();
@@ -1037,9 +1045,10 @@ public class DatasetPage implements java.io.Serializable {
 
         }
 
-        // Unlimited number of search results:
+        // Unlimited number of search results, with only the file ids:
         // (but we are searching within one dataset(version), so it should be manageable)
-        solrQuery.setRows(Integer.MAX_VALUE);
+        solrQuery.setRows(idsNeeded ? Integer.MAX_VALUE : 0);
+        solrQuery.setFields(SearchFields.ENTITY_ID);
 
         logger.fine("Solr query (file search): " + solrQuery);
 
@@ -2057,7 +2066,7 @@ public class DatasetPage implements java.io.Serializable {
                 
                 // We are only performing these lookups to obtain the database id
                 // of the version that we are displaying, and then we will use it
-                // to perform a .findDeep(versionId); see below. 
+                // to perform a .find(versionId); see below. 
                 
                 // TODO: replace the code block below, the combination of 
                 // datasetService.find(id) and datasetVersionService.selectRequestedVersion()
@@ -2090,7 +2099,7 @@ public class DatasetPage implements java.io.Serializable {
             // ... And now the "real" working version lookup: 
             
             if (versionId != null) {
-                this.workingVersion = datasetVersionService.findDeep(versionId);
+                this.workingVersion = datasetVersionService.find(versionId);
                 dataset = workingVersion.getDataset();
             }
             
@@ -2310,11 +2319,6 @@ public class DatasetPage implements java.io.Serializable {
         displayLockInfo(dataset);
         displayPublishMessage();
 
-        // TODO: replace this loop, and the loop in the method that calculates 
-        // the total "originals" size of the dataset with direct custom queries; 
-        // then we'll be able to drop the lookup hint for DataTable from the 
-        // findDeep() method for the version and further speed up the lookup 
-        // a little bit.
         boolean globusDownloadEnabled = systemConfig.isGlobusDownload();
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             DataFile df = fmd.getDataFile();
@@ -3101,7 +3105,7 @@ public class DatasetPage implements java.io.Serializable {
             // versionId must have been set by now (see null check above), in the init()
             // method, regardless of how the page was originally called - by the dataset
             // database id, by the persistent identifier, or by the db id of the version.
-            this.workingVersion = datasetVersionService.findDeep(versionId);
+            this.workingVersion = datasetVersionService.find(versionId);
             dataset = workingVersion.getDataset();
         } 
         
