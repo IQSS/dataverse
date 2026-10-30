@@ -363,7 +363,7 @@
                         <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt DatasetPage.fileMetadatasSearch.size()}">
                             &#160;
                             <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form">
-                                <h:outputFormat value="#{bundle['file.selectAllFiles']}">
+                                <h:outputFormat value="#{DatasetPage.fileMetadatasSearch.size() lt fileMetadataCount ? bundle['file.selectAllMatchingFiles'] : bundle['file.selectAllFiles']}">
                                     <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                                 </h:outputFormat>
                             </p:commandLink>
