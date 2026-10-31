@@ -20,7 +20,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +32,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.export.service.ExportServiceBean;
+import edu.harvard.iq.dataverse.export.service.InternalExportDataProvider;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -228,7 +229,7 @@ public class SchemaDotOrgExporterTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
         try {
-            ExportDataProvider provider2 = new InternalExportDataProvider(version);
+            ExportDataProvider provider2 = ExportServiceBean.createProvider(version);
             schemaDotOrgExporter.exportDataset(provider2, byteArrayOutputStream);
         } catch (Exception e) {
             e.printStackTrace();

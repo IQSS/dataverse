@@ -146,7 +146,12 @@
         <!--<module name="AvoidNestedBlocks"/>-->
         <!--<module name="EmptyBlock"/>-->
         <!-- Put the left curly at the end of the line above, not on the next line. http://checkstyle.sourceforge.net/config_blocks.html#LeftCurly-->
-        <module name="LeftCurly"/>
+        <module name="LeftCurly">
+            <!-- Force left curly on the same line as the statement, followed by a linebreak. -->
+            <property name="option" value="eol"/>
+            <!-- Default value minus LAMBDA -->
+            <property name="tokens" value="ANNOTATION_DEF,CLASS_DEF,CTOR_DEF,ENUM_CONSTANT_DEF,ENUM_DEF,INTERFACE_DEF,LITERAL_CASE,LITERAL_CATCH,LITERAL_DEFAULT,LITERAL_DO,LITERAL_ELSE,LITERAL_FINALLY,LITERAL_FOR,LITERAL_IF,LITERAL_SWITCH,LITERAL_SYNCHRONIZED,LITERAL_TRY,LITERAL_WHILE,METHOD_DEF,OBJBLOCK,STATIC_INIT,RECORD_DEF,COMPACT_CTOR_DEF"/>
+        </module>
         <!--<module name="NeedBraces"/>-->
         <!--<module name="RightCurly"/>-->
 

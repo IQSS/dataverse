@@ -6,11 +6,15 @@ import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 
+import io.gdcc.spi.export.caps.bulk.BulkDatasetContext;
+import io.gdcc.spi.export.caps.bulk.BulkDatasetExporter;
 import jakarta.ws.rs.core.MediaType;
 
 
@@ -19,7 +23,7 @@ import jakarta.ws.rs.core.MediaType;
  * @author skraffmi
  */
 @AutoService(Exporter.class)
-public class JSONExporter implements Exporter {
+public class JSONExporter implements Exporter, BulkDatasetExporter {
 
     @Override
     public String getFormatName() {
@@ -57,4 +61,22 @@ public class JSONExporter implements Exporter {
         return MediaType.APPLICATION_JSON;
     }
     
+    @Override
+    public void exportBulk(BulkDatasetContext bulkDatasetContext, OutputStream outputStream) throws ExportException {
+        try {
+            outputStream.write("[".getBytes(StandardCharsets.UTF_8));
+            int count = 1;
+            for (BulkDatasetContext.Item item : bulkDatasetContext.items()) {
+                item.writeTo(outputStream);
+                if (count < bulkDatasetContext.size()) {
+                    outputStream.write(",".getBytes(StandardCharsets.UTF_8));
+                }
+                outputStream.flush();
+                count++;
+            }
+            outputStream.write("]".getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new ExportException("Writing JSON bulk export failed", e);
+        }
+    }
 }
