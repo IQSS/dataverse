@@ -239,7 +239,7 @@ Next, reconfigure Solr to know about the new metadata block.
 
 You can back up your existing Solr schema like this:
 
-``cp docker-dev-volumes/solr/data/data/collection1/conf/schema.xml docker-dev-volumes/solr/data/data/collection1/conf/schema.xml.orig``
+``cp data/solr/data/data/collection1/conf/schema.xml data/solr/data/data/collection1/conf/schema.xml.orig``
 
 You can see the existing fields Solr knows about like this:
 
@@ -247,7 +247,7 @@ You can see the existing fields Solr knows about like this:
 
 Update your Solr schema with the following command:
 
-``curl http://localhost:8080/api/admin/index/solr/schema | docker run -i --rm -v ./docker-dev-volumes/solr/data:/var/solr gdcc/configbaker:unstable update-fields.sh /var/solr/data/collection1/conf/schema.xml``
+``curl http://localhost:8080/api/admin/index/solr/schema | docker run -i --rm -v ./data/solr/data:/var/solr gdcc/configbaker:unstable update-fields.sh /var/solr/data/collection1/conf/schema.xml``
 
 Then, reload Solr:
 
@@ -255,7 +255,7 @@ Then, reload Solr:
 
 You can get a diff of your old and new Solr schema like this:
 
-``diff docker-dev-volumes/solr/data/data/collection1/conf/schema.xml.orig docker-dev-volumes/solr/data/data/collection1/conf/schema.xml``
+``diff data/solr/data/data/collection1/conf/schema.xml.orig data/solr/data/data/collection1/conf/schema.xml``
 
 You should be able to see the new fields from the metadata block you added in the following output:
 
