@@ -5,12 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +24,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -72,12 +68,10 @@ public class DatasetFieldCompoundValue implements Serializable {
     @OrderBy("datasetFieldType ASC")
     private List<DatasetField> childDatasetFields = new ArrayList<>();
 
-    // configurations for link creation
     private static final Map<String, Pair<String, String>> linkComponents = Map.of(
       "author", new ImmutablePair<>("authorIdentifierScheme", "authorIdentifier")
     );
 
-    // field for handling links. Annotation '@Transient' prevents these fields to be saved in DB
     @Transient
     private Map<DatasetField, Boolean> linkMap = new LinkedHashMap<>();
     @Transient
@@ -151,18 +145,21 @@ public class DatasetFieldCompoundValue implements Serializable {
     }
 
     public Map<DatasetField, String> getDisplayValueMap() {
-        // todo - this currently only supports child datasetfields with single values
-        // need to determine how we would want to handle multiple
+        return getDisplayValueMap(null);
+    }
+
+    public Map<DatasetField, String> getDisplayValueMap(String langCode) {
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
         linkMap.clear();
-        boolean fixTrailingComma = false;
         Pair<String, String> linkComponents = getLinkComponents();
         linkScheme = null;
         linkValue = null;
         for (DatasetField childDatasetField : childDatasetFields) {
-            fixTrailingComma = false;
+            List<String> values = childDatasetField.getDatasetFieldType().isControlledVocabulary()
+                    ? childDatasetField.getValues(langCode)
+                    : childDatasetField.getValues_nondisplay();
             // skip the value if it is empty or N/A
-            if (!StringUtils.isBlank(childDatasetField.getValue()) && !DatasetField.NA_VALUE.equals(childDatasetField.getValue())) {
+            if (values.stream().anyMatch(value -> !StringUtils.isBlank(value) && !DatasetField.NA_VALUE.equals(value))) {
                 if (linkComponents != null) {
                     if (fieldNameEquals(childDatasetField, linkComponents.getKey())) {
                         linkScheme = childDatasetField.getValue();
@@ -173,35 +170,13 @@ public class DatasetFieldCompoundValue implements Serializable {
                     }
                 }
 
-                String format = childDatasetField.getDatasetFieldType().getDisplayFormat();
-                if (StringUtils.isBlank(format)) {
-                    format = "#VALUE";
+                String displayValue = childDatasetField.getDisplayValueForValues(values);
+                if (displayValue.isEmpty()) {
+                    continue;
                 }
-
-                String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) :  childDatasetField.getValue();
-                if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
-                    sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
-                }
-                //if a series of child values is comma delimited we want to strip off the final entry's comma
-                if (format.trim().equals("#VALUE,")) fixTrailingComma = true;
-                
-                // replace the special values in the format (note: we replace #VALUE last since we don't
-                // want any issues if the value itself has #NAME in it)
-
-                String displayValue = format
-                        .replace("#NAME", childDatasetField.getDatasetFieldType().getTitle())
-                        //todo: this should be handled in more generic way for any other text that can then be internationalized
-                        // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
-                        .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
-                        .replace("#VALUE",  sanitizedValue);
                 fieldMap.put(childDatasetField, displayValue);
             }
         }
-        
-        if (fixTrailingComma) {
-            return (removeLastComma(fieldMap));
-        }
-
         return fieldMap;
     }
 
@@ -236,34 +211,6 @@ public class DatasetFieldCompoundValue implements Serializable {
         return false;
     }
 
-    private Map<DatasetField, String> removeLastComma(Map<DatasetField, String> mapIn) {
-
-        Iterator<Map.Entry<DatasetField, String>> itr = mapIn.entrySet().iterator();
-        Map.Entry<DatasetField, String> entry = null;
-        DatasetField keyVal = null;
-        String oldValue = null;
-
-        while (itr.hasNext()) {
-            entry = itr.next();
-            keyVal = entry.getKey();
-            oldValue = entry.getValue();
-        }
-        
-        String newValue = oldValue; 
-        
-        if (keyVal != null && oldValue != null && oldValue.length() >= 2) {
-        //To take into account both versions of the tsv for display value
-            if (oldValue.endsWith(", ")) {
-                newValue = oldValue.substring(0, oldValue.length() - 2);
-            } else if (oldValue.endsWith(",")) {
-                newValue = oldValue.substring(0, oldValue.length() - 1);
-            }
-         
-            mapIn.replace(keyVal, oldValue, newValue);
-        }
-
-        return mapIn;
-    }
     
 
     /**
