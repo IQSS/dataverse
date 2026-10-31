@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -208,6 +210,46 @@ public class DatasetFieldServiceBeanTest {
 
         assertNotNull(idResult, "Result should not be null when matching with @id");
         assertEquals("three", idResult, "Result should be the original test object");
+    }
+
+    @Test
+    void isValidCVocValueAllowsBlankValues() {
+        DatasetFieldType dft = new DatasetFieldType("compoundDemoTermURI", DatasetFieldType.FieldType.URL, false);
+        dft.setId(1L);
+        JsonObject cvocEntry = Json.createObjectBuilder()
+                .add("allow-free-text", false)
+                .add("vocabs", Json.createObjectBuilder()
+                        .add("unesco", Json.createObjectBuilder()
+                                .add("uriSpace", "http://skos.um.es/unescothes/")))
+                .build();
+        Mockito.doReturn(Map.of(1L, cvocEntry)).when(datasetFieldServiceBean).getCVocConf(true);
+
+        assertTrue(datasetFieldServiceBean.isValidCVocValue(dft, ""));
+        assertTrue(datasetFieldServiceBean.isValidCVocValue(dft, "   "));
+    }
+
+    @Test
+    void getVocabScriptsIgnoresRuntimeProviderConfigsWithoutJsUrl() {
+        SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
+        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.ControlledVocabularyCustomJavaScript))
+                .thenReturn(null);
+        datasetFieldServiceBean.settingsService = settingsService;
+
+        JsonObject jsBackedConfig = Json.createObjectBuilder()
+                .add("field-name", "skosterm")
+                .add("js-url", "https://example.org/skosmos.js")
+                .build();
+        JsonObject runtimeProviderConfig = Json.createObjectBuilder()
+                .add("field-name", "authorAffiliation")
+                .add("provider", Json.createObjectBuilder()
+                        .add("type", "http-json"))
+                .build();
+
+        List<String> scripts = datasetFieldServiceBean.getVocabScripts(Map.of(
+                1L, jsBackedConfig,
+                2L, runtimeProviderConfig));
+
+        assertEquals(Set.of("https://example.org/skosmos.js"), Set.copyOf(scripts));
     }
 
     /**
