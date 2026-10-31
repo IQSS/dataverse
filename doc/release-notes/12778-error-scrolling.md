@@ -1,0 +1,3 @@
+## Metadata Editing Improvement
+
+This release makes it easier for users to find errors (missing required fields or invalid values) when editing metadata. The display shows a list of all errors found, scrolls to the first error, provides a 'Next Invalid Value' link to go to the next error, and opens closed blocks that have errors. If a dataset already has invalid values when editing begins, the existing error(s) will be highlighted in the same way.
