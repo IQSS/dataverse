@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.api.util.Pagination;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -40,12 +41,19 @@ public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dat
     private final DataverseRequest request;
     private final AuthenticatedUser user;
     private final String permission;
+    private String searchTerm;
+    private final Pagination pagination;
 
     public GetUserPermittedCollectionsCommand(DataverseRequest request, AuthenticatedUser user, String permission) {
+        this(request, user, permission, null, null);
+    }
+    public GetUserPermittedCollectionsCommand(DataverseRequest request, AuthenticatedUser user, String permission, String searchTerm, Pagination pagination) {
         super(request, (DvObject) null);
         this.request = request;
         this.user = user;
         this.permission = permission;
+        this.searchTerm = searchTerm;
+        this.pagination = pagination;
     }
 
     @Override
@@ -59,6 +67,6 @@ public class GetUserPermittedCollectionsCommand extends AbstractCommand<List<Dat
         } catch (IllegalArgumentException e) {
             throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("getUserPermittedCollectionsCommand.errors.permissionNotValid"), this);
         }
-        return ctxt.permissions().findPermittedCollections(request, user, permissionBit);
+        return ctxt.permissions().findPermittedCollections(request, user, permissionBit, searchTerm, pagination);
     }
 }
