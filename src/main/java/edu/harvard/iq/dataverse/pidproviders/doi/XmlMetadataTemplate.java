@@ -249,23 +249,11 @@ public class XmlMetadataTemplate {
                 if (author.getAffiliation() != null && !author.getAffiliation().getValue().isEmpty()) {
                     affiliation = author.getAffiliation().getValue();
                 }
-                String nameIdentifier = null;
-                String nameIdentifierScheme = null;
-                if (StringUtils.isNotBlank(author.getIdValue()) && StringUtils.isNotBlank(author.getIdType())) {
-                    nameIdentifier = author.getIdValue();
-                    if (nameIdentifier != null) {
-                        // Normalizes to the URL form of the identifier, returns null if the identifier
-                        // is not valid given the type
-                        nameIdentifier = author.getIdentifierAsUrl();
-                    }
-                    nameIdentifierScheme = author.getIdType();
-                }
-
                 if (StringUtils.isNotBlank(creatorName)) {
-                    JsonObject creatorObj = PersonOrOrgUtil.getPersonOrOrganization(creatorName, false,
-                            StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"));
+                    ResolvedPersonOrOrg creator = resolvePersonOrOrg(creatorName, author.getIdValue(),
+                            author.getIdType(), false);
                     nothingWritten = false;
-                    writeEntityElements(xmlw, "creator", null, creatorObj, affiliation, nameIdentifier, nameIdentifierScheme);
+                    writeEntityElements(xmlw, "creator", null, creator, affiliation);
                 }
 
                 
@@ -420,8 +408,8 @@ public class XmlMetadataTemplate {
      * affiliation sub-properties)
      *
      * @see #writeEntityElements(javax.xml.stream.XMLStreamWriter,
-     *      java.lang.String, java.lang.String, jakarta.json.JsonObject,
-     *      java.lang.String, java.lang.String, java.lang.String)
+     *      java.lang.String, java.lang.String, ResolvedPersonOrOrg,
+     *      java.lang.String)
      *
      * @param xmlw
      *            The stream writer
@@ -435,6 +423,7 @@ public class XmlMetadataTemplate {
         List<DatasetFieldCompoundValue> compoundDistributors = new ArrayList<DatasetFieldCompoundValue>();
         List<DatasetFieldCompoundValue> compoundContacts = new ArrayList<DatasetFieldCompoundValue>();
         List<DatasetFieldCompoundValue> compoundContributors = new ArrayList<DatasetFieldCompoundValue>();
+        List<String> dataCollectors = new ArrayList<>();
         // Dataset Subject= Dataverse subject, keyword, and/or topic classification
         // fields
         // ToDo Include for files?
@@ -457,6 +446,10 @@ public class XmlMetadataTemplate {
                     break;
                 case DatasetFieldConstant.contributor:
                     compoundContributors = dsf.getDatasetFieldCompoundValues();
+                    break;
+                case DatasetFieldConstant.dataCollector:
+                    dataCollectors = dsf.getValues();
+                    break;
                 }
             }
         }
@@ -478,8 +471,8 @@ public class XmlMetadataTemplate {
             }
             if (StringUtils.isNotBlank(producer)) {
                 contributorsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "contributors", contributorsCreated);
-                JsonObject entityObject = PersonOrOrgUtil.getPersonOrOrganization(producer, false, false);
-                writeEntityElements(xmlw, "contributor", "Producer", entityObject, affiliation, null, null);
+                writeEntityElements(xmlw, "contributor", "Producer", resolvePersonOrOrg(producer,
+                        getCompoundIdentifier(producerFieldValue), getCompoundIdentifierType(producerFieldValue), false), affiliation);
             }
 
         }
@@ -501,8 +494,8 @@ public class XmlMetadataTemplate {
             }
             if (StringUtils.isNotBlank(distributor)) {
                 contributorsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "contributors", contributorsCreated);
-                JsonObject entityObject = PersonOrOrgUtil.getPersonOrOrganization(distributor, false, false);
-                writeEntityElements(xmlw, "contributor", "Distributor", entityObject, affiliation, null, null);
+                writeEntityElements(xmlw, "contributor", "Distributor", resolvePersonOrOrg(distributor,
+                        getCompoundIdentifier(distributorFieldValue), getCompoundIdentifierType(distributorFieldValue), false), affiliation);
             }
 
         }
@@ -523,8 +516,8 @@ public class XmlMetadataTemplate {
             }
             if (StringUtils.isNotBlank(contact)) {
                 contributorsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "contributors", contributorsCreated);
-                JsonObject entityObject = PersonOrOrgUtil.getPersonOrOrganization(contact, false, false);
-                writeEntityElements(xmlw, "contributor", "ContactPerson", entityObject, affiliation, null, null);
+                writeEntityElements(xmlw, "contributor", "ContactPerson", resolvePersonOrOrg(contact,
+                        getCompoundIdentifier(contactFieldValue), getCompoundIdentifierType(contactFieldValue), false), affiliation);
             }
 
         }
@@ -551,10 +544,18 @@ public class XmlMetadataTemplate {
             if (StringUtils.isNotBlank(contributor) && !StringUtils.equalsIgnoreCase("Funder", contributorType)) {
                 contributorType = getCanonicalContributorType(contributorType);
                 contributorsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "contributors", contributorsCreated);
-                JsonObject entityObject = PersonOrOrgUtil.getPersonOrOrganization(contributor, false, false);
-                writeEntityElements(xmlw, "contributor", contributorType, entityObject, null, null, null);
+                writeEntityElements(xmlw, "contributor", contributorType, resolvePersonOrOrg(contributor,
+                        getCompoundIdentifier(contributorFieldValue), getCompoundIdentifierType(contributorFieldValue), false), null);
             }
 
+        }
+
+        for (String dataCollector : dataCollectors) {
+            if (StringUtils.isNotBlank(dataCollector)) {
+                contributorsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "contributors", contributorsCreated);
+                writeEntityElements(xmlw, "contributor", "DataCollector",
+                        resolvePersonOrOrg(dataCollector, null, null, false), null);
+            }
         }
 
         if (contributorsCreated) {
@@ -574,7 +575,29 @@ public class XmlMetadataTemplate {
         return contributorType;
     }
 
-    private void writeEntityElements(XMLStreamWriter xmlw, String elementName, String type, JsonObject entityObject, String affiliation, String nameIdentifier, String nameIdentifierScheme) throws XMLStreamException {
+    private String getCompoundIdentifier(DatasetFieldCompoundValue compoundValue) {
+        for (DatasetField subField : compoundValue.getChildDatasetFields()) {
+            String fieldName = subField.getDatasetFieldType().getName();
+            if (fieldName.endsWith("Identifier") && StringUtils.isNotBlank(subField.getValue())) {
+                return subField.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String getCompoundIdentifierType(DatasetFieldCompoundValue compoundValue) {
+        for (DatasetField subField : compoundValue.getChildDatasetFields()) {
+            String fieldName = subField.getDatasetFieldType().getName();
+            if (fieldName.endsWith("IdentifierScheme") && StringUtils.isNotBlank(subField.getValue())) {
+                return subField.getValue();
+            }
+        }
+        return null;
+    }
+
+    private void writeEntityElements(XMLStreamWriter xmlw, String elementName, String type,
+            ResolvedPersonOrOrg resolved, String affiliation) throws XMLStreamException {
+        JsonObject entityObject = PersonOrOrgUtil.getPersonOrOrganization(resolved.displayName(), false, resolved.isPerson());
         xmlw.writeStartElement(elementName);
         Map<String, String> attributeMap = new HashMap<String, String>();
         if (StringUtils.isNotBlank(type)) {
@@ -595,53 +618,112 @@ public class XmlMetadataTemplate {
             XmlWriterUtil.writeFullElement(xmlw, "familyName", StringEscapeUtils.escapeXml10(entityObject.getString("familyName")));
         }
 
-        if (nameIdentifier != null) {
+        if (resolved.identifierValue() != null) {
             attributeMap.clear();
-            URL url;
-            try {
-                url = new URL(nameIdentifier);
-                String protocol = url.getProtocol();
-                String authority = url.getAuthority();
-                String site = String.format("%s://%s", protocol, authority);
-                attributeMap.put("schemeURI", site);
-                attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
-                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "nameIdentifier", attributeMap, nameIdentifier);
-            } catch (MalformedURLException e) {
-                logger.warning("DatasetAuthor.getIdentifierAsUrl returned a Malformed URL: " + nameIdentifier);
-            }
+            attributeMap.put("schemeURI", resolved.schemeUri());
+            attributeMap.put("nameIdentifierScheme", resolved.identifierType());
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "nameIdentifier", attributeMap, resolved.identifierValue());
         }
 
         if (StringUtils.isNotBlank(affiliation)) {
             attributeMap.clear();
-            boolean isROR=false;
-            String orgName = affiliation;
-            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
-            if (externalIdentifier.isValidIdentifier(orgName)) {
-                isROR = true;
-                JsonObject jo = getExternalVocabularyValue(orgName);
-                // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
-                if (jo != null && jo.containsKey("termName")) {
-                    JsonValue termName = jo.get("termName");
-                    if (termName.getValueType() == ValueType.STRING) {
-                        orgName = ((JsonString) termName).getString();
-                    }
-                }
-            }
-          
-            if (isROR) {
-
-                attributeMap.put("schemeURI", "https://ror.org");
-                attributeMap.put("affiliationIdentifierScheme", "ROR");
-                attributeMap.put("affiliationIdentifier", affiliation);
+            ResolvedPersonOrOrg resolvedAffiliation = resolvePersonOrOrg(affiliation, null, null, true);
+            if (resolvedAffiliation.identifierValue() != null
+                    && "ROR".equals(resolvedAffiliation.identifierType())) {
+                attributeMap.put("schemeURI", resolvedAffiliation.schemeUri());
+                attributeMap.put("affiliationIdentifierScheme", resolvedAffiliation.identifierType());
+                attributeMap.put("affiliationIdentifier", resolvedAffiliation.identifierValue());
             }
 
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName));
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap,
+                    StringEscapeUtils.escapeXml10(resolvedAffiliation.displayName()));
         }
         xmlw.writeEndElement();
     }
 
     private JsonObject getExternalVocabularyValue(String id) {
-        return CDI.current().select(DatasetFieldServiceBean.class).get().getExternalVocabularyValue(id);
+        try {
+            return CDI.current().select(DatasetFieldServiceBean.class).get().getExternalVocabularyValue(id);
+        } catch (IllegalStateException e) {
+            return null;
+        }
+    }
+
+    private record ResolvedPersonOrOrg(String displayName, String identifierValue, String identifierType,
+            String schemeUri, boolean isPerson) {
+    }
+
+    private ResolvedPersonOrOrg resolvePersonOrOrg(String rawValue, String explicitIdentifier, String explicitType,
+            boolean organizationIfTied) {
+        if (StringUtils.isBlank(rawValue)) {
+            return null;
+        }
+
+        String identifier = StringUtils.stripToNull(explicitIdentifier);
+        ExternalIdentifier externalIdentifier = findExternalIdentifier(explicitType, identifier);
+        if (externalIdentifier == null) {
+            externalIdentifier = findExternalIdentifier(null, rawValue);
+            if (externalIdentifier != null) {
+                identifier = rawValue;
+            }
+        }
+
+        if (externalIdentifier == null || !externalIdentifier.isValidIdentifier(identifier)) {
+            JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(rawValue, organizationIfTied, false);
+            return new ResolvedPersonOrOrg(rawValue, null, null, null, entity.getBoolean("isPerson"));
+        }
+
+        String canonicalIdentifier = externalIdentifier.format(identifier);
+        JsonObject retrieved = getExternalVocabularyValue(identifier);
+        String displayName = getRetrievedString(retrieved, "personName");
+        if (displayName == null) {
+            displayName = getRetrievedString(retrieved, "termName");
+        }
+        if (displayName == null) {
+            displayName = rawValue;
+        }
+        return new ResolvedPersonOrOrg(displayName, canonicalIdentifier, externalIdentifier.name(),
+                getSchemeUri(canonicalIdentifier), externalIdentifier == ExternalIdentifier.ORCID);
+    }
+
+    private ExternalIdentifier findExternalIdentifier(String type, String value) {
+        if (StringUtils.isNotBlank(type)) {
+            for (ExternalIdentifier candidate : ExternalIdentifier.values()) {
+                if (candidate.name().equalsIgnoreCase(type)
+                        && StringUtils.isNotBlank(value)
+                        && candidate.isValidIdentifier(value)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+        if (StringUtils.isNotBlank(value)) {
+            for (ExternalIdentifier candidate : ExternalIdentifier.values()) {
+                if (candidate == ExternalIdentifier.ORCID || candidate == ExternalIdentifier.ROR) {
+                    if (candidate.isValidIdentifier(value)) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getRetrievedString(JsonObject retrieved, String key) {
+        if (retrieved == null || !retrieved.containsKey(key)) {
+            return null;
+        }
+        JsonValue value = retrieved.get(key);
+        return value.getValueType() == ValueType.STRING ? ((JsonString) value).getString() : null;
+    }
+
+    private String getSchemeUri(String identifier) {
+        try {
+            URL url = new URL(identifier);
+            return String.format("%s://%s", url.getProtocol(), url.getAuthority());
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 
     /**
@@ -1700,8 +1782,12 @@ public class XmlMetadataTemplate {
                         if ("Funder".equals(contributorType)) {
                             if (!StringUtils.isBlank(contributorName)) {
                                 fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
+                                ResolvedPersonOrOrg resolvedFunder = resolvePersonOrOrg(contributorName,
+                                        getCompoundIdentifier(contributorValue), getCompoundIdentifierType(contributorValue), true);
                                 xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                                XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(contributorName));
+                                XmlWriterUtil.writeFullElement(xmlw, "funderName",
+                                        StringEscapeUtils.escapeXml10(resolvedFunder.displayName()));
+                                writeFunderIdentifier(xmlw, resolvedFunder);
                                 xmlw.writeEndElement(); // </fundingReference>
                             }
                         }
@@ -1715,7 +1801,10 @@ public class XmlMetadataTemplate {
                             // It would be nice to do something with grantNumberValue (the actual number)
                             // but schema.org doesn't support it.
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgency)) {
-                                String grantAgency = subField.getDisplayValue();
+                                String grantAgency = subField.getValue();
+                                if (StringUtils.isBlank(grantAgency)) {
+                                    grantAgency = subField.getDisplayValue();
+                                }
                                 funder = grantAgency;
                             } else if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberValue)) {
                                 String grantNumberValue = subField.getDisplayValue();
@@ -1724,26 +1813,13 @@ public class XmlMetadataTemplate {
                         }
                         if (!StringUtils.isBlank(funder)) {
                             fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
-                            boolean isROR=false;
-                            String funderIdentifier = null;
-                            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
-                            if (externalIdentifier.isValidIdentifier(funder)) {
-                                isROR = true;
-                                JsonObject jo = getExternalVocabularyValue(funder);
-                                if (jo != null) {
-                                    funderIdentifier = funder;
-                                    funder = jo.getString("termName");
-                                }
-                            }
+                            ResolvedPersonOrOrg resolvedFunder = resolvePersonOrOrg(funder,
+                                    getCompoundIdentifier(grantObject), getCompoundIdentifierType(grantObject), true);
 
                             xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                            XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(funder));
-                            if (isROR) {
-                                Map<String, String> attributeMap = new HashMap<>();
-                                attributeMap.put("schemeURI", "https://ror.org");
-                                attributeMap.put("funderIdentifierType", "ROR");
-                                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "funderIdentifier", attributeMap, StringEscapeUtils.escapeXml10(funderIdentifier));
-                            }
+                            XmlWriterUtil.writeFullElement(xmlw, "funderName",
+                                    StringEscapeUtils.escapeXml10(resolvedFunder.displayName()));
+                            writeFunderIdentifier(xmlw, resolvedFunder);
                             if (StringUtils.isNotBlank(awardNumber)) {
                                 XmlWriterUtil.writeFullElement(xmlw, "awardNumber", StringEscapeUtils.escapeXml10(awardNumber));
                             }
@@ -1758,6 +1834,17 @@ public class XmlMetadataTemplate {
                 xmlw.writeEndElement(); // </fundingReferences>
             }
 
+        }
+    }
+
+    private void writeFunderIdentifier(XMLStreamWriter xmlw, ResolvedPersonOrOrg resolvedFunder)
+            throws XMLStreamException {
+        if (resolvedFunder.identifierValue() != null) {
+            Map<String, String> attributeMap = new HashMap<>();
+            attributeMap.put("schemeURI", resolvedFunder.schemeUri());
+            attributeMap.put("funderIdentifierType", resolvedFunder.identifierType());
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "funderIdentifier", attributeMap,
+                    StringEscapeUtils.escapeXml10(resolvedFunder.identifierValue()));
         }
     }
 }

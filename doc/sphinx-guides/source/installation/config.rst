@@ -4214,6 +4214,15 @@ Allows support for Locally FAIR collections and datasets.
 When enabled, selected content can remain visible only to authorized users or groups within a Dataverse installation.
 See :ref:`locally-fair` for more information.
 
+.. _dataverse.feature.treat-sandbox-orcids-as-pids:
+
+dataverse.feature.treat-sandbox-orcids-as-pids
+++++++++++++++++++++++++++++++++++++++++++++++
+
+Treats ORCID identifiers hosted at ``https://sandbox.orcid.org`` as persistent identifiers when validating identifiers and exporting metadata. The default is ``false``. Enable this flag only when testing Dataverse with the ORCID sandbox configured for login, external vocabularies, etc.
+
+
+
 .. _:ApplicationServerSettings:
 
 Application Server Settings
