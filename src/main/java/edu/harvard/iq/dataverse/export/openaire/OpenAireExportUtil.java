@@ -51,8 +51,13 @@ public class OpenAireExportUtil {
     public static String SCHEMA_VERSION = "4.1";
     public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-4";
     public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
+    public static String schemeURIKey= "schemeURI";
+    public static String alternateIdentifierTypeKey = "alternateIdentifierType";
+    public static String relatedIdentifierKey = "relatedIdentifier";
+    public static String relatedIdentifierTypeKey = "relatedIdentifierType";
 
     public static String FunderType = "Funder";
+    public static String OtherType = "Other";
 
     public static void datasetJson2openaire(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
@@ -332,7 +337,7 @@ public class OpenAireExportUtil {
                                             String authority = url.getAuthority();
                                             String site = String.format("%s://%s", protocol, authority);
 
-                                            attributeMap.put("schemeURI", site);
+                                            attributeMap.put(schemeURIKey, site);
                                             attributeMap.put("nameIdentifierScheme", nameIdentifierScheme);
                                             writeFullElement(xmlw, "nameIdentifier", null, attributeMap, idasURL, language);
 
@@ -367,7 +372,7 @@ public class OpenAireExportUtil {
                                     }
 
                                     if (isROR) {
-                                        attributeMap.put("schemeURI", "https://ror.org");
+                                        attributeMap.put(schemeURIKey, "https://ror.org");
                                         attributeMap.put("affiliationIdentifierScheme", "ROR");
                                         attributeMap.put("affiliationIdentifier", affiliation);
                                     }
@@ -615,7 +620,7 @@ public class OpenAireExportUtil {
             subject_map.put("valueURI", valueURI);
         }
         if (StringUtils.isNotBlank(schemeURI)) {
-            subject_map.put("schemeURI", schemeURI);
+            subject_map.put(schemeURIKey, schemeURI);
         }
 
         if (!subject_map.isEmpty()) {
@@ -771,7 +776,7 @@ public class OpenAireExportUtil {
             xmlw.writeAttribute("contributorType", contributorType.replaceAll(" ", ""));
         } else {
             //12299 if no contributor is available write "other"
-            xmlw.writeAttribute("contributorType", "Other");
+            xmlw.writeAttribute("contributorType", OtherType);
         }
 
         Map<String, String> contributor_map = new HashMap<>();
@@ -906,7 +911,7 @@ public class OpenAireExportUtil {
                             if (StringUtils.isNotBlank(timePeriodCoveredStart) || StringUtils.isNotBlank(timePeriodCoveredEnd)) {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
                                 Map<String, String> date_map = new HashMap<String, String>();
-                                date_map.put("dateType", "Other");
+                                date_map.put("dateType", OtherType);
                                 date_map.put("dateInformation", "Time period covered by the data");
                                 writeFullElement(xmlw, null, "date", date_map, timePeriodCoveredStart + "/" + timePeriodCoveredEnd, language);
                             }
@@ -994,12 +999,12 @@ public class OpenAireExportUtil {
                                 Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
                                 if (StringUtils.isNotBlank(alternateIdentifierType)) {
 
-                                    alternateIdentifier_map.put("alternateIdentifierType", alternateIdentifierType);
+                                    alternateIdentifier_map.put(alternateIdentifierType, alternateIdentifierType);
                                 } else {
                                     //12304 use "unav" if no type provided
-                                    alternateIdentifier_map.put("alternateIdentifierType", AbstractPidProvider.UNAVAILABLE);
+                                    alternateIdentifier_map.put(alternateIdentifierType, AbstractPidProvider.UNAVAILABLE);
                                 }
-                                writeFullElement(xmlw, null, "alternateIdentifier", alternateIdentifier_map, alternateIdentifier, language);
+                                writeFullElement(xmlw, null, alternateIdentifierType, alternateIdentifier_map, alternateIdentifier, language);
                             }
                         }
                     }
@@ -1111,7 +1116,7 @@ public class OpenAireExportUtil {
                                     relatedIdentifierType = (String) relatedIdentifierTypeMap.get(relatedIdentifierType);
                                 }
 
-                                relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
+                                relatedIdentifier_map.put(relatedIdentifierTypeKey, relatedIdentifierType);
                                 if (relationType == null) {
                                     //12305 change to match DataCite
                                     relationType = "IsSupplementTo";
@@ -1120,7 +1125,7 @@ public class OpenAireExportUtil {
                                 //12309 update handling of PURL type identifiers 
                                 // by differentiating with "url"
                                 if (StringUtils.containsOnly(relatedIdentifierType, "url")) {
-                                    writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, relatedURL, language);
+                                    writeFullElement(xmlw, null, relatedIdentifierKey, relatedIdentifier_map, relatedURL, language);
                                 } else {
                                     if (StringUtils.contains(relatedIdentifier, "http")) {
                                         String site = relatedIdentifier.substring(0, relatedIdentifier.indexOf("/") + 2);
@@ -1130,7 +1135,7 @@ public class OpenAireExportUtil {
 
                                         relatedIdentifier_map.put("SchemeURI", site);
                                     }
-                                    writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, relatedIdentifier, language);
+                                    writeFullElement(xmlw, null, relatedIdentifierKey, relatedIdentifier_map, relatedIdentifier, language);
                                 }
                             }
                         }
@@ -1153,9 +1158,9 @@ public class OpenAireExportUtil {
                         if (relatedIdentifierTypeMap.containsKey(relatedIdentifierType)) {
                             relatedIdentifierType = (String) relatedIdentifierTypeMap.get(relatedIdentifierType);
                         }
-                        relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
+                        relatedIdentifier_map.put(relatedIdentifierTypeKey, relatedIdentifierType);
                         relatedIdentifier_check = writeOpenTag(xmlw, "relatedIdentifiers", relatedIdentifier_check);
-                        writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, pidURL, language);
+                        writeFullElement(xmlw, null, relatedIdentifierKey, relatedIdentifier_map, pidURL, language);
 
                     }
                 }
@@ -1426,7 +1431,7 @@ public class OpenAireExportUtil {
         String descriptionOfOther = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.notesText);
         if (StringUtils.isNotBlank(descriptionOfOther)) {
             description_check = writeOpenTag(xmlw, "descriptions", description_check);
-            writeDescriptionElement(xmlw, "Other", descriptionOfOther, language);
+            writeDescriptionElement(xmlw, OtherType, descriptionOfOther, language);
         }
         writeEndTag(xmlw, description_check);
     }
