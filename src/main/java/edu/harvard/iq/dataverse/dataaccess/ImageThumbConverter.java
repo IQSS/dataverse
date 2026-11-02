@@ -155,18 +155,15 @@ public class ImageThumbConverter {
         if (file == null) {
             return;
         }
-        if (success) {
-            file.setPreviewImageAvailable(true);
-            file.setPreviewImageFail(false);
-            logger.fine("Marking thumbnail as available for file " + file.getId());
-        } else {
-            file.setPreviewImageFail(true);
-            file.setPreviewImageAvailable(false);
-            logger.fine("Marking thumbnail as failed for file " + file.getId());
-        }
         try {
             DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
-            datafileService.updatePreviewImageFlags(file.getId(), file.isPreviewImageAvailable(), file.isPreviewImageFail());
+            if (success) {
+                logger.fine("Marking thumbnail as available for file " + file.getId());
+                datafileService.updatePreviewImageFlags(file.getId(), true, false);
+            } else {
+                logger.fine("Marking thumbnail as failed for file " + file.getId());
+                datafileService.updatePreviewImageFlags(file.getId(), false, true);
+            }
         } catch (Exception ex) {
             logger.warning("Failed to persist thumbnail status for file " + file.getId() + ": " + ex.getMessage());
         }

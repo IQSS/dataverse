@@ -525,7 +525,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Object[] result;
 
         try {
-            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER, t2.PROTOCOL FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t0.PREVIEWIMAGEFAIL, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER, t2.PROTOCOL FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -590,37 +590,42 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (previewAvailable != null) {
             dataFile.setPreviewImageAvailable(previewAvailable);
         }
-        
-        String contentType = (String) result[10];
+
+        Boolean previewFail = (Boolean) result[10];
+        if (previewFail != null) {
+            dataFile.setPreviewImageFail(previewFail);
+        }
+
+        String contentType = (String) result[11];
         
         if (contentType != null) {
             dataFile.setContentType(contentType);
         }
 
-        String storageIdentifier = (String) result[11];
+        String storageIdentifier = (String) result[12];
 
         if (storageIdentifier != null) {
             dataFile.setStorageIdentifier(storageIdentifier);
         }
 
-        Long fileSize = (Long) result[12];
+        Long fileSize = (Long) result[13];
 
         if (fileSize != null) {
             dataFile.setFilesize(fileSize);
         }
 
-        if (result[13] != null) {
-            String ingestStatusString = (String) result[13];
+        if (result[14] != null) {
+            String ingestStatusString = (String) result[14];
             dataFile.setIngestStatus(ingestStatusString.charAt(0));
         }
 
-        String md5 = (String) result[14];
+        String md5 = (String) result[15];
 
         if (md5 != null) {
             dataFile.setChecksumValue(md5);
         }
 
-        Boolean restricted = (Boolean) result[15];
+        Boolean restricted = (Boolean) result[16];
         if (restricted != null) {
             dataFile.setRestricted(restricted);
         }
@@ -630,11 +635,11 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         
         // TODO: check for nulls
-        owner.setId((Long)result[16]);
-        owner.setAuthority((String)result[17]);
-        owner.setIdentifier((String)result[18]);
+        owner.setId((Long)result[17]);
+        owner.setAuthority((String)result[18]);
+        owner.setIdentifier((String)result[19]);
 
-        String checksumType = (String) result[19];
+        String checksumType = (String) result[20];
         if (checksumType != null) {
             try {
                 // In the database we store "SHA1" rather than "SHA-1".
@@ -645,32 +650,32 @@ public class DataFileServiceBean implements java.io.Serializable {
             }
         }
         
-        Long previousDataFileId = (Long) result[20];
+        Long previousDataFileId = (Long) result[21];
         if (previousDataFileId != null){
             dataFile.setPreviousDataFileId(previousDataFileId);
         }
         
-        Long rootDataFileId = (Long) result[21];
+        Long rootDataFileId = (Long) result[22];
         if (rootDataFileId != null){
             dataFile.setRootDataFileId(rootDataFileId);
-        } 
-        
-        String authority = (String) result[22];
+        }
+
+        String authority = (String) result[23];
         if (authority != null) {
             dataFile.setAuthority(authority);
         }
 
-        String protocol = (String) result[23];
+        String protocol = (String) result[24];
         if (protocol != null) {
             dataFile.setProtocol(protocol);
         }
 
-        String identifier = (String) result[24];
+        String identifier = (String) result[25];
         if (identifier != null) {
             dataFile.setIdentifier(identifier);
         }
-        
-        owner.setProtocol((String) result[25]);
+
+        owner.setProtocol((String) result[26]);
         
         dataFile.setOwner(owner);
 
@@ -906,6 +911,23 @@ public class DataFileServiceBean implements java.io.Serializable {
             throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
         } 
     }
+
+    /**
+     * Updates only the thumbnail status flags on a DataFile using a direct SQL UPDATE.
+     * This avoids loading the full entity graph when only two boolean columns need to change.
+     *
+     * @param fileId the data file ID
+     * @param previewImageAvailable the PREVIEWIMAGEAVAILABLE flag value
+     * @param previewImageFail the PREVIEWIMAGEFAIL flag value
+     */
+    public void updatePreviewImageFlags(Long fileId, boolean previewImageAvailable, boolean previewImageFail) {
+        em.createNativeQuery(
+                "UPDATE DVOBJECT SET PREVIEWIMAGEAVAILABLE = :previewAvailable, PREVIEWIMAGEFAIL = :previewFail, MODIFICATIONTIME = CURRENT_TIMESTAMP WHERE ID = :fileId")
+                .setParameter("previewAvailable", previewImageAvailable)
+                .setParameter("previewFail", previewImageFail)
+                .setParameter("fileId", fileId)
+                .executeUpdate();
+    }
     
     private void msg(String m){
         System.out.println(m);
@@ -1079,15 +1101,11 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         */
         
-        file = this.find(file.getId());
         if (ImageThumbConverter.isThumbnailAvailable(file)) {
-            file.setPreviewImageAvailable(true);
-            this.save(file);
+            updatePreviewImageFlags(file.getId(), true, false);
             return true;
         }
-        file.setPreviewImageFail(true);
-        file.setPreviewImageAvailable(false);
-        this.save(file);
+        updatePreviewImageFlags(file.getId(), false, true);
         return false;
     }
 
