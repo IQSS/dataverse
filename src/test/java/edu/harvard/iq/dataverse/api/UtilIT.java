@@ -5535,9 +5535,6 @@ public class UtilIT {
      * @return Response from the API
      */
     public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params) {
-        return getFileToolUrl(fileId, toolId, apiToken, params, null);
-    }
-        public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params, Long guestbookResponseId) {
         RequestSpecification request = given()
                 .contentType(ContentType.JSON);
         if (apiToken != null) {
@@ -5545,9 +5542,6 @@ public class UtilIT {
         }
         if (params != null) {
             request = request.body(params.toString());
-        }
-        if (guestbookResponseId != null) {
-            request.queryParam("guestbookResponseId", guestbookResponseId);
         }
         
         return request.post("/api/files/" + fileId + "/externalTool/" + toolId + "/toolUrl");

@@ -548,7 +548,6 @@ public class Access extends AbstractApiBean {
                     }
                 } else {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(firstDatafile)));
-
                 }
             } catch (JsonParseException ex) {
                 List<String> args = Arrays.asList(firstDatafile.getDisplayName(), ex.getLocalizedMessage());
@@ -2329,20 +2328,6 @@ public class Access extends AbstractApiBean {
 
         }
         return required;
-    }
-
-    private GuestbookResponse getGuestbookResponseFromBody(DataFile dataFile, String type, String jsonBody, User requestor) throws JsonParseException {
-        GuestbookResponse guestbookResponse = null;
-
-        if (dataFile != null && jsonBody != null && jsonBody.startsWith("{")) {
-            JsonObject guestbookResponseObj = JsonUtil.getJsonObject(jsonBody).getJsonObject("guestbookResponse");
-            guestbookResponse = guestbookResponseService.initAPIGuestbookResponse(dataFile.getOwner(), dataFile, null, requestor);
-            guestbookResponse.setEventType(type);
-            // Parse custom question answers and validate them
-            jsonParser().parseGuestbookResponse(guestbookResponseObj, guestbookResponse);
-        }
-
-        return guestbookResponse;
     }
 
     // checkAuthorization is a convenience method; it calls the boolean method
