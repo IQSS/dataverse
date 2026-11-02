@@ -3983,6 +3983,8 @@ A comma-separated list of the exact URLs that ORCID may redirect to when a new u
 
 Only needed when the SPA's sign-up page is not at the default URL: if unset, the only allowed URL is the :ref:`dataverse.siteUrl` followed by ``/modern/sign-up``, e.g. ``https://dataverse.example.edu/modern/sign-up``.
 
+The same applies to production ORCID and the ORCID sandbox; the provider's ``userEndpoint`` decides which one is used.
+
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNUP_ORCID_REDIRECT_URIS``.
 
 .. _dataverse.legacy.schemaorg-in-html-head:

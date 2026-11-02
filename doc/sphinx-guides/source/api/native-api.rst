@@ -6527,7 +6527,11 @@ On success, the account is created right away with a ``201 Created`` response th
 Connecting an ORCID iD While Signing Up
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When an ORCID OAuth2 provider is configured (see :doc:`/installation/orcid`; it may be registered with ``"enabled": false`` so it is not offered as a login option), a new user can authenticate their ORCID iD during sign-up, and it is saved to their account as an authenticated ORCID. This takes three requests, none of which need an API token:
+When an ORCID OAuth2 provider is configured (see :doc:`/installation/orcid`; it may be registered with ``"enabled": false`` so it is not offered as a login option), a new user can authenticate their ORCID iD during sign-up, and it is saved to their account as an authenticated ORCID.
+
+This works with the production ORCID registry or the ORCID sandbox, whichever the configured provider uses: an installation can reuse its existing production ORCID client, as long as the redirect URL below is also registered for that client at ORCID. ORCID doesn't accept ``localhost`` redirect URLs, so a development installation using the sandbox can register ``http://127.0.0.1:8000/modern/sign-up`` instead and list it in :ref:`dataverse.api.signup.orcid-redirect-uris`.
+
+Connecting an ORCID iD takes three requests, none of which need an API token:
 
 1. ``GET $SERVER_URL/api/users/signup/orcid/authorize?redirectUri=$REDIRECT_URI`` returns an ``authorizationUrl``. Send the user's browser there. ``$REDIRECT_URI`` must be ``$SERVER_URL/modern/sign-up``, or one of the URLs listed in :ref:`dataverse.api.signup.orcid-redirect-uris` when that setting is used.
 2. After the user signs in at ORCID, ORCID redirects back to ``$REDIRECT_URI`` with ``code`` and ``state`` query parameters. Post them, with the same ``redirectUri``, to ``POST $SERVER_URL/api/users/signup/orcid``:
