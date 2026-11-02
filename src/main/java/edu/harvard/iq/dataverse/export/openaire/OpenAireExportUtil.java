@@ -53,6 +53,7 @@ public class OpenAireExportUtil {
     public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
     public static String schemeURIKey= "schemeURI";
     public static String alternateIdentifierTypeKey = "alternateIdentifierType";
+    public static String alternateIdentifierKey = "alternateIdentifier";    
     public static String relatedIdentifierKey = "relatedIdentifier";
     public static String relatedIdentifierTypeKey = "relatedIdentifierType";
 
@@ -999,12 +1000,12 @@ public class OpenAireExportUtil {
                                 Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
                                 if (StringUtils.isNotBlank(alternateIdentifierType)) {
 
-                                    alternateIdentifier_map.put(alternateIdentifierType, alternateIdentifierType);
+                                    alternateIdentifier_map.put(alternateIdentifierTypeKey, alternateIdentifierType);
                                 } else {
                                     //12304 use "unav" if no type provided
-                                    alternateIdentifier_map.put(alternateIdentifierType, AbstractPidProvider.UNAVAILABLE);
+                                    alternateIdentifier_map.put(alternateIdentifierTypeKey, AbstractPidProvider.UNAVAILABLE);
                                 }
-                                writeFullElement(xmlw, null, alternateIdentifierType, alternateIdentifier_map, alternateIdentifier, language);
+                                writeFullElement(xmlw, null, alternateIdentifierKey, alternateIdentifier_map, alternateIdentifier, language);
                             }
                         }
                     }
@@ -1035,7 +1036,7 @@ public class OpenAireExportUtil {
                         break;
                 }
                 Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
-                alternateIdentifier_map.put("alternateIdentifierType", identifierType);
+                alternateIdentifier_map.put(alternateIdentifierTypeKey, identifierType);
                 writeFullElement(xmlw, null, "alternateIdentifier", alternateIdentifier_map, identifier, language);
 
             }
