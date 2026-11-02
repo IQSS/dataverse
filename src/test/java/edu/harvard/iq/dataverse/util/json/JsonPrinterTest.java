@@ -841,7 +841,7 @@ public class JsonPrinterTest {
     public void testGetGuestbookResponseList() {
         Date now = new Date();
         String dateStr = DateFormat.getDateTimeInstance().format(now);
-        GuestbookResponseListDTO guestbookResponseListDTO = new GuestbookResponseListDTO(1L,"datasetTitle","Name","My Institution","My Position","Download", now,"file.txt","responseText");
+        GuestbookResponseListDTO guestbookResponseListDTO = new GuestbookResponseListDTO(1L,"datasetTitle","Name","My Institution","My Position","Download", now,"file.txt",3L, "responseText");
         List<GuestbookResponseListDTO> guestbookResponseList = List.of(guestbookResponseListDTO);
         JsonArray result = JsonPrinter.getGuestbookResponseList(guestbookResponseList).build();
         assertEquals(1,result.size());

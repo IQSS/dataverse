@@ -70,6 +70,7 @@ import java.util.Collections;
                         @ColumnResult(name = "type", type = String.class),
                         @ColumnResult(name = "date", type =  Date.class),
                         @ColumnResult(name = "file", type = String.class),
+                        @ColumnResult(name = "fileid", type = Long.class),
                         @ColumnResult(name = "responses", type = String.class)
                 }
         )
@@ -160,6 +161,7 @@ public class GuestbookResponse implements Serializable {
                 ,gr.eventtype as type
                 ,gr.responseTime as date
                 ,lfm.label as file
+                ,lfm.datafile_id as fileid
                 ,(SELECT STRING_AGG(CONCAT('"',cq.questionstring, '":"', cqr.response, '"'), ', ') AS responses
                   FROM customquestionresponse cqr
                   LEFT JOIN customquestion cq ON cq.id = cqr.customquestion_id

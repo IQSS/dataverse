@@ -12,7 +12,7 @@ public class GuestbookResponseListDTOTest {
     @Test
     public void testConstructor() {
         Date now = new Date();
-        GuestbookResponseListDTO fixture = new GuestbookResponseListDTO(1L,"datasetTitle","Name","My Institution","My Position","Download", now,"file.txt","responseText");
+        GuestbookResponseListDTO fixture = new GuestbookResponseListDTO(1L,"datasetTitle","Name","My Institution","My Position","Download", now,"file.txt", 3L, "responseText");
         assertEquals(1L,fixture.getId());
         assertEquals("datasetTitle", fixture.getDataset());
         assertEquals("Name",fixture.getName());
@@ -20,12 +20,13 @@ public class GuestbookResponseListDTOTest {
         assertEquals("My Position",fixture.getPosition());
         assertEquals(now, fixture.getDate());
         assertEquals("file.txt", fixture.getFile());
+        assertEquals(3L, fixture.getFileId());
         assertEquals("responseText", fixture.getResponses());
     }
 
     @Test
     public void testConstructorNull() {
-        GuestbookResponseListDTO fixture = new GuestbookResponseListDTO(null,null,null,null,null,null,null,null,null);
+        GuestbookResponseListDTO fixture = new GuestbookResponseListDTO(null,null,null,null,null,null,null,null,null,null);
         assertNull(fixture.getId());
         assertNull(fixture.getDataset());
         assertNull(fixture.getName());
@@ -33,6 +34,7 @@ public class GuestbookResponseListDTOTest {
         assertNull(fixture.getPosition());
         assertNull(fixture.getDate());
         assertNull(fixture.getFile());
+        assertNull(fixture.getFileId());
         assertNull(fixture.getResponses());
     }
 }

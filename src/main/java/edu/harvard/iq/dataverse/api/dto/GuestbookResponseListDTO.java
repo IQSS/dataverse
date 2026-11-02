@@ -11,10 +11,11 @@ public class GuestbookResponseListDTO {
     private final String type;
     private final Date date;
     private final String file;
+    private final Long fileid;
     private final String responses;
 
     // Must match the column order in your @ConstructorResult mapping
-    public GuestbookResponseListDTO(Long id, String dataset, String name, String institution, String position, String type, Date date, String file, String responses) {
+    public GuestbookResponseListDTO(Long id, String dataset, String name, String institution, String position, String type, Date date, String file, Long fileid, String responses) {
         this.id = id;
         this.dataset = dataset;
         this.name = name;
@@ -23,6 +24,7 @@ public class GuestbookResponseListDTO {
         this.type = type;
         this.date = date;
         this.file = file;
+        this.fileid = fileid;
         this.responses = responses;
     }
 
@@ -49,6 +51,9 @@ public class GuestbookResponseListDTO {
     }
     public String getFile() {
         return file;
+    }
+    public Long getFileId() {
+        return fileid;
     }
     public String getResponses() {
         return responses;
