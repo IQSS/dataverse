@@ -4204,9 +4204,13 @@ public class FilesIT {
         assertEquals(totalCount, pagedTotalCount);
         assertEquals(pagedTotalCount, totalCountFromJson);
 
-        // Test External Tool preview/download (The actual download must be tested manually since we can't click the download button)
+        // Test External Tool preview/download
         String toolId = UtilIT.getToolId(ownerApiToken,"image/png");
-        Response toolResponse = UtilIT.getFileToolUrl(fileId1.toString(), toolId, apiToken, null, Long.parseLong(fileId1GuestbookResponseId));
+        JsonObject guestbookObject = JsonUtil.getJsonObject(guestbookResponse).getJsonObject("guestbookResponse");
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder()
+                .add("preview", true)
+                .add("guestbookResponse", JsonUtil.createObjectBuilder(guestbookObject));
+        Response toolResponse = UtilIT.getFileToolUrl(fileId1.toString(), toolId, apiToken, params.build());
         toolResponse.prettyPrint();
         jsonPath = JsonPath.from(toolResponse.body().asString());
         signedUrl = jsonPath.getString("data.toolUrl");

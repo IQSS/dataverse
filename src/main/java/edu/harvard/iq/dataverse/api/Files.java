@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
@@ -87,7 +88,9 @@ public class Files extends AbstractApiBean {
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
-    DataverseServiceBean dataverseService;    
+    DataverseServiceBean dataverseService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
     @EJB
     IngestServiceBean ingestService;
     @Inject
@@ -935,13 +938,24 @@ public class Files extends AbstractApiBean {
     @RequestBody(description = "External tool launch options such as preview mode and locale.")
     public Response getExternalToolUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileId,
             @Parameter(description = "External tool id.") @PathParam("tid") long externalToolId,
-            @Parameter(description = "Numeric id of the Guestbook response.")
-            @QueryParam("guestbookResponseId") Long guestbookResponseId,
             @RequestBody(description = "External tool launch options such as preview mode and locale.")
             String jsonBody) {
 
         boolean preview = false;
         String locale = null;
+        GuestbookResponse guestbookResponse = null;
+
+        // Find the file
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            return notFound("File not found for given id: " + fileId);
+        }
+
+        // Get the current user and create a request object
+        User user = getRequestUser(crc);
+        DataverseRequest req = createDataverseRequest(user);
 
         // Parse request body for parameters
         if (StringUtils.isNotBlank(jsonBody)) {
@@ -953,7 +967,10 @@ public class Files extends AbstractApiBean {
                 if (jsonObject.containsKey("locale")) {
                     locale = jsonObject.getString("locale");
                 }
-            } catch (JsonParsingException | NullPointerException e) {
+                if (jsonObject.containsKey("guestbookResponse")) {
+                    guestbookResponse = getGuestbookResponseFromBody(dataFile, GuestbookResponse.DOWNLOAD, jsonBody, user);
+                }
+            } catch (JsonParsingException | NullPointerException | JsonParseException e) {
                 logger.warning("Error parsing JSON: " + e.getMessage());
                 // Return a proper error response for malformed JSON
                 return error(Response.Status.BAD_REQUEST, "Invalid JSON format in request body.");
@@ -961,14 +978,6 @@ public class Files extends AbstractApiBean {
         }
 
         try {
-            // Find the file
-            DataFile dataFile;
-            try {
-                dataFile = findDataFileOrDie(fileId);
-            } catch (WrappedResponse ex) {
-                return notFound("File not found for given id: " + fileId);
-            }
-
             // Find the external tool
             ExternalTool externalTool = externalToolService.findById(externalToolId);
             if (externalTool == null) {
@@ -989,10 +998,6 @@ public class Files extends AbstractApiBean {
                     "External tool content type (" + toolContentType +
                     ") does not match file content type (" + fileContentType + ").");
             }
-
-            // Get the current user and create a request object
-            User user = getRequestUser(crc);
-            DataverseRequest req = createDataverseRequest(user);
 
             // Get the latest file metadata
             FileMetadata fileMetadata = dataFile.getLatestFileMetadata();
@@ -1020,8 +1025,18 @@ public class Files extends AbstractApiBean {
 
             // Determine if we need an API token for authentication
             ApiToken apiToken = null;
-            if (user.isAuthenticated() && (isRestricted || guestbookResponseId != null)) {
+            if (user.isAuthenticated() && (isRestricted || guestbookResponse != null)) {
                 apiToken = authSvc.getValidApiTokenForUser(user);
+            }
+
+            // Write the Guestbook Response
+            Long guestbookResponseId = null;
+            if (guestbookResponse != null) {
+                List<String> gbridList = fileDownloadService.writeGuestbookResponseRecords(guestbookResponse, List.of(dataFile));
+                if (gbridList != null && !gbridList.isEmpty()) {
+                    //Get the last one / the one with the latest date
+                    guestbookResponseId = Long.parseLong(gbridList.getLast());
+                }
             }
 
             // Create the external tool handler
