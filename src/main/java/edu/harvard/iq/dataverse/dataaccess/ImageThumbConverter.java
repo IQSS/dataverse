@@ -144,6 +144,33 @@ public class ImageThumbConverter {
         return thumbnailGenerated;
     }
 
+    /**
+     * Marks a file's thumbnail generation status and persists the change.
+     * Used to avoid having file saves scattered throughout the thumbnail generation code.
+     *
+     * @param file the data file to update
+     * @param success true if thumbnail generation succeeded, false if it failed
+     */
+    private static void markThumbnailGenerationStatus(DataFile file, boolean success) {
+        if (file == null) {
+            return;
+        }
+        if (success) {
+            file.setPreviewImageAvailable(true);
+            file.setPreviewImageFail(false);
+            logger.fine("Marking thumbnail as available for file " + file.getId());
+        } else {
+            file.setPreviewImageFail(true);
+            file.setPreviewImageAvailable(false);
+            logger.fine("Marking thumbnail as failed for file " + file.getId());
+        }
+        try {
+            DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
+            datafileService.updatePreviewImageFlags(file.getId(), file.isPreviewImageAvailable(), file.isPreviewImageFail());
+        } catch (Exception ex) {
+            logger.warning("Failed to persist thumbnail status for file " + file.getId() + ": " + ex.getMessage());
+        }
+    }
     // Note that this method works on ALL file types for which thumbnail 
     // generation is supported - image/*, pdf; 
     // not just on images! The type differentiation is handled inside 
