@@ -435,8 +435,8 @@ public class JsonPrinter {
             grObject.add("type", gr.getType());
             grObject.add("date", DateFormat.getDateTimeInstance().format(gr.getDate()));
             grObject.add("file", gr.getFile());
-            grObject.add("responses", gr.getResponses());
             grObject.add("fileid", gr.getFileId());
+            grObject.add("responses", gr.getResponses());
             responsesArray.add(grObject);
         }
         return responsesArray;

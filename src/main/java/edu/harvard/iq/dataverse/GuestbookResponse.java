@@ -186,7 +186,9 @@ public class GuestbookResponse implements Serializable {
                   WHEN 'name' THEN gr.name
                   WHEN 'type' THEN gr.eventtype
                   WHEN 'file' THEN lfm.label
-               END ASC
+               END ASC,
+               -- Tie-breaker: Always falls back to ID if 1 and 2 are equal
+               gr.id ASC;
             """;
     protected static final String GUESTBOOK_RESPONSE_LIST_QUERY_ORDERBY_DESC = """
              ORDER BY
@@ -200,7 +202,9 @@ public class GuestbookResponse implements Serializable {
                   WHEN 'name' THEN gr.name
                   WHEN 'type' THEN gr.eventtype
                   WHEN 'file' THEN lfm.label
-               END DESC
+               END DESC,
+               -- Tie-breaker: Always falls back to ID if 1 and 2 are equal
+               gr.id DESC;
             """;
 
     /*
