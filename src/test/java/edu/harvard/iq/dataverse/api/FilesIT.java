@@ -3953,6 +3953,7 @@ public class FilesIT {
         createUserResponse = UtilIT.createRandomUser();
         assertEquals(200, createUserResponse.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        String userName = UtilIT.getUsernameFromResponse(createUserResponse);
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(ownerApiToken);
         Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, ownerApiToken);
@@ -3994,17 +3995,32 @@ public class FilesIT {
         downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.getSignedUrlFromResponse(downloadResponse);
 
+        // Test sort by field - included file name changes
         JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
-                .add("label", "dv.png")
+                .add("label", "zdv.png")
                 .add("description", "This file is awesome.");
         Response moveFileResponse = UtilIT.updateFileMetadata(fileId1.toString(), updateFileMetadata.build().toString(), ownerApiToken);
         moveFileResponse.prettyPrint();
 
+        // User has access to all files
         Response guestbookListResponses = testSortByField(guestbook.getId(), "file", "asc", 0, Integer.MAX_VALUE, null, ownerApiToken);
         guestbookListResponses.prettyPrint();
         JsonPath jsonPath = JsonPath.from(guestbookListResponses.body().asString());
         int totalCount = jsonPath.getList("data.responses").size();
         assertEquals(2, totalCount);
+        assertEquals("orcid_16x16.png", jsonPath.getString("data.responses[0].file"));
+        assertEquals("zdv.png", jsonPath.getString("data.responses[1].file"));
+
+        // User has no access to drafts but has EditDataverse
+        Response roleAssignResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.ADMIN, "@" + userName, ownerApiToken);
+        roleAssignResponse.prettyPrint();
+        roleAssignResponse.then().assertThat().statusCode(OK.getStatusCode());
+        guestbookListResponses = testSortByField(guestbook.getId(), "file", "asc", 0, Integer.MAX_VALUE, null, apiToken);
+        guestbookListResponses.prettyPrint();
+        jsonPath = JsonPath.from(guestbookListResponses.body().asString());
+        totalCount = jsonPath.getList("data.responses").size();
+        assertEquals(2, totalCount); // TODO change to 1 when deaccessioned response is hidden
+        assertEquals("orcid_16x16.png", jsonPath.getString("data.responses[0].file"));
     }
 
     @Test

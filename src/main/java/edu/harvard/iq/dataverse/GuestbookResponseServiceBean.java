@@ -119,8 +119,7 @@ public class GuestbookResponseServiceBean {
             String orderByField = sortField != null ? sortField.toLowerCase() : "date";
             boolean isDescending = sortOrder != null && sortOrder.equalsIgnoreCase(SortBy.DESCENDING);
 
-            Query query = isDescending ? em.createNamedQuery("GuestbookResponse.getGuestbookResponseListDesc") :
-                    em.createNamedQuery("GuestbookResponse.getGuestbookResponseListAsc");
+            Query query = em.createNamedQuery(isDescending ? "GuestbookResponse.getGuestbookResponseListDesc" : "GuestbookResponse.getGuestbookResponseListAsc");
             query.setParameter(1, guestbookId);
             query.setParameter(2, orderByField);
             query.setFirstResult(firstResult).setMaxResults(pageSize);
@@ -318,7 +317,7 @@ public class GuestbookResponseServiceBean {
         for (Object[] result : guestbookResults) {
             Object[] singleResult = new Object[6];
 
-            Integer guestbookResponseId = (Integer) result[0];
+            Integer guestbookResponseId = Math.toIntExact((Long) result[0]);
 
             if (guestbookResponseId != null) {
                 singleResult[0] = result[1];
