@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.ExternalIdentifier;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.RorAffiliationDetails;
 import edu.harvard.iq.dataverse.api.dto.AlternativePersistentIdentifierDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
@@ -30,6 +31,7 @@ import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.util.AffiliationResolverUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonString;
@@ -180,10 +182,6 @@ public class OpenAireExportUtil {
 
         // 19 FundingReference (with name, identifier, and award related sub- properties) (O)
         writeFundingReferencesElement(xmlw, version, language);
-    }
-
-    private static JsonObject getExternalVocabularyValue(String id) {
-        return CDI.current().select(DatasetFieldServiceBean.class).get().getExternalVocabularyValue(id);
     }
 
     private static String getIdentifierAsUrl(String idType, String idValue) {
@@ -344,7 +342,19 @@ public class OpenAireExportUtil {
                                 //12297 get full info on ROR affiliation
                                 if (StringUtils.isNotBlank(affiliation)) {
                                     Map<String, String> attributeMap = new HashMap<>();
+                                    
+                                    
                                     attributeMap.clear();
+                                                RorAffiliationDetails details = AffiliationResolverUtil.resolveRorDetails(
+                    affiliation
+            );
+            
+            attributeMap.clear();
+            attributeMap.putAll(details.getAttributes());
+            String orgName = details.getOrgName();
+            
+            /*
+            
                                     boolean isROR = false;
                                     String orgName = affiliation;
                                     ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
@@ -366,7 +376,7 @@ public class OpenAireExportUtil {
                                         attributeMap.put("affiliationIdentifierScheme", "ROR");
                                         attributeMap.put("affiliationIdentifier", affiliation);
                                     }
-
+*/
                                     writeFullElement(xmlw, null, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName), language);
                                 }
                                 xmlw.writeEndElement(); // </creator>

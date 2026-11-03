@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.util.AffiliationResolverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
@@ -621,28 +622,14 @@ public class XmlMetadataTemplate {
         }
 
         if (StringUtils.isNotBlank(affiliation)) {
+            
+            RorAffiliationDetails details = AffiliationResolverUtil.resolveRorDetails(
+                    affiliation
+            );
+            
             attributeMap.clear();
-            boolean isROR=false;
-            String orgName = affiliation;
-            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
-            if (externalIdentifier.isValidIdentifier(orgName)) {
-                isROR = true;
-                JsonObject jo = getExternalVocabularyValue(orgName);
-                // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
-                if (jo != null && jo.containsKey("termName")) {
-                    JsonValue termName = jo.get("termName");
-                    if (termName.getValueType() == ValueType.STRING) {
-                        orgName = ((JsonString) termName).getString();
-                    }
-                }
-            }
-          
-            if (isROR) {
-
-                attributeMap.put("schemeURI", "https://ror.org");
-                attributeMap.put("affiliationIdentifierScheme", "ROR");
-                attributeMap.put("affiliationIdentifier", affiliation);
-            }
+            attributeMap.putAll(details.getAttributes());
+            String orgName = details.getOrgName();
 
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName));
         }

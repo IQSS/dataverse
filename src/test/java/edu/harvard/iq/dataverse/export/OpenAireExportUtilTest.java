@@ -605,21 +605,8 @@ public class OpenAireExportUtilTest {
                 stringWriter.toString());
     }
     
-    /*
-    AlternativePersistentIdentifierDTO altPid = new AlternativePersistentIdentifierDTO();
-altPid.setProtocol("doi");
-altPid.setAuthority("10.5072");
-altPid.setIdentifier("FK2/ALT123");
-altPid.setGlobalId("doi:10.5072/FK2/ALT123");
-
-datasetDTO.setAlternativePersistentIdentifiers(Collections.singletonList(altPid));
-
-String xml = OpenAireExportUtil.datasetJson2OpenAire(datasetDTO);
-
-assertTrue(xml.contains("<alternateIdentifier alternateIdentifierType=\"DOI\">doi:10.5072/FK2/ALT123</alternateIdentifier>"));
-    */
     
-        /**
+    /**
      * Test: 11 AlternateIdentifier (with type sub-property) (O)
      *
      * alternateIdentifier
