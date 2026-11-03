@@ -225,7 +225,7 @@ public class DatasetVersionTest {
     }
 
     @Test
-    public void testInValidTermsOfAccess() {
+    public void testInvalidTermsOfAccess() {
         var datasetVersion = Mockito.spy(new DatasetVersion());
 
         Mockito.doReturn(true).when(datasetVersion).isHasRestrictedFile();

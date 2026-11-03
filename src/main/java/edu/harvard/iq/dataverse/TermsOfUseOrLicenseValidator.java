@@ -26,7 +26,7 @@ public class TermsOfUseOrLicenseValidator implements ConstraintValidator<Validat
             return true;
         }
         if (value.getLicense() != null) {
-            if (StringUtils.isBlank(value.getTermsOfUse())) {
+            if (!StringUtils.isBlank(value.getTermsOfUse())) {
                 if (context != null) {
                     context.buildConstraintViolationWithTemplate("Terms of use and license cannot both be set.").addConstraintViolation();
                 }

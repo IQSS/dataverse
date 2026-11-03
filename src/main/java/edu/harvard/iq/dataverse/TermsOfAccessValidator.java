@@ -39,7 +39,7 @@ public class TermsOfAccessValidator implements ConstraintValidator<ValidateTerms
             return true;
         }
         /*If there are restricted files then the version
-        must have terms of access filled in.
+        must allow access requests or have terms of access filled in.
          */
         boolean valid = value.isFileAccessRequest() || (value.getTermsOfAccess() != null && !value.getTermsOfAccess().isEmpty());
         if (!valid) {

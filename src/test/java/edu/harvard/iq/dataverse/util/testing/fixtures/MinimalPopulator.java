@@ -52,7 +52,7 @@ public final class MinimalPopulator implements FixturePopulator {
         version.setCreateTime(context.getDate());
         version.setLastUpdateTime(context.getDate());
         
-        // TermsOfUseAndAccess and DatasetVersion are mutually linked via a OneToOne.
+        // TermsOfUseOrLicense/TermsOfAccess and DatasetVersion are mutually linked via a OneToOne.
         // The validator reads datasetVersion from the terms object, so both sides
         // must be wired before the entity graph is persisted.
         TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();

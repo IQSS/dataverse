@@ -151,7 +151,7 @@ public class FileMetadata implements Serializable {
     @BatchFetch(BatchFetchType.IN)
     private DataFile dataFile;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "termsofuseorlicense_id")
     private TermsOfUseOrLicense termsOfUseOrLicense;
 
@@ -194,32 +194,7 @@ public class FileMetadata implements Serializable {
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
         fmd.setProvFreeForm(getProvFreeForm());
-        if (getTermsOfUseOrLicense()!= null) {
-            // TODO will be null until OptionalFileParams.loadParamsFromJson actually supports file specific licenses,
-            //  see also https://github.com/IQSS/dataverse/issues/12854
-            if (!StringUtils.isEmpty(getTermsOfUseOrLicense().getTermsOfUse())) {
-                // The DB model allows multiple custom TermsOfUse per FileMetadata.
-                // The first implementation will allow only one custom terms of use per DatasetVersion.
-                if (!StringUtils.isEmpty(dsv.getDefaultTermsOfUseOrLicense().getTermsOfUse())) {
-                    // getting here means the default is redefined at file level
-                    fmd.setTermsOfUseOrLicense(dsv.getDefaultTermsOfUseOrLicense());
-                    // when the default changes, it needs to make a copy, otherwise te files changes along
-                }
-                else {
-                    fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense().copyTermsOfUseOrLicense());
-                    // A new DatasetVersion should be able to define new terms of use for the file metadata.
-                    // TODO we need the same copy for all files in the new dataset version, not a copy for each fileMetadata
-                }
-            }
-            else {
-                fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense().copyTermsOfUseOrLicense());
-                // The DB model allows multiple custom TermsOfUse per FileMetadata.
-                // The first implementation will allow only one custom terms of use per DatasetVersion.
-                // A new DatasetVersion should be able to define new terms of use for the file metadata.
-                // TODO we need the same copy for all files in the new dataset version, not a copy for each fileMetadata
-            }
-            // TODO fmd.getTermsOfUseOrLicense().setFileMetadata(fmd);
-        }
+        fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense()); // TODO p.m: make a copy on change
         dsv.getFileMetadatas().add(fmd);
         return fmd;
     }

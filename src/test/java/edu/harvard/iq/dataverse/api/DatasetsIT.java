@@ -4430,7 +4430,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
      *
      */
     @Test
-    public void testRestrictFileTermsOfUseAndAccess() throws IOException {
+    public void testRestrictFileTermsOfAccess() throws IOException {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();

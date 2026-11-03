@@ -269,7 +269,7 @@ class SystemConfigTest {
     
     @ParameterizedTest
     @ValueSource(strings = {"[]", "{[{\"tsv\": 1}]}", "{ \"invalid\": \"foobar\" }", "{ \"tsv\": 1.5}", "{ \"tsv\": \"1.0\"}"})
-    void testGetTabularIngestSizeLimitsWithInvalidNumbersInvalidJson(String invalidJson) {
+    void testGetTabularIngestSizeLimitsWithInvalidNumbersInValidJson(String invalidJson) {
         // given
         doReturn(invalidJson).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         
@@ -283,7 +283,7 @@ class SystemConfigTest {
     
     @ParameterizedTest
     @ValueSource(strings = {"{ \"tSv\": 1.0 }", "{ \"tsv\": \"1\"}", "{ \"tsv\": 1 }"})
-    void testGetTabularIngestSizeLimitsWithValidNumbersInvalidJson(String validConfig) {
+    void testGetTabularIngestSizeLimitsWithValidNumbersInValidJson(String validConfig) {
         // given
         doReturn(validConfig).when(settingsService).getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit);
         
