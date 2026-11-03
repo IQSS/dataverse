@@ -112,10 +112,10 @@
                             <f:passThroughAttribute name="aria-labelledby" value="searchLabel"/>
                         </p:inputText>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
-                        <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
+                        <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true" oncomplete="refreshPaginator()"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"  ariaLabel="#{bundle['dataverse.search.btn.find']}">
+                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true" oncomplete="refreshPaginator()" ariaLabel="#{bundle['dataverse.search.btn.find']}" >
                                 <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
                         </span>
