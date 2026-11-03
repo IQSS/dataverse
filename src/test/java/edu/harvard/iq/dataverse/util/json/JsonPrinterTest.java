@@ -852,6 +852,7 @@ public class JsonPrinterTest {
         assertEquals(guestbookResponseListDTO.getInstitution(), firstObj.getString("institution"));
         assertEquals(guestbookResponseListDTO.getPosition(), firstObj.getString("position"));
         assertEquals(guestbookResponseListDTO.getFile(), firstObj.getString("file"));
+        assertEquals(guestbookResponseListDTO.getFileId(), firstObj.getJsonNumber("fileid").longValue());
         assertEquals(guestbookResponseListDTO.getType(), firstObj.getString("type"));
         assertEquals(dateStr, firstObj.getString("date"));
         assertEquals(guestbookResponseListDTO.getResponses(), firstObj.getString("responses"));
