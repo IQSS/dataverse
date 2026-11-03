@@ -5698,17 +5698,4 @@ public class UtilIT {
                 .replace("@QID3", cqIDs.get(2).toString())
                 .replace("@QID4", cqIDs.get(3).toString());
     }
-
-    // Return the value for a key in the query parameters of the given url
-    public static String getQueryParamValue(String url, String key) throws URISyntaxException {
-        URI uri = new URI(url);
-        String query = uri.getQuery();
-        Map<String, String> queryMap = Arrays.stream(query.split("&"))
-                .map(param -> param.split("=", 2))
-                .collect(Collectors.toMap(
-                        parts -> URLDecoder.decode(parts[0], StandardCharsets.UTF_8),
-                        parts -> parts.length > 1 ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8) : ""
-                ));
-        return queryMap.get(key);
-    }
 }
