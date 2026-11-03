@@ -59,7 +59,7 @@ public class ExternalToolHandlerTest {
         String nullLocaleCode = null;
         Long nullGuestbookResponseId = null;
         try {
-            URLTokenUtil externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode, nullGuestbookResponseId);
+            new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode, nullGuestbookResponseId);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
@@ -77,7 +77,7 @@ public class ExternalToolHandlerTest {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         try {
-            URLTokenUtil externalToolHandler1 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata, nullLocaleCode, nullGuestbookResponseId);
+            new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata, nullLocaleCode, nullGuestbookResponseId);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
@@ -98,7 +98,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException2 = null;
         try {
-            URLTokenUtil externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode, nullGuestbookResponseId);
+            new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode, nullGuestbookResponseId);
         } catch (Exception ex) {
             expectedException2 = ex;
         }

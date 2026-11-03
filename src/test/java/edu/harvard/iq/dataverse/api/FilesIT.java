@@ -4101,7 +4101,6 @@ public class FilesIT {
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         signedUrl = UtilIT.getSignedUrlFromResponse(downloadResponse);
-        String fileId1GuestbookResponseId = UtilIT.getQueryParamValue(signedUrl, "gbrids");
 
         // Verify that the Guestbook Response is persisted
         Response guestbookResponseResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);

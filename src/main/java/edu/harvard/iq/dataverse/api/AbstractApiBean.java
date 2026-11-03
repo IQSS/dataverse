@@ -248,9 +248,6 @@ public abstract class AbstractApiBean {
     @EJB
     TemplateServiceBean templateSvc;
 
-    @EJB
-    GuestbookResponseServiceBean guestbookResponseService;
-
     @Inject
     FailedPIDResolutionLoggingServiceBean fprLogService;
     
@@ -1211,7 +1208,7 @@ public abstract class AbstractApiBean {
 
         if (dataFile != null && jsonBody != null && jsonBody.startsWith("{")) {
             JsonObject guestbookResponseObj = JsonUtil.getJsonObject(jsonBody).getJsonObject("guestbookResponse");
-            guestbookResponse = guestbookResponseService.initAPIGuestbookResponse(dataFile.getOwner(), dataFile, null, requestor);
+            guestbookResponse = gbRespSvc.initAPIGuestbookResponse(dataFile.getOwner(), dataFile, null, requestor);
             guestbookResponse.setEventType(type);
             // Parse custom question answers and validate them
             jsonParser().parseGuestbookResponse(guestbookResponseObj, guestbookResponse);
