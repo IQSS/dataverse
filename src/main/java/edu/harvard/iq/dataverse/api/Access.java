@@ -478,8 +478,6 @@ public class Access extends AbstractApiBean {
                                                   @PathParam("fileId") String fileId,
                                                   @Parameter(description = "Whether guestbook records have already been written for this download.")
                                                   @QueryParam("gbrecs") boolean gbrecs,
-                                                  @Parameter(description = "External Tool Id.")
-                                                  @QueryParam("externalToolId") Long externalToolId,
                                                   @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
                                                   @RequestBody(description = "Guestbook response JSON for the requested data file.")
                                                   String jsonBody) {
@@ -487,7 +485,7 @@ public class Access extends AbstractApiBean {
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         fileId = normalizeFileId(fileId, req);
         List<String> fileIdsList = getFileIdsCSV(fileId);
-        return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, externalToolId, jsonBody);
+        return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
     }
 
     private String normalizeFileId(String fileId, DataverseRequest req) {
@@ -933,13 +931,11 @@ public class Access extends AbstractApiBean {
                                           @QueryParam("gbrecs") boolean gbrecs,
                                           @Parameter(description = "Guestbook response id list supplied by the user interface.")
                                           @QueryParam("gbrids") String gbrids,
-                                          @Parameter(description = "External Tool Id.")
-                                          @QueryParam("externalToolId") Long externalToolId,
                                           @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         List<String> fileIdsList = getFileIdsCSV(body);
-        processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, externalToolId, body);
+        processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, body);
 
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
         if (gbrids == null || gbrids.isEmpty()) {
@@ -947,7 +943,7 @@ public class Access extends AbstractApiBean {
         }
 
         // initiate the download now
-        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, externalToolId, uriInfo, headers, response, null);
+        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, null);
     }
 
     @GET
@@ -967,8 +963,6 @@ public class Access extends AbstractApiBean {
                                           @QueryParam("gbrecs") boolean gbrecs,
                                           @Parameter(description = "Guestbook response id list supplied by the user interface.")
                                           @QueryParam("gbrids") String gbrids,
-                                          @Parameter(description = "External Tool Id.")
-                                          @QueryParam("externalToolId") Long externalToolId,
                                           @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
             User user = getRequestUser(crc);
@@ -983,7 +977,7 @@ public class Access extends AbstractApiBean {
                     // We don't want downloads from Draft versions to be counted, 
                     // so we are setting the gbrecs (aka "do not write guestbook response") 
                     // variable accordingly:
-                    return downloadDatafiles(crc, fileIds, true, gbrids, externalToolId, uriInfo, headers, response, "draft");
+                    return downloadDatafiles(crc, fileIds, true, gbrids, null, uriInfo, headers, response, "draft");
                 }
             }
             
@@ -1004,7 +998,7 @@ public class Access extends AbstractApiBean {
             }
             
             List<String> fileIdsList = getFileIdsList(latest);
-            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, externalToolId, uriInfo, headers, response, latest.getFriendlyVersionNumber());
+            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, latest.getFriendlyVersionNumber());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1020,8 +1014,6 @@ public class Access extends AbstractApiBean {
                                                                @PathParam("id") String datasetIdOrPersistentId,
                                                                @Parameter(description = "Whether guestbook records have already been written for this download.")
                                                                @QueryParam("gbrecs") boolean gbrecs,
-                                                               @Parameter(description = "External Tool Id.")
-                                                               @QueryParam("externalToolId") Long externalToolId,
                                                                @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
                                                                @RequestBody(description = "Guestbook response JSON for the dataset file download.")
                                                                String jsonBody) throws WebApplicationException {
@@ -1045,7 +1037,7 @@ public class Access extends AbstractApiBean {
                 fileIdsList = getFileIdsList(latest);
                 version = latest.getFriendlyVersionNumber();
             }
-            return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, externalToolId, jsonBody);
+            return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1070,8 +1062,6 @@ public class Access extends AbstractApiBean {
                                            @QueryParam("gbrecs") boolean gbrecs,
                                            @Parameter(description = "Guestbook response id list supplied by the user interface.")
                                            @QueryParam("gbrids") String gbrids,
-                                           @Parameter(description = "External Tool Id.")
-                                           @QueryParam("externalToolId") Long externalToolId,
                                            @Parameter(description = "Legacy API token query value.")
                                            @QueryParam("key") String apiTokenParam,
                                            @Parameter(description = "Whether the request URL was signed.")
@@ -1094,7 +1084,7 @@ public class Access extends AbstractApiBean {
                 gbrecs = true;
             }
 
-            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, externalToolId, uriInfo, headers, response, dsv.getFriendlyVersionNumber().toLowerCase());
+            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, dsv.getFriendlyVersionNumber().toLowerCase());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1116,8 +1106,6 @@ public class Access extends AbstractApiBean {
                                                                 @PathParam("versionId") String versionId,
                                                                 @Parameter(description = "Whether guestbook records have already been written for this download.")
                                                                 @QueryParam("gbrecs") boolean gbrecs,
-                                                                @Parameter(description = "External Tool Id.")
-                                                                @QueryParam("externalToolId") Long externalToolId,
                                                                 @Parameter(description = "Legacy API token query value.")
                                                                 @QueryParam("key") String apiTokenParam,
                                                                 @RequestBody(description = "Guestbook response JSON for the dataset version file download.")
@@ -1127,7 +1115,7 @@ public class Access extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionFromVersion(crc, datasetIdOrPersistentId, versionId);
             List<String> fileIdsList = getFileIdsList(dsv);
-            return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, externalToolId, jsonBody);
+            return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1205,12 +1193,10 @@ public class Access extends AbstractApiBean {
                               @QueryParam("gbrecs") boolean gbrecs,
                               @Parameter(description = "Guestbook response id list supplied by the user interface.")
                               @QueryParam("gbrids") String gbrids,
-                              @Parameter(description = "External Tool Id.")
-                              @QueryParam("externalToolId") Long externalToolId,
                               @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
         List<String> fileIdsList = getFileIdsCSV(fileIds);
-        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, externalToolId, uriInfo, headers, response, null);
+        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, null);
     }
 
     @POST
@@ -1227,15 +1213,13 @@ public class Access extends AbstractApiBean {
                                                    @PathParam("fileIds") String fileIds,
                                                    @Parameter(description = "Whether guestbook records have already been written for this download.")
                                                    @QueryParam("gbrecs") boolean gbrecs,
-                                                   @Parameter(description = "External Tool Id.")
-                                                   @QueryParam("externalToolId") Long externalToolId,
                                                    @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,
                                                    @RequestBody(description = "Guestbook response JSON for the selected data file download.")
                                                    String jsonBody) throws WebApplicationException {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         List<String> fileIdsList = getFileIdsCSV(fileIds);
-        return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, externalToolId, jsonBody);
+        return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
     }
 
     private List<String> getFileIdsCSV(String body) {
