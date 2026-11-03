@@ -13,6 +13,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
+import edu.harvard.iq.dataverse.DatasetAuthor;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -186,21 +187,9 @@ public class OpenAireExportUtil {
     }
 
     private static String getIdentifierAsUrl(String idType, String idValue) {
-        if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
-            try {
-                ExternalIdentifier externalIdentifier = ExternalIdentifier.valueOf(idType);
-                if (externalIdentifier.isValidIdentifier(idValue)) {
-                    String uri = externalIdentifier.format(idValue);
-                    //The DAI identifier is a URI starting with "info" - we don't want to return it as a URL (we assume non-null URLs should be links in the display)
-                    if (uri.startsWith("http")) {
-                        return uri;
-                    }
-                }
-            } catch (Exception e) {
-                // non registered identifier
-            }
-        }
-        return null;
+        
+        return DatasetAuthor.getIdentifierAsUrl(idType, idValue);
+
     }
 
     /**
