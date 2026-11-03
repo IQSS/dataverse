@@ -141,8 +141,10 @@ public class GuestbookResponse implements Serializable {
                 SELECT
                     id,
                     dataset_id,
+                    versionstate,
                     ROW_NUMBER() OVER (PARTITION BY dataset_id ORDER BY id DESC) as rn
                 FROM datasetversion
+                WHERE versionstate NOT IN ('DRAFT', 'DEACCESSIONED')
             ),
             LatestFileMetadata AS (
                 SELECT
