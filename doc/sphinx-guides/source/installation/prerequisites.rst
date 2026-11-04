@@ -175,7 +175,7 @@ Become the ``solr`` user and then download and configure Solr::
         cd solr-9.8.0
         cp -r server/solr/configsets/_default server/solr/collection1
 
-You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
+You should already have the installer zip file (named after the release, e.g. "dvinstall-6.12.1.zip") that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
         cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-9.8.0/server/solr/collection1/conf
         cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-9.8.0/server/solr/collection1/conf
