@@ -211,7 +211,7 @@ public class Access extends AbstractApiBean {
         
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
-        if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids, null)) {
+        if (checkGuestbookRequiredResponse(uriInfo, df, gbrids, null)) {
             throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
@@ -339,7 +339,7 @@ public class Access extends AbstractApiBean {
                
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
-        if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids, externalToolId)) {
+        if (checkGuestbookRequiredResponse(uriInfo, df, gbrids, externalToolId)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
@@ -534,7 +534,7 @@ public class Access extends AbstractApiBean {
         DataFile firstDatafile = datafiles.getFirst();
         Dataset ds = firstDatafile.getOwner();
 
-        boolean guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, datafiles, null, externalToolId);
+        boolean guestbookResponseRequired = checkGuestbookRequiredResponse(uriInfo, datafiles, null, externalToolId);
         if (guestbookResponseRequired) {
             try {
                 GuestbookResponse gbr = getGuestbookResponseFromBody(firstDatafile, GuestbookResponse.DOWNLOAD, jsonBody, user);
@@ -1295,7 +1295,7 @@ public class Access extends AbstractApiBean {
             if (authorizedDatafiles.isEmpty()) {
                 throw new ForbiddenException();
             }
-            Boolean guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, authorizedDatafiles, gbrids, externalToolId);
+            Boolean guestbookResponseRequired = checkGuestbookRequiredResponse(uriInfo, authorizedDatafiles, gbrids, externalToolId);
             logger.fine("Downloading" + fileIdsList.size() + " files. GBR required: " + guestbookResponseRequired);
 
             if (guestbookResponseRequired) {
@@ -2253,11 +2253,11 @@ public class Access extends AbstractApiBean {
         jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
         return ok(jsonObjectBuilder);
     }
-    private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids, Long externalToolId) throws WebApplicationException {
-        return checkGuestbookRequiredResponse(user, uriInfo, Collections.singletonList(df), gbrids, externalToolId);
+    private boolean checkGuestbookRequiredResponse(UriInfo uriInfo, DataFile df, String gbrids, Long externalToolId) throws WebApplicationException {
+        return checkGuestbookRequiredResponse(uriInfo, Collections.singletonList(df), gbrids, externalToolId);
     }
 
-    private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, List<DataFile> authorizedFiles, String gbrids, Long externalToolId) throws WebApplicationException {
+    private boolean checkGuestbookRequiredResponse(UriInfo uriInfo, List<DataFile> authorizedFiles, String gbrids, Long externalToolId) throws WebApplicationException {
         // Check if guestbook response is required
         // All files should be in the same dataset (assume this is checked by callers)
         Dataset ds = authorizedFiles.get(0).getOwner();
