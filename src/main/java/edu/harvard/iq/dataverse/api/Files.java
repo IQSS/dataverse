@@ -197,7 +197,7 @@ public class Files extends AbstractApiBean {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
         } catch (IllegalCommandException ex) {
             //special case where terms of use are out of compliance   
-            if (!TermsOfUseAndAccessValidator.isTOUAValid(dataFile.getOwner().getLatestVersion().getTermsOfUseAndAccess(), null)) {
+            if (!TermsOfAccessValidator.isTOUAValid(dataFile.getOwner().getLatestVersion().getTermsOfAccess(), null)) {
                 return conflict(BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
             }
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());

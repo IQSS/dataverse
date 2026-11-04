@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Template;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.TermsOfAccess;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -20,32 +20,32 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 @RequiredPermissions(Permission.EditDataverse)
 public class UpdateTemplateTermsOfAccessCommand extends AbstractCommand<Template> {
     
-    private TermsOfUseAndAccess customTermsOfUseAndAccess = null;
+    private TermsOfAccess customTermsOfAccess = null;
     private Template template;
    
-    public UpdateTemplateTermsOfAccessCommand(DataverseRequest request, Template template, Dataverse dataverse, TermsOfUseAndAccess customTermsOfUseAndAccess) {
+    public UpdateTemplateTermsOfAccessCommand(DataverseRequest request, Template template, Dataverse dataverse, TermsOfAccess customTermsOfAccess) {
         super(request, dataverse);
         this.template = template;
-        this.customTermsOfUseAndAccess = customTermsOfUseAndAccess;
+        this.customTermsOfAccess = customTermsOfAccess;
     }
 
     @Override
     public Template execute(CommandContext ctxt) throws CommandException {
         Template savedTemplate;
 
-        if (customTermsOfUseAndAccess == null) {
+        if (customTermsOfAccess == null) {
             throw new InvalidCommandArgumentsException(BundleUtil.getStringFromBundle("updateDatasetLicenseCommand.errors.customTermsOfUseNotProvided"), this);
         }
 
-        TermsOfUseAndAccess termsToUpdate = template.getTermsOfUseAndAccess();
-        applyCustomTerms(termsToUpdate, customTermsOfUseAndAccess);
-        template.setTermsOfUseAndAccess(termsToUpdate);
+        TermsOfAccess termsToUpdate = template.getTermsOfAccess();
+        applyCustomTermsOfAccess(termsToUpdate, customTermsOfAccess);
+        template.setTermsOfAccess(termsToUpdate);
         savedTemplate = ctxt.templates().save(template);
 
         return savedTemplate;
     }
     
-    private void applyCustomTerms(TermsOfUseAndAccess target, TermsOfUseAndAccess source) {
+    private void applyCustomTermsOfAccess(TermsOfAccess target, TermsOfAccess source) {
         
         target.setFileAccessRequest(source.isFileAccessRequest());
         target.setTermsOfAccess(source.getTermsOfAccess());

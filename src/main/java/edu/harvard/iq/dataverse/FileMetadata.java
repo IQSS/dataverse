@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.Column;
 import jakarta.persistence.ColumnResult;
@@ -46,6 +45,7 @@ import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.persistence.annotations.BatchFetch;
 import org.eclipse.persistence.annotations.BatchFetchType;
 
@@ -151,6 +151,10 @@ public class FileMetadata implements Serializable {
     @BatchFetch(BatchFetchType.IN)
     private DataFile dataFile;
 
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "termsofuseorlicense_id")
+    private TermsOfUseOrLicense termsOfUseOrLicense;
+
     /**
      * There are two types of provenance types and this "free-form" type is
      * represented in the GUI as text box the user can type into. The other type
@@ -190,10 +194,11 @@ public class FileMetadata implements Serializable {
         fmd.setRestricted( isRestricted() );
         fmd.setDirectoryLabel(getDirectoryLabel());
         fmd.setProvFreeForm(getProvFreeForm());
+        fmd.setTermsOfUseOrLicense(getTermsOfUseOrLicense()); // TODO p.m: make a copy on change
         dsv.getFileMetadatas().add(fmd);
         return fmd;
     }
-    
+
     public String getLabel() {
         getLabelNoExtension();
         return label;
@@ -854,5 +859,12 @@ public class FileMetadata implements Serializable {
 
         return returnSet;
     }
-    
+
+    public TermsOfUseOrLicense getTermsOfUseOrLicense() {
+        return termsOfUseOrLicense;
+    }
+
+    public void setTermsOfUseOrLicense(TermsOfUseOrLicense termsOfUseOrLicense) {
+        this.termsOfUseOrLicense = termsOfUseOrLicense;
+    }
 }
