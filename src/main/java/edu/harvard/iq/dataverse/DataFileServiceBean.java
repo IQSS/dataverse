@@ -923,10 +923,10 @@ public class DataFileServiceBean implements java.io.Serializable {
      */
     public void updatePreviewImageFlags(Long fileId, boolean previewImageAvailable, boolean previewImageFail) {
         em.createNativeQuery(
-                "UPDATE DVOBJECT SET PREVIEWIMAGEAVAILABLE = :previewAvailable, PREVIEWIMAGEFAIL = :previewFail, MODIFICATIONTIME = CURRENT_TIMESTAMP WHERE ID = :fileId")
-                .setParameter("previewAvailable", previewImageAvailable)
-                .setParameter("previewFail", previewImageFail)
-                .setParameter("fileId", fileId)
+                "UPDATE DVOBJECT SET PREVIEWIMAGEAVAILABLE = ?1, PREVIEWIMAGEFAIL = ?2, MODIFICATIONTIME = CURRENT_TIMESTAMP WHERE ID = ?3")
+                .setParameter(1, previewImageAvailable)
+                .setParameter(2, previewImageFail)
+                .setParameter(3, fileId)
                 .executeUpdate();
     }
     
