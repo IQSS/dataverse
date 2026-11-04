@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +36,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     DatasetServiceBean datasetService;
 
     @EJB
+    DataFileServiceBean dataFileService;
+
+    @EJB
     EjbDataverseEngine commandEngine;
     
     @EJB
@@ -45,7 +49,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     private Long datasetId;
     private Dataset dataset;
-    private List<DatasetThumbnail> datasetThumbnails;
+    private List<DatasetThumbnail> datasetThumbnails = new ArrayList<>();
     /**
      * A preview image of either the current or (potentially unsaved) future
      * thumbnail.
@@ -74,7 +78,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetVersionCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+        // Use lazy thumbnail candidates to defer expensive base64 generation
+        // until the thumbnail selection dialog is actually opened.
+        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, false, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();
@@ -121,8 +127,33 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         this.datasetFileThumbnailToSwitchTo = datasetFileThumbnailToSwitchTo;
     }
 
+
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
+        String selectedIdStr = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("selectedThumbnailId");
+        if (selectedIdStr != null && !selectedIdStr.isEmpty()) {
+            try {
+                Long fileId = Long.parseLong(selectedIdStr);
+                if (datasetThumbnails != null) {
+                    for (DatasetThumbnail thumb : datasetThumbnails) {
+                        if (thumb.getDataFile() != null && fileId.equals(thumb.getDataFile().getId())) {
+                            datasetFileThumbnailToSwitchTo = thumb.getDataFile();
+                            break;
+                        }
+                    }
+                }
+                if (datasetFileThumbnailToSwitchTo == null || !fileId.equals(datasetFileThumbnailToSwitchTo.getId())) {
+                    if (dataFileService != null) {
+                        datasetFileThumbnailToSwitchTo = dataFileService.find(fileId);
+                    }
+                }
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid selectedThumbnailId: " + selectedIdStr);
+            }
+        }
+        if (datasetFileThumbnailToSwitchTo == null) {
+            return;
+        }
         updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
         String base64image = ImageThumbConverter.getImageThumbnailAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
