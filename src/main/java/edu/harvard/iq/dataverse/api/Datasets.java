@@ -537,7 +537,16 @@ public class Datasets extends AbstractApiBean {
                                @Parameter(description = "Whether the configured email-exclusion setting is ignored for the export.") @QueryParam("ignoreSettingExcludeEmailFromExport") Boolean ignoreSettingToExcludeEmailFromExport,
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
+        logger.severe(">>> getVersion");
+        User user = getRequestUser(crc);
         return response( req -> {
+            List<String> anonymizedFieldTypeNamesList = null;
+            if (user instanceof PrivateUrlUser && ((PrivateUrlUser) user).hasAnonymizedAccess()) {
+                String names = settingsService.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+                logger.severe(">>>> AnonymizedFieldTypeNames " + names);
+                anonymizedFieldTypeNamesList = names != null ? ListSplitUtil.split(names) : null;
+                logger.severe(">>> anonymizedFieldTypeNamesList " + anonymizedFieldTypeNamesList);
+            }
             boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
             boolean includeFiles = excludeFiles == null ? true : !excludeFiles;
             boolean ignoreSettingExcludeEmailFromExport = ignoreSettingToExcludeEmailFromExport != null ? ignoreSettingToExcludeEmailFromExport : false;
@@ -565,11 +574,11 @@ public class Datasets extends AbstractApiBean {
                 ignoreSettingExcludeEmailFromExport = false;
             }
 
-            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, null, includeFiles,
+            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, anonymizedFieldTypeNamesList, includeFiles,
                     returnOwners, includeMetadataBlocks, false, ignoreSettingExcludeEmailFromExport);
             return ok(jsonBuilder);
 
-        }, getRequestUser(crc));
+        }, user);
     }
 
     @GET
