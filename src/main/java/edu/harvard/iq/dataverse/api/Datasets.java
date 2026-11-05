@@ -257,7 +257,10 @@ public class Datasets extends AbstractApiBean {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         try {
-            Dataset dataset = findDatasetUserCanSeeOrDie(persistentId, req);
+            Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(persistentId, req);
+            if (dataset == null) {
+                return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
+            }
 
             DatasetVersion datasetVersion = null;
             try {
@@ -309,8 +312,6 @@ public class Datasets extends AbstractApiBean {
                     .entity(is)
                     .type(mediaType).
                     build();
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
         } catch (Exception wr) {
             logger.warning(wr.getMessage());
             return error(Response.Status.FORBIDDEN, "Export Failed");
