@@ -7028,6 +7028,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/exportFormats"
 
+.. _customization-analytics:
+
 Get Customization File Contents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -7054,7 +7056,27 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -X GET "https://demo.dataverse.org/api/info/settings/customization/analytics"
 
-.. _customization-analytics:
+.. _get-external-vocabularies-customization:
+
+Get External Vocabularies Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The External Vocab Customization API is used to retrieve the sanitized view of the external vocab CVoc configuration.
+This endpoint is callable by all API users.
+
+A curl example getting the external vocab configuration
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -X GET "$SERVER_URL/api/info/settings/externalVocabularies"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X GET "https://demo.dataverse.org/api/info/settings/externalVocabularies"
 
 .. _metadata-blocks-api:
 
