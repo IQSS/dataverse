@@ -150,7 +150,7 @@ Before running the Docker Compose file, you need to update the value of the ``DA
 
 To run the Docker Compose file, go to the Dataverse repository root, then run:
 
-``docker-compose -f docker-compose-dev.yml up -d --scale dev_dataverse=0``
+``docker-compose -f docker-compose-dev.yml up --build -d --scale dev_dataverse=0``
 
 Note that this command omits the Dataverse container defined in the Docker Compose file, since Dataverse is going to be installed directly on localhost in the next section.
 

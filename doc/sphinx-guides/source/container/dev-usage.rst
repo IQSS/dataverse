@@ -60,10 +60,15 @@ run it together with all dependencies. There are four ways to do this (commands 
      - Using Compose
    * - In foreground
      - ``mvn -Pct docker:run``
-     - ``docker compose -f docker-compose-dev.yml up``
+     - ``docker compose -f docker-compose-dev.yml up --build``
    * - In background
      - ``mvn -Pct docker:start``
-     - ``docker compose -f docker-compose-dev.yml up -d``
+     - ``docker compose -f docker-compose-dev.yml up --build -d``
+
+**Note:** The ``--build`` flag is needed when using Compose because the Keycloak image (``gdcc/keycloak``, used by the SPA)
+is not published to a registry but built locally from ``conf/keycloak``. Without it, you may see
+``pull access denied for gdcc/keycloak``. (Maven builds this image for you, so the ``mvn`` commands don't need a
+special flag.)
 
 Both ways have their pros and cons:
 
@@ -100,10 +105,10 @@ In case you want to concatenate building and running, here's a cheatsheet for yo
      - Using Compose
    * - In foreground
      - ``mvn -Pct package docker:run``
-     - ``mvn -Pct package && docker compose -f docker-compose-dev.yml up``
+     - ``mvn -Pct package && docker compose -f docker-compose-dev.yml up --build``
    * - In background
      - ``mvn -Pct package docker:start``
-     - ``mvn -Pct package && docker compose -f docker-compose-dev.yml up -d``
+     - ``mvn -Pct package && docker compose -f docker-compose-dev.yml up --build -d``
 
 Once all containers have been started, you can check if the application was deployed correctly by checking the version
 at http://localhost:8080/api/info/version or watch the logs.
