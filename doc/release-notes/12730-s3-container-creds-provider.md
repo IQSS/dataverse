@@ -1,0 +1,1 @@
+- Added IAM role based S3 access for applications running in AWC ECS Fargate. See Issue #12730 and PR #12839.
