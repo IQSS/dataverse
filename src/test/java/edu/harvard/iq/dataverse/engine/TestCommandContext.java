@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsValidator;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
@@ -226,6 +227,11 @@ public class TestCommandContext implements CommandContext {
     
     @Override
     public ConfirmEmailServiceBean confirmEmail() {
+        return null;
+    }
+
+    @Override
+    public PasswordValidatorServiceBean passwordValidation() {
         return null;
     }
     
