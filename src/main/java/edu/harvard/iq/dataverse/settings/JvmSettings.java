@@ -43,7 +43,8 @@ public enum JvmSettings {
     BUILD(PREFIX, "build"),
     FQDN(PREFIX, "fqdn"),
     SITE_URL(PREFIX, "siteUrl"),
-    
+    REUSABLE_COMPONENTS_BASE_URL(PREFIX, "reusable-components.base-url"),
+
     // FILES SETTINGS
     SCOPE_FILES(PREFIX, "files"),
     FILES_DIRECTORY(SCOPE_FILES, "directory"),
