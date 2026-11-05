@@ -53,6 +53,8 @@ class UsersSignUpTest {
     private static final String REDIRECT_URI = "https://spa.example.edu/sign-up";
     private static final String CLIENT_SECRET = "orcid-client-secret";
     private static final String ORCID_URL = "https://orcid.org/0000-0002-1825-0097";
+    private static final String CODE_VERIFIER = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+    private static final String CODE_CHALLENGE = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
     private static final String SIGN_UP_JSON = "{\"username\":\"alovelace\",\"firstName\":\"Ada\",\"lastName\":\"Lovelace\","
             + "\"emailAddress\":\"ada@example.edu\",\"password\":\"Str0ngPassw0rd\",\"termsAccepted\":true%s}";
 
@@ -91,7 +93,7 @@ class UsersSignUpTest {
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "false", varArgs = "api-builtin-user-signup")
     void signUpIsForbiddenWhenTheFeatureFlagIsOff() {
         assertEquals(403, users.signUpBuiltinUser(signUpJson("")).getStatus());
-        assertEquals(403, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI).getStatus());
+        assertEquals(403, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI, CODE_CHALLENGE).getStatus());
         assertEquals(403, users.connectOrcidForSignUp(connectJson(validState())).getStatus());
     }
 
@@ -181,7 +183,7 @@ class UsersSignUpTest {
     void authorizeReturnsTheOrcidAuthorizationUrl() {
         when(orcidProvider.buildAuthzUrl(anyString(), eq(REDIRECT_URI))).thenReturn("https://orcid.org/oauth/authorize?x=1");
 
-        Response response = users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI);
+        Response response = users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI, CODE_CHALLENGE);
 
         assertEquals(200, response.getStatus());
         assertEquals("https://orcid.org/oauth/authorize?x=1", data(response).getString("authorizationUrl"));
@@ -189,8 +191,16 @@ class UsersSignUpTest {
 
     @Test
     void authorizeRejectsARedirectUriThatIsNotAllowed() {
-        assertEquals(400, users.getOrcidSignUpAuthorizationUrl("https://evil.example.com/sign-up").getStatus());
-        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(null).getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl("https://evil.example.com/sign-up", CODE_CHALLENGE).getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(null, CODE_CHALLENGE).getStatus());
+    }
+
+    @Test
+    void authorizeRejectsAMissingOrInvalidCodeChallenge() {
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI, null).getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI, "not-a-challenge").getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI, CODE_VERIFIER + "=").getStatus());
+        verify(orcidProvider, never()).buildAuthzUrl(anyString(), anyString());
     }
 
     @Test
@@ -199,16 +209,16 @@ class UsersSignUpTest {
     void authorizeAllowsOnlyTheModernSignUpPageOfTheSiteWhenNoRedirectUrisAreSet() {
         when(orcidProvider.buildAuthzUrl(anyString(), anyString())).thenReturn("https://orcid.org/oauth/authorize?x=1");
 
-        assertEquals(200, users.getOrcidSignUpAuthorizationUrl("https://dataverse.example.edu/modern/sign-up").getStatus());
-        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI).getStatus());
-        assertEquals(400, users.getOrcidSignUpAuthorizationUrl("https://dataverse.example.edu/modern/sign-up/").getStatus());
+        assertEquals(200, users.getOrcidSignUpAuthorizationUrl("https://dataverse.example.edu/modern/sign-up", CODE_CHALLENGE).getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI, CODE_CHALLENGE).getStatus());
+        assertEquals(400, users.getOrcidSignUpAuthorizationUrl("https://dataverse.example.edu/modern/sign-up/", CODE_CHALLENGE).getStatus());
     }
 
     @Test
     void orcidEndpointsReturnNotFoundWhenOrcidIsNotConfigured() {
         when(authSvc.getOrcidAuthenticationProvider()).thenReturn(null);
 
-        assertEquals(404, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI).getStatus());
+        assertEquals(404, users.getOrcidSignUpAuthorizationUrl(REDIRECT_URI, CODE_CHALLENGE).getStatus());
         assertEquals(404, users.connectOrcidForSignUp(connectJson(validState())).getStatus());
     }
 
@@ -259,7 +269,16 @@ class UsersSignUpTest {
         assertEquals(400, users.connectOrcidForSignUp("{\"state\":\"" + validState() + "\",\"redirectUri\":\"" + REDIRECT_URI + "\"}").getStatus());
         assertEquals(400, users.connectOrcidForSignUp(connectJson("forged-state")).getStatus());
         assertEquals(400, users.connectOrcidForSignUp("{\"code\":\"orcid-code\",\"state\":\"" + validState()
-                + "\",\"redirectUri\":\"https://evil.example.com/sign-up\"}").getStatus());
+                + "\",\"redirectUri\":\"https://evil.example.com/sign-up\",\"codeVerifier\":\"" + CODE_VERIFIER + "\"}").getStatus());
+        verify(orcidProvider, never()).getUserRecord(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void connectRejectsAMissingOrWrongCodeVerifier() throws Exception {
+        String withoutVerifier = "{\"code\":\"orcid-code\",\"state\":\"" + validState() + "\",\"redirectUri\":\"" + REDIRECT_URI + "\"}";
+
+        assertEquals(400, users.connectOrcidForSignUp(withoutVerifier).getStatus());
+        assertEquals(400, users.connectOrcidForSignUp(connectJson(validState(), "a".repeat(43))).getStatus());
         verify(orcidProvider, never()).getUserRecord(anyString(), anyString(), anyString());
     }
 
@@ -294,11 +313,16 @@ class UsersSignUpTest {
     }
 
     private static String validState() {
-        return OrcidSignUpTokens.createState(REDIRECT_URI, CLIENT_SECRET, System.currentTimeMillis());
+        return OrcidSignUpTokens.createState(REDIRECT_URI, CODE_CHALLENGE, CLIENT_SECRET, System.currentTimeMillis());
     }
 
     private static String connectJson(String state) {
-        return "{\"code\":\"orcid-code\",\"state\":\"" + state + "\",\"redirectUri\":\"" + REDIRECT_URI + "\"}";
+        return connectJson(state, CODE_VERIFIER);
+    }
+
+    private static String connectJson(String state, String codeVerifier) {
+        return "{\"code\":\"orcid-code\",\"state\":\"" + state + "\",\"redirectUri\":\"" + REDIRECT_URI
+                + "\",\"codeVerifier\":\"" + codeVerifier + "\"}";
     }
 
     private static OAuth2UserRecord orcidRecord(String username, AuthenticatedUserDisplayInfo displayInfo) {

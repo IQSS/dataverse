@@ -429,10 +429,12 @@ public class Users extends AbstractApiBean {
     @GET
     @Path("signup/orcid/authorize")
     @Operation(summary = "Gets the ORCID authorization URL for signing up",
-            description = "Returns the URL that sends a new user to ORCID to authenticate their ORCID iD while signing up. The redirectUri must be listed in dataverse.api.signup.orcid-redirect-uris, or, when that is not set, be the site URL followed by /modern/sign-up.")
+            description = "Returns the URL that sends a new user to ORCID to authenticate their ORCID iD while signing up. The redirectUri must be listed in dataverse.api.signup.orcid-redirect-uris, or, when that is not set, be the site URL followed by /modern/sign-up. The codeChallenge ties the flow to the client that started it, as in PKCE.")
     public Response getOrcidSignUpAuthorizationUrl(
             @Parameter(description = "The SPA URL that ORCID redirects back to.")
-            @QueryParam("redirectUri") String redirectUri) {
+            @QueryParam("redirectUri") String redirectUri,
+            @Parameter(description = "The base64url-encoded SHA-256 hash of a random code verifier kept by the client (PKCE S256).")
+            @QueryParam("codeChallenge") String codeChallenge) {
         Response unavailable = signUpUnavailableResponse();
         if (unavailable != null) {
             return unavailable;
@@ -444,7 +446,10 @@ public class Users extends AbstractApiBean {
         if (!isAllowedOrcidSignUpRedirectUri(redirectUri)) {
             return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidRedirectUriNotAllowed"));
         }
-        String state = OrcidSignUpTokens.createState(redirectUri, orcidProvider.getClientSecret(), System.currentTimeMillis());
+        if (!OrcidSignUpTokens.isValidCodeChallenge(codeChallenge)) {
+            return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidCodeChallengeInvalid"));
+        }
+        String state = OrcidSignUpTokens.createState(redirectUri, codeChallenge, orcidProvider.getClientSecret(), System.currentTimeMillis());
         return ok(JsonUtil.createObjectBuilder().add("authorizationUrl", orcidProvider.buildAuthzUrl(state, redirectUri)));
     }
 
@@ -453,7 +458,7 @@ public class Users extends AbstractApiBean {
     @Operation(summary = "Authenticates an ORCID iD for signing up",
             description = "Exchanges the authorization code returned by ORCID for the user's ORCID iD and profile details, and returns a short-lived orcidToken to include in the sign-up request.")
     public Response connectOrcidForSignUp(
-            @RequestBody(description = "JSON with the code and state returned by ORCID, and the redirectUri used for authorization.") String body) {
+            @RequestBody(description = "JSON with the code and state returned by ORCID, the redirectUri used for authorization, and the codeVerifier whose hash was sent as codeChallenge.") String body) {
         Response unavailable = signUpUnavailableResponse();
         if (unavailable != null) {
             return unavailable;
@@ -469,16 +474,18 @@ public class Users extends AbstractApiBean {
         String code;
         String state;
         String redirectUri;
+        String codeVerifier;
         try {
             JsonObject json = JsonUtil.getJsonObject(body);
             code = getOptionalString(json, "code");
             state = getOptionalString(json, "state");
             redirectUri = getOptionalString(json, "redirectUri");
+            codeVerifier = getOptionalString(json, "codeVerifier");
         } catch (JsonParsingException | ClassCastException e) {
             return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidInvalidRequest"));
         }
         if (code == null || !isAllowedOrcidSignUpRedirectUri(redirectUri)
-                || !OrcidSignUpTokens.isValidState(state, redirectUri, orcidProvider.getClientSecret(), System.currentTimeMillis())) {
+                || !OrcidSignUpTokens.isValidState(state, redirectUri, codeVerifier, orcidProvider.getClientSecret(), System.currentTimeMillis())) {
             return badRequest(BundleUtil.getStringFromBundle("users.api.signup.errors.orcidInvalidRequest"));
         }
         OAuth2UserRecord orcidRecord;

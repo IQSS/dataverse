@@ -10,29 +10,57 @@ class OrcidSignUpTokensTest {
     private static final String REDIRECT_URI = "http://localhost:8000/modern/sign-up";
     private static final String ORCID_URL = "https://orcid.org/0000-0002-1825-0097";
     private static final long NOW = 1_800_000_000_000L;
+    // Example values from RFC 7636, Appendix B.
+    private static final String CODE_VERIFIER = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+    private static final String CODE_CHALLENGE = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
 
     @Test
-    void state_isValidForSameRedirectUriWithinTimeout() {
-        String state = OrcidSignUpTokens.createState(REDIRECT_URI, SECRET, NOW);
+    void codeChallenge_isTheS256HashOfTheCodeVerifier() {
+        assertThat(OrcidSignUpTokens.toCodeChallenge(CODE_VERIFIER)).isEqualTo(CODE_CHALLENGE);
+    }
 
-        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, SECRET, NOW + 60_000)).isTrue();
+    @Test
+    void codeChallenge_mustBeABase64UrlEncodedSha256Hash() {
+        assertThat(OrcidSignUpTokens.isValidCodeChallenge(CODE_CHALLENGE)).isTrue();
+        assertThat(OrcidSignUpTokens.isValidCodeChallenge(null)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidCodeChallenge("")).isFalse();
+        assertThat(OrcidSignUpTokens.isValidCodeChallenge(CODE_CHALLENGE + "x")).isFalse();
+        assertThat(OrcidSignUpTokens.isValidCodeChallenge(CODE_CHALLENGE.replace('-', '+'))).isFalse();
+    }
+
+    @Test
+    void state_isValidForSameRedirectUriAndCodeVerifierWithinTimeout() {
+        String state = OrcidSignUpTokens.createState(REDIRECT_URI, CODE_CHALLENGE, SECRET, NOW);
+
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, CODE_VERIFIER, SECRET, NOW + 60_000)).isTrue();
     }
 
     @Test
     void state_isRejectedForOtherRedirectUriSecretOrAfterTimeout() {
-        String state = OrcidSignUpTokens.createState(REDIRECT_URI, SECRET, NOW);
+        String state = OrcidSignUpTokens.createState(REDIRECT_URI, CODE_CHALLENGE, SECRET, NOW);
 
-        assertThat(OrcidSignUpTokens.isValidState(state, "https://evil.example/sign-up", SECRET, NOW)).isFalse();
-        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, "other-secret", NOW)).isFalse();
-        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, SECRET, NOW + OrcidSignUpTokens.STATE_TIMEOUT_MILLIS)).isFalse();
-        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, SECRET, NOW - 1)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(state, "https://evil.example/sign-up", CODE_VERIFIER, SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, CODE_VERIFIER, "other-secret", NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, CODE_VERIFIER, SECRET, NOW + OrcidSignUpTokens.STATE_TIMEOUT_MILLIS)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, CODE_VERIFIER, SECRET, NOW - 1)).isFalse();
+    }
+
+    @Test
+    void state_isRejectedWithoutTheMatchingCodeVerifier() {
+        String state = OrcidSignUpTokens.createState(REDIRECT_URI, CODE_CHALLENGE, SECRET, NOW);
+        String otherVerifier = "a".repeat(43);
+
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, otherVerifier, SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, null, SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, "too-short", SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(state, REDIRECT_URI, CODE_CHALLENGE, SECRET, NOW)).isFalse();
     }
 
     @Test
     void state_isRejectedWhenMissingOrTampered() {
-        assertThat(OrcidSignUpTokens.isValidState(null, REDIRECT_URI, SECRET, NOW)).isFalse();
-        assertThat(OrcidSignUpTokens.isValidState("", REDIRECT_URI, SECRET, NOW)).isFalse();
-        assertThat(OrcidSignUpTokens.isValidState("not-a-real-state", REDIRECT_URI, SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(null, REDIRECT_URI, CODE_VERIFIER, SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState("", REDIRECT_URI, CODE_VERIFIER, SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState("not-a-real-state", REDIRECT_URI, CODE_VERIFIER, SECRET, NOW)).isFalse();
     }
 
     @Test
@@ -54,10 +82,10 @@ class OrcidSignUpTokensTest {
 
     @Test
     void stateAndOrcidTokenCannotBeUsedInPlaceOfEachOther() {
-        String state = OrcidSignUpTokens.createState(REDIRECT_URI, SECRET, NOW);
+        String state = OrcidSignUpTokens.createState(REDIRECT_URI, CODE_CHALLENGE, SECRET, NOW);
         String token = OrcidSignUpTokens.createOrcidToken(REDIRECT_URI, SECRET, NOW);
 
         assertThat(OrcidSignUpTokens.readOrcidToken(state, SECRET, NOW)).isEmpty();
-        assertThat(OrcidSignUpTokens.isValidState(token, REDIRECT_URI, SECRET, NOW)).isFalse();
+        assertThat(OrcidSignUpTokens.isValidState(token, REDIRECT_URI, CODE_VERIFIER, SECRET, NOW)).isFalse();
     }
 }
