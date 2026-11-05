@@ -306,6 +306,48 @@ public class LocallyFairIT {
                 .body("data.total_count", equalTo(1));
     }
 
+    /**
+     * Test that metadata export API enforces Locally FAIR permissions.
+     */
+    @Test
+    public void testLocallyFairMetadataExport() {
+        String superUserToken = getSuperuserToken();
+        String dvAlias = UtilIT.createRandomCollectionGetAlias(superUserToken);
+        dataverseAliases.add(dvAlias);
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dvAlias, superUserToken);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        datasetPids.add(datasetPid);
+
+        // Publish all
+        UtilIT.publishDataverseViaNativeApi(dvAlias, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
+
+        // Restrict Dataverse
+        Response authorizedUserResponse = UtilIT.createRandomUser();
+        String authorizedUserToken = UtilIT.getApiTokenFromResponse(authorizedUserResponse);
+        String authorizedUsername = "@" + UtilIT.getUsernameFromResponse(authorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(authorizedUserResponse));
+        addLocallyFairRoleAssignee(dvAlias, authorizedUsername, superUserToken).then().assertThat().statusCode(Status.OK.getStatusCode());
+
+        Response unauthorizedUserResponse = UtilIT.createRandomUser();
+        String unauthorizedUserToken = UtilIT.getApiTokenFromResponse(unauthorizedUserResponse);
+        usernames.add(UtilIT.getUsernameFromResponse(unauthorizedUserResponse));
+
+        // 1. Check Export - Authorized User
+        UtilIT.exportDataset(datasetPid, "dataverse_json", authorizedUserToken)
+                .then().assertThat().statusCode(Status.OK.getStatusCode());
+
+        // 2. Check Export - Unauthorized User
+        UtilIT.exportDataset(datasetPid, "dataverse_json", unauthorizedUserToken)
+                .then().assertThat().statusCode(Status.NOT_FOUND.getStatusCode());
+
+        // 3. Check Export - Anonymous User
+        UtilIT.exportDataset(datasetPid, "dataverse_json", null)
+                .then().assertThat().statusCode(Status.NOT_FOUND.getStatusCode());
+    }
+
     private Response listLocallyFairRoleAssignees(String dvIdtf, String apiToken) {
         return given().header("X-Dataverse-key", apiToken)
                 .get("/api/dataverses/" + dvIdtf + "/locallyFairRoleAssignees");
