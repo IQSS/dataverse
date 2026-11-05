@@ -1,1 +1,1 @@
-## The file tree view on the dataset page now displays the original (rather than ingested) file name and size, mirroring how the tabular view works.
+The dataset page files table now shows the original format of ingested files and the file tree view on the dataset page now displays the original (rather than ingested) file name and size, mirroring how the table view works.
