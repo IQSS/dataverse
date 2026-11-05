@@ -83,7 +83,7 @@ public class ContainerManagerImpl implements ContainerManager {
             logger.fine("operating on target type: " + urlManager.getTargetType());
             if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
-                Dataset dataset = datasetService.findByGlobalId(globalId);
+                Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(globalId, dvReq);
                 if (dataset != null) {
                     if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalId().asString());
@@ -130,7 +130,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 }
 
                 String globalId = urlManager.getTargetIdentifier();
-                Dataset dataset = datasetService.findByGlobalId(globalId);
+                Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(globalId, dvReq);
                 if (dataset != null) {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
@@ -211,7 +211,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 String globalId = urlManager.getTargetIdentifier();
                 logger.fine("globalId: " + globalId);
                 if (globalId != null) {
-                    Dataset dataset = dataset = datasetService.findByGlobalId(globalId);
+                    Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(globalId, dvRequest);
                     if (dataset != null) {
                         Dataverse dvThatOwnsDataset = dataset.getOwner();
                         /**
@@ -305,7 +305,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (globalId != null) {
                     Dataset dataset = null;
                     try {
-                        dataset = datasetService.findByGlobalId(globalId);
+                        dataset = datasetService.findDatasetUserCanSeeByGlobalId(globalId, dvRequest);
                     } catch (EJBException ex) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + ") in URL: " + uri);
                     }
