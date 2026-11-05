@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import java.util.Map;
@@ -8,6 +7,7 @@ import java.util.Map;
  * @author stephenkraffmiller
  */
 public class RorAffiliationDetails {
+
     private final String orgName;
     private final Map<String, String> attributes;
 
@@ -16,6 +16,11 @@ public class RorAffiliationDetails {
         this.attributes = attributes;
     }
 
-    public String getOrgName() { return orgName; }
-    public Map<String, String> getAttributes() { return attributes; }
+    public String getOrgName() {
+        return orgName;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
 }
