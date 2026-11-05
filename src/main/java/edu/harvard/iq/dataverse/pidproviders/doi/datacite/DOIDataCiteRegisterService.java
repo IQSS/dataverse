@@ -132,6 +132,14 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
     
+    /**
+     * Hides a findable DOI, moving it to the "registered" state. The DOI still
+     * resolves and its metadata is retained, but it is no longer indexed/searchable.
+     */
+    public String hideIdentifier(String identifier) {
+        return client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
+    }
+
         public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         Dataset dataset = null;

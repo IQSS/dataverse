@@ -5884,7 +5884,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
                         return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.forward.url", List.of(iae.getMessage())));
                     }
                 }
-                execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion, false));
+                execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion));
 
                 return ok("Dataset " +
                         (":persistentId".equals(datasetId) ? datasetVersion.getDataset().getGlobalId().asString() : datasetId) +
