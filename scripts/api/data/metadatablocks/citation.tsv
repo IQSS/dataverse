@@ -1558,7 +1558,8 @@
 	language	Creek	mus	1415	mus
 	language	Crimean Tatar	crh	1416	crh
 	language	Croatia Sign Language	csq	1417	csq
-	language	Croatian	hrv	1418	hrv	Logudorese Sardinian	src	hr	Croatian
+	language	Croatian	hrv	1418	hrv	hr
+	language	Logudorese Sardinian	src	3785	src
 	language	Cross River Mbembe	mfn	1419	mfn
 	language	Crow	cro	1420	cro
 	language	Cruzeño	crz	1421	crz
