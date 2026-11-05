@@ -44,6 +44,8 @@ public class ConfigCheckService {
     
     @PostConstruct
     public void startup() {
+        logger.info("Dataverse version: " + JvmSettings.VERSION.lookup());
+
         if (!checkSystemDirectories() || !checkPidProviders()) {
             throw new ConfigurationError("Not all configuration checks passed successfully. See logs above.");
         }
