@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +35,8 @@ public class GetLinkingDataverseListCommandTest {
     private PermissionServiceBean permissionService;
     @Mock
     private DataverseServiceBean dataverseService;
+    @Mock
+    private DatasetLinkingServiceBean datasetLinkingService;
     @Mock
     private AuthenticatedUser authenticatedUser;
 
@@ -80,6 +83,35 @@ public class GetLinkingDataverseListCommandTest {
         assertEquals(permittedList, result);
         Mockito.verify(permissionService).findPermittedCollections(dataverseRequest, authenticatedUser, Permission.LinkDataset, searchTerm);
         Mockito.verify(dataverseService).removeUnlinkableDataverses(permittedList, datasetToLink);
+    }
+
+    @Test
+    public void execute_shouldReturnPermittedList_forUnlinkingDataset() throws CommandException {
+        // Arrange
+        Dataset dataset = new Dataset();
+        Dataverse deniedFirst = Mockito.mock(Dataverse.class);
+        Dataverse permittedSecond = Mockito.mock(Dataverse.class);
+        Dataverse deniedThird = Mockito.mock(Dataverse.class);
+        Dataverse permittedFourth = Mockito.mock(Dataverse.class);
+        List<Dataverse> linked = Arrays.asList(deniedFirst, permittedSecond, deniedThird, permittedFourth);
+        List<Dataverse> permitted = Arrays.asList(permittedSecond, permittedFourth);
+
+        Mockito.when(authenticatedUser.isAuthenticated()).thenReturn(true);
+        Mockito.when(commandContext.dsLinking()).thenReturn(datasetLinkingService);
+        Mockito.when(datasetLinkingService.findLinkingDataverses(dataset.getId(), "")).thenReturn(linked);
+        Mockito.when(commandContext.permissions()).thenReturn(permissionService);
+        for (Dataverse collection : linked) {
+            Mockito.when(permissionService.hasPermissionsFor(dataverseRequest, collection, EnumSet.of(Permission.LinkDataset)))
+                    .thenReturn(permitted.contains(collection));
+        }
+
+        GetLinkingDataverseListCommand sut = new GetLinkingDataverseListCommand(dataverseRequest, dataset, true);
+
+        // Act
+        List<Dataverse> result = sut.execute(commandContext);
+
+        // Assert
+        assertEquals(permitted, result);
     }
 
     @Test
