@@ -4426,6 +4426,17 @@ public class UtilIT {
         return retrieveMyDataAsJsonString(apiToken, userIdentifier, roleIds, "");
     }
 
+    /**
+     * Look up a built-in role ID by its alias.
+     * Calls /api/roles/:alias?alias=<alias> and returns the role id.
+     */
+    static Long getRoleIdByAlias(String roleAlias, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/roles/:alias?alias=" + roleAlias);
+        return JsonPath.from(response.body().asString()).getLong("data.id");
+    }
+
     static Response retrieveMyCollectionList(String apiToken, String userIdentifier) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {

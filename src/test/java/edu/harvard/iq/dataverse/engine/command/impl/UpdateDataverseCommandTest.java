@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DataverseDTO;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -9,10 +10,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataverse;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UpdateDataverseCommandTest {
@@ -43,10 +44,15 @@ public class UpdateDataverseCommandTest {
         }
     };
 
+    PermissionServiceBean permissionService;
+
     TestDataverseEngine engine;
 
     @BeforeEach
     public void setUp() {
+        permissionService = Mockito.mock(PermissionServiceBean.class);
+        Mockito.when(permissionService.isSuperuserOn(Mockito.any(), Mockito.any())).thenReturn(false);
+
         engine = new TestDataverseEngine(new TestCommandContext() {
             @Override
             public DataverseServiceBean dataverses() {
@@ -56,6 +62,11 @@ public class UpdateDataverseCommandTest {
             @Override
             public SystemConfig systemConfig() {
                 return systemConfig;
+            }
+
+            @Override
+            public PermissionServiceBean permissions() {
+                return permissionService;
             }
         });
     }

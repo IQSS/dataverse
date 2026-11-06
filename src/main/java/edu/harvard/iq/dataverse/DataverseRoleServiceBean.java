@@ -135,6 +135,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return em.createNamedQuery("DataverseRole.listAll", DataverseRole.class).getResultList();
     }
 
+    public List<DataverseRole> findAllWithPermission(Permission permission) {
+        return findAll().stream()
+                .filter(r -> r.permissions().contains(permission))
+                .collect(Collectors.toList());
+    }
+
     public void delete(Long id) {
         em.createNamedQuery("DataverseRole.deleteById", DataverseRole.class)
             .setParameter("id", id)

@@ -5,7 +5,7 @@
 ```{grid-item-card}
 :columns: 12
 
-This page highlights features for administrators and power-users of a Dataverse installation.
+This page highlights features for administrators and superusers of a Dataverse installation.
 
 *See {doc}`/quickstart/what-is-dataverse` to learn about its {ref}`core-capabilities` for researchers if you're new to Dataverse.*
 

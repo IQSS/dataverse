@@ -1,0 +1,3 @@
+@defaultMessage Consider using isSuperuserOn(DvObject, DataverseRequest) instead if the action applies only to a specific Dataverse, Dataset, or File.
+edu.harvard.iq.dataverse.authorization.users.User#isSuperuser()
+edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser#isSuperuser()
