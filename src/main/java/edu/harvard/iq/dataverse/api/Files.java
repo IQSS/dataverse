@@ -1056,7 +1056,7 @@ public class Files extends AbstractApiBean {
             JsonObjectBuilder job = JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
                     .add("fileId", dataFile.getId()).add("preview", preview);
             if (guestbookResponseId != null) {
-                job.add("guestbookResponseId", guestbookResponseId);
+                job.add("gbrids", guestbookResponseId);
             }
             return ok(job);
 
