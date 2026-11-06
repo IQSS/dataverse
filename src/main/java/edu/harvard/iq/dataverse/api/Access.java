@@ -343,9 +343,25 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
-            throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.submittingGuestbookResponseTwice"));
+            // To match JSF functionality of writing 2 responses, one with event type 'explore' and a second with tool name
+            // Check if response was "explore" and allow a download event from an external tool
+            boolean allowMultiple = false;
+            if (externalToolId != null) {
+                ExternalTool externalTool = externalToolService.findById(externalToolId);
+                gbr = guestbookResponseService.findById(Long.valueOf(gbrids.split(",")[0]));
+                if (externalTool != null && gbr != null && GuestbookResponse.EXPLORE.equalsIgnoreCase(gbr.getEventType())) {
+                    // TODO prevent multiple download records when first is explore
+                    gbr.setEventType(externalTool.getDisplayName());
+                    gbr.setResponseTime(new Date());
+                    gbr.setId(null);
+                    allowMultiple = true;
+                }
+            }
+            if (!allowMultiple) {
+                throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.submittingGuestbookResponseTwice"));
+            }
         }
-        if (!gbrecs && df.isReleased()){
+        if (!gbrecs && df.isReleased() && gbr == null){
             // Write Guestbook record if not done previously and file is released
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, req.getUser());
         }

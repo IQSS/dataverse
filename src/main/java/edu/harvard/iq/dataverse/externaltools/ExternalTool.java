@@ -344,15 +344,14 @@ public class ExternalTool implements Serializable {
      * @return the allowedApiCalls
      */
     public String getAllowedApiCalls() {
-        String allowedCallsModified = allowedApiCalls;
         if (guestbookResponseId != null) {
             // gbrecs was written if the guestbookResponseId exists
-            String guestbookResponseParams = "gbrecs=true&gbrids=" + guestbookResponseId + "&externalToolId=" + getId();
-            allowedCallsModified = allowedCallsModified
-                    .replaceAll("(?i)" + Pattern.quote("gbrecs=true"),guestbookResponseParams)
-                    .replaceAll("(?i)" + Pattern.quote("gbrecs=false"), guestbookResponseParams);
+            String guestbookResponseParams = "&gbrids=" + guestbookResponseId + "&externalToolId=" + getId();
+            return allowedApiCalls
+                    .replaceAll("(?i)" + Pattern.quote("gbrecs=true"),"gbrecs=true" + guestbookResponseParams)
+                    .replaceAll("(?i)" + Pattern.quote("gbrecs=false"), "gbrecs=false" + guestbookResponseParams);
         }
-        return allowedCallsModified;
+        return allowedApiCalls;
     }
 
     /**

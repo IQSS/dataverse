@@ -106,7 +106,7 @@ public class GuestbookResponse implements Serializable {
     public static final String ACCESS_REQUEST = "AccessRequest";
     public static final String DOWNLOAD = "Download";
     static final String SUBSET = "Subset";
-    static final String EXPLORE = "Explore";
+    public static final String EXPLORE = "Explore";
 
     /*
     Transient Values carry non-written information 
