@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
@@ -42,7 +43,6 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +61,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -89,7 +88,9 @@ public class Files extends AbstractApiBean {
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
-    DataverseServiceBean dataverseService;    
+    DataverseServiceBean dataverseService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
     @EJB
     IngestServiceBean ingestService;
     @Inject
@@ -942,6 +943,19 @@ public class Files extends AbstractApiBean {
 
         boolean preview = false;
         String locale = null;
+        GuestbookResponse guestbookResponse = null;
+
+        // Find the file
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            return notFound("File not found for given id: " + fileId);
+        }
+
+        // Get the current user and create a request object
+        User user = getRequestUser(crc);
+        DataverseRequest req = createDataverseRequest(user);
 
         // Parse request body for parameters
         if (StringUtils.isNotBlank(jsonBody)) {
@@ -953,7 +967,10 @@ public class Files extends AbstractApiBean {
                 if (jsonObject.containsKey("locale")) {
                     locale = jsonObject.getString("locale");
                 }
-            } catch (JsonParsingException | NullPointerException e) {
+                if (jsonObject.containsKey("guestbookResponse")) {
+                    guestbookResponse = getGuestbookResponseFromBody(dataFile, GuestbookResponse.DOWNLOAD, jsonBody, user);
+                }
+            } catch (JsonParsingException | NullPointerException | JsonParseException e) {
                 logger.warning("Error parsing JSON: " + e.getMessage());
                 // Return a proper error response for malformed JSON
                 return error(Response.Status.BAD_REQUEST, "Invalid JSON format in request body.");
@@ -961,14 +978,6 @@ public class Files extends AbstractApiBean {
         }
 
         try {
-            // Find the file
-            DataFile dataFile;
-            try {
-                dataFile = findDataFileOrDie(fileId);
-            } catch (WrappedResponse ex) {
-                return notFound("File not found for given id: " + fileId);
-            }
-
             // Find the external tool
             ExternalTool externalTool = externalToolService.findById(externalToolId);
             if (externalTool == null) {
@@ -989,10 +998,6 @@ public class Files extends AbstractApiBean {
                     "External tool content type (" + toolContentType +
                     ") does not match file content type (" + fileContentType + ").");
             }
-
-            // Get the current user and create a request object
-            User user = getRequestUser(crc);
-            DataverseRequest req = createDataverseRequest(user);
 
             // Get the latest file metadata
             FileMetadata fileMetadata = dataFile.getLatestFileMetadata();
@@ -1020,13 +1025,24 @@ public class Files extends AbstractApiBean {
 
             // Determine if we need an API token for authentication
             ApiToken apiToken = null;
-            if (user.isAuthenticated() && isRestricted) {
+            if (user.isAuthenticated() && (isRestricted || guestbookResponse != null)) {
                 apiToken = authSvc.getValidApiTokenForUser(user);
+            }
+
+            // Write the Guestbook Response
+            Long guestbookResponseId = null;
+            if (guestbookResponse != null) {
+                guestbookResponse.setEventType(preview ? GuestbookResponse.EXPLORE : externalTool.getDisplayName()); // set tool name here as jsf does? i.e. 'View Image'
+                List<String> gbridList = fileDownloadService.writeGuestbookResponseRecords(guestbookResponse, List.of(dataFile));
+                if (gbridList != null && !gbridList.isEmpty()) {
+                    //Get the last one / the one with the latest date
+                    guestbookResponseId = Long.parseLong(gbridList.getLast());
+                }
             }
 
             // Create the external tool handler
             ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken,
-                    fileMetadata, locale);
+                    fileMetadata, locale, guestbookResponseId);
 
             // Get the tool URL
             String toolUrl;
@@ -1037,8 +1053,12 @@ public class Files extends AbstractApiBean {
             }
 
             // Return the URL in a JSON response
-            return ok(JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
-                    .add("fileId", dataFile.getId()).add("preview", preview));
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
+                    .add("fileId", dataFile.getId()).add("preview", preview);
+            if (guestbookResponseId != null) {
+                job.add("gbrids", guestbookResponseId);
+            }
+            return ok(job);
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error getting external tool URL: " + ex.getMessage(), ex);
@@ -1066,7 +1086,10 @@ public class Files extends AbstractApiBean {
             @Parameter(description = "File metadata database id.", required = true)
             @PathParam("fmid") long fmid,
             @Parameter(description = "Locale used when creating the external tool parameter payload.")
-            @QueryParam(value = "locale") String locale) {
+            @QueryParam(value = "locale") String locale,
+            @Parameter(description = "Numeric id of the Guestbook response.")
+            @QueryParam("guestbookResponseId") Long guestbookResponseId) {
+
         ExternalTool externalTool = externalToolService.findById(externalToolId);
         if(externalTool == null) {
             return error(BAD_REQUEST, "External tool not found.");
@@ -1084,7 +1107,7 @@ public class Files extends AbstractApiBean {
 
         URLTokenUtil eth = null;
 
-        eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
+        eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale, guestbookResponseId);
         return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
     }
 

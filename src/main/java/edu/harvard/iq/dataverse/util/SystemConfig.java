@@ -225,7 +225,7 @@ public class SystemConfig {
         }
         return reasonableDefault;
     }
-    
+
     /**
      * Lookup (or construct) the designated URL of this instance from configuration.
      *

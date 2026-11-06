@@ -23,9 +23,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.mydata.Pager;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.signing.ApiSigningSecretServiceBean;
@@ -134,7 +136,8 @@ public class Access extends AbstractApiBean {
     DataverseFeaturedItemServiceBean dataverseFeaturedItemServiceBean;
     
     private static final String DEFAULT_BUNDLE_NAME = "dataverse_files.zip";
-    private static final int GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
+    private static final int DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES = 1;
+    private static final int DEFAULT_GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES = 60;
     //@EJB
 
     @GET
@@ -208,7 +211,7 @@ public class Access extends AbstractApiBean {
         
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
-        if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids)) {
+        if (checkGuestbookRequiredResponse(uriInfo, df, gbrids, null)) {
             throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
@@ -276,7 +279,7 @@ public class Access extends AbstractApiBean {
             String jsonBody) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         List<String> fileIdsList = getFileIdsCSV(fileId);
-        processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, jsonBody);
+        processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
         if (gbrids == null || gbrids.isEmpty()) {
             gbrids = (String) crc.getProperty("gbrids");
@@ -317,6 +320,8 @@ public class Access extends AbstractApiBean {
                              @QueryParam("gbrecs") boolean gbrecs,
                              @Parameter(description = "Guestbook response id list supplied by the user interface.")
                              @QueryParam("gbrids") String gbrids,
+                             @Parameter(description = "External Tool Id.")
+                             @QueryParam("externalToolId") Long externalToolId,
                              @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
@@ -334,13 +339,29 @@ public class Access extends AbstractApiBean {
                
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), df);
-        if (checkGuestbookRequiredResponse(req.getUser(), uriInfo, df, gbrids)) {
+        if (checkGuestbookRequiredResponse(uriInfo, df, gbrids, externalToolId)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
-            throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.submittingGuestbookResponseTwice"));
+            // To match JSF functionality of writing 2 responses, one with event type 'explore' and a second with tool name
+            // Check if response was "explore" and allow a download event from an external tool
+            boolean allowMultiple = false;
+            if (externalToolId != null) {
+                ExternalTool externalTool = externalToolService.findById(externalToolId);
+                gbr = guestbookResponseService.findById(Long.valueOf(gbrids.split(",")[0]));
+                if (externalTool != null && gbr != null && GuestbookResponse.EXPLORE.equalsIgnoreCase(gbr.getEventType())) {
+                    // TODO prevent multiple download records when first is 'explore'
+                    gbr.setEventType(externalTool.getDisplayName());
+                    gbr.setResponseTime(new Date());
+                    gbr.setId(null);
+                    allowMultiple = true;
+                }
+            }
+            if (!allowMultiple) {
+                throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.submittingGuestbookResponseTwice"));
+            }
         }
-        if (!gbrecs && df.isReleased()){
+        if (!gbrecs && df.isReleased() && gbr == null){
             // Write Guestbook record if not done previously and file is released
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, req.getUser());
         }
@@ -480,7 +501,7 @@ public class Access extends AbstractApiBean {
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         fileId = normalizeFileId(fileId, req);
         List<String> fileIdsList = getFileIdsCSV(fileId);
-        return processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, jsonBody);
+        return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
     }
 
     private String normalizeFileId(String fileId, DataverseRequest req) {
@@ -513,7 +534,7 @@ public class Access extends AbstractApiBean {
     }
 
     // Process the guestbook response from JSON and return a signedUrl to the matching GET call
-    private Response processDatafilesWithGuestbookResponse(ContainerRequestContext crc, DataverseRequest req, HttpHeaders headers, List<String> fileIdsList, UriInfo uriInfo, boolean gbrecs, String jsonBody) {
+    private Response processDatafilesWithGuestbookResponse(ContainerRequestContext crc, DataverseRequest req, List<String> fileIdsList, UriInfo uriInfo, boolean gbrecs, Long externalToolId, String jsonBody) {
 
         User user = req.getUser();
 
@@ -529,7 +550,7 @@ public class Access extends AbstractApiBean {
         DataFile firstDatafile = datafiles.getFirst();
         Dataset ds = firstDatafile.getOwner();
 
-        boolean guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, datafiles, null);
+        boolean guestbookResponseRequired = checkGuestbookRequiredResponse(uriInfo, datafiles, null, externalToolId);
         if (guestbookResponseRequired) {
             try {
                 GuestbookResponse gbr = getGuestbookResponseFromBody(firstDatafile, GuestbookResponse.DOWNLOAD, jsonBody, user);
@@ -541,7 +562,6 @@ public class Access extends AbstractApiBean {
                     }
                 } else {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(firstDatafile)));
-
                 }
             } catch (JsonParseException ex) {
                 List<String> args = Arrays.asList(firstDatafile.getDisplayName(), ex.getLocalizedMessage());
@@ -621,7 +641,8 @@ public class Access extends AbstractApiBean {
             ApiToken apiToken = authSvc.findApiTokenByUser(requestor);
             if (apiToken == null) {
                 logger.fine("Generating temporary API token for user " + userIdentifier);
-                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES);
+                apiToken = authSvc.generateApiTokenForUser(requestor, AuthenticationServiceBean.INTERVAL.MINUTES,
+                        JvmSettings.GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES));
             }
             if (apiToken != null) {
                 key = apiToken.getTokenString();
@@ -653,7 +674,9 @@ public class Access extends AbstractApiBean {
         baseUrl = baseUrl.replace(":persistentId", id);
         String signedUrl;
         try {
-            signedUrl = UrlSignerUtil.signUrl(baseUrl, GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES, userIdentifier, "GET",
+            signedUrl = UrlSignerUtil.signUrl(baseUrl,
+                    JvmSettings.GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES),
+                    userIdentifier, "GET",
                     signingSecretService.getSigningKey(key));
         } catch (IllegalArgumentException e) {
             // A reserved param can be smuggled past the builder-level removal above inside a
@@ -928,7 +951,7 @@ public class Access extends AbstractApiBean {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         List<String> fileIdsList = getFileIdsCSV(body);
-        processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, body);
+        processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, body);
 
         // JSF UI passes the guestbook response id(s) in thus this qp can be removed when JSF is removed
         if (gbrids == null || gbrids.isEmpty()) {
@@ -936,7 +959,7 @@ public class Access extends AbstractApiBean {
         }
 
         // initiate the download now
-        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, uriInfo, headers, response, null);
+        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, null);
     }
 
     @GET
@@ -970,7 +993,7 @@ public class Access extends AbstractApiBean {
                     // We don't want downloads from Draft versions to be counted, 
                     // so we are setting the gbrecs (aka "do not write guestbook response") 
                     // variable accordingly:
-                    return downloadDatafiles(crc, fileIds, true, gbrids, uriInfo, headers, response, "draft");
+                    return downloadDatafiles(crc, fileIds, true, gbrids, null, uriInfo, headers, response, "draft");
                 }
             }
             
@@ -991,7 +1014,7 @@ public class Access extends AbstractApiBean {
             }
             
             List<String> fileIdsList = getFileIdsList(latest);
-            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, uriInfo, headers, response, latest.getFriendlyVersionNumber());
+            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, latest.getFriendlyVersionNumber());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1030,7 +1053,7 @@ public class Access extends AbstractApiBean {
                 fileIdsList = getFileIdsList(latest);
                 version = latest.getFriendlyVersionNumber();
             }
-            return processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, jsonBody);
+            return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1077,7 +1100,7 @@ public class Access extends AbstractApiBean {
                 gbrecs = true;
             }
 
-            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, uriInfo, headers, response, dsv.getFriendlyVersionNumber().toLowerCase());
+            return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, dsv.getFriendlyVersionNumber().toLowerCase());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1108,7 +1131,7 @@ public class Access extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionFromVersion(crc, datasetIdOrPersistentId, versionId);
             List<String> fileIdsList = getFileIdsList(dsv);
-            return processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, jsonBody);
+            return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1189,7 +1212,7 @@ public class Access extends AbstractApiBean {
                               @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
 
         List<String> fileIdsList = getFileIdsCSV(fileIds);
-        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, uriInfo, headers, response, null);
+        return downloadDatafiles(crc, fileIdsList, gbrecs, gbrids, null, uriInfo, headers, response, null);
     }
 
     @POST
@@ -1212,7 +1235,7 @@ public class Access extends AbstractApiBean {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         List<String> fileIdsList = getFileIdsCSV(fileIds);
-        return processDatafilesWithGuestbookResponse(crc, req, headers, fileIdsList, uriInfo, gbrecs, jsonBody);
+        return processDatafilesWithGuestbookResponse(crc, req, fileIdsList, uriInfo, gbrecs, null, jsonBody);
     }
 
     private List<String> getFileIdsCSV(String body) {
@@ -1240,7 +1263,7 @@ public class Access extends AbstractApiBean {
         }
     }
 
-    private Response downloadDatafiles(ContainerRequestContext crc, List<String> fileIdsList, boolean donotwriteGBResponse, String gbrids, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, String versionTag) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    private Response downloadDatafiles(ContainerRequestContext crc, List<String> fileIdsList, boolean donotwriteGBResponse, String gbrids, Long externalToolId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, String versionTag) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         final long zipDownloadSizeLimit = systemConfig.getZipDownloadLimit();
 
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
@@ -1288,7 +1311,7 @@ public class Access extends AbstractApiBean {
             if (authorizedDatafiles.isEmpty()) {
                 throw new ForbiddenException();
             }
-            Boolean guestbookResponseRequired = checkGuestbookRequiredResponse(user, uriInfo, authorizedDatafiles, gbrids);
+            Boolean guestbookResponseRequired = checkGuestbookRequiredResponse(uriInfo, authorizedDatafiles, gbrids, externalToolId);
             logger.fine("Downloading" + fileIdsList.size() + " files. GBR required: " + guestbookResponseRequired);
 
             if (guestbookResponseRequired) {
@@ -2246,11 +2269,11 @@ public class Access extends AbstractApiBean {
         jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
         return ok(jsonObjectBuilder);
     }
-    private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, DataFile df, String gbrids) throws WebApplicationException {
-        return checkGuestbookRequiredResponse(user, uriInfo, Collections.singletonList(df), gbrids);
+    private boolean checkGuestbookRequiredResponse(UriInfo uriInfo, DataFile df, String gbrids, Long externalToolId) throws WebApplicationException {
+        return checkGuestbookRequiredResponse(uriInfo, Collections.singletonList(df), gbrids, externalToolId);
     }
 
-    private boolean checkGuestbookRequiredResponse(User user, UriInfo uriInfo, List<DataFile> authorizedFiles, String gbrids) throws WebApplicationException {
+    private boolean checkGuestbookRequiredResponse(UriInfo uriInfo, List<DataFile> authorizedFiles, String gbrids, Long externalToolId) throws WebApplicationException {
         // Check if guestbook response is required
         // All files should be in the same dataset (assume this is checked by callers)
         Dataset ds = authorizedFiles.get(0).getOwner();
@@ -2265,9 +2288,19 @@ public class Access extends AbstractApiBean {
                         throw new NotFoundException("GuestbookResponse Not Found for id:" + gbrids);
                     }
                     Long datasetId = (Long) gbrData[0];
+
+                    // Check url expiration time
+                    // TODO: External Tools have their own timeout per getAllowedApiCalls().
+                    //  We don't know which call was made so we can't use the exact timeout that was configured.
+                    //  We may not want the configured timeout to be as long as the tool configeror has specified so we will just give a reasonable extention
+                    ExternalTool externalTool = externalToolId != null ? externalToolService.findById(externalToolId) : null;
+                    int timeout = externalTool != null ?
+                            JvmSettings.GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES) :
+                            JvmSettings.GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES.lookupOptional(Integer.class).orElse(DEFAULT_GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES);
+
                     Date responseTime = (Date) gbrData[1];
                     Long delta = Instant.now().toEpochMilli() - responseTime.getTime();
-                    return !(datasetId.equals(ds.getId()) && delta <= (GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES * 60000L));
+                    return !(datasetId.equals(ds.getId()) && delta <= (timeout * 60000L));
                     // We're only checking one guestbookresponse - for performance.
                 } catch (NumberFormatException | DateTimeParseException ex) {
                     throw new BadRequestException(ex.getMessage());
@@ -2295,20 +2328,6 @@ public class Access extends AbstractApiBean {
 
         }
         return required;
-    }
-
-    private GuestbookResponse getGuestbookResponseFromBody(DataFile dataFile, String type, String jsonBody, User requestor) throws JsonParseException {
-        GuestbookResponse guestbookResponse = null;
-
-        if (dataFile != null && jsonBody != null && jsonBody.startsWith("{")) {
-            JsonObject guestbookResponseObj = JsonUtil.getJsonObject(jsonBody).getJsonObject("guestbookResponse");
-            guestbookResponse = guestbookResponseService.initAPIGuestbookResponse(dataFile.getOwner(), dataFile, null, requestor);
-            guestbookResponse.setEventType(type);
-            // Parse custom question answers and validate them
-            jsonParser().parseGuestbookResponse(guestbookResponseObj, guestbookResponse);
-        }
-
-        return guestbookResponse;
     }
 
     // checkAuthorization is a convenience method; it calls the boolean method

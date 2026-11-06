@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -16,7 +17,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
@@ -41,10 +42,12 @@ import java.text.MessageFormat;
 import java.time.Year;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import static io.restassured.RestAssured.get;
+import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
@@ -4201,6 +4204,19 @@ public class FilesIT {
         // verify all counts are good and equal
         assertEquals(totalCount, pagedTotalCount);
         assertEquals(pagedTotalCount, totalCountFromJson);
+
+        // Test External Tool preview/download
+        String toolId = UtilIT.getToolId(ownerApiToken,"image/png");
+        JsonObject guestbookObject = JsonUtil.getJsonObject(guestbookResponse).getJsonObject("guestbookResponse");
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder()
+                .add("preview", true)
+                .add("guestbookResponse", JsonUtil.createObjectBuilder(guestbookObject));
+        Response toolResponse = UtilIT.getFileToolUrl(fileId1.toString(), toolId, apiToken, params.build());
+        toolResponse.prettyPrint();
+        jsonPath = JsonPath.from(toolResponse.body().asString());
+        signedUrl = jsonPath.getString("data.toolUrl");
+        Response callbackResponse = given().get(signedUrl);
+        assertTrue(callbackResponse.prettyPrint().contains("imagePreviewText"));
     }
 
     @Test
@@ -4442,5 +4458,91 @@ public class FilesIT {
         // Download using the signed URL
         Response signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+    }
+
+    @Test
+    public void testDownloadFileWithGuestbookResponseViaExternalTool() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithGuestbookResponseViaExternalTool");
+
+        // Create an admin user
+        Response createUserResponse = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(username);
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        uploadResponse.prettyPrint();
+        int datafileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+        publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Generate a Guestbook Response
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
+        guestbookResponse = guestbookResponse.replace("{\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
+        // Test External Tool
+        String toolId = UtilIT.getToolId(apiToken, "image/png");
+        Response externalToolResponse = UtilIT.getExternalTool(Long.valueOf(toolId));
+        externalToolResponse.prettyPrint();
+        assertEquals(200, externalToolResponse.getStatusCode());
+        JsonObject data = JsonUtil.getJsonObject(externalToolResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        ExternalTool externalTool = parser.parseExternalTool(data.getJsonObject("data"));
+        String body = "{\"preview\":true," + guestbookResponse;
+        JsonObject jsonObject = JsonUtil.getJsonObject(body);
+        Response toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, jsonObject);
+        toolUrlResponse.prettyPrint();
+        assertEquals(200, toolUrlResponse.getStatusCode());
+        int guestbookResponseId = JsonPath.from(toolUrlResponse.body().asString()).getInt("data.gbrids");
+        externalTool.setGuestbookResponseId(Long.valueOf(guestbookResponseId));
+        JsonArray allowedApiCalls = JsonUtil.getJsonArray(externalTool.getAllowedApiCalls());
+        Map<String, String> resultMap = allowedApiCalls.stream()
+                .collect(Collectors.toMap(
+                        item -> item.asJsonObject().getString("name"),     // Key mapper
+                        item -> item.asJsonObject().getString("urlTemplate")    // Value mapper
+                ));
+
+        // Call Tool Preview (generates guestbook response with 'Explore' event type)
+        String toolUrl = resultMap.get("retrieveFileContents").replace("{fileId}", String.valueOf(datafileId));
+        Response resp = get(toolUrl);
+        assertEquals(200, resp.getStatusCode());
+
+        // Call Tool Download (generates guestbook response with 'View Image' event type)
+        toolUrl = resultMap.get("downloadFile").replace("{fileId}", String.valueOf(datafileId));
+        resp = get(toolUrl);
+        assertEquals(200, resp.getStatusCode());
+
+        // Check GuestbookResponses
+        Response listResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), apiToken);
+        listResponse.then().assertThat().statusCode(OK.getStatusCode());
+        int firstExplore = listResponse.prettyPrint().indexOf(",Explore,dataverseproject.png");
+        int lastExplore = listResponse.prettyPrint().indexOf(",Explore,dataverseproject.png");
+        assertTrue(firstExplore != -1 && firstExplore == lastExplore); // exactly once
+
+        int firstViewImage = listResponse.prettyPrint().indexOf(",View Image,dataverseproject.png");
+        int lastViewImage = listResponse.prettyPrint().indexOf(",View Image,dataverseproject.png");
+        assertTrue(firstViewImage != -1 && firstViewImage == lastViewImage); // exactly once
     }
 }
