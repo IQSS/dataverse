@@ -350,7 +350,7 @@ public class Access extends AbstractApiBean {
                 ExternalTool externalTool = externalToolService.findById(externalToolId);
                 gbr = guestbookResponseService.findById(Long.valueOf(gbrids.split(",")[0]));
                 if (externalTool != null && gbr != null && GuestbookResponse.EXPLORE.equalsIgnoreCase(gbr.getEventType())) {
-                    // TODO prevent multiple download records when first is explore
+                    // TODO prevent multiple download records when first is 'explore'
                     gbr.setEventType(externalTool.getDisplayName());
                     gbr.setResponseTime(new Date());
                     gbr.setId(null);
