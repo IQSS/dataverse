@@ -916,6 +916,8 @@ public class XmlMetadataTemplate {
 
         } else if (DatasetType.DATASET_TYPE_REVIEW.equals(datasetTypeName)) {
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, "Review");
+        } else if (DatasetType.DATASET_TYPE_OUTPUTMANAGEMENTPLAN.equals(datasetTypeName)) {
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, "Data Management Plan");
         } else {
             // Write an attribute only element if there are no kindOfData values.
             xmlw.writeStartElement("resourceType");
