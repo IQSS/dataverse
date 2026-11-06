@@ -614,6 +614,8 @@ public class JsonPrinter {
             bld.add("templateId", ds.getTemplate().getId());
         }
         addDatasetFileCountLimit(ds, bld);
+        
+        addAlternativePersistentIdentifiers(ds, bld);
 
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
@@ -649,6 +651,23 @@ public class JsonPrinter {
             bld.add("datasetFileUploadsAvailable", Math.max(0, available));
         }
     }
+    
+    private static void addAlternativePersistentIdentifiers(DvObject dataset, JsonObjectBuilder bld) {
+        Set<AlternativePersistentIdentifier> altPids = dataset.getAlternativePersistentIndentifiers();
+        if (altPids != null && !altPids.isEmpty()) {
+            JsonArrayBuilder altPidsArray = JsonUtil.createArrayBuilder();
+
+            for (AlternativePersistentIdentifier altPid : altPids) {
+                altPidsArray.add(JsonUtil.createObjectBuilder()
+                        .add("protocol", altPid.getProtocol() != null ? altPid.getProtocol() : "")
+                        .add("authority", altPid.getAuthority() != null ? altPid.getAuthority() : "")
+                        .add("identifier", altPid.getIdentifier() != null ? altPid.getIdentifier() : "")
+                );
+            }
+            // Add to dataset DTO JSON object
+            bld.add("alternativePersistentIdentifiers", altPidsArray);
+        }
+    }
 
     public static JsonObjectBuilder json(FileDetailsHolder ds) {
         return JsonUtil.createObjectBuilder().add(ds.getStorageID() ,
@@ -676,6 +695,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList,
         boolean includeFiles, boolean returnOwners, boolean includeMetadataBlocks, boolean forExportDataProvider, boolean ignoreSettingExcludeEmailFromExport) {
         Dataset dataset = dsv.getDataset();
+        DataCitation citation = new DataCitation(dsv); 
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
@@ -695,9 +715,11 @@ public class JsonPrinter {
                 .add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
-                .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
+                .add("publicationDate", citation.getYear())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
-                .add("versionNote", dsv.getVersionNote());
+                .add("versionNote", dsv.getVersionNote())
+                .add("siteUrl", dsv.getDataverseSiteUrl());
+                 
         if (dsv.getDataset().isLinked()) {
             bld.add("isLinked", true);
         }
@@ -789,6 +811,28 @@ public class JsonPrinter {
         JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, null, includeFiles, false, true, true, false);
         dsvWithCitation.add("citation", dsv.getCitation());
         return dsvWithCitation;
+    }
+
+    /**
+     * Export formats such as DDI require the persistent identifier components
+     * such as "protocol", "authority" and "identifier" to be included so we
+     * create a JSON object we can convert to a DatasetDTO which can include a
+     * DatasetVersionDTO, which has all the metadata fields we need to export.
+     * See https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
+     *
+     * @todo Instead of having this separate method, should "datasetVersion" be
+     * added to the regular `json` method for Dataset? Will anything break? Unit
+     * tests for that method could not be found. If we keep this method as-is
+     * should the method be renamed?
+     */
+    public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
+        //#12293 use the same logic for OpenAire as Datacite for publication date
+        Map<String, String > citationMap = new DataCitation(dsv).getDataCiteMetadata();
+        JsonObjectBuilder datasetDtoAsJson = JsonPrinter.json(dsv.getDataset());
+        datasetDtoAsJson.add("publicationDate", citationMap.get("datacite.publicationyear"));
+        datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv, true));
+       // datasetDtoAsJson.add("siteUrl", dsv.getDataverseSiteUrl());
+        return datasetDtoAsJson;
     }
 
     public static JsonArrayBuilder jsonFileMetadatas(Collection<FileMetadata> fmds) {
@@ -1191,6 +1235,21 @@ public class JsonPrinter {
         }
         return varArr;
     }
+    
+    /**
+     * Export formats such as DDI require the citation to be included. See
+     * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
+     *
+     * @todo Instead of having this separate method, should "citation" be added
+     * to the regular `json` method for DatasetVersion? Will anything break?
+     * Unit tests for that method could not be found.
+     */
+    public static JsonObjectBuilder jsonWithCitation(DatasetVersion dsv, boolean includeFiles) {
+        JsonObjectBuilder dsvWithCitation = JsonPrinter.json(dsv, includeFiles);
+        dsvWithCitation.add("citation", dsv.getCitation());
+        return dsvWithCitation;
+    }
+
 
     // TODO: add sumstat and variable categories, check formats
     public static JsonObjectBuilder json(DataVariable dv) {
