@@ -23,6 +23,7 @@
             <ui:param name="showAccessFileButtonGroup" value="#{!FilePage.fileMetadata.datasetVersion.deaccessioned
                                                                 or (FilePage.fileMetadata.datasetVersion.deaccessioned
                                                                 and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset))}"/>
+            <ui:param name="fileErased" value="#{!(empty FilePage.file.fileErasure)}"/>
             <ui:define name="meta_header">
             <meta name="description" content="#{FilePage.fileMetadata.description}"/>
             </ui:define>
@@ -75,6 +76,7 @@
                                         
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                                        <h:outputText value="#{bundle['file.erased']}" styleClass="label label-danger" rendered="#{fileErased}"/>
                                         <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata)}"/>
                                         <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-danger" rendered="#{dataFileServiceBean.isRetentionExpired(FilePage.fileMetadata)}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
@@ -485,7 +487,7 @@
                                         <div class="panel-body metadata-container">
                                             <table class="metadata">
                                                 <tbody>
-                                                    <tr id="filePreviewBlock">
+                                                    <tr id="filePreviewBlock" jsf:rendered="#{!fileErased}">
                                                         <th scope="row">
                                                             #{bundle['file.metadata.preview']}
                                                         </th>
@@ -500,6 +502,18 @@
                                                                 </div>
                                                             </div>
                                                         </td>
+                                                    </tr>
+                                                    <tr id="fileErasedOnBlock" jsf:rendered="#{fileErased}">
+                                                        <th scope="row">
+                                                            #{bundle['file.erased.on']}
+                                                        </th>
+                                                        <td class="text-danger">#{FilePage.file.fileErasure.formattedErasedOn}</td>
+                                                    </tr>
+                                                    <tr id="fileErasedReasonBlock" jsf:rendered="#{fileErased and !(empty FilePage.file.fileErasure.reason)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.erased.reason']}
+                                                        </th>
+                                                        <td>#{FilePage.file.fileErasure.reason}</td>
                                                     </tr>
                                                     <tr id="fileCategoriesBlock" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName) or !(empty FilePage.fileMetadata.dataFile.tags)}">
                                                         <th scope="row">
