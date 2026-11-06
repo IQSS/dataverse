@@ -940,6 +940,19 @@ When creating a review dataset you will likely need to fill in required fields l
 
 If you point ``itemReviewedUrl`` at the URL form of a dataset (e.g. https://doi.org/10.5072/FK2/ABCDEF) that is in the same Dataverse installation as the review dataset, the review dataset is considered a local review and can be listed using the :ref:`api-list-reviews` API endpoint. These reviews appear in the Croissant metadata export if you enable the :ref:`dataverse.feature.croissant-with-local-reviews` feature flag.
 
+.. _creating-an-output-management-plan-dataset:
+
+Output Management Plan Datasets
+-------------------------------
+
+You can only create an output management plan dataset if setup has already been done by a superuser. The Dataverse Collection attributes must be configured to include ``outputManagementPlan`` in ``allowedDatasetTypes``. See :ref:`collection-attributes-api` for details.
+
+Output Management Plan Datasets can only be created via API. You have the following options:
+
+- :ref:`api-create-dataset-with-type` (Native API)
+- :ref:`api-semantic-create-dataset-with-type` (Semantic API)
+- :ref:`import-dataset-with-type`
+
 .. _dataset-types-datacite:
 
 Dataset Types and DataCite
@@ -962,6 +975,8 @@ Adding certain dataset types will result in a value other than "Dataset" being s
      - <resourceType resourceTypeGeneral="Workflow"/>
    * - review
      - <resourceType resourceTypeGeneral="Other">Review</resourceType>
+   * - outputManagementPlan
+     - <resourceType resourceTypeGeneral="OutputManagementPlan">Data Management Plan</resourceType>
 
 Note that the value for resourceType (which is either empty or "Review", as shown above) can be overridden by values in the "Data Type" (``kindOfData``) metadata field.
 
