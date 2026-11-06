@@ -801,7 +801,7 @@ public class AdminIT {
         validationResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("Forbidden. You must be a superuser or have the actAsSuperuser permission for this item."))
-                .statusCode(UNAUTHORIZED.getStatusCode());
+                .statusCode(FORBIDDEN.getStatusCode());
         
         //Bad File Id
         validationResponse = UtilIT.validateDataFileHashValue("BadFileId", superuserApiToken);
