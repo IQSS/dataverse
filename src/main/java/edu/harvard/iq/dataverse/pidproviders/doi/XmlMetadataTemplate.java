@@ -878,6 +878,7 @@ public class XmlMetadataTemplate {
             case DatasetType.DATASET_TYPE_DATASET -> "Dataset";
             case DatasetType.DATASET_TYPE_SOFTWARE -> "Software";
             case DatasetType.DATASET_TYPE_WORKFLOW -> "Workflow";
+            case DatasetType.DATASET_TYPE_OUTPUTMANAGEMENTPLAN -> "OutputManagementPlan";
             // We are not using the “PeerReview” for resourceTypeGeneral because it is
             // specific to scholarly communications and may carry related connotations.
             // We've asked DataCite to support "Review" so we don't have to use "Other".
