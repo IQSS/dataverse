@@ -120,14 +120,22 @@ public class XmlMetadataTemplateTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"dataset, Dataset", "software, Software", "workflow, Workflow", "review, Other", "custom, Dataset"})
-    public void testDatasetResourceTypeGeneral(String datasetType, String expectedResourceType) {
+    @CsvSource({
+        "dataset, Dataset, ''",
+        "software, Software, ''",
+        "workflow, Workflow, ''",
+        "review, Other, Review",
+        "outputManagementPlan, OutputManagementPlan, Data Management Plan",
+        "custom, Dataset, ''"
+    })
+    public void testDatasetResourceTypeGeneral(String datasetType, String expectedResourceTypeGeneral, String expectedResourceType) {
         Dataset dataset = resourceTypeTestDataset(datasetType);
 
         String xml = new XmlMetadataTemplate(new DoiMetadata()).generateXML(dataset);
+        // System.out.println(xml);
 
-        assertEquals(expectedResourceType, XmlPath.from(xml).getString("resource.resourceType.@resourceTypeGeneral"));
-        assertEquals("review".equals(datasetType) ? "Review" : "", XmlPath.from(xml).getString("resource.resourceType"));
+        assertEquals(expectedResourceTypeGeneral, XmlPath.from(xml).getString("resource.resourceType.@resourceTypeGeneral"));
+        assertEquals(expectedResourceType, XmlPath.from(xml).getString("resource.resourceType"));
     }
 
     private Dataset resourceTypeTestDataset(String typeName) {
