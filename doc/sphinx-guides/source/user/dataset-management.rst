@@ -942,10 +942,10 @@ If you point ``itemReviewedUrl`` at the URL form of a dataset (e.g. https://doi.
 
 .. _creating-an-output-management-plan-dataset:
 
-Creating an Output Management Plan Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Output Management Plan Datasets
+-------------------------------
 
-You can only create an output management plan dataset if setup has already been done by a superuser. The Dataverse Collection attributes must be configured to include `outputManagementPlan` in `allowedDatasetTypes`. See :ref:`collection-attributes-api` for details.
+You can only create an output management plan dataset if setup has already been done by a superuser. The Dataverse Collection attributes must be configured to include ``outputManagementPlan`` in ``allowedDatasetTypes``. See :ref:`collection-attributes-api` for details.
 
 Output Management Plan Datasets can only be created via API. You have the following options:
 
