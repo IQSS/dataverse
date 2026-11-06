@@ -1032,6 +1032,7 @@ public class Files extends AbstractApiBean {
             // Write the Guestbook Response
             Long guestbookResponseId = null;
             if (guestbookResponse != null) {
+                guestbookResponse.setEventType(preview ? GuestbookResponse.EXPLORE : externalTool.getDisplayName()); // set tool name here as jsf does? i.e. 'View Image'
                 List<String> gbridList = fileDownloadService.writeGuestbookResponseRecords(guestbookResponse, List.of(dataFile));
                 if (gbridList != null && !gbridList.isEmpty()) {
                     //Get the last one / the one with the latest date
@@ -1053,7 +1054,7 @@ public class Files extends AbstractApiBean {
 
             // Return the URL in a JSON response
             return ok(JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
-                    .add("fileId", dataFile.getId()).add("preview", preview));
+                    .add("fileId", dataFile.getId()).add("preview", preview).add("gbrids", guestbookResponseId));
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error getting external tool URL: " + ex.getMessage(), ex);
