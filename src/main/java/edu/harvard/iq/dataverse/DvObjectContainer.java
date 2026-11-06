@@ -57,6 +57,22 @@ public abstract class DvObjectContainer extends DvObject {
 
     @Column( nullable = true )
     private Integer datasetFileCountLimit;
+
+    /**
+     * Storage quota, in bytes, defined directly on this collection or dataset.
+     * null means no quota is defined here (although one may still be inherited
+     * from an ancestor collection).
+     */
+    @Column( nullable = true )
+    private Long storageQuota;
+
+    public Long getStorageQuota() {
+        return storageQuota;
+    }
+
+    public void setStorageQuota(Long storageQuota) {
+        this.storageQuota = storageQuota;
+    }
     
     public String getEffectiveStorageDriverId() {
         String id = storageDriver;

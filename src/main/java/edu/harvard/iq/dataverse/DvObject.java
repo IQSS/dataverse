@@ -3,16 +3,14 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import org.eclipse.persistence.annotations.BatchFetch;
-import org.eclipse.persistence.annotations.BatchFetchType;
 import jakarta.persistence.*;
+import org.eclipse.persistence.config.QueryHints;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
@@ -20,29 +18,44 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  *
  * @author michael
  */
+/*
+ * The queries below that return DvObject entities explicitly request IN batch
+ * fetching. Subclasses (e.g. DataFile) have @BatchFetch(BatchFetchType.IN)
+ * mappings, and EclipseLink requires a query on the parent class to be
+ * configured for IN batch fetching in that case (otherwise it fails with
+ * EclipseLink-6169). It only infers this from the mappings of the class being
+ * queried, i.e. DvObject itself, which no longer has any such mappings.
+ */
 @NamedQueries({
     @NamedQuery(name = "DvObject.findAll",
-            query = "SELECT o FROM DvObject o ORDER BY o.id"),
+            query = "SELECT o FROM DvObject o ORDER BY o.id",
+            hints = @QueryHint(name = QueryHints.BATCH_TYPE, value = "IN")),
     @NamedQuery(name = "DvObject.findById",
-            query = "SELECT o FROM DvObject o WHERE o.id=:id"),
+            query = "SELECT o FROM DvObject o WHERE o.id=:id",
+            hints = @QueryHint(name = QueryHints.BATCH_TYPE, value = "IN")),
     @NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
-            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype",
+            hints = @QueryHint(name = QueryHints.BATCH_TYPE, value = "IN")),
     @NamedQuery(name = "DvObject.findIdByGlobalId",
             query = "SELECT o.id FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByAlternativeGlobalId",
-            query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
+            query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype",
+            hints = @QueryHint(name = QueryHints.BATCH_TYPE, value = "IN")),
     @NamedQuery(name = "DvObject.findIdByAlternativeGlobalId",
             query = "SELECT o.id FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
-            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol"),
+            query = "SELECT o FROM DvObject o WHERE UPPER(o.identifier)=UPPER(:identifier) and o.authority=:authority and o.protocol=:protocol",
+            hints = @QueryHint(name = QueryHints.BATCH_TYPE, value = "IN")),
     @NamedQuery(name = "DvObject.findByOwnerId", 
-                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId  order by o.dtype desc, o.id"),
+                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId  order by o.dtype desc, o.id",
+            hints = @QueryHint(name = QueryHints.BATCH_TYPE, value = "IN")),
     @NamedQuery(name = "DvObject.findByAuthenticatedUserId", 
-                query = "SELECT o FROM DvObject o WHERE o.creator.id=:ownerId or o.releaseUser.id=:releaseUserId")
+                query = "SELECT o FROM DvObject o WHERE o.creator.id=:ownerId or o.releaseUser.id=:releaseUserId",
+            hints = @QueryHint(name = QueryHints.BATCH_TYPE, value = "IN"))
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
@@ -194,10 +207,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      * boolean per thumbnail size.
      */
     private boolean previewImageAvailable;
-    
-    @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
-    @BatchFetch(BatchFetchType.IN)
-    private StorageQuota storageQuota;
     
     public boolean isPreviewImageAvailable() {
         return previewImageAvailable;
@@ -508,13 +517,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.storageIdentifier = storageIdentifier;
     }
     
-    public StorageQuota getStorageQuota() {
-        return storageQuota;
-    }
-    
-    public void setStorageQuota(StorageQuota storageQuota) {
-        this.storageQuota = storageQuota;
-    }
     /**
      * 
      * @param other 

@@ -37,13 +37,13 @@ public class GetDatasetQuotaCommand extends AbstractCommand<Long> {
                
         if (dataset != null) {
             if (dataset.getStorageQuota() != null) {
-                return dataset.getStorageQuota().getAllocation();
+                return dataset.getStorageQuota();
             } else if (inherited) {
                 DvObjectContainer uptree = dataset;
                 while (uptree.getStorageQuota() == null && uptree.getOwner() != null) {
                     uptree = uptree.getOwner();
                     if (uptree.getStorageQuota() != null) {
-                        return uptree.getStorageQuota().getAllocation();
+                        return uptree.getStorageQuota();
                     }
                 }
             }
