@@ -190,7 +190,6 @@ class DatasetVersionFileMetadatasPerformanceIT {
     static final Consumer<Dataset> READ_FILES_OF_DATASET = dataset -> {
         assertTrue(!dataset.getFiles().isEmpty(), "the dataset has no files");
         dataset.getFiles().forEach(dataFile -> {
-            dataFile.getStorageQuota();
             dataFile.getIngestRequest();
             dataFile.getThumbnailForDataset();
             dataFile.getEmbargo();

@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.logging.Logger;
 
@@ -43,10 +42,8 @@ public class DeleteCollectionQuotaCommand  extends AbstractVoidCommand {
             throw new IllegalCommandException("", this);
         }
         
-        StorageQuota storageQuota = targetDataverse.getStorageQuota();
-        
-        if (storageQuota != null && storageQuota.getAllocation() != null) {
-            ctxt.dataverses().disableStorageQuota(storageQuota);
+        if (targetDataverse.getStorageQuota() != null) {
+            ctxt.dataverses().disableStorageQuota(targetDataverse);
         } 
         // ... and if no quota was enabled on the collection - nothing to do = success
     }    

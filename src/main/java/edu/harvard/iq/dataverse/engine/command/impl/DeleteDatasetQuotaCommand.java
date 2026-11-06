@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.logging.Logger;
 
@@ -43,12 +42,10 @@ public class DeleteDatasetQuotaCommand extends AbstractVoidCommand {
             throw new IllegalCommandException("", this);
         }
         
-        StorageQuota storageQuota = targetDataset.getStorageQuota();
-        
-        if (storageQuota != null && storageQuota.getAllocation() != null) {
+        if (targetDataset.getStorageQuota() != null) {
             // The method below, in dataverseServiceBean, can be used to delete
             // quotas defined on either of the DvObjectContainer classes:
-            ctxt.dataverses().disableStorageQuota(storageQuota);
+            ctxt.dataverses().disableStorageQuota(targetDataset);
         } 
         // ... and if no quota was enabled on the dataset - nothing to do = success
     }    

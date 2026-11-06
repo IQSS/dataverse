@@ -3,15 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import org.eclipse.persistence.annotations.BatchFetch;
-import org.eclipse.persistence.annotations.BatchFetchType;
 import jakarta.persistence.*;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -194,10 +191,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      * boolean per thumbnail size.
      */
     private boolean previewImageAvailable;
-    
-    @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
-    @BatchFetch(BatchFetchType.IN)
-    private StorageQuota storageQuota;
     
     public boolean isPreviewImageAvailable() {
         return previewImageAvailable;
@@ -508,13 +501,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.storageIdentifier = storageIdentifier;
     }
     
-    public StorageQuota getStorageQuota() {
-        return storageQuota;
-    }
-    
-    public void setStorageQuota(StorageQuota storageQuota) {
-        this.storageQuota = storageQuota;
-    }
     /**
      * 
      * @param other 
