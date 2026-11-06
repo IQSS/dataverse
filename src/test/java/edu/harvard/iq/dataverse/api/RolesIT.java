@@ -130,7 +130,7 @@ public class RolesIT {
 
         getUserSelectableRolesResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.size()", equalTo(8));
+                .body("data.size()", equalTo(9));
 
         // Non-superuser with assigned role: return assigned role.
 
@@ -159,6 +159,6 @@ public class RolesIT {
 
         getUserSelectableRolesResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.size()", equalTo(8));
+                .body("data.size()", equalTo(9));
     }
 }
