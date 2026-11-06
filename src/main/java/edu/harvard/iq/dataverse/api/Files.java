@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.*;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
@@ -30,11 +31,6 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
@@ -47,6 +43,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1475,5 +1472,63 @@ public class Files extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/erasedFiles")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    @Operation(summary = "List all erased files",
+            description = "Returns all erased files with their FileErasure details, optionally filtered by a date range. Superusers only. Returns CSV by default; use Accept: application/json for JSON.")
+    public Response listErasedFiles(@Context ContainerRequestContext crc,
+                                    @Parameter(description = "Start date filter (inclusive). Format: yyyy-MM-dd, yyyy-MM, or yyyy.")
+                                    @QueryParam("startDate") String startDate,
+                                    @Parameter(description = "End date filter (inclusive). Format: yyyy-MM-dd, yyyy-MM, or yyyy.")
+                                    @QueryParam("endDate") String endDate,
+                                    @Context HttpHeaders headers) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        Date start = null;
+        Date end = null;
+        if (startDate != null && !startDate.isEmpty()) {
+            start = DateUtil.parseDate(startDate);
+            if (start == null) {
+                return error(Response.Status.BAD_REQUEST, "Invalid startDate format. Use yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss.");
+            }
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            end = DateUtil.parseDate(endDate);
+            if (end == null) {
+                return error(Response.Status.BAD_REQUEST, "Invalid endDate format. Use yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss.");
+            }
+        }
+
+        String jpql = buildErasedFilesJpql(null, start, end);
+        jakarta.persistence.Query query = em.createQuery(jpql);
+        setErasedFilesQueryParams(query, start, end);
+
+        List<FileErasure> erasedFiles = query.getResultList();
+
+        List<MediaType> acceptedTypes = headers.getAcceptableMediaTypes();
+        boolean wantJson = acceptedTypes.stream()
+                .anyMatch(mt -> mt.toString().equals(MediaType.APPLICATION_JSON) || mt.toString().equals("*/*"));
+
+        // Default to CSV when no specific type is requested or only CSV is requested
+        if (wantJson && !acceptedTypes.stream().anyMatch(mt -> mt.toString().equals("text/csv"))) {
+            return ok(toErasedFilesJsonArray(erasedFiles));
+        }
+        String filename = buildErasedFilesCsvFilename(start, end, null);
+        return Response.ok()
+                .entity(toErasedFilesCsvString(erasedFiles, start, end, null))
+                .type("text/csv")
+                .header("Content-Disposition", "attachment; filename=" + filename)
+                .build();
     }
 }

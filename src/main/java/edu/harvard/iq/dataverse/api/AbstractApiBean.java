@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -1200,6 +1201,157 @@ public abstract class AbstractApiBean {
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_ERROR)
                         .add(ApiConstants.MESSAGE_FIELD, msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
+
+    /* ======================== *\
+     *  Erased Files API Utils  *
+    \* ======================== */
+
+    /**
+     * Build a JPQL query string for FileErasure with optional date range filtering.
+     * @param baseWhere the base WHERE clause condition (e.g. "fe.dataFile.dataset.id = :datasetId"), or null for no base filter.
+     * @param start optional start date
+     * @param end optional end date
+     * @return a map containing "jpql" (the full query string) and "hasWhere" (boolean indicating if WHERE clause was added)
+     */
+    protected static String buildErasedFilesJpql(String baseWhere, Date start, Date end) {
+        StringBuilder jpql = new StringBuilder("SELECT fe FROM FileErasure fe");
+        List<String> conditions = new ArrayList<>();
+        if (baseWhere != null) {
+            conditions.add(baseWhere);
+        }
+        if (start != null) {
+            conditions.add("fe.erasedOn >= :start");
+        }
+        if (end != null) {
+            conditions.add("fe.erasedOn <= :end");
+        }
+        if (!conditions.isEmpty()) {
+            jpql.append(" WHERE ").append(String.join(" AND ", conditions));
+        }
+        jpql.append(" ORDER BY fe.erasedOn DESC");
+        return jpql.toString();
+    }
+
+    /**
+     * Set the date range parameters on a JPQL query.
+     */
+    protected static void setErasedFilesQueryParams(jakarta.persistence.Query query, Date start, Date end) {
+        if (start != null) {
+            query.setParameter("start", start);
+        }
+        if (end != null) {
+            query.setParameter("end", end);
+        }
+    }
+
+    /**
+     * Convert a list of FileErasure entities to a JSON array.
+     * Uses {@link JsonPrinter#json(DataFile)} for the DataFile portion, which already includes fileErasure details.
+     */
+    protected static jakarta.json.JsonArrayBuilder toErasedFilesJsonArray(List<FileErasure> erasedFiles) {
+        jakarta.json.JsonArrayBuilder jsonArrayBuilder = JsonUtil.createArrayBuilder();
+        for (FileErasure fe : erasedFiles) {
+            DataFile dataFile = fe.getDataFile();
+            jsonArrayBuilder.add(JsonPrinter.json(dataFile));
+        }
+        return jsonArrayBuilder;
+    }
+
+    /**
+     * Convert a list of FileErasure entities to a CSV string.
+     * Includes metadata comment rows (generated on, date range, scope ID) and internationalized headers.
+     * @param erasedFiles list of FileErasure entities
+     * @param startDate optional start date filter (included in metadata if present)
+     * @param endDate optional end date filter (included in metadata if present)
+     * @param scopeId optional scope identifier (dataset or dataverse ID, included in metadata if present)
+     */
+    protected static String toErasedFilesCsvString(List<FileErasure> erasedFiles, Date startDate, Date endDate, Long scopeId) {
+        StringBuilder csv = new StringBuilder();
+        // Metadata comment rows
+        csv.append('#').append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.metadata.generatedOn")))
+                .append(':').append(escapeCsvCell(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()))).append('\n');
+        if (startDate != null) {
+            csv.append('#').append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.metadata.startDate")))
+                    .append(':').append(escapeCsvCell(new java.text.SimpleDateFormat("yyyy-MM-dd").format(startDate))).append('\n');
+        }
+        if (endDate != null) {
+            csv.append('#').append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.metadata.endDate")))
+                    .append(':').append(escapeCsvCell(new java.text.SimpleDateFormat("yyyy-MM-dd").format(endDate))).append('\n');
+        }
+        if (scopeId != null) {
+            csv.append('#').append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.metadata.scopeId")))
+                    .append(':').append(scopeId).append('\n');
+        }
+        // Internationalized header row
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.fileId"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.filePid"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.fileName"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.erasureId"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.erasedOn"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.reason"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.manuallyDeleted"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.eraserIdentifier"))).append(',');
+        csv.append(escapeCsvCell(BundleUtil.getStringFromBundle("file.erased.csv.header.eraserName")));
+        csv.append('\n');
+        // Data rows
+        for (FileErasure fe : erasedFiles) {
+            DataFile dataFile = fe.getDataFile();
+            csv.append(escapeCsvCell(dataFile != null ? String.valueOf(dataFile.getId()) : ""))
+                    .append(',');
+            csv.append(escapeCsvCell(dataFile != null && dataFile.getGlobalId() != null ? dataFile.getGlobalId().asString() : ""))
+                    .append(',');
+            String fileName = "";
+            if (dataFile != null && dataFile.getFileMetadata() != null) {
+                fileName = dataFile.getFileMetadata().getLabel();
+            }
+            csv.append(escapeCsvCell(fileName)).append(',');
+            csv.append(escapeCsvCell(String.valueOf(fe.getId()))).append(',');
+            csv.append(escapeCsvCell(fe.getErasedOn() != null ? fe.getErasedOn().toString() : "")).append(',');
+            csv.append(escapeCsvCell(fe.getReason() != null ? fe.getReason() : "")).append(',');
+            csv.append(fe.isManuallyDeleted()).append(',');
+            csv.append(escapeCsvCell(fe.getErasedBy() != null ? fe.getErasedBy().getIdentifier() : "")).append(',');
+            csv.append(escapeCsvCell(fe.getErasedBy() != null ? fe.getErasedBy().getName() : ""));
+            csv.append('\n');
+        }
+        return csv.toString();
+    }
+
+    /**
+     * Build a descriptive CSV filename for erased files export.
+     * Includes scope ID (if present) and date range (if present) in the filename.
+     * @param startDate optional start date filter
+     * @param endDate optional end date filter
+     * @param scopeId optional scope identifier (dataset or dataverse ID)
+     * @return a filename string suitable for Content-Disposition header
+     */
+    protected static String buildErasedFilesCsvFilename(Date startDate, Date endDate, Long scopeId) {
+        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyyMMdd");
+        StringBuilder name = new StringBuilder("erased_files");
+        if (scopeId != null) {
+            name.append("_").append(scopeId);
+        }
+        if (startDate != null) {
+            name.append("_from_").append(df.format(startDate));
+        }
+        if (endDate != null) {
+            name.append("_to_").append(df.format(endDate));
+        }
+        name.append(".csv");
+        return name.toString();
+    }
+
+    /**
+     * Escape a CSV cell value by quoting it if it contains commas, quotes, or newlines.
+     */
+    private static String escapeCsvCell(String value) {
+        if (value == null) {
+            return "";
+        }
+        if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 }
 

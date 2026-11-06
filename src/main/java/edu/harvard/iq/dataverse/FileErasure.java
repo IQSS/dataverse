@@ -18,9 +18,16 @@ import java.util.Objects;
         @NamedQuery(name = "FileErasure.findById",
                 query = "SELECT fe FROM FileErasure fe WHERE fe.id=:id"),
         @NamedQuery(name = "FileErasure.findByDataFileId",
-                query = "SELECT fe FROM FileErasure fe WHERE fe.dataFile.id=:dataFileId")
+                query = "SELECT fe FROM FileErasure fe WHERE fe.dataFile.id=:dataFileId"),
+        @NamedQuery(name = "FileErasure.findByDatasetId",
+                query = "SELECT fe FROM FileErasure fe WHERE fe.dataFile.dataset.id=:datasetId"),
+        @NamedQuery(name = "FileErasure.findByDataverseId",
+                query = "SELECT fe FROM FileErasure fe WHERE fe.dataFile.dataset.dataverse.id=:dataverseId")
 })
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_fileerasure_erasedon", columnList = "erasedOn")
+})
 public class FileErasure {
 
     @Id

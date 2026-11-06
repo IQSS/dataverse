@@ -65,30 +65,33 @@ public class DateUtil {
          }
     }
 
+    /**
+     * Parse a date string accepting common API date formats.
+     * Tries "yyyy-MM-dd", "yyyy-MM", and "yyyy" patterns.
+     * @param dateString the date string to parse
+     * @return a Date object, or null if no format matched or input is null/empty
+     */
     public static Date parseDate(String dateString) {
-        SimpleDateFormat sdf;
-        Date date;
+        if (dateString == null || dateString.isEmpty()) {
+            return null;
+        }
 
-        // YYYY-MM-DD
-        date = parseDate(dateString, YEAR_DASH_MONTH_DASH_DAY_PATTERN);
+        // Fall back to date-only format: yyyy-MM-dd
+        Date date = parseDate(dateString, YEAR_DASH_MONTH_DASH_DAY_PATTERN);
         if (date != null) {
             return date;
         }
-
-        // YYYY-MM
+        // Try year-month pattern: yyyy-MM
         date = parseDate(dateString, YEAR_DASH_MONTH_PATTERN);
         if (date != null) {
             return date;
         }
-
-        // YYYT
-        date = parseDate(dateString, YEAR_PATTERN);
-        return date;
-        
+        // Try year-only pattern: yyyy
+        return parseDate(dateString, YEAR_PATTERN);
     }
 
     public static Date parseDate(String dateString, String format) {
-        
+
         try {
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             Date date = sdf.parse(dateString);
