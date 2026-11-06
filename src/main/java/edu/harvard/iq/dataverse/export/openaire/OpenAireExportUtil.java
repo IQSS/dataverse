@@ -336,41 +336,16 @@ public class OpenAireExportUtil {
                                 //12297 get full info on ROR affiliation
                                 if (StringUtils.isNotBlank(affiliation)) {
                                     Map<String, String> attributeMap = new HashMap<>();
-                                    
-                                    
+
                                     attributeMap.clear();
-                                                RorAffiliationDetails details = AffiliationResolverUtil.resolveRorDetails(
-                    affiliation
-            );
-            
-            attributeMap.clear();
-            attributeMap.putAll(details.getAttributes());
-            String orgName = details.getOrgName();
-            
-            /*
-            
-                                    boolean isROR = false;
-                                    String orgName = affiliation;
-                                    ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+                                    RorAffiliationDetails details = AffiliationResolverUtil.resolveRorDetails(
+                                            affiliation
+                                    );
 
-                                    if (externalIdentifier.isValidIdentifier(orgName)) {
-                                        isROR = true;
-                                        JsonObject jo = getExternalVocabularyValue(orgName);
-                                        // Some ext. cvv configs store a JsonArray of multiple objects/values. In such cases, we'll leave orgName blank 
-                                        if (jo != null && jo.containsKey("termName")) {
-                                            JsonValue termName = jo.get("termName");
-                                            if (termName.getValueType() == ValueType.STRING) {
-                                                orgName = ((JsonString) termName).getString();
-                                            }
-                                        }
-                                    }
+                                    attributeMap.clear();
+                                    attributeMap.putAll(details.getAttributes());
+                                    String orgName = details.getOrgName();
 
-                                    if (isROR) {
-                                        attributeMap.put(schemeURIKey, "https://ror.org");
-                                        attributeMap.put("affiliationIdentifierScheme", "ROR");
-                                        attributeMap.put("affiliationIdentifier", affiliation);
-                                    }
-*/
                                     writeFullElement(xmlw, null, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName), language);
                                 }
                                 xmlw.writeEndElement(); // </creator>
