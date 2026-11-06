@@ -108,9 +108,23 @@ public class DatasetPage {
         // Dataverse locks the dataset while it finalizes the publish, then
         // reloads the page. The Publish link vanishes as soon as the lock starts,
         // so wait for the released-version label ("Version 1.0") instead.
-        assertThat(page.locator("#datasetVersionBlock .label-default", new Page.LocatorOptions()
-                .setHasText(Pattern.compile("^\\s*Version \\d+\\.\\d+\\s*$"))))
-                .isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(60_000));
+        //
+        // If the lock is released while the page is still rendering, the page
+        // can show the "Publish in Progress" banner yet tell its lock-polling
+        // script that the dataset is unlocked, so the page never refreshes
+        // itself (see IQSS/dataverse#12679). Give the page's own refresh a
+        // chance first, then reload it ourselves, as a user would.
+        Locator released = page.locator("#datasetVersionBlock .label-default", new Page.LocatorOptions()
+                .setHasText(Pattern.compile("^\\s*Version \\d+\\.\\d+\\s*$")));
+        boolean[] firstAttempt = {true};
+        Retry.untilPasses(() -> {
+            if (!firstAttempt[0]) {
+                // Drop "version=DRAFT" so the reload shows the latest version.
+                page.navigate(page.url().replaceAll("([?&])version=[^&]*&?", "$1").replaceAll("[?&]$", ""));
+            }
+            firstAttempt[0] = false;
+            assertThat(released).isVisible(new LocatorAssertions.IsVisibleOptions().setTimeout(15_000));
+        }, 60_000);
         assertThat(page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Publish Dataset"))).isHidden();
     }
 
