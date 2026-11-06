@@ -978,8 +978,7 @@ public class OpenAireExportUtil {
                             String alternateIdentifier = null;
                             String alternateIdentifierType = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
+                            for (FieldDTO next : fieldDTOs) {
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
                                     alternateIdentifier = next.getSinglePrimitive();
                                 }
@@ -990,7 +989,7 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(alternateIdentifier)) {
                                 alternateIdentifier_check = writeOpenTag(xmlw, "alternateIdentifiers", alternateIdentifier_check);
-                                Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
+                                Map<String, String> alternateIdentifier_map = new HashMap<>();
                                 if (StringUtils.isNotBlank(alternateIdentifierType)) {
 
                                     alternateIdentifier_map.put(alternateIdentifierTypeKey, alternateIdentifierType);
@@ -1013,22 +1012,22 @@ public class OpenAireExportUtil {
                 String identifierType = null;
                 String identifier = null;
                 switch (altPid.getProtocol()) {
-                    case AbstractDOIProvider.DOI_PROTOCOL:
+                    case AbstractDOIProvider.DOI_PROTOCOL -> {
                         identifierType = AbstractDOIProvider.DOI_PROTOCOL.toUpperCase();
                         identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
-                        break;
-                    case HandlePidProvider.HDL_PROTOCOL:
+                    }
+                    case HandlePidProvider.HDL_PROTOCOL -> {
                         identifierType = "Handle";
                         identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
-                        break;
-                    default:
+                    }
+                    default -> {
                         // The AlternativePersistentIdentifier class isn't really ready for anything but
                         // doi or handle pids, but will add this as a default.
                         identifierType = ":unav";
                         identifier = altPid.getAuthority() + altPid.getIdentifier();
-                        break;
+                    }
                 }
-                Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
+                Map<String, String> alternateIdentifier_map = new HashMap<>();
                 alternateIdentifier_map.put(alternateIdentifierTypeKey, identifierType);
                 writeFullElement(xmlw, null, "alternateIdentifier", alternateIdentifier_map, identifier, language);
 

@@ -1627,19 +1627,18 @@ public class DatasetsIT {
             .statusCode(OK.getStatusCode());
         
         assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
-       assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+        assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
-                Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPersistentId, "Datacite", apiToken);
+        Response exportDatasetAsDataCite = UtilIT.exportDataset(datasetPersistentId, "Datacite", apiToken);
 
-exportDatasetAsDataCite.prettyPrint();
+        exportDatasetAsDataCite.prettyPrint();
 
-                
-       exportDatasetAsDataCite.prettyPrint();
+        exportDatasetAsDataCite.prettyPrint();
         exportDatasetAsDataCite.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-       assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
-       assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
 
 
