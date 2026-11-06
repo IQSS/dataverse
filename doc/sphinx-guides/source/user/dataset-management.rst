@@ -975,7 +975,7 @@ Adding certain dataset types will result in a value other than "Dataset" being s
      - <resourceType resourceTypeGeneral="Workflow"/>
    * - review
      - <resourceType resourceTypeGeneral="Other">Review</resourceType>
-   * - outputmanagementplan
+   * - outputManagementPlan
      - <resourceType resourceTypeGeneral="OutputManagementPlan">Data Management Plan</resourceType>
 
 Note that the value for resourceType (which is either empty or "Review", as shown above) can be overridden by values in the "Data Type" (``kindOfData``) metadata field.
