@@ -7,6 +7,11 @@
             <directory>${project.basedir}/target/payara</directory>
             <outputDirectory>appserver</outputDirectory>
         </fileSet>
+        <!-- Java agents (copied by the dependency plugin), attached at runtime via JAVA_AGENTS -->
+        <fileSet>
+            <directory>${project.basedir}/target/agents</directory>
+            <outputDirectory>agents</outputDirectory>
+        </fileSet>
         <!-- Init scripts -->
         <fileSet>
             <directory>${project.basedir}/src/main/docker/scripts</directory>
