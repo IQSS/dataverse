@@ -56,6 +56,7 @@ public final class MinimalPopulator implements FixturePopulator {
         // The validator reads datasetVersion from the terms object, so both sides
         // must be wired before the entity graph is persisted.
         TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+        termsOfUseOrLicense.setTermsOfUse(TermsOfUseOrLicense.DEFAULT_NOTERMS);
         termsOfUseOrLicense.setDatasetVersion(version);
         version.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
         TermsOfAccess termsOfAccess = new TermsOfAccess();
