@@ -21,12 +21,3 @@ nb-configuration.xml
 
 # Logs
 *.log
-
-# Sensitive Data (deprecated — use DV_USERNAME/DV_PASSWORD/DV_FULL_NAME instead)
-sensitive-data/
-
-# Sample workflows
-container-frontend-tests.yml
-
-# Secure Docs
-secure_docs/
