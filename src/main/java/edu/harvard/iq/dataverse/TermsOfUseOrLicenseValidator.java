@@ -20,9 +20,7 @@ public class TermsOfUseOrLicenseValidator implements ConstraintValidator<Validat
     }
 
     public static boolean isTOUOLValid(TermsOfUseOrLicense value, ConstraintValidatorContext context) {
-        // we only need to validate file specific terms of use or license
-        // TODO forgot why
-        if (value.getTemplate() != null || value.getDatasetVersion() != null){
+        if (value.getTemplate() != null){
             return true;
         }
         if (value.getLicense() != null) {
@@ -32,7 +30,18 @@ public class TermsOfUseOrLicenseValidator implements ConstraintValidator<Validat
                 }
                 return false;
             }
-            // TODO no other values too
+            if (!StringUtils.isBlank(value.getCitationRequirements()) ||
+                !StringUtils.isBlank(value.getConditions()) ||
+                !StringUtils.isBlank(value.getConfidentialityDeclaration()) ||
+                !StringUtils.isBlank(value.getDepositorRequirements()) ||
+                !StringUtils.isBlank(value.getDisclaimer()) ||
+                !StringUtils.isBlank(value.getRestrictions()) ||
+                !StringUtils.isBlank(value.getSpecialPermissions())) {
+                if (context != null) {
+                    context.buildConstraintViolationWithTemplate("When a license is set, no other terms can be set.").addConstraintViolation();
+                }
+                return false;
+            }
         } else {
             if (StringUtils.isBlank(value.getTermsOfUse())) {
                 if (context != null) {
