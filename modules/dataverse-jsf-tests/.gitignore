@@ -1,0 +1,32 @@
+# Maven build output, including traces, videos and screenshots of test runs
+/target/
+
+# Saved login sessions (cookies) — never commit
+/playwright/.auth/
+
+# Local environment files, if you keep your settings in one
+.env
+.env.*
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+nbproject/
+nbactions.xml
+nb-configuration.xml
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Sensitive Data (deprecated — use DV_USERNAME/DV_PASSWORD/DV_FULL_NAME instead)
+sensitive-data/
+
+# Sample workflows
+container-frontend-tests.yml
+
+# Secure Docs
+secure_docs/
