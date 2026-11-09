@@ -5,11 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--
-        Standalone build for the JSF frontend tests. The code is laid out the
-        way IQSS/dataverse lays out its tests (edu.harvard.iq.dataverse.jsf,
-        *JT classes, src/test/resources/jsf) and uses the same Java, JUnit and
-        Hamcrest versions, so it can be folded into that repository with only
-        the Playwright dependency added to its pom.xml.
+        Standalone build for the JSF frontend tests, kept outside the main
+        Dataverse build. Run it with "mvn -f modules/dataverse-jsf-tests verify"
+        from the repository root. The code is laid out the way the rest of
+        Dataverse lays out its tests (edu.harvard.iq.dataverse.jsf, *JT
+        classes, src/test/resources/jsf) and uses the same Java, JUnit and
+        Hamcrest versions.
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse-jsf-tests</artifactId>
@@ -22,7 +23,7 @@
         <target.java.version>21</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <playwright.version>1.61.0</playwright.version>
-        <!-- Kept in step with IQSS/dataverse (modules/dataverse-parent/pom.xml) -->
+        <!-- Kept in step with ../dataverse-parent/pom.xml -->
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <hamcrest.version>2.2</hamcrest.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
