@@ -260,6 +260,15 @@ public enum FeatureFlags {
      * @since Dataverse 6.9
      */ 
     ONLY_UPDATE_DATACITE_WHEN_NEEDED("only-update-datacite-when-needed"),
+
+    /**
+     * Treats ORCID identifiers from the ORCID sandbox as persistent identifiers.
+     * This should only be enabled when generated metadata is sent to a test server.
+     *
+     * @apiNote Raise flag by setting "dataverse.feature.treat-sandbox-orcids-as-pids"
+     * @since Dataverse 6.13
+     */
+    TREAT_SANDBOX_ORCIDS_AS_PIDS("treat-sandbox-orcids-as-pids"),
     
     /**
      * Historically, success messages have returned success messages as {data:{message:...}}.

@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,11 +23,35 @@ public class ExternalIdentifierTest {
       // Test ORCID with https://orcid.org/ prefix
       assertTrue(identifier.isValidIdentifier("https://orcid.org/0000-0002-1825-0097"));
       assertTrue(identifier.isValidIdentifier("https://orcid.org/0000-0002-1694-233X"));
-      
       // Test format command
-      assertEquals("https://orcid.org/0000-0002-1825-0097", identifier.format("0000-0002-1825-0097"));
-      assertEquals("https://orcid.org/0000-0002-1694-233X", identifier.format("0000-0002-1694-233X"));
       assertEquals("https://orcid.org/0000-0002-1825-0097", identifier.format("https://orcid.org/0000-0002-1825-0097"));
+  }
+
+  @Test
+  public void testSandboxOrcidIsNotPidByDefault() {
+      ExternalIdentifier.setTreatSandboxOrcidsAsPids(false);
+      assertSandboxOrcidBehavior(false);
+  }
+
+  @Test
+  public void testSandboxOrcidCanBeEnabledAsPid() {
+      ExternalIdentifier.setTreatSandboxOrcidsAsPids(true);
+      assertSandboxOrcidBehavior(true);
+  }
+
+  @AfterEach
+  public void restoreSandboxOrcidSetting() {
+      ExternalIdentifier.setTreatSandboxOrcidsAsPids(FeatureFlags.TREAT_SANDBOX_ORCIDS_AS_PIDS.enabled());
+  }
+
+  private void assertSandboxOrcidBehavior(boolean enabled) {
+      ExternalIdentifier identifier = ExternalIdentifier.ORCID;
+      String sandboxOrcid = "https://sandbox.orcid.org/0000-0002-1825-0097";
+
+      assertEquals(enabled, identifier.isValidIdentifier(sandboxOrcid));
+      assertEquals(enabled ? sandboxOrcid : "https://orcid.org/0000-0002-1825-0097",
+              identifier.format("0000-0002-1825-0097"));
+      assertEquals(sandboxOrcid, identifier.format(sandboxOrcid));
   }
 
   @Test
