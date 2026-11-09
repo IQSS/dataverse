@@ -15,6 +15,8 @@ services:
       ENABLE_JDWP: "1"
       ENABLE_RELOAD: "1"
       SKIP_DEPLOY: "${SKIP_DEPLOY}"
+      # Java agents to attach, see JAVA_AGENTS in the base image guide (empty: none)
+      JAVA_AGENTS: "${JAVA_AGENTS}"
       DATAVERSE_JSF_REFRESH_PERIOD: "1"
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
       DATAVERSE_FEATURE_INDEX_HARVESTED_METADATA_SOURCE: "1"
@@ -82,6 +84,7 @@ services:
       - "4949:4848" # HTTPS (Payara Admin Console)
       - "9009:9009" # JDWP
       - "8686:8686" # JMX
+      - "6300:6300" # JaCoCo agent, when attached via JAVA_AGENTS
     networks:
       - dataverse
     depends_on:

@@ -1291,6 +1291,7 @@
                 <SOLR_VERSION>${solr.version}</SOLR_VERSION>
                 <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
                 <SKIP_DEPLOY>${app.skipDeploy}</SKIP_DEPLOY>
+                <JAVA_AGENTS></JAVA_AGENTS>
             </properties>
         
             <build>
