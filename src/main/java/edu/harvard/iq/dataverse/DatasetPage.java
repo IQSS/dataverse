@@ -2249,7 +2249,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             //Wait until the create command before actually getting an identifier, except if we're using directUpload
         	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
-            if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
+            if ( isEmpty(dataset.getIdentifier()) ) {
                 CommandContext ctxt = commandEngine.getContext();
                 PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
                 pidProvider.generatePid(dataset);
