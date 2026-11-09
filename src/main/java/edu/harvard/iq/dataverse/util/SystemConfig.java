@@ -106,8 +106,7 @@ public class SystemConfig {
             
         if (withBuildNumber) {
             if (buildNumber == null) {
-                // (build number is still in a .properties file in the source tree; it only
-                // contains a real build number if this war file was built by Jenkins)
+                // build.number is still in a .properties file in the source tree.
                 // TODO: might be replaced with same trick as for version via Maven property w/ empty default
                 try {
                     buildNumber = ResourceBundle.getBundle("BuildNumber").getString("build.number");
