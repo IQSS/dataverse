@@ -317,6 +317,10 @@ jobs:
       # ---------------------------
       - name: Checkout and Setup Maven
         uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: |
+            pom.xml
+            modules/dataverse-jsf-tests/pom.xml
 
       # ---------------------------
       # START + CONFIGURE DATAVERSE
@@ -401,6 +405,10 @@ jobs:
       # ---------------------------
       - name: Checkout and Setup Maven
         uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: |
+            pom.xml
+            modules/dataverse-jsf-tests/pom.xml
 
       # ---------------------------
       # START + CONFIGURE DATAVERSE
