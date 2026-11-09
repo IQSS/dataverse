@@ -141,7 +141,8 @@ public class XmlMetadataTemplateTest {
         version.setDataset(dataset);
         version.setVersionState(VersionState.DRAFT);
         version.setDatasetFields(new ArrayList<>());
-        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        version.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        version.setTermsOfAccess(new TermsOfAccess());
         dataset.setVersions(new ArrayList<>(List.of(version)));
         return dataset;
     }
