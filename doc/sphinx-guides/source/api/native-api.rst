@@ -8611,6 +8611,52 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/users/jdoe/traces"
 
+.. _show-user-traces-element-api:
+
+Show User Traces for a Single Element
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rather than retrieving all traces at once, you can retrieve a single category ("element") of traces as either CSV or JSON. As with :ref:`show-user-traces-api`, a superuser API token is required.
+
+The following elements are supported:
+
+- ``roleAssignments``
+- ``dataverseCreator``
+- ``dataversePublisher``
+- ``datasetCreator``
+- ``datasetPublisher``
+- ``dataFileCreator``
+- ``dataFilePublisher``
+- ``datasetVersionUsers``
+- ``explicitGroups``
+- ``guestbookEntries``
+- ``savedSearches``
+
+Passing any other value results in a "400 Bad Request" error.
+
+CSV is returned by default (the file is named after the element, such as ``roleAssignments.csv``). To get JSON instead, pass an ``Accept: application/json`` header. If the user has no traces for the requested element, JSON is returned regardless of the ``Accept`` header.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export USERNAME=jdoe
+  export ELEMENT=roleAssignments
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/users/$USERNAME/traces/$ELEMENT"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/users/jdoe/traces/roleAssignments"
+
+To get JSON rather than CSV:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Accept: application/json" "$SERVER_URL/api/users/$USERNAME/traces/$ELEMENT"
+
 Remove All Roles from a User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
