@@ -418,27 +418,23 @@ public abstract class AbstractApiBean {
         return template;
     }
     
-    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
+    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String linkingDataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;
-        Dataverse dataverse = findDataverseOrDie(dataverseId);
+        Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
         Dataverse linkedDataverse = findDataverseOrDie(linkedDataverseId);
         try {
-            dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverse.getId());
+            dvld = dvLinkingService.findDataverseLinkingDataverse(linkingDataverse.getId(), linkedDataverse.getId());
             if (dvld == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(linkingDataverseId, linkedDataverseId))));
             }
             return dvld;
         } catch (NumberFormatException nfe) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(linkingDataverseId, linkedDataverseId))));
         }
     }
 
     protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
-        return findDatasetOrDie(id, false);
-    }
-
-    protected Dataset findDatasetOrDie(String id, boolean deep) throws WrappedResponse {
         Long datasetId;
         Dataset dataset;
         if (isNumeric(id)) {
@@ -478,11 +474,7 @@ public abstract class AbstractApiBean {
                         notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(ApiConstants.PERSISTENT_ID_KEY.substring(1)))));
             }
         }
-        if (deep) {
-            dataset = datasetSvc.findDeep(datasetId);
-        } else {
-            dataset = datasetSvc.find(datasetId);
-        }
+        dataset = datasetSvc.find(datasetId);
         if (dataset == null) {
             throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
         }
@@ -493,12 +485,11 @@ public abstract class AbstractApiBean {
      *
      * @param id - the dataset identifier
      * @param req - the DataverseRequest
-     * @param deep - whether to perform a deep search
      * @return the dataset if found and visible, otherwise throws WrappedResponse
      * @throws WrappedResponse if dataset is not found (in findDatasetOrDie()) or not visible
      */
-    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req, boolean deep) throws WrappedResponse {
-        Dataset dataset = findDatasetOrDie(id, deep);
+    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(id);
         if (dataset.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataset)) {
             throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
         }

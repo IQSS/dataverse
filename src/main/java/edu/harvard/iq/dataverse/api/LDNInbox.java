@@ -20,17 +20,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import jakarta.json.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ServiceUnavailableException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -58,7 +57,7 @@ public class LDNInbox extends AbstractApiBean {
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
 
-    @Context
+    @Inject
     protected HttpServletRequest httpRequest;
 
     public static final JsonLDNamespace activityStreams = JsonLDNamespace.defineNamespace("as",

@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataCitation;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -53,6 +55,9 @@ import java.util.Set;
 import javax.xml.transform.stream.StreamSource;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -88,6 +93,56 @@ public class XmlMetadataTemplateTest {
         Mockito.when(pidService.isGlobalIdLocallyUnique(any(GlobalId.class))).thenReturn(true);
         Mockito.when(pidService.getProducer()).thenReturn("RootDataverse");
 
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = VersionState.class, names = {"DRAFT", "RELEASED", "DEACCESSIONED"})
+    public void testFileResourceTypeGeneral(VersionState state) {
+        Dataset dataset = resourceTypeTestDataset(DatasetType.DATASET_TYPE_DATASET);
+        DatasetVersion version = dataset.getLatestVersionForCopy();
+        version.setVersionState(state);
+        version.setVersionNumber(1L);
+        version.setMinorVersionNumber(0L);
+        version.setReleaseTime(java.sql.Timestamp.valueOf("2026-01-01 00:00:00"));
+        DataFile file = new DataFile();
+        file.setOwner(dataset);
+        file.setGlobalId(new GlobalId("doi", "10.5072", "FK2/ABCDEF/FILE", null, null, null));
+        file.setFilesize(10L);
+        FileMetadata metadata = new FileMetadata();
+        metadata.setDataFile(file);
+        metadata.setDatasetVersion(version);
+        file.setFileMetadatas(List.of(metadata));
+
+        String xml = new XmlMetadataTemplate(new DoiMetadata()).generateXML(file);
+
+        assertEquals("Other", XmlPath.from(xml).getString("resource.resourceType.@resourceTypeGeneral"));
+        assertEquals("", XmlPath.from(xml).getString("resource.resourceType"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"dataset, Dataset", "software, Software", "workflow, Workflow", "review, Other", "custom, Dataset"})
+    public void testDatasetResourceTypeGeneral(String datasetType, String expectedResourceType) {
+        Dataset dataset = resourceTypeTestDataset(datasetType);
+
+        String xml = new XmlMetadataTemplate(new DoiMetadata()).generateXML(dataset);
+
+        assertEquals(expectedResourceType, XmlPath.from(xml).getString("resource.resourceType.@resourceTypeGeneral"));
+        assertEquals("review".equals(datasetType) ? "Review" : "", XmlPath.from(xml).getString("resource.resourceType"));
+    }
+
+    private Dataset resourceTypeTestDataset(String typeName) {
+        Dataset dataset = new Dataset();
+        dataset.setGlobalId(new GlobalId("doi", "10.5072", "FK2/ABCDEF", null, null, null));
+        DatasetType type = new DatasetType();
+        type.setName(typeName);
+        dataset.setDatasetType(type);
+        DatasetVersion version = new DatasetVersion();
+        version.setDataset(dataset);
+        version.setVersionState(VersionState.DRAFT);
+        version.setDatasetFields(new ArrayList<>());
+        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        dataset.setVersions(new ArrayList<>(List.of(version)));
+        return dataset;
     }
 
     /**
