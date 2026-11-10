@@ -25,6 +25,8 @@ annotate the test method with `@JsfTest` (instead of `@Test`), take `Page` and
 `fixtures.createCollection()` / `fixtures.createDataset()`; they clean up after
 themselves. No numbering, tags, or config changes are needed.
 
+Only classes ending in `JT` are run; see [CONVENTIONS.md](CONVENTIONS.md).
+
 ## Configuration
 
 All settings are read through
