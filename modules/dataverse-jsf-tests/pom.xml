@@ -100,6 +100,7 @@
                 <executions>
                     <execution>
                         <id>chromium</id>
+                        <phase>integration-test</phase>
                         <goals>
                             <goal>integration-test</goal>
                         </goals>
@@ -114,6 +115,7 @@
                     </execution>
                     <execution>
                         <id>firefox</id>
+                        <phase>integration-test</phase>
                         <goals>
                             <goal>integration-test</goal>
                         </goals>
@@ -128,6 +130,7 @@
                     </execution>
                     <execution>
                         <id>webkit</id>
+                        <phase>integration-test</phase>
                         <goals>
                             <goal>integration-test</goal>
                         </goals>
@@ -148,6 +151,7 @@
                     -->
                     <execution>
                         <id>verify-chromium</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>verify</goal>
                         </goals>
@@ -158,6 +162,7 @@
                     </execution>
                     <execution>
                         <id>verify-firefox</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>verify</goal>
                         </goals>
@@ -168,6 +173,7 @@
                     </execution>
                     <execution>
                         <id>verify-webkit</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>verify</goal>
                         </goals>
