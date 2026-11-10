@@ -1,0 +1,50 @@
+---
+name: "Collect Docker Logs"
+description: "Collect logs from all containers of the Dataverse stack and upload them as an artifact."
+inputs:
+  artifact-name:
+    description: "Name of the uploaded artifact (must be unique within the workflow run)"
+    required: true
+runs:
+  using: composite
+  steps:
+
+    # ---------------------------
+    # COLLECT DOCKER LOGS (WITH MAPPING)
+    # ---------------------------
+    - name: Collect Docker logs (mapped)
+      shell: bash
+      run: |
+        mkdir -p docker-logs
+        echo "Gathering container metadata..."
+        docker ps -a --format '{{.Names}}|{{.Image}}|{{.Status}}' > docker-logs/container-summary.txt
+        while IFS='|' read -r name image status; do
+          # Create a readable label
+          label="$name"
+          case "$name" in
+            *dataverse*)  label="dataverse-app" ;;
+            *postgres*)   label="postgres-db" ;;
+            *solr*)       label="solr-index" ;;
+            *localstack*) label="localstack-s3" ;;
+          esac
+          echo "Collecting logs for $name ($label)"
+          {
+            echo "===== CONTAINER: $name ====="
+            echo "Label: $label"
+            echo "Image: $image"
+            echo "Status: $status"
+            echo ""
+            echo "===== LOGS ====="
+            docker logs --timestamps "$name" 2>&1 || true
+          } > "docker-logs/${label}__${name}.log"
+        done < docker-logs/container-summary.txt
+
+    # ---------------------------
+    # UPLOAD DOCKER LOGS
+    # ---------------------------
+    - name: Upload Docker logs
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: docker-logs/
+        retention-days: 14

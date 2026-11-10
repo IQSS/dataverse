@@ -1,0 +1,481 @@
+name: Dataverse Tests
+
+on:
+  workflow_dispatch:
+  # Runs as part of Maven Tests (maven_unit_test.yml), which owns the triggers: it calls this
+  # workflow after its unit tests, so the server-side coverage of these tests joins its JaCoCo
+  # merge and goes to Coveralls and SonarCloud.
+  workflow_call:
+    inputs:
+      use-maven-build:
+        description: "Reuse the classes compiled by Maven Tests (java-artifacts) instead of compiling again"
+        type: boolean
+        default: false
+
+concurrency:
+  group: "dataverse-tests-${{ github.ref }}"
+  cancel-in-progress: true
+
+# Where the test jobs reach their Dataverse stack. Used by the API tests, the JSF
+# tests and start-dataverse-stack's readiness check.
+env:
+  BASE_URL: "http://localhost:8080"
+  # Server-side code coverage: the JaCoCo agent shipped in the base image, listening for
+  # `mvn jacoco:dump` on port 6300. Each test job dumps after its tests; Maven Tests'
+  # coverage job merges the dumps.
+  JACOCO_AGENT: "jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=edu.harvard.iq.dataverse.*"
+
+jobs:
+
+  # =====================================================================
+  # BUILD: build the containers once and hand them off to the test jobs
+  # =====================================================================
+  build:
+    name: Build Containers
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT + SETUP JAVA + MAVEN
+      # ---------------------------
+      # Reads the Java version from the POM and falls back to the shared Maven cache
+      # (seeded by maven_cache_management.yml) when this branch has no cache yet.
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+        with:
+          pom-paths: |
+            pom.xml
+            modules/container-base/pom.xml
+
+      # ---------------------------
+      # VERIFY DOCKER
+      # ---------------------------
+      - name: Verify Docker
+        run: |
+          set -euo pipefail
+          docker version
+
+      - name: Verify Maven
+        run: |
+          set -euo pipefail
+          mvn -version
+
+      # ---------------------------
+      # BUILD BASE IMAGE
+      # ---------------------------
+      # Always built from this commit rather than pulled from Docker Hub. The published
+      # tag only changes with version numbers, so pulling would test a PR's changes to
+      # modules/container-base against the old image, and it fails outright after a
+      # version bump, before the new tag is published.
+      - name: Build base image
+        run: |
+          set -euo pipefail
+          mvn -Pct clean package -f modules/container-base/pom.xml
+
+      # ---------------------------
+      # REUSE MAVEN TESTS' COMPILED CLASSES (WHEN CALLED FROM IT)
+      # ---------------------------
+      # JaCoCo matches coverage to classes by the bytes of the compiled class, so the server
+      # must run exactly the classes the coverage report is built from: Maven Tests' compile.
+      - name: Download Maven Tests build output
+        if: ${{ inputs.use-maven-build }}
+        uses: actions/download-artifact@v8
+        with:
+          name: java-artifacts
+
+      - name: Restore Maven Tests build output
+        if: ${{ inputs.use-maven-build }}
+        run: |
+          set -euo pipefail
+          tar -xf java-builddir.tar
+          tar -xf java-m2-selection.tar -C /
+
+      # ---------------------------
+      # BUILD IMAGES (Dataverse-native)
+      # ---------------------------
+      # With Maven Tests' classes restored, skip compiling them again (maven.main.skip).
+      - name: Build Dataverse containers via Maven
+        env:
+          SKIP_MAIN_COMPILE: ${{ inputs.use-maven-build && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          mvn -Pct -T 1C package -Dmaven.main.skip="$SKIP_MAIN_COMPILE"
+
+      # ---------------------------
+      # PACKAGE BUILD OUTPUT
+      # ---------------------------
+      # Records which code was built, so a failed run can be reproduced locally from the right commit.
+      # On pull requests, GITHUB_SHA is the merge commit of the PR into its base branch, not the PR head.
+      - name: Record build info
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p dataverse-build
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "event=${EVENT_NAME}"
+            echo "ref=${REF}"
+            echo "pr_number=${PR_NUMBER}"
+            echo "pr_head_sha=${PR_HEAD_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "app_image_id=$(docker image inspect --format '{{.Id}}' gdcc/dataverse:unstable)"
+            echo "configbaker_image_id=$(docker image inspect --format '{{.Id}}' gdcc/configbaker:unstable)"
+          } > dataverse-build/build-info.txt
+          cat dataverse-build/build-info.txt
+
+      # Every gdcc/* image the build produced: the app and configbaker images, plus any image
+      # docker-compose-dev.yml builds itself (e.g. gdcc/keycloak from conf/keycloak), which the
+      # test runners couldn't pull. Layers shared with the base image are stored only once.
+      # docker-compose-dev.yml bind-mounts ./target/dataverse into the app container,
+      # so the exploded WAR has to be handed off as well.
+      - name: Save images and exploded WAR
+        run: |
+          set -euo pipefail
+          mkdir -p dataverse-build
+          mapfile -t IMAGES < <(docker image ls --filter 'reference=gdcc/*' --format '{{.Repository}}:{{.Tag}}' | grep -v ':<none>$')
+          printf 'Saving %s\n' "${IMAGES[@]}"
+          docker save "${IMAGES[@]}" \
+            | zstd -T0 -3 -o dataverse-build/images.tar.zst
+          tar -C target -cf - dataverse \
+            | zstd -T0 -3 -o dataverse-build/target-dataverse.tar.zst
+          ls -lh dataverse-build/
+
+      # Kept for a week so a failed run can be reproduced locally with the exact same images
+      # (see "Reproducing a CI Failure Locally" in the developer guide).
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: dataverse-build
+          path: dataverse-build/
+          compression-level: 0
+          retention-days: 7
+
+  # =====================================================================
+  # API TESTS: the REST Assured suite on its own fresh stack
+  # =====================================================================
+  api-tests:
+    name: Dataverse API Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT + SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+
+      # ---------------------------
+      # START + CONFIGURE DATAVERSE
+      # ---------------------------
+      - name: Start Dataverse stack
+        id: stack
+        uses: ./.github/actions/start-dataverse-stack
+        with:
+          java-agents: ${{ env.JACOCO_AGENT }}
+
+      # ---------------------------
+      # RUN API TESTS
+      # ---------------------------
+      - name: Run API tests
+        env:
+          DVAPIKEY: "burrito"
+          DV_APIKEY: "burrito"
+          DV_API_KEY: "burrito"
+        run: |
+          set -euo pipefail
+          TEST_SUITE=$(cat tests/integration-tests.txt)
+
+          echo "Running suite: $TEST_SUITE"
+
+          mvn test \
+            -Dtest="$TEST_SUITE" \
+            -Dmaven.test.failure.ignore=true \
+            -Ddataverse.test.baseurl="$BASE_URL" \
+            -Ddataverse.test.solr.softcommit.millis=100 \
+            -DcompilerArgument=-Xlint:unchecked
+
+      # ---------------------------
+      # DUMP CODE COVERAGE
+      # ---------------------------
+      # Into target/coverage-reports/, where the JaCoCo plugin's merge execution
+      # (jacoco-merge-unit-and-it in pom.xml) picks up every *.exec.
+      # Only if the stack started: otherwise there is no agent to dump from, and the job
+      # should show the startup failure alone. Also runs after test failures.
+      - name: Dump JaCoCo coverage
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
+        run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-api.exec
+
+      - name: Upload JaCoCo coverage data
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-exec-api
+          path: target/coverage-reports/jacoco-api.exec
+          retention-days: 14
+
+      # ---------------------------
+      # UPLOAD REPORTS + PUBLISH TEST DASHBOARD IN GITHUB PR
+      # ---------------------------
+      - name: Upload Test Failure Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maven-test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 14
+
+      - name: Publish Test Results Dashboard
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: API Test Results
+          files: |
+            target/failsafe-reports/TEST-*.xml
+            target/surefire-reports/TEST-*.xml
+
+      # ---------------------------
+      # FAIL THE JOB IF TESTS FAILED
+      # ---------------------------
+      - name: Check for Test Failures
+        if: always()
+        run: |
+          echo "Checking Surefire/Failsafe reports for failures..."
+          if grep -q "<failure" target/surefire-reports/*.xml target/failsafe-reports/*.xml 2>/dev/null; then
+            echo "API tests failed! Failing the job."
+            exit 1
+          fi
+          echo "All tests passed."
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: always()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-api
+
+  # =====================================================================
+  # JSF TESTS: one fresh stack per browser. Chromium runs first, then
+  # Firefox and WebKit in parallel, so at most three test runners are
+  # busy at once and all suites finish at about the same time.
+  # =====================================================================
+  jsf-chromium:
+    name: Dataverse JSF Tests (Chromium)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    env:
+      LOGIN_ADAPTER:  "builtin"
+      DV_USERNAME:    "dataverseAdmin"
+      DV_PASSWORD:    "admin1"
+      DV_FULL_NAME:   "Dataverse Admin"
+      ROOT_DATAVERSE: "/dataverse/root"
+      LOCALLY_FAIR_ENABLED: "false"
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT + SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+
+      # ---------------------------
+      # START + CONFIGURE DATAVERSE
+      # ---------------------------
+      - name: Start Dataverse stack
+        id: stack
+        uses: ./.github/actions/start-dataverse-stack
+        with:
+          java-agents: ${{ env.JACOCO_AGENT }}
+
+      # ---------------------------
+      # RUN JSF TESTS
+      # ---------------------------
+      - name: Run JSF tests (chromium)
+        uses: ./.github/actions/run-jsf-tests
+        with:
+          browser: chromium
+
+      # ---------------------------
+      # DUMP CODE COVERAGE
+      # ---------------------------
+      # Only if the stack started: otherwise there is no agent to dump from, and the job
+      # should show the startup failure alone. Also runs after test failures.
+      - name: Dump JaCoCo coverage
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
+        run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-jsf-chromium.exec
+
+      - name: Upload JaCoCo coverage data
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-exec-jsf-chromium
+          path: target/coverage-reports/jacoco-jsf-chromium.exec
+          retention-days: 14
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: always()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-chromium
+
+  jsf-tests:
+    name: Dataverse JSF Tests (${{ matrix.label }})
+    needs: [build, jsf-chromium]
+    # Wait for Chromium, but run whatever its result: one browser's failure
+    # shouldn't hide the others.
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - browser: firefox
+            label: Firefox
+          - browser: webkit
+            label: WebKit
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    env:
+      LOGIN_ADAPTER:  "builtin"
+      DV_USERNAME:    "dataverseAdmin"
+      DV_PASSWORD:    "admin1"
+      DV_FULL_NAME:   "Dataverse Admin"
+      ROOT_DATAVERSE: "/dataverse/root"
+      LOCALLY_FAIR_ENABLED: "false"
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT + SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+
+      # ---------------------------
+      # START + CONFIGURE DATAVERSE
+      # ---------------------------
+      - name: Start Dataverse stack
+        id: stack
+        uses: ./.github/actions/start-dataverse-stack
+        with:
+          java-agents: ${{ env.JACOCO_AGENT }}
+
+      # ---------------------------
+      # RUN JSF TESTS
+      # ---------------------------
+      - name: Run JSF tests (${{ matrix.browser }})
+        uses: ./.github/actions/run-jsf-tests
+        with:
+          browser: ${{ matrix.browser }}
+
+      # ---------------------------
+      # DUMP CODE COVERAGE
+      # ---------------------------
+      # Only if the stack started: otherwise there is no agent to dump from, and the job
+      # should show the startup failure alone. Also runs after test failures.
+      - name: Dump JaCoCo coverage
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
+        run: mvn -B jacoco:dump -Djacoco.destFile=target/coverage-reports/jacoco-jsf-${{ matrix.browser }}.exec
+
+      - name: Upload JaCoCo coverage data
+        if: ${{ !cancelled() && steps.stack.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-exec-jsf-${{ matrix.browser }}
+          path: target/coverage-reports/jacoco-jsf-${{ matrix.browser }}.exec
+          retention-days: 14
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ALWAYS)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: always()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-${{ matrix.browser }}
+
+  # =====================================================================
+  # JSF TEST RESULTS: one dashboard for all three browsers
+  # =====================================================================
+  jsf-results:
+    name: JSF Test Results
+    needs: [build, jsf-chromium, jsf-tests]
+    # Whatever the browsers' results, as long as they ran.
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+
+      - name: Download JSF test results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: jsf-test-results-*
+          path: jsf-results
+
+      # The browsers run the same tests, so each counts as one test with a run per browser.
+      # report_individual_runs reports a failure in one browser on its own, pointing at that
+      # browser's report (failsafe-reports/<browser>/).
+      - name: Publish JSF Test Results Dashboard
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: JSF Test Results
+          report_individual_runs: true
+          files: |
+            jsf-results/**/failsafe-reports/**/TEST-*.xml
