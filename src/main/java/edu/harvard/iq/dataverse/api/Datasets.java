@@ -314,7 +314,6 @@ public class Datasets extends AbstractApiBean {
                     build();
         } catch (Exception wr) {
             logger.warning(wr.getMessage());
-            System.out.print("More Debugging: wr.getMessage(): "  + wr.getMessage() );
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
     }

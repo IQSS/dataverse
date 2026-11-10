@@ -718,8 +718,7 @@ public class JsonPrinter {
                 .add("publicationDate", citation.getYear())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD())
                 .add("versionNote", dsv.getVersionNote())
-                .add("siteUrl", dsv.getDataverseSiteUrl());
-                 
+                .add("siteUrl", dsv.getDataverseSiteUrl());             
         if (dsv.getDataset().isLinked()) {
             bld.add("isLinked", true);
         }
