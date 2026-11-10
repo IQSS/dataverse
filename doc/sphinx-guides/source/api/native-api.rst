@@ -1415,6 +1415,9 @@ For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
 Update a Guestbook that can be selected for a Dataset.
 You must have "EditDataverse" permission on the Dataverse collection.
 
+.. note::
+   The data sent to this endpoint represents the desired final state of the Guestbook. Any existing custom questions not included in the JSON will be removed from the database, and any associated responses to those questions will also be lost.
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

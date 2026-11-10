@@ -1155,24 +1155,190 @@ public class JsonParserTest {
 
         JsonObject json = builder.build();
         Guestbook gb = new Guestbook();
+        gb.setId(1L);
 
-        // 1. Should fail when isUserSupplied=true and question id is unknown
-        assertThrows(JsonParseException.class, () -> sut.parseGuestbook(json, gb, true));
+        // 1. Should ignore ID when isUserSupplied=true and question id is unknown
+        sut.parseGuestbook(json, gb, true);
+        assertNotNull(gb.getCustomQuestions());
+        assertNull(gb.getCustomQuestions().get(0).getId());
 
         // 2. Should pass when question id is known
-        gb.setId(1L);
         CustomQuestion cq = new CustomQuestion();
         cq.setId(456L);
         cq.setGuestbook(gb);
         gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
         sut.parseGuestbook(json, gb, true);
+        assertEquals(456L, gb.getCustomQuestions().get(0).getId());
     }
 
     @Test
-    public void testParseGuestbook_CustomQuestionValues_RestrictedFields() throws JsonParseException {
+    public void testParseGuestbook_CustomQuestions_PreservesIdWhenMatching() throws JsonParseException {
+        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
+        qBuilder.add("id", 456);
+        qBuilder.add("question", "How are you?");
+        qBuilder.add("required", true);
+        qBuilder.add("displayOrder", 1);
+        qBuilder.add("type", "text");
+        qBuilder.add("hidden", false);
+
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("name", "Test GB");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", false);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+        gb.setId(1L);
+        CustomQuestion cq = new CustomQuestion();
+        cq.setId(456L);
+        cq.setGuestbook(gb);
+        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
+
+        // Parse with isUserSupplied=true
+        sut.parseGuestbook(json, gb, true);
+
+        // Verify that the question in the resulting guestbook has the correct ID
+        assertNotNull(gb.getCustomQuestions());
+        assertEquals(1, gb.getCustomQuestions().size());
+        assertEquals(456L, gb.getCustomQuestions().get(0).getId());
+    }
+
+    @Test
+    public void testParseGuestbook_CustomQuestionValues_PreservesIdWhenMatching() throws JsonParseException {
         JsonObjectBuilder vBuilder = JsonUtil.createObjectBuilder();
         vBuilder.add("id", 789);
         vBuilder.add("value", "Good");
+        vBuilder.add("displayOrder", 1);
+
+        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
+        qBuilder.add("id", 1); // Added question ID to match existing
+        qBuilder.add("question", "How are you?");
+        qBuilder.add("required", true);
+        qBuilder.add("displayOrder", 1);
+        qBuilder.add("type", "text");
+        qBuilder.add("hidden", false);
+        qBuilder.add("optionValues", JsonUtil.createArrayBuilder().add(vBuilder));
+
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("name", "Test GB");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", false);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+        gb.setId(1L);
+        CustomQuestion cq = new CustomQuestion();
+        cq.setId(1L);
+        cq.setGuestbook(gb);
+        CustomQuestionValue cqv = new CustomQuestionValue();
+        cqv.setId(789L);
+        cqv.setCustomQuestion(cq);
+        cq.setCustomQuestionValues(new ArrayList<>(List.of(cqv)));
+        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
+
+        // Parse with isUserSupplied=true
+        sut.parseGuestbook(json, gb, true);
+
+        // Verify that the option value in the resulting guestbook has the correct ID
+        assertNotNull(gb.getCustomQuestions().get(0).getCustomQuestionValues());
+        assertEquals(1, gb.getCustomQuestions().get(0).getCustomQuestionValues().size());
+        assertEquals(789L, gb.getCustomQuestions().get(0).getCustomQuestionValues().get(0).getId());
+    }
+
+    @Test
+    public void testParseGuestbook_CustomQuestions_PreservesResponses() throws JsonParseException {
+        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
+        qBuilder.add("id", 456);
+        qBuilder.add("question", "How are you?");
+        qBuilder.add("required", true);
+        qBuilder.add("displayOrder", 1);
+        qBuilder.add("type", "text");
+        qBuilder.add("hidden", false);
+
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("name", "Test GB");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", false);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+        gb.setId(1L);
+        CustomQuestion cq = new CustomQuestion();
+        cq.setId(456L);
+        cq.setGuestbook(gb);
+
+        // Add a mock response
+        CustomQuestionResponse cqr = new CustomQuestionResponse();
+        cqr.setId(777L);
+        cqr.setCustomQuestion(cq);
+        cqr.setResponse("Fine");
+        cq.setCustomQuestionResponses(new ArrayList<>(List.of(cqr)));
+
+        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
+
+        // Parse with isUserSupplied=true
+        sut.parseGuestbook(json, gb, true);
+
+        // Verify that the question in the resulting guestbook still has the response
+        assertNotNull(gb.getCustomQuestions());
+        assertEquals(1, gb.getCustomQuestions().size());
+        CustomQuestion updatedCq = gb.getCustomQuestions().get(0);
+        assertEquals(456L, updatedCq.getId());
+        assertNotNull(updatedCq.getCustomQuestionResponses(), "Responses should be preserved");
+        assertEquals(1, updatedCq.getCustomQuestionResponses().size());
+        assertEquals(777L, updatedCq.getCustomQuestionResponses().get(0).getId());
+    }
+
+    @Test
+    public void testParseGuestbook_CustomQuestions_MismatchedIdCreatesNewQuestion() throws JsonParseException {
+        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
+        qBuilder.add("id", 999); // Mismatched ID
+        qBuilder.add("question", "How are you?");
+        qBuilder.add("required", true);
+        qBuilder.add("displayOrder", 1);
+        qBuilder.add("type", "text");
+        qBuilder.add("hidden", false);
+
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("name", "Test GB");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", false);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+        gb.setId(1L);
+        // No existing questions
+
+        // Parse with isUserSupplied=true
+        sut.parseGuestbook(json, gb, true);
+
+        // Verify that the question in the resulting guestbook is new and has no ID set
+        assertNotNull(gb.getCustomQuestions());
+        assertEquals(1, gb.getCustomQuestions().size());
+        assertNull(gb.getCustomQuestions().get(0).getId(), "ID should be ignored and remain null for new question");
+    }
+
+    @Test
+    public void testParseGuestbook_CustomQuestionValues_MismatchedIdCreatesNewValue() throws JsonParseException {
+        JsonObjectBuilder vBuilder = JsonUtil.createObjectBuilder();
+        vBuilder.add("id", 999); // Mismatched ID
+        vBuilder.add("value", "Bad");
         vBuilder.add("displayOrder", 1);
 
         JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
@@ -1194,21 +1360,16 @@ public class JsonParserTest {
 
         JsonObject json = builder.build();
         Guestbook gb = new Guestbook();
-
-        // 1. Should fail when isUserSupplied=true and option value id is unknown
-        assertThrows(JsonParseException.class, () -> sut.parseGuestbook(json, gb, true));
-
-        // 2. Should pass when option value id is known
         gb.setId(1L);
-        CustomQuestion cq = new CustomQuestion();
-        cq.setId(1L);
-        cq.setGuestbook(gb);
-        CustomQuestionValue cqv = new CustomQuestionValue();
-        cqv.setId(789L);
-        cqv.setCustomQuestion(cq);
-        cq.setCustomQuestionValues(new ArrayList<>(List.of(cqv)));
-        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
+        // No existing questions/values
+
+        // Parse with isUserSupplied=true
         sut.parseGuestbook(json, gb, true);
+
+        // Verify that the option value in the resulting guestbook is new and has no ID set
+        assertNotNull(gb.getCustomQuestions().get(0).getCustomQuestionValues());
+        assertEquals(1, gb.getCustomQuestions().get(0).getCustomQuestionValues().size());
+        assertNull(gb.getCustomQuestions().get(0).getCustomQuestionValues().get(0).getId(), "ID should be ignored and remain null for new option value");
     }
 }
 

@@ -637,10 +637,10 @@ public class JsonParser {
             if (isUserSupplied) {
                 validateUserSuppliedGuestbookFields(obj, gb);
             }
+            if (obj.containsKey("id")) {
+                gb.setId(Long.valueOf(obj.getInt("id")));
+            }
             if (!isUserSupplied) {
-                if (obj.containsKey("id")) {
-                    gb.setId(Long.valueOf(obj.getInt("id")));
-                }
                 if (obj.containsKey("createTime")) {
                     gb.setCreateTime(parseDate(obj.getString("createTime", null)));
                 }
@@ -664,15 +664,22 @@ public class JsonParser {
         if (customQuestionList != null) {
             for (JsonValue q : customQuestions) {
                 JsonObject obj = q.asJsonObject();
-                CustomQuestion cq = new CustomQuestion();
-                if (isUserSupplied) {
-                    validateUserSuppliedCustomQuestionFields(obj, gb);
-                }
-                if (!isUserSupplied) {
-                    if (obj.containsKey("id")) {
-                        cq.setId(Long.valueOf(obj.getInt("id")));
+                CustomQuestion cq = null;
+                if (obj.containsKey("id")) {
+                    Long id = (long) obj.getInt("id");
+                    if (gb.getCustomQuestions() != null) {
+                        cq = gb.getCustomQuestions().stream()
+                                .filter(existing -> Objects.equals(existing.getId(), id))
+                                .findFirst().orElse(null);
                     }
                 }
+                if (cq == null) {
+                    cq = new CustomQuestion();
+                    if (obj.containsKey("id") && !isUserSupplied) {
+                        cq.setId((long) obj.getInt("id"));
+                    }
+                }
+
                 cq.setQuestionString(obj.getString("question"));
                 cq.setRequired(obj.getBoolean("required"));
                 cq.setDisplayOrder(obj.getInt("displayOrder"));
@@ -685,15 +692,22 @@ public class JsonParser {
                 if (cqvList != null) {
                     for (JsonValue v : optionValues) {
                         JsonObject ov = v.asJsonObject();
-                        CustomQuestionValue cqv = new CustomQuestionValue();
-                        if (isUserSupplied) {
-                            validateUserSuppliedCustomQuestionValueFields(ov, gb);
-                        }
-                        if (!isUserSupplied) {
-                            if (ov.containsKey("id")) {
-                                cqv.setId(Long.valueOf(ov.getInt("id")));
+                        CustomQuestionValue cqv = null;
+                        if (ov.containsKey("id")) {
+                            Long id = (long) ov.getInt("id");
+                            if (cq.getCustomQuestionValues() != null) {
+                                cqv = cq.getCustomQuestionValues().stream()
+                                        .filter(existing -> Objects.equals(existing.getId(), id))
+                                        .findFirst().orElse(null);
                             }
                         }
+                        if (cqv == null) {
+                            cqv = new CustomQuestionValue();
+                            if (ov.containsKey("id") && !isUserSupplied) {
+                                cqv.setId((long) ov.getInt("id"));
+                            }
+                        }
+
                         cqv.setValueString(ov.getString("value"));
                         cqv.setDisplayOrder(ov.getInt("displayOrder"));
                         cqv.setCustomQuestion(cq);
@@ -1533,52 +1547,6 @@ public class JsonParser {
         }
     }
 
-    private void validateUserSuppliedCustomQuestionFields(JsonObject obj, Guestbook gb) throws JsonParseException {
-        if (obj.containsKey("id") && !obj.isNull("id")) {
-            Long val = (long) obj.getInt("id");
-            boolean match = false;
-            if (gb.getId() != null && gb.getCustomQuestions() != null) {
-                for (CustomQuestion existingCq : gb.getCustomQuestions()) {
-                    if (Objects.equals(val, existingCq.getId())) {
-                        match = true;
-                        break;
-                    }
-                }
-            }
-            if (!match) {
-                String msg = "Restricted fields cannot be changed: customQuestion.id";
-                logger.warning(msg);
-                throw new JsonParseException(msg);
-            }
-        }
-    }
-
-    private void validateUserSuppliedCustomQuestionValueFields(JsonObject obj, Guestbook gb) throws JsonParseException {
-        if (obj.containsKey("id") && !obj.isNull("id")) {
-            Long val = (long) obj.getInt("id");
-            boolean match = false;
-            if (gb.getId() != null && gb.getCustomQuestions() != null) {
-                for (CustomQuestion existingCq : gb.getCustomQuestions()) {
-                    if (existingCq.getCustomQuestionValues() != null) {
-                        for (CustomQuestionValue existingCqv : existingCq.getCustomQuestionValues()) {
-                            if (Objects.equals(val, existingCqv.getId())) {
-                                match = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (match) {
-                        break;
-                    }
-                }
-            }
-            if (!match) {
-                String msg = "Restricted fields cannot be changed: customQuestionValue.id";
-                logger.warning(msg);
-                throw new JsonParseException(msg);
-            }
-        }
-    }
 
     public String parseHarvestingClient(JsonObject obj, HarvestingClient harvestingClient) throws JsonParseException {
 
