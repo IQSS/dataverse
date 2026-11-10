@@ -5,31 +5,27 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--
-        Standalone build for the JSF frontend tests, kept outside the main
-        Dataverse build. Run it with "mvn -f modules/dataverse-jsf-tests verify"
-        from the repository root. The code is laid out the way the rest of
-        Dataverse lays out its tests (edu.harvard.iq.dataverse.jsf, *JT
-        classes, src/test/resources/jsf) and uses the same Java, JUnit and
-        Hamcrest versions.
+        Build for the JSF frontend tests. It inherits versions and plugin setup
+        from dataverse-parent, but is not one of its <modules>, so the main
+        Dataverse build doesn't run it. Run it with
+        "mvn -f modules/dataverse-jsf-tests verify" from the repository root.
     -->
-    <groupId>edu.harvard.iq</groupId>
+    <parent>
+        <groupId>edu.harvard.iq</groupId>
+        <artifactId>dataverse-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../dataverse-parent</relativePath>
+    </parent>
+
     <artifactId>dataverse-jsf-tests</artifactId>
-    <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>dataverse-jsf-tests</name>
     <description>Playwright end-to-end tests for the Dataverse JSF frontend.</description>
 
     <properties>
-        <target.java.version>21</target.java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Not managed by dataverse-parent -->
         <playwright.version>1.61.0</playwright.version>
-        <!-- Kept in step with ../dataverse-parent/pom.xml -->
-        <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <hamcrest.version>2.2</hamcrest.version>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
-        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
         <!-- Set by the browser-* profiles below to run a single browser. -->
         <skip.chromium>false</skip.chromium>
         <skip.firefox>false</skip.firefox>
@@ -63,7 +59,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <release>${target.java.version}</release>
                 </configuration>
@@ -72,7 +67,6 @@
                 <!-- No unit tests here: skip the empty Surefire step ("Tests run: 0"). -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -81,7 +75,6 @@
                 <!-- Nothing to package: don't build an empty jar. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven-jar-plugin.version}</version>
                 <configuration>
                     <skipIfEmpty>true</skipIfEmpty>
                 </configuration>
@@ -97,7 +90,6 @@
                 -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-failsafe-plugin.version}</version>
                 <configuration>
                     <!-- JSF tests are *JT ("JSF test"); Failsafe only looks for *IT by default. -->
                     <includes>
