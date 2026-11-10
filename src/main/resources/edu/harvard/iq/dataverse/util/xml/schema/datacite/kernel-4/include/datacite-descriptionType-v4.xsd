@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version 1.0 - Created 2011-01-13 - FZ, TIB, Germany
+     2013-05 v3.0: Addition of ID to simpleType element, addition of value "Methods"
+     2015-02-12 v4.0: Addition of value "TechnicalInfo"-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://datacite.org/schema/kernel-4" targetNamespace="http://datacite.org/schema/kernel-4" elementFormDefault="qualified">
+  <xs:simpleType name="descriptionType" id="descriptionType">
+    <xs:annotation>
+      <xs:documentation>The type of the description.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Abstract" />
+      <xs:enumeration value="Methods" />
+      <xs:enumeration value="SeriesInformation" />
+      <xs:enumeration value="TableOfContents" />
+      <xs:enumeration value="TechnicalInfo" />
+      <xs:enumeration value="Other" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

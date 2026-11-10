@@ -1,0 +1,25 @@
+{
+  "@context" : {
+    "@vocab": "http://coar-notify.net/specification/vocabulary/",
+    "ietf": "http://www.iana.org/assignments/relation/",
+    "coar-notify": "http://coar-notify.net/specification/vocabulary/",
+    "sorg": "http://schema.org/",
+    "ReviewAction": "coar-notify:ReviewAction",
+    "EndorsementAction": "coar-notify:EndorsementAction",
+    "IngestAction": "coar-notify:IngestAction",
+    "RelationshipAction": "coar-notify:RelationshipAction",
+    "UnprocessableNotification": "coar-notify:UnprocessableNotification",
+    "as:subject": {
+      "@type": "@id"
+    },
+    "as:object": {
+      "@type": "@id"
+    },
+    "as:relationship": {
+      "@type": "@id"
+    },
+    "ietf:cite-as": {
+        "@type" : "@id"
+    }
+  }
+}

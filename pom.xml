@@ -876,6 +876,8 @@
                     <include>**/*.xsl</include>
                     <include>**/services/*</include>
                     <include>**/*.map</include>
+                    <include>**/*.xsd</include>
+                    <include>**/*.jsonld</include>
                 </includes>
             </resource>
             <resource>
