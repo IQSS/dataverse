@@ -194,7 +194,11 @@
     </build>
 
     <profiles>
-        <!-- -Ddataverse.test.jsf.browser=<name> runs only that browser. -->
+        <!--
+            One profile per browser, each running only that browser by skipping the
+            other two. Activate one with -Pbrowser-<name> (chromium, firefox or
+            webkit), or with -Ddataverse.test.jsf.browser=<name>, which CI uses.
+        -->
         <profile>
             <id>browser-chromium</id>
             <activation>
