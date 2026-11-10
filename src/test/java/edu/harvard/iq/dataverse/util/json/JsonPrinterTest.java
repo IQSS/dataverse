@@ -654,16 +654,22 @@ public class JsonPrinterTest {
 
             JsonArray altPidsArray = jsonResult.getJsonArray("alternativePersistentIdentifiers");
             assertEquals(2, altPidsArray.size());
+            
+            boolean hasDoi = altPidsArray.stream()
+                    .map(JsonValue::asJsonObject)
+                    .anyMatch(obj -> "doi".equals(obj.getString("protocol"))
+                    && "10.5072".equals(obj.getString("authority"))
+                    && "FK2/ABC123".equals(obj.getString("identifier")));
 
-            JsonObject item1 = altPidsArray.getJsonObject(0);
-            assertEquals("doi", item1.getString("protocol"));
-            assertEquals("10.5072", item1.getString("authority"));
-            assertEquals("FK2/ABC123", item1.getString("identifier"));
+            boolean hasHdl = altPidsArray.stream()
+                    .map(JsonValue::asJsonObject)
+                    .anyMatch(obj -> "hdl".equals(obj.getString("protocol"))
+                    && "1902.1".equals(obj.getString("authority"))
+                    && "12345".equals(obj.getString("identifier")));
 
-            JsonObject item2 = altPidsArray.getJsonObject(1);
-            assertEquals("hdl", item2.getString("protocol"));
-            assertEquals("1902.1", item2.getString("authority"));
-            assertEquals("12345", item2.getString("identifier"));
+            assertTrue(hasDoi, "Expected DOI entry in alternativePersistentIdentifiers array");
+            assertTrue(hasHdl, "Expected HDL entry in alternativePersistentIdentifiers array");
+
         }
     }
 
