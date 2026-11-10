@@ -652,7 +652,7 @@ public class JsonPrinter {
         }
     }
     
-    private static void addAlternativePersistentIdentifiers(DvObject dataset, JsonObjectBuilder bld) {
+    public static void addAlternativePersistentIdentifiers(DvObject dataset, JsonObjectBuilder bld) {
         Set<AlternativePersistentIdentifier> altPids = dataset.getAlternativePersistentIndentifiers();
         if (altPids != null && !altPids.isEmpty()) {
             JsonArrayBuilder altPidsArray = JsonUtil.createArrayBuilder();

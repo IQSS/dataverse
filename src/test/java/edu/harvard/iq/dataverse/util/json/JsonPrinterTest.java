@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class JsonPrinterTest {
 
@@ -613,6 +615,72 @@ public class JsonPrinterTest {
         assertEquals("White", result_cq3_options2.getString("value"));
         }
     }
+    
+    @Test
+    public void testJsonPrinter_withAlternativePersistentIdentifiers() {
+        Dataverse dv = new Dataverse();
+        dv.setId(41L);
+        Dataset dataset = createDataset(42);
+
+        dataset.setOwner(dv);
+        
+        // 1. Arrange: Create mock or instance of AlternativePersistentIdentifier
+        AlternativePersistentIdentifier altPid1 = mock(AlternativePersistentIdentifier.class);
+        when(altPid1.getProtocol()).thenReturn("doi");
+        when(altPid1.getAuthority()).thenReturn("10.5072");
+        when(altPid1.getIdentifier()).thenReturn("FK2/ABC123");
+
+        AlternativePersistentIdentifier altPid2 = mock(AlternativePersistentIdentifier.class);
+        when(altPid2.getProtocol()).thenReturn("hdl");
+        when(altPid2.getAuthority()).thenReturn("1902.1");
+        when(altPid2.getIdentifier()).thenReturn("12345");
+
+        Set<AlternativePersistentIdentifier> altPids = Set.of(altPid1, altPid2);
+        
+        dataset.setAlternativePersistentIndentifiers(altPids);
+
+        // 2. Act: Call  jsonPrinter method (pass dataset and object builder)
+        JsonObjectBuilder job = JsonPrinter.json(dataset, false); // Adjust to match your printer's entry point
+        JsonPrinter.addAlternativePersistentIdentifiers(dataset, job);
+        
+        // 3. Assert: Verify the key exists and matches expected array structure       
+        JsonObject jsonResult = job.build();
+        assertTrue(jsonResult.containsKey("alternativePersistentIdentifiers"));
+        
+        JsonArray altPidsArray = jsonResult.getJsonArray("alternativePersistentIdentifiers");
+        assertEquals(2, altPidsArray.size());
+
+        JsonObject item1 = altPidsArray.getJsonObject(0);
+        assertEquals("doi", item1.getString("protocol"));
+        assertEquals("10.5072", item1.getString("authority"));
+        assertEquals("FK2/ABC123", item1.getString("identifier"));
+
+        JsonObject item2 = altPidsArray.getJsonObject(1);
+        assertEquals("hdl", item2.getString("protocol"));
+        assertEquals("1902.1", item2.getString("authority"));
+        assertEquals("12345", item2.getString("identifier"));
+    }
+
+    @Test
+    void testJsonPrinter_withNullFieldsInAltPid() {
+        Dataverse dv = new Dataverse();
+        dv.setId(41L);
+        Dataset dataset = createDataset(42);
+
+        dataset.setOwner(dv);
+        
+        
+        // Test dataset has no (null) altPids)
+
+        dataset.setAlternativePersistentIndentifiers(null);       
+
+
+        JsonObjectBuilder job = JsonPrinter.json(dataset, false);
+        JsonObject jsonResult = job.build();
+        assertFalse(jsonResult.containsKey("alternativePersistentIdentifiers"));
+
+    }
+
 
     @Test
     public void testJsonArrayDataverseCollections() {
