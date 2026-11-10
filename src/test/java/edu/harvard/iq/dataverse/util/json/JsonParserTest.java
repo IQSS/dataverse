@@ -798,16 +798,24 @@ public class JsonParserTest {
         }
 
         @Override
-        public String getValueForKey( Key key /*, String defaultValue */) {
+        public String getValueForKey(Key key) {
             switch (key) {
                 case Authority:
                     return "10.5072";
                 case Protocol:
                     return "doi";
+                case MetadataLanguages:
+                    return "[{\"locale\":\"en\",\"title\":\"English\"}]";
                 default:
                     break;
             }
-             return null;
+            return null;
+        }
+
+        @Override
+        public String getValueForKey(Key key, String defaultValue) {
+            String val = getValueForKey(key);
+            return (val != null) ? val : defaultValue;
         }
 
         @Override
@@ -1001,6 +1009,140 @@ public class JsonParserTest {
         jsonParser.parseDatasetVersion(json, dsv2);
 
         assertEquals(dsv1.getReleaseTime().toString(), dsv2.getReleaseTime().toString());
+    }
+
+    @Test
+    public void testParseDatasetVersion_UserSupplied() throws JsonParseException {
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("id", "12345");
+        builder.add("versionNumber", 1);
+        builder.add("minorVersionNumber", "0");
+        builder.add("versionState", "RELEASED");
+        builder.add("UNF", "UNF:6:notarealunf");
+        builder.add("releaseTime", "2023-01-01T12:00:00Z");
+        builder.add("createTime", "2023-01-01T10:00:00Z");
+        builder.add("lastUpdateTime", "2023-01-01T11:00:00Z");
+        builder.add("archiveTime", "2023-01-01T13:00:00Z");
+        builder.add("versionNote", "Dangerous note");
+        builder.add("deaccessionNote", "Dangerous deaccession note");
+        builder.add("deaccessionLink", "http://danger.com");
+
+        // Add some safe fields to ensure it's still parsing something
+        JsonObjectBuilder metadataBlocks = JsonUtil.createObjectBuilder();
+        JsonObjectBuilder citation = JsonUtil.createObjectBuilder();
+        citation.add("fields", JsonUtil.createArrayBuilder());
+        metadataBlocks.add("citation", citation);
+        builder.add("metadataBlocks", metadataBlocks);
+
+        JsonObject json = builder.build();
+        DatasetVersion dsv = new DatasetVersion();
+
+        // When isUserSupplied = true
+        sut.parseDatasetVersion(json, dsv, true);
+
+        // Then all these should remain null or default
+        assertNull(dsv.getId());
+        assertNull(dsv.getVersionNumber());
+        assertNull(dsv.getMinorVersionNumber());
+        assertNull(dsv.getVersionState());
+        assertNull(dsv.getUNF());
+        assertNull(dsv.getReleaseTime());
+        assertNull(dsv.getCreateTime());
+        assertNull(dsv.getLastUpdateTime());
+        assertNull(dsv.getArchiveTime());
+        assertNull(dsv.getVersionNote());
+        assertNull(dsv.getDeaccessionNote());
+        assertNull(dsv.getDeaccessionLink());
+
+        // Now test when isUserSupplied = false
+        DatasetVersion dsvFull = new DatasetVersion();
+        sut.parseDatasetVersion(json, dsvFull, false);
+
+        assertNotNull(dsvFull.getId());
+        assertEquals(12345L, dsvFull.getId());
+        assertEquals(1L, (long) dsvFull.getVersionNumber());
+        assertEquals(DatasetVersion.VersionState.RELEASED, dsvFull.getVersionState());
+        assertEquals("UNF:6:notarealunf", dsvFull.getUNF());
+        assertNotNull(dsvFull.getReleaseTime());
+        assertEquals("Dangerous note", dsvFull.getVersionNote());
+    }
+
+    @Test
+    public void testParseDataset_UserSupplied() throws JsonParseException {
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("authority", "10.5072");
+        builder.add("protocol", "doi");
+        builder.add("identifier", "FK2/BYM3IW");
+        builder.add("datasetFileCountLimit", 100);
+        builder.add("datasetType", "someOtherType");
+        builder.add("metadataLanguage", "en");
+
+        // Required datasetVersion part
+        JsonObjectBuilder dsvBuilder = JsonUtil.createObjectBuilder();
+        dsvBuilder.add("metadataBlocks", JsonUtil.createObjectBuilder()
+                .add("citation", JsonUtil.createObjectBuilder()
+                        .add("fields", JsonUtil.createArrayBuilder())));
+        builder.add("datasetVersion", dsvBuilder);
+
+        JsonObject json = builder.build();
+
+        // When isUserSupplied = true
+        Dataset ds = sut.parseDataset(json, null, true);
+
+        // Then sensitive fields should remain null or default
+        assertNull(ds.getAuthority());
+        assertNull(ds.getProtocol());
+        assertNull(ds.getIdentifier());
+        assertNull(ds.getDatasetFileCountLimit());
+        assertEquals(DatasetType.DEFAULT_DATASET_TYPE, ds.getDatasetType().getName());
+        assertEquals("en", ds.getMetadataLanguage());
+
+        // Now test when isUserSupplied = false
+        // Need to mock datasetTypeService for "someOtherType"
+        DatasetType otherType = new DatasetType();
+        otherType.setName("someOtherType");
+        Mockito.when(datasetTypeService.getByName("someOtherType")).thenReturn(otherType);
+
+        Dataset dsFull = sut.parseDataset(json, null, false);
+        assertEquals("10.5072", dsFull.getAuthority());
+        assertEquals("doi", dsFull.getProtocol());
+        assertEquals("FK2/BYM3IW", dsFull.getIdentifier());
+        assertEquals(100, dsFull.getDatasetFileCountLimit());
+        assertEquals("someOtherType", dsFull.getDatasetType().getName());
+    }
+
+    @Test
+    public void testParseDatasetVersion_AllowFiles() throws JsonParseException {
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        JsonObjectBuilder metadataBlocks = JsonUtil.createObjectBuilder();
+        JsonObjectBuilder citation = JsonUtil.createObjectBuilder();
+        citation.add("fields", JsonUtil.createArrayBuilder());
+        metadataBlocks.add("citation", citation);
+        builder.add("metadataBlocks", metadataBlocks);
+
+        JsonArrayBuilder files = JsonUtil.createArrayBuilder();
+        files.add(JsonUtil.createObjectBuilder()
+                .add("label", "test.txt")
+                .add("dataFile", JsonUtil.createObjectBuilder()));
+        builder.add("fileMetadatas", files);
+
+        JsonObject json = builder.build();
+
+        // 1. isUserSupplied = true, allowFiles = false (default for 3-arg parseDatasetVersion)
+        DatasetVersion dsv1 = new DatasetVersion();
+        sut.parseDatasetVersion(json, dsv1, true);
+        assertTrue(dsv1.getFileMetadatas().isEmpty());
+
+        // 2. isUserSupplied = true, allowFiles = true
+        DatasetVersion dsv2 = new DatasetVersion();
+        sut.parseDatasetVersion(json, dsv2, true, true);
+        assertFalse(dsv2.getFileMetadatas().isEmpty());
+        assertEquals("test.txt", dsv2.getFileMetadatas().get(0).getLabel());
+
+        // 3. isUserSupplied = false
+        DatasetVersion dsv3 = new DatasetVersion();
+        sut.parseDatasetVersion(json, dsv3, false);
+        assertFalse(dsv3.getFileMetadatas().isEmpty());
     }
 }
 
