@@ -913,19 +913,13 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
-            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
+            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json, null, true);
 
-            // clear possibly stale fields from the incoming dataset version.
             // creation and modification dates are updated by the commands.
-            incomingVersion.setId(null);
-            incomingVersion.setVersionNumber(null);
-            incomingVersion.setMinorVersionNumber(null);
             incomingVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
             incomingVersion.setDataset(ds);
-            incomingVersion.setCreateTime(null);
-            incomingVersion.setLastUpdateTime(null);
 
-            if (!incomingVersion.getFileMetadatas().isEmpty()){
+            if (json.containsKey("files") || json.containsKey("fileMetadatas")){
                 return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
             }
 

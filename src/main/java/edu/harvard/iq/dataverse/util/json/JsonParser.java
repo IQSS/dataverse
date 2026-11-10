@@ -403,30 +403,40 @@ public class JsonParser {
         return toaa;
     }
 
-    public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
-        return parseDatasetVersion(obj, new DatasetVersion());
-    }
 
     public Dataset parseDataset(JsonObject obj, Dataverse owner) throws JsonParseException {
+        return parseDataset(obj, owner, false);
+    }
+
+    public Dataset parseDataset(JsonObject obj, Dataverse owner, boolean isUserSupplied) throws JsonParseException {
+        return parseDataset(obj, owner, isUserSupplied, false);
+    }
+
+    public Dataset parseDataset(JsonObject obj, Dataverse owner, boolean isUserSupplied, boolean allowFiles) throws JsonParseException {
         Dataset dataset = new Dataset();
         dataset.setOwner(owner);
-        dataset.setAuthority(obj.getString("authority", null));
-        dataset.setProtocol(obj.getString("protocol", null));
-        dataset.setIdentifier(obj.getString("identifier",null));
-        String mdl = obj.getString("metadataLanguage",null);
-        if(mdl==null || settingsService.getBaseMetadataLanguageMap(new HashMap<String,String>(), true).containsKey(mdl)) {
-          dataset.setMetadataLanguage(mdl);
-        }else {
-            throw new JsonParseException("Specified metadatalanguage not allowed.");
-        }
-        dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", -1));
-        String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
-        logger.fine("datasetTypeIn: " + datasetTypeIn);
-        DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
-        if (datasetType != null) {
-            dataset.setDatasetType(datasetType);
+        if (!isUserSupplied) {
+            dataset.setAuthority(obj.getString("authority", null));
+            dataset.setProtocol(obj.getString("protocol", null));
+            dataset.setIdentifier(obj.getString("identifier", null));
+            dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", -1));
+            String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
+            logger.fine("datasetTypeIn: " + datasetTypeIn);
+            DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
+            if (datasetType != null) {
+                dataset.setDatasetType(datasetType);
+            } else {
+                throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
+            }
         } else {
-            throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
+            dataset.setDatasetType(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE));
+        }
+
+        String mdl = obj.getString("metadataLanguage", null);
+        if (mdl == null || settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(mdl)) {
+            dataset.setMetadataLanguage(mdl);
+        } else {
+            throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
 
         if (obj.containsKey("templateId")) {
@@ -441,7 +451,7 @@ public class JsonParser {
 
         DatasetVersion dsv = new DatasetVersion();
         dsv.setDataset(dataset);
-        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
+        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv, isUserSupplied, allowFiles);
         List<DatasetVersion> versions = new ArrayList<>(1);
         versions.add(dsv);
 
@@ -449,46 +459,59 @@ public class JsonParser {
         return dataset;
     }
 
+    public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
+        return parseDatasetVersion(obj, new DatasetVersion(), false);
+    }
+
     public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
+        return parseDatasetVersion(obj, dsv, false);
+    }
+
+    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean isUserSupplied) throws JsonParseException {
+        return parseDatasetVersion(obj, dsv, isUserSupplied, false);
+    }
+
+    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean isUserSupplied, boolean allowFiles) throws JsonParseException {
         try {
+            if (!isUserSupplied) {
+                dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
+                String deaccessionNote = obj.getString("deaccessionNote", null);
+                // ToDo - the treatment of null inputs is inconsistent across different fields (either the original value is kept or set to null).
+                // This is moot for most uses of this method, which start from an empty datasetversion, but use through https://github.com/IQSS/dataverse/blob/3e5a516670c42e019338063516a9d93a61833027/src/main/java/edu/harvard/iq/dataverse/api/datadeposit/ContainerManagerImpl.java#L112
+                // starts from an existing version where this inconsistency could be/is a problem.
+                if (deaccessionNote != null) {
+                    dsv.setDeaccessionNote(deaccessionNote);
+                }
+                dsv.setVersionNote(obj.getString("versionNote", null));
+                int versionNumberInt = obj.getInt("versionNumber", -1);
+                Long versionNumber = null;
+                if (versionNumberInt != -1) {
+                    versionNumber = new Long(versionNumberInt);
+                }
+                dsv.setVersionNumber(versionNumber);
+                dsv.setMinorVersionNumber(parseLong(obj.getString("minorVersionNumber", null)));
+                // if the existing datasetversion doesn not have an id
+                // use the id from the json object.
+                if (dsv.getId() == null) {
+                    dsv.setId(parseLong(obj.getString("id", null)));
+                }
 
-            dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
-            String deaccessionNote = obj.getString("deaccessionNote", null);
-            // ToDo - the treatment of null inputs is inconsistent across different fields (either the original value is kept or set to null).
-            // This is moot for most uses of this method, which start from an empty datasetversion, but use through https://github.com/IQSS/dataverse/blob/3e5a516670c42e019338063516a9d93a61833027/src/main/java/edu/harvard/iq/dataverse/api/datadeposit/ContainerManagerImpl.java#L112
-            // starts from an existing version where this inconsistency could be/is a problem.
-            if (deaccessionNote != null) {
-                dsv.setDeaccessionNote(deaccessionNote);
+                String versionStateStr = obj.getString("versionState", null);
+                if (versionStateStr != null) {
+                    dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
+                }
+                // Checking "releaseTime" to be consistent with JsonPrinter which outputs this field as 'releaseTime' with full timestamp
+                if (obj.containsKey("releaseTime")) {
+                    dsv.setReleaseTime(parseTime(obj.getString("releaseTime", null)));
+                } else {
+                    // Accept 'releaseDate' to remain backward compatible. This truncates to date only!
+                    dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+                }
+                dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
+                dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
+                dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
+                dsv.setUNF(obj.getString("UNF", null));
             }
-            dsv.setVersionNote(obj.getString("versionNote", null));
-            int versionNumberInt = obj.getInt("versionNumber", -1);
-            Long versionNumber = null;
-            if (versionNumberInt !=-1) {
-                versionNumber = new Long(versionNumberInt);
-            }
-            dsv.setVersionNumber(versionNumber);
-            dsv.setMinorVersionNumber(parseLong(obj.getString("minorVersionNumber", null)));
-            // if the existing datasetversion doesn not have an id
-            // use the id from the json object.
-            if (dsv.getId()==null) {
-                 dsv.setId(parseLong(obj.getString("id", null)));
-            }
-
-            String versionStateStr = obj.getString("versionState", null);
-            if (versionStateStr != null) {
-                dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
-            }
-            // Checking "releaseTime" to be consistent with JsonPrinter which outputs this field as 'releaseTime' with full timestamp
-            if (obj.containsKey("releaseTime")) {
-                dsv.setReleaseTime(parseTime(obj.getString("releaseTime", null)));
-            } else {
-                // Accept 'releaseDate' to remain backward compatible. This truncates to date only!
-                dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
-            }
-            dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
-            dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
-            dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
-            dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
 
@@ -579,12 +602,14 @@ public class JsonParser {
             }
             dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
-            JsonArray filesJson = obj.getJsonArray("files");
-            if (filesJson == null) {
-                filesJson = obj.getJsonArray("fileMetadatas");
-            }
-            if (filesJson != null) {
-                dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+            if (!isUserSupplied || allowFiles) {
+                JsonArray filesJson = obj.getJsonArray("files");
+                if (filesJson == null) {
+                    filesJson = obj.getJsonArray("fileMetadatas");
+                }
+                if (filesJson != null) {
+                    dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+                }
             }
             return dsv;
         } catch (ParseException ex) {

@@ -110,7 +110,7 @@ public class ImportGenericServiceBean {
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             logger.fine(json);
             JsonObject obj = JsonUtil.getJsonObject(json);
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService).parseDatasetVersion(obj, datasetVersion);
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService).parseDatasetVersion(obj, datasetVersion, true);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);

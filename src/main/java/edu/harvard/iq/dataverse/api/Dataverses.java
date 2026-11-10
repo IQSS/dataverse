@@ -419,7 +419,7 @@ public class Dataverses extends AbstractApiBean {
             logger.fine("Json is: " + jsonBody);
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            Dataset ds = parseDataset(jsonBody, owner);
+            Dataset ds = parseDataset(jsonBody, owner, true, u.isSuperuser());
             // Will make validation happen always except for the (rare) occasion of all three conditions are true
             boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
                 JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
@@ -442,16 +442,10 @@ public class Dataverses extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeAuthorName"));
             }
 
-            version.setMinorVersionNumber(null);
-            version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
             version.getTermsOfUseAndAccess().setFileAccessRequest(true);
             version.getTermsOfUseAndAccess().setDatasetVersion(version);
 
-            ds.setAuthority(null);
-            ds.setIdentifier(null);
-            ds.setProtocol(null);
-            ds.setGlobalIdCreateTime(null);
             Dataset managedDs;
             try {
                 managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), validate, true));
@@ -557,7 +551,7 @@ public class Dataverses extends AbstractApiBean {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            Dataset ds = parseDataset(jsonBody, owner);
+            Dataset ds = parseDataset(jsonBody, owner, false);
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
@@ -649,7 +643,7 @@ public class Dataverses extends AbstractApiBean {
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds;
             try {
-                ds = jsonParser().parseDataset(importService.ddiToJson(xml), owner);
+                ds = jsonParser().parseDataset(importService.ddiToJson(xml), owner, false);
                 DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
             } catch (JsonParseException jpe) {
                 return badRequest("Error parsing data as Json: "+jpe.getMessage());
@@ -771,9 +765,13 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    private Dataset parseDataset(String datasetJson, Dataverse owner) throws WrappedResponse {
+    private Dataset parseDataset(String datasetJson, Dataverse owner, boolean isUserSupplied) throws WrappedResponse {
+        return parseDataset(datasetJson, owner, isUserSupplied, false);
+    }
+
+    private Dataset parseDataset(String datasetJson, Dataverse owner, boolean isUserSupplied, boolean allowFiles) throws WrappedResponse {
         try {
-            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson), owner);
+            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson), owner, isUserSupplied, allowFiles);
         } catch (JsonParsingException | JsonParseException jpe) {
             String message = jpe.getLocalizedMessage();
             logger.log(Level.SEVERE, "Error parsing dataset JSON. message: {0}", message);
