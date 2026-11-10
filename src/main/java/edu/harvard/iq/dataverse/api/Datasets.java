@@ -913,7 +913,25 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
-            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json, null, true);
+            
+            // To support "GET then PUT" workflows, we compare restricted fields against the latest version.
+            // We use a fresh object to avoid modifying the managed entity during parsing.
+            DatasetVersion latest = ds.getLatestVersion();
+            DatasetVersion base = new DatasetVersion();
+            base.setId(latest.getId());
+            base.setVersionNumber(latest.getVersionNumber());
+            base.setMinorVersionNumber(latest.getMinorVersionNumber());
+            base.setVersionState(latest.getVersionState());
+            base.setUNF(latest.getUNF());
+            base.setReleaseTime(latest.getReleaseTime());
+            base.setCreateTime(latest.getCreateTime());
+            base.setLastUpdateTime(latest.getLastUpdateTime());
+            base.setArchiveTime(latest.getArchiveTime());
+            base.setVersionNote(latest.getVersionNote());
+            base.setDeaccessionNote(latest.getDeaccessionNote());
+            base.setDeaccessionLink(latest.getDeaccessionLink());
+            
+            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json, base, true);
 
             // creation and modification dates are updated by the commands.
             incomingVersion.setVersionState(DatasetVersion.VersionState.DRAFT);

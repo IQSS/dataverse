@@ -122,7 +122,7 @@ public class Guestbooks extends AbstractApiBean {
             guestbook.setDataverse(dataverse);
             try {
                 JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
-                jsonParser().parseGuestbook(jsonObj, guestbook);
+                jsonParser().parseGuestbook(jsonObj, guestbook, true);
             } catch (JsonException | JsonParseException ex) {
                 logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);
                 return badRequest("Error parsing guestbook JSON");
@@ -155,7 +155,7 @@ public class Guestbooks extends AbstractApiBean {
             if (guestbook != null) {
                 try {
                     JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
-                    jsonParser().parseGuestbook(jsonObj, guestbook);
+                    jsonParser().parseGuestbook(jsonObj, guestbook, true);
                 } catch (JsonException | JsonParseException ex) {
                     logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);
                     return badRequest("Error parsing guestbook JSON");

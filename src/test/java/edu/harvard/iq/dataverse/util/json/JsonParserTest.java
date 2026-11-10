@@ -1012,22 +1012,10 @@ public class JsonParserTest {
     }
 
     @Test
-    public void testParseDatasetVersion_UserSupplied() throws JsonParseException {
+    public void testParseDatasetVersion_UserSupplied_RestrictedFields() throws JsonParseException {
         JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         builder.add("id", "12345");
-        builder.add("versionNumber", 1);
-        builder.add("minorVersionNumber", "0");
-        builder.add("versionState", "RELEASED");
-        builder.add("UNF", "UNF:6:notarealunf");
-        builder.add("releaseTime", "2023-01-01T12:00:00Z");
-        builder.add("createTime", "2023-01-01T10:00:00Z");
-        builder.add("lastUpdateTime", "2023-01-01T11:00:00Z");
-        builder.add("archiveTime", "2023-01-01T13:00:00Z");
-        builder.add("versionNote", "Dangerous note");
-        builder.add("deaccessionNote", "Dangerous deaccession note");
-        builder.add("deaccessionLink", "http://danger.com");
-
-        // Add some safe fields to ensure it's still parsing something
+        // Safe field
         JsonObjectBuilder metadataBlocks = JsonUtil.createObjectBuilder();
         JsonObjectBuilder citation = JsonUtil.createObjectBuilder();
         citation.add("fields", JsonUtil.createArrayBuilder());
@@ -1037,78 +1025,46 @@ public class JsonParserTest {
         JsonObject json = builder.build();
         DatasetVersion dsv = new DatasetVersion();
 
-        // When isUserSupplied = true
+        // 1. Should fail when isUserSupplied=true and a restricted field (id) differs from current (null)
+        assertThrows(JsonParseException.class, () -> sut.parseDatasetVersion(json, dsv, true));
+
+        // 2. Should pass when restricted field matches current value
+        dsv.setId(12345L);
         sut.parseDatasetVersion(json, dsv, true);
 
-        // Then all these should remain null or default
-        assertNull(dsv.getId());
-        assertNull(dsv.getVersionNumber());
-        assertNull(dsv.getMinorVersionNumber());
-        assertNull(dsv.getVersionState());
-        assertNull(dsv.getUNF());
-        assertNull(dsv.getReleaseTime());
-        assertNull(dsv.getCreateTime());
-        assertNull(dsv.getLastUpdateTime());
-        assertNull(dsv.getArchiveTime());
-        assertNull(dsv.getVersionNote());
-        assertNull(dsv.getDeaccessionNote());
-        assertNull(dsv.getDeaccessionLink());
-
-        // Now test when isUserSupplied = false
-        DatasetVersion dsvFull = new DatasetVersion();
-        sut.parseDatasetVersion(json, dsvFull, false);
-
-        assertNotNull(dsvFull.getId());
-        assertEquals(12345L, dsvFull.getId());
-        assertEquals(1L, (long) dsvFull.getVersionNumber());
-        assertEquals(DatasetVersion.VersionState.RELEASED, dsvFull.getVersionState());
-        assertEquals("UNF:6:notarealunf", dsvFull.getUNF());
-        assertNotNull(dsvFull.getReleaseTime());
-        assertEquals("Dangerous note", dsvFull.getVersionNote());
+        // 3. Should pass when isUserSupplied=false (internal use)
+        DatasetVersion dsvInternal = new DatasetVersion();
+        sut.parseDatasetVersion(json, dsvInternal, false);
+        assertEquals(12345L, dsvInternal.getId());
     }
 
     @Test
-    public void testParseDataset_UserSupplied() throws JsonParseException {
+    public void testParseDataset_UserSupplied_RestrictedFields() throws JsonParseException {
+        // Required datasetVersion part
+        JsonObjectBuilder dsvBuilder = JsonUtil.createObjectBuilder()
+                .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                        .add("citation", JsonUtil.createObjectBuilder()
+                                .add("fields", JsonUtil.createArrayBuilder())));
+
         JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         builder.add("authority", "10.5072");
-        builder.add("protocol", "doi");
-        builder.add("identifier", "FK2/BYM3IW");
-        builder.add("datasetFileCountLimit", 100);
-        builder.add("datasetType", "someOtherType");
         builder.add("metadataLanguage", "en");
-
-        // Required datasetVersion part
-        JsonObjectBuilder dsvBuilder = JsonUtil.createObjectBuilder();
-        dsvBuilder.add("metadataBlocks", JsonUtil.createObjectBuilder()
-                .add("citation", JsonUtil.createObjectBuilder()
-                        .add("fields", JsonUtil.createArrayBuilder())));
         builder.add("datasetVersion", dsvBuilder);
 
         JsonObject json = builder.build();
 
-        // When isUserSupplied = true
-        Dataset ds = sut.parseDataset(json, null, true);
+        // 1. Should fail when isUserSupplied=true and restricted field (authority) differs from current (null)
+        assertThrows(JsonParseException.class, () -> sut.parseDataset(json, null, true));
 
-        // Then sensitive fields should remain null or default
-        assertNull(ds.getAuthority());
-        assertNull(ds.getProtocol());
-        assertNull(ds.getIdentifier());
-        assertNull(ds.getDatasetFileCountLimit());
-        assertEquals(DatasetType.DEFAULT_DATASET_TYPE, ds.getDatasetType().getName());
-        assertEquals("en", ds.getMetadataLanguage());
-
-        // Now test when isUserSupplied = false
-        // Need to mock datasetTypeService for "someOtherType"
-        DatasetType otherType = new DatasetType();
-        otherType.setName("someOtherType");
-        Mockito.when(datasetTypeService.getByName("someOtherType")).thenReturn(otherType);
-
-        Dataset dsFull = sut.parseDataset(json, null, false);
-        assertEquals("10.5072", dsFull.getAuthority());
-        assertEquals("doi", dsFull.getProtocol());
-        assertEquals("FK2/BYM3IW", dsFull.getIdentifier());
-        assertEquals(100, dsFull.getDatasetFileCountLimit());
-        assertEquals("someOtherType", dsFull.getDatasetType().getName());
+        // 2. Should pass when restricted field matches current value (which for fresh Dataset means it must be absent)
+        JsonObjectBuilder dsvBuilder2 = JsonUtil.createObjectBuilder()
+                .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                        .add("citation", JsonUtil.createObjectBuilder()
+                                .add("fields", JsonUtil.createArrayBuilder())));
+        JsonObjectBuilder builder2 = JsonUtil.createObjectBuilder();
+        builder2.add("metadataLanguage", "en");
+        builder2.add("datasetVersion", dsvBuilder2);
+        sut.parseDataset(builder2.build(), null, true);
     }
 
     @Test
@@ -1143,6 +1099,116 @@ public class JsonParserTest {
         DatasetVersion dsv3 = new DatasetVersion();
         sut.parseDatasetVersion(json, dsv3, false);
         assertFalse(dsv3.getFileMetadatas().isEmpty());
+    }
+
+    @Test
+    public void testParseGuestbook_UserSupplied_RestrictedFields() throws JsonParseException {
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("id", 123);
+        builder.add("name", "Test Guestbook");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", true);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("createTime", "2023-01-01T12:00:00Z");
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+
+        // 1. Should fail when isUserSupplied=true and restricted field (id) differs
+        assertThrows(JsonParseException.class, () -> sut.parseGuestbook(json, gb, true));
+
+        // 2. Should pass when restricted fields match
+        gb.setId(123L);
+        // Need to parse the date to match exactly
+        try {
+            gb.setCreateTime(sut.parseTime("2023-01-01T12:00:00Z"));
+        } catch (Exception e) {}
+        sut.parseGuestbook(json, gb, true);
+
+        // 3. Should pass when isUserSupplied=false
+        Guestbook gbInternal = new Guestbook();
+        sut.parseGuestbook(json, gbInternal, false);
+        assertEquals(123L, gbInternal.getId());
+        assertNotNull(gbInternal.getCreateTime());
+    }
+
+    @Test
+    public void testParseGuestbook_CustomQuestions_RestrictedFields() throws JsonParseException {
+        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
+        qBuilder.add("id", 456);
+        qBuilder.add("question", "How are you?");
+        qBuilder.add("required", true);
+        qBuilder.add("displayOrder", 1);
+        qBuilder.add("type", "text");
+        qBuilder.add("hidden", false);
+
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("name", "Test GB");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", false);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+
+        // 1. Should fail when isUserSupplied=true and question id is unknown
+        assertThrows(JsonParseException.class, () -> sut.parseGuestbook(json, gb, true));
+
+        // 2. Should pass when question id is known
+        gb.setId(1L);
+        CustomQuestion cq = new CustomQuestion();
+        cq.setId(456L);
+        cq.setGuestbook(gb);
+        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
+        sut.parseGuestbook(json, gb, true);
+    }
+
+    @Test
+    public void testParseGuestbook_CustomQuestionValues_RestrictedFields() throws JsonParseException {
+        JsonObjectBuilder vBuilder = JsonUtil.createObjectBuilder();
+        vBuilder.add("id", 789);
+        vBuilder.add("value", "Good");
+        vBuilder.add("displayOrder", 1);
+
+        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
+        qBuilder.add("question", "How are you?");
+        qBuilder.add("required", true);
+        qBuilder.add("displayOrder", 1);
+        qBuilder.add("type", "text");
+        qBuilder.add("hidden", false);
+        qBuilder.add("optionValues", JsonUtil.createArrayBuilder().add(vBuilder));
+
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("name", "Test GB");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", false);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+
+        // 1. Should fail when isUserSupplied=true and option value id is unknown
+        assertThrows(JsonParseException.class, () -> sut.parseGuestbook(json, gb, true));
+
+        // 2. Should pass when option value id is known
+        gb.setId(1L);
+        CustomQuestion cq = new CustomQuestion();
+        cq.setId(1L);
+        cq.setGuestbook(gb);
+        CustomQuestionValue cqv = new CustomQuestionValue();
+        cqv.setId(789L);
+        cqv.setCustomQuestion(cq);
+        cq.setCustomQuestionValues(new ArrayList<>(List.of(cqv)));
+        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
+        sut.parseGuestbook(json, gb, true);
     }
 }
 

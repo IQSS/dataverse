@@ -415,6 +415,9 @@ public class JsonParser {
     public Dataset parseDataset(JsonObject obj, Dataverse owner, boolean isUserSupplied, boolean allowFiles) throws JsonParseException {
         Dataset dataset = new Dataset();
         dataset.setOwner(owner);
+        if (isUserSupplied) {
+            validateUserSuppliedDatasetFields(obj, dataset);
+        }
         if (!isUserSupplied) {
             dataset.setAuthority(obj.getString("authority", null));
             dataset.setProtocol(obj.getString("protocol", null));
@@ -472,7 +475,13 @@ public class JsonParser {
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean isUserSupplied, boolean allowFiles) throws JsonParseException {
+        if (dsv == null) {
+            dsv = new DatasetVersion();
+        }
         try {
+            if (isUserSupplied) {
+                validateUserSuppliedVersionFields(obj, dsv);
+            }
             if (!isUserSupplied) {
                 dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
                 String deaccessionNote = obj.getString("deaccessionNote", null);
@@ -620,9 +629,21 @@ public class JsonParser {
     }
 
     public Guestbook parseGuestbook(JsonObject obj, Guestbook gb) throws JsonParseException {
+        return parseGuestbook(obj, gb, false);
+    }
+
+    public Guestbook parseGuestbook(JsonObject obj, Guestbook gb, boolean isUserSupplied) throws JsonParseException {
         try {
-            if (obj.containsKey("id")) {
-                gb.setId(Long.valueOf(obj.getInt("id")));
+            if (isUserSupplied) {
+                validateUserSuppliedGuestbookFields(obj, gb);
+            }
+            if (!isUserSupplied) {
+                if (obj.containsKey("id")) {
+                    gb.setId(Long.valueOf(obj.getInt("id")));
+                }
+                if (obj.containsKey("createTime")) {
+                    gb.setCreateTime(parseDate(obj.getString("createTime", null)));
+                }
             }
             gb.setName(obj.getString("name", null));
             gb.setEnabled(obj.getBoolean("enabled"));
@@ -630,22 +651,27 @@ public class JsonParser {
             gb.setNameRequired(obj.getBoolean("nameRequired"));
             gb.setInstitutionRequired(obj.getBoolean("institutionRequired"));
             gb.setPositionRequired(obj.getBoolean("positionRequired"));
-            gb.setCustomQuestions(parseCustomQuestions(obj.getJsonArray("customQuestions"), gb));
+            gb.setCustomQuestions(parseCustomQuestions(obj.getJsonArray("customQuestions"), gb, isUserSupplied));
 
-            gb.setCreateTime(parseDate(obj.getString("createTime", null)));
         } catch (ParseException ex) {
             throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
         }
         return gb;
     }
-    private List<CustomQuestion> parseCustomQuestions(JsonArray customQuestions, Guestbook gb) {
+
+    private List<CustomQuestion> parseCustomQuestions(JsonArray customQuestions, Guestbook gb, boolean isUserSupplied) throws JsonParseException {
         final List<CustomQuestion> customQuestionList = (customQuestions != null && !customQuestions.isEmpty()) ? new ArrayList<>() : null;
         if (customQuestionList != null) {
-            customQuestions.forEach(q -> {
+            for (JsonValue q : customQuestions) {
                 JsonObject obj = q.asJsonObject();
                 CustomQuestion cq = new CustomQuestion();
-                if (obj.containsKey("id")) {
-                    cq.setId(Long.valueOf(obj.getInt("id")));
+                if (isUserSupplied) {
+                    validateUserSuppliedCustomQuestionFields(obj, gb);
+                }
+                if (!isUserSupplied) {
+                    if (obj.containsKey("id")) {
+                        cq.setId(Long.valueOf(obj.getInt("id")));
+                    }
                 }
                 cq.setQuestionString(obj.getString("question"));
                 cq.setRequired(obj.getBoolean("required"));
@@ -655,29 +681,38 @@ public class JsonParser {
                 cq.setGuestbook(gb);
 
                 JsonArray optionValues = obj.getJsonArray("optionValues");
-                final  List<CustomQuestionValue> cqvList = (optionValues != null && !optionValues.isEmpty()) ? new ArrayList<>() : null;
+                final List<CustomQuestionValue> cqvList = (optionValues != null && !optionValues.isEmpty()) ? new ArrayList<>() : null;
                 if (cqvList != null) {
-                    optionValues.forEach(v -> {
+                    for (JsonValue v : optionValues) {
                         JsonObject ov = v.asJsonObject();
                         CustomQuestionValue cqv = new CustomQuestionValue();
-                        if (ov.containsKey("id")) {
-                            cqv.setId(Long.valueOf(ov.getInt("id")));
+                        if (isUserSupplied) {
+                            validateUserSuppliedCustomQuestionValueFields(ov, gb);
+                        }
+                        if (!isUserSupplied) {
+                            if (ov.containsKey("id")) {
+                                cqv.setId(Long.valueOf(ov.getInt("id")));
+                            }
                         }
                         cqv.setValueString(ov.getString("value"));
                         cqv.setDisplayOrder(ov.getInt("displayOrder"));
                         cqv.setCustomQuestion(cq);
                         cqvList.add(cqv);
-                    });
+                    }
                     cq.setCustomQuestionValues(cqvList);
                 }
 
                 customQuestionList.add(cq);
-            });
+            }
         }
         return customQuestionList;
     }
 
     public GuestbookResponse parseGuestbookResponse(JsonObject obj, GuestbookResponse guestbookResponse) throws JsonParseException {
+        return parseGuestbookResponse(obj, guestbookResponse, false);
+    }
+
+    public GuestbookResponse parseGuestbookResponse(JsonObject obj, GuestbookResponse guestbookResponse, boolean isUserSupplied) throws JsonParseException {
 
         if (obj == null || guestbookResponse == null || guestbookResponse.getGuestbook() == null || guestbookResponse.getGuestbook().getCustomQuestions() == null) {
             return null;
@@ -1332,6 +1367,217 @@ public class JsonParser {
 
     int parsePrimitiveInt(String str, int defaultValue) {
         return str == null ? defaultValue : Integer.parseInt(str);
+    }
+
+    private void validateUserSuppliedDatasetFields(JsonObject obj, Dataset ds) throws JsonParseException {
+        List<String> diffs = new ArrayList<>();
+        if (obj.containsKey("authority") && !obj.isNull("authority")) {
+            if (!Objects.equals(obj.getString("authority", null), ds.getAuthority())) {
+                diffs.add("authority");
+            }
+        }
+        if (obj.containsKey("protocol") && !obj.isNull("protocol")) {
+            if (!Objects.equals(obj.getString("protocol", null), ds.getProtocol())) {
+                diffs.add("protocol");
+            }
+        }
+        if (obj.containsKey("identifier") && !obj.isNull("identifier")) {
+            if (!Objects.equals(obj.getString("identifier", null), ds.getIdentifier())) {
+                diffs.add("identifier");
+            }
+        }
+        if (obj.containsKey("datasetFileCountLimit") && !obj.isNull("datasetFileCountLimit")) {
+            Integer val = obj.getInt("datasetFileCountLimit", -1);
+            if (val == -1) {
+                val = null;
+            }
+            if (!Objects.equals(val, ds.getDatasetFileCountLimit())) {
+                diffs.add("datasetFileCountLimit");
+            }
+        }
+        if (obj.containsKey("datasetType") && !obj.isNull("datasetType")) {
+            String val = obj.getString("datasetType", null);
+            if (ds.getDatasetType() == null || !Objects.equals(val, ds.getDatasetType().getName())) {
+                diffs.add("datasetType");
+            }
+        }
+        if (obj.containsKey("storageIdentifier") && !obj.isNull("storageIdentifier")) {
+            if (!Objects.equals(obj.getString("storageIdentifier", null), ds.getStorageIdentifier())) {
+                diffs.add("storageIdentifier");
+            }
+        }
+
+        if (!diffs.isEmpty()) {
+            String msg = "Restricted fields cannot be changed: " + String.join(", ", diffs);
+            logger.warning(msg);
+            throw new JsonParseException(msg);
+        }
+    }
+
+    private void validateUserSuppliedVersionFields(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
+        List<String> diffs = new ArrayList<>();
+
+        if (obj.containsKey("id") && !obj.isNull("id")) {
+            Long val = parseLong(obj.getString("id", null));
+            if (!Objects.equals(val, dsv.getId())) {
+                diffs.add("id");
+            }
+        }
+        if (obj.containsKey("versionNumber") && !obj.isNull("versionNumber")) {
+            Long val = (long) obj.getInt("versionNumber");
+            if (!Objects.equals(val, dsv.getVersionNumber())) {
+                diffs.add("versionNumber");
+            }
+        }
+        if (obj.containsKey("minorVersionNumber") && !obj.isNull("minorVersionNumber")) {
+            Long val = parseLong(obj.getString("minorVersionNumber", null));
+            if (!Objects.equals(val, dsv.getMinorVersionNumber())) {
+                diffs.add("minorVersionNumber");
+            }
+        }
+        if (obj.containsKey("versionState") && !obj.isNull("versionState")) {
+            String val = obj.getString("versionState", null);
+            if (dsv.getVersionState() == null || !Objects.equals(val, dsv.getVersionState().name())) {
+                diffs.add("versionState");
+            }
+        }
+        if (obj.containsKey("UNF") && !obj.isNull("UNF")) {
+            if (!Objects.equals(obj.getString("UNF", null), dsv.getUNF())) {
+                diffs.add("UNF");
+            }
+        }
+        if (obj.containsKey("releaseTime") && !obj.isNull("releaseTime")) {
+            if (!timeMatch(obj.getString("releaseTime", null), dsv.getReleaseTime())) {
+                diffs.add("releaseTime");
+            }
+        } else if (obj.containsKey("releaseDate") && !obj.isNull("releaseDate")) {
+            if (!timeMatch(obj.getString("releaseDate", null), dsv.getReleaseTime())) {
+                diffs.add("releaseDate");
+            }
+        }
+        if (obj.containsKey("createTime") && !obj.isNull("createTime")) {
+            if (!timeMatch(obj.getString("createTime", null), dsv.getCreateTime())) {
+                diffs.add("createTime");
+            }
+        }
+        if (obj.containsKey("lastUpdateTime") && !obj.isNull("lastUpdateTime")) {
+            if (!timeMatch(obj.getString("lastUpdateTime", null), dsv.getLastUpdateTime())) {
+                diffs.add("lastUpdateTime");
+            }
+        }
+        if (obj.containsKey("archiveTime") && !obj.isNull("archiveTime")) {
+            if (!timeMatch(obj.getString("archiveTime", null), dsv.getArchiveTime())) {
+                diffs.add("archiveTime");
+            }
+        }
+        if (obj.containsKey("versionNote") && !obj.isNull("versionNote")) {
+            if (!Objects.equals(obj.getString("versionNote", null), dsv.getVersionNote())) {
+                diffs.add("versionNote");
+            }
+        }
+        if (obj.containsKey("deaccessionNote") && !obj.isNull("deaccessionNote")) {
+            if (!Objects.equals(obj.getString("deaccessionNote", null), dsv.getDeaccessionNote())) {
+                diffs.add("deaccessionNote");
+            }
+        }
+        if (obj.containsKey("deaccessionLink") && !obj.isNull("deaccessionLink")) {
+            if (!Objects.equals(obj.getString("deaccessionLink", null), dsv.getDeaccessionLink())) {
+                diffs.add("deaccessionLink");
+            }
+        }
+
+        if (!diffs.isEmpty()) {
+            String msg = "Restricted fields cannot be changed: " + String.join(", ", diffs);
+            logger.warning(msg);
+            throw new JsonParseException(msg);
+        }
+    }
+
+    private boolean timeMatch(String jsonTime, Date ts) {
+        if (jsonTime == null || jsonTime.isEmpty()) {
+            return ts == null;
+        }
+        if (ts == null) {
+            return false;
+        }
+        try {
+            Date parsed = null;
+            try {
+                parsed = parseTime(jsonTime);
+            } catch (ParseException e) {
+                parsed = parseDate(jsonTime);
+            }
+            return parsed.getTime() == ts.getTime();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void validateUserSuppliedGuestbookFields(JsonObject obj, Guestbook gb) throws JsonParseException {
+        List<String> diffs = new ArrayList<>();
+        if (obj.containsKey("id") && !obj.isNull("id")) {
+            Long val = (long) obj.getInt("id");
+            if (!Objects.equals(val, gb.getId())) {
+                diffs.add("id");
+            }
+        }
+        if (obj.containsKey("createTime") && !obj.isNull("createTime")) {
+            if (!timeMatch(obj.getString("createTime", null), gb.getCreateTime())) {
+                diffs.add("createTime");
+            }
+        }
+        if (!diffs.isEmpty()) {
+            String msg = "Restricted fields cannot be changed: " + String.join(", ", diffs);
+            logger.warning(msg);
+            throw new JsonParseException(msg);
+        }
+    }
+
+    private void validateUserSuppliedCustomQuestionFields(JsonObject obj, Guestbook gb) throws JsonParseException {
+        if (obj.containsKey("id") && !obj.isNull("id")) {
+            Long val = (long) obj.getInt("id");
+            boolean match = false;
+            if (gb.getId() != null && gb.getCustomQuestions() != null) {
+                for (CustomQuestion existingCq : gb.getCustomQuestions()) {
+                    if (Objects.equals(val, existingCq.getId())) {
+                        match = true;
+                        break;
+                    }
+                }
+            }
+            if (!match) {
+                String msg = "Restricted fields cannot be changed: customQuestion.id";
+                logger.warning(msg);
+                throw new JsonParseException(msg);
+            }
+        }
+    }
+
+    private void validateUserSuppliedCustomQuestionValueFields(JsonObject obj, Guestbook gb) throws JsonParseException {
+        if (obj.containsKey("id") && !obj.isNull("id")) {
+            Long val = (long) obj.getInt("id");
+            boolean match = false;
+            if (gb.getId() != null && gb.getCustomQuestions() != null) {
+                for (CustomQuestion existingCq : gb.getCustomQuestions()) {
+                    if (existingCq.getCustomQuestionValues() != null) {
+                        for (CustomQuestionValue existingCqv : existingCq.getCustomQuestionValues()) {
+                            if (Objects.equals(val, existingCqv.getId())) {
+                                match = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (match) {
+                        break;
+                    }
+                }
+            }
+            if (!match) {
+                String msg = "Restricted fields cannot be changed: customQuestionValue.id";
+                logger.warning(msg);
+                throw new JsonParseException(msg);
+            }
+        }
     }
 
     public String parseHarvestingClient(JsonObject obj, HarvestingClient harvestingClient) throws JsonParseException {
