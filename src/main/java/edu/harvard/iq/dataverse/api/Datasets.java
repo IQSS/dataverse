@@ -6954,7 +6954,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             }
         }
 
-        String jpql = buildErasedFilesJpql("fe.dataFile.dataset.id = :datasetId", start, end);
+        String jpql = buildErasedFilesJpql("fe.dataFile.owner.id = :datasetId", start, end);
         jakarta.persistence.Query query = em.createQuery(jpql);
         query.setParameter("datasetId", dataset.getId());
         setErasedFilesQueryParams(query, start, end);
