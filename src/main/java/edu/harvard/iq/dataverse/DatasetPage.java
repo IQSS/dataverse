@@ -106,7 +106,6 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.OptimisticLockException;
@@ -2247,13 +2246,6 @@ public class DatasetPage implements java.io.Serializable {
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized();
             }
-            //Wait until the create command before actually getting an identifier, except if we're using directUpload
-        	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
-            if ( isEmpty(dataset.getIdentifier()) ) {
-                CommandContext ctxt = commandEngine.getContext();
-                PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
-                pidProvider.generatePid(dataset);
-            }
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 for (Template templateTest: dataverseService.find(ownerId).getParentTemplates()){
@@ -2265,13 +2257,11 @@ public class DatasetPage implements java.io.Serializable {
             Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
+
+            generatePidEarly(); // note that this requires the default template to be set first.
+
             if (defaultTemplate != null) {
-                selectedTemplate = defaultTemplate;
-                for (Template testT : dataverseTemplates) {
-                    if (defaultTemplate.getId().equals(testT.getId())) {
-                        selectedTemplate = testT;
-                    }
-                }
+                selectedTemplate = getLastLoadedTemplate(defaultTemplate);
                 //Initalize with the default if there is one 
                 dataset.setTemplate(selectedTemplate);
                 workingVersion = dataset.getOrCreateEditVersion(selectedTemplate, null);
@@ -2362,7 +2352,46 @@ public class DatasetPage implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    private void generatePidEarly() {
+        // The create command should generate the identifier, we need it earlier if
+        // - requestDirectUploadUrl might get called
+        // - a template is used with custom terms of use.
+
+        var directUploadEnabled = systemConfig.directUploadEnabled(dataset);
+
+        // better safe than sorry: rather an abandoned PID in one of the cases than an NPE
+        // by <a href="#{DatasetUtil:getLicenseURI(workingVersion)}"
+        var withTermsOfUse = hasTermsOfUse(defaultTemplate)
+                             || hasTermsOfUse(selectedTemplate);
+
+        if (isEmpty(dataset.getIdentifier()) && (directUploadEnabled || withTermsOfUse)) {
+            CommandContext ctxt = commandEngine.getContext();
+            PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
+            pidProvider.generatePid(dataset);
+        }
+    }
+
+    private boolean hasTermsOfUse(Template template) {
+        template = getLastLoadedTemplate(template);
+        return template != null && !isEmpty(template.getDefaultTermsOfUseOrLicense().getTermsOfUse());
+    }
+
+    private Template getLastLoadedTemplate(Template template) {
+        // Two object references may come from different loads.
+        // For example, one is detached and the other is managed,
+        // or a UI component expects the selected object to come from its options list.
+        if(template == null) {
+            return null;
+        }
+        for (Template testT : dataverseTemplates) {
+            if (template.getId().equals(testT.getId())) {
+                template = testT;
+            }
+        }
+        return template;
+    }
+
     public void viewActionInitBreadcrumbs(){
         if(!isAnonymizedAccess()){
             dataverseHeaderFragment.initBreadcrumbs(dataset);
