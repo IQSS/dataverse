@@ -479,3 +479,88 @@ jobs:
           report_individual_runs: true
           files: |
             jsf-results/**/failsafe-reports/**/TEST-*.xml
+
+  # =====================================================================
+  # SCHEMASPY: document the database schema on a fresh stack, from the
+  # same build artifact. Starts once the API tests are done, so it runs
+  # alongside the JSF matrix, while that long job keeps the workflow busy.
+  # =====================================================================
+  schemaspy:
+    name: SchemaSpy
+    needs: [build, api-tests]
+    # Whatever the API tests' result, as long as the build succeeded.
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: read
+
+    steps:
+
+      # ---------------------------
+      # CHECKOUT + SETUP JAVA + MAVEN
+      # ---------------------------
+      - name: Checkout and Setup Maven
+        uses: IQSS/dataverse/.github/actions/setup-maven@develop
+
+      # ---------------------------
+      # START DATAVERSE (FROM THE BUILD ARTIFACT)
+      # ---------------------------
+      # Deploying Dataverse is what creates the schema. No JaCoCo agent: nothing to cover here.
+      - name: Start Dataverse stack
+        uses: ./.github/actions/start-dataverse-stack
+
+      # ---------------------------
+      # GENERATE SCHEMASPY
+      # ---------------------------
+      # The official image bundles the PostgreSQL driver and Graphviz. It joins dev_postgres'
+      # network namespace to reach the database on localhost, and runs as the runner's user
+      # so it can write to the bind-mounted output directory.
+      - name: Generate SchemaSpy
+        id: schemaspy
+        run: |
+          set -euo pipefail
+          VERSION="$(grep -m1 '<revision>' modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          mkdir -p "target/schemaspy/$VERSION"
+          docker run --rm \
+            --network container:dev_postgres \
+            --user "$(id -u):$(id -g)" \
+            -v "$PWD/target/schemaspy/$VERSION:/output" \
+            schemaspy/schemaspy:7.0.2 \
+            -t pgsql11 -host localhost -port 5432 \
+            -db dataverse -u dataverse -p secret -s public
+          test -f "target/schemaspy/$VERSION/index.html"
+
+      # ---------------------------
+      # PACKAGE + UPLOAD
+      # ---------------------------
+      # One tarball holding <version>/index.html etc., ready to unpack on the guides server.
+      - name: Package SchemaSpy output
+        run: |
+          set -euo pipefail
+          tar -C target/schemaspy -czf "target/schemaspy-${{ steps.schemaspy.outputs.version }}.tar.gz" "${{ steps.schemaspy.outputs.version }}"
+          ls -lh target/schemaspy-*.tar.gz
+
+      - name: Upload SchemaSpy package
+        uses: actions/upload-artifact@v7
+        with:
+          name: schemaspy-${{ steps.schemaspy.outputs.version }}
+          path: target/schemaspy-${{ steps.schemaspy.outputs.version }}.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      # ---------------------------
+      # COLLECT + UPLOAD DOCKER LOGS (ON FAILURE)
+      # ---------------------------
+      - name: Collect Docker logs
+        if: failure()
+        uses: ./.github/actions/collect-docker-logs
+        with:
+          artifact-name: docker-logs-schemaspy
