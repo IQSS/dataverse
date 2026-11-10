@@ -185,7 +185,12 @@
                 </executions>
             </plugin>
             <plugin>
-                <!-- Runs the Playwright CLI (show-trace, codegen, install-deps) -->
+                <!--
+                    Necessary to run the Playwright CLI (install-deps, show-trace, codegen)
+                    through Maven: exec:java with -Dexec.mainClass=com.microsoft.playwright.CLI.
+                    CI invocation: "install-deps <browser>", which installs that browser's
+                    system libraries before its test run. See .github/actions/run-jsf-tests.
+                -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
