@@ -2879,7 +2879,7 @@ public class Dataverses extends AbstractApiBean {
             }
         }
 
-        String jpql = buildErasedFilesJpql("fe.dataFile.dataset.dataverse.id = :dataverseId", start, end);
+        String jpql = buildErasedFilesJpql("fe.dataFile.owner.owner.id = :dataverseId", start, end);
         jakarta.persistence.Query query = em.createQuery(jpql);
         query.setParameter("dataverseId", dataverse.getId());
         setErasedFilesQueryParams(query, start, end);
