@@ -2042,7 +2042,7 @@
                         </div>
                     </p:dialog>
                     <!-- Publish/Submit for Review Dialogs -->
-                    <ui:fragment rendered="#{!anonymizedAccess}">
+                    <ui:fragment rendered="#{!DatasetPage.privateUrlAccess}">
                     <p:dialog id="publishDataset" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishDataset" modal="true">
                         <ui:fragment rendered="#{publishDataset}">
                             <div class="form-group">
