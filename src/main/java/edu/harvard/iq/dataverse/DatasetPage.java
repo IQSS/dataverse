@@ -4894,18 +4894,6 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
 
-    public String getSubmitForReviewDatasetDisclaimerText() {
-        String submitForReviewDatasetDisclaimerText = settingsService.getValueForKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText, session.getLocaleCode(), settingsWrapper.getValueForKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText));
-        if (submitForReviewDatasetDisclaimerText != null && !submitForReviewDatasetDisclaimerText.isEmpty()) {
-            return submitForReviewDatasetDisclaimerText;
-        }
-        return "";
-    }
-
-    public Boolean isHasSubmitForReviewDatasetDisclaimerText() {
-        return !StringUtil.isEmpty(getSubmitForReviewDatasetDisclaimerText());
-    }
-
     public String getTabularDataFileURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
@@ -6462,7 +6450,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isSubmitForReviewDisclaimerAcknowledged() {
-        return submitForReviewDisclaimerAcknowledged || !isHasSubmitForReviewDatasetDisclaimerText();
+        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText(session.getLocaleCode());
     }
 
     public void setSubmitForReviewDisclaimerAcknowledged(boolean submitForReviewDisclaimerAcknowledged) {
