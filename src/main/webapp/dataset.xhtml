@@ -18,7 +18,7 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
-            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : workingVersion.title} - #{dataverse.name}"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : workingVersion.title}#{!DatasetPage.anonymizedAccess ? ' - ' . dataverse.name : ''}"/>
             <ui:param name="deaccessioned" value="#{DatasetPage.workingVersion.deaccessioned}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
             <ui:param name="showDataverseHeader" value="#{!DatasetPage.anonymizedAccess}"/>
@@ -2042,6 +2042,7 @@
                         </div>
                     </p:dialog>
                     <!-- Publish/Submit for Review Dialogs -->
+                    <ui:fragment rendered="#{!anonymizedAccess}">
                     <p:dialog id="publishDataset" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishDataset" modal="true">
                         <ui:fragment rendered="#{publishDataset}">
                             <div class="form-group">
@@ -2177,6 +2178,7 @@
                             </button>
                         </div>
                     </p:dialog>
+                    </ui:fragment>
                     <p:dialog id="sendBackToContributor" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
                     <ui:param name="disableReasonField" value="#{FeatureFlags.DISABLE_RETURN_TO_AUTHOR_REASON.enabled()}"/>
                         <p class="text-warning">
@@ -2251,7 +2253,7 @@
                             </div>
                         </p:fragment>
                     </p:dialog>
-                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                    <ui:fragment rendered="#{empty DatasetPage.editMode and !anonymizedAccess}">
                       <script src="https://cdn.jsdelivr.net/npm/citation-js"
                           type="text/javascript"></script>
                       <script>
