@@ -463,18 +463,18 @@ public class Files extends AbstractApiBean {
         boolean manuallyErased = false;
         if (jsonBody != null && !jsonBody.isEmpty()) {
             try {
-                JsonObject jsonObj = new Gson().fromJson(jsonBody, JsonObject.class);
-                if (jsonObj.has("reason") && !jsonObj.get("reason").isJsonNull()) {
-                    reason = jsonObj.get("reason").getAsString();
+                jakarta.json.JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
+                if (jsonObj.containsKey("reason") && jsonObj.get("reason").getValueType() != jakarta.json.JsonValue.ValueType.NULL) {
+                    reason = jsonObj.getString("reason");
                 }
-                if (jsonObj.has("confirmationToken") && !jsonObj.get("confirmationToken").isJsonNull()) {
-                    confirmationToken = jsonObj.get("confirmationToken").getAsString();
+                if (jsonObj.containsKey("confirmationToken") && jsonObj.get("confirmationToken").getValueType() != jakarta.json.JsonValue.ValueType.NULL) {
+                    confirmationToken = jsonObj.getString("confirmationToken");
                 }
-                if (jsonObj.has("manuallyErased") && !jsonObj.get("manuallyErased").isJsonNull()) {
-                    manuallyErased = jsonObj.get("manuallyErased").getAsBoolean();
+                if (jsonObj.containsKey("manuallyErased") && jsonObj.get("manuallyErased").getValueType() != jakarta.json.JsonValue.ValueType.NULL) {
+                    manuallyErased = jsonObj.getBoolean("manuallyErased");
                 }
-            } catch (Exception e) {
-                return error(BAD_REQUEST, "Invalid JSON body: " + e.getMessage());
+            } catch (jakarta.json.JsonException e) {
+                return error(BAD_REQUEST, "Invalid JSON body.");
             }
         }
 
@@ -592,12 +592,14 @@ public class Files extends AbstractApiBean {
         } catch (CommandException ex) {
             // Clear the token on failure
             erasureTokenCache.remove(confirmationToken);
+            logger.log(Level.SEVERE, "Erasure command failed for file " + dataFile.getId(), ex);
+            // Messages are explicitly meant for the end user
             return error(BAD_REQUEST, "Erasure failed: " + ex.getMessage());
         } catch (Exception ex) {
             // Clear the token on failure
             erasureTokenCache.remove(confirmationToken);
             logger.log(Level.SEVERE, "Erasure failed for file " + dataFile.getId(), ex);
-            return error(Status.INTERNAL_SERVER_ERROR, "Erasure failed: " + ex.getMessage().replace("\n", " "));
+            return error(Status.INTERNAL_SERVER_ERROR, "Erasure failed.");
         }
     }
     
