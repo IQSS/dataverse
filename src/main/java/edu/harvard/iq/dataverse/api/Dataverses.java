@@ -978,7 +978,20 @@ public class Dataverses extends AbstractApiBean {
                                        @Parameter(description = "Whether to include dataset field type definitions.")
                                        @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
                                        @Parameter(description = "Dataset type name used to filter metadata blocks.")
-                                       @QueryParam("datasetType") String datasetTypeIn) {
+                                       @QueryParam("datasetType") String datasetTypeIn,
+                                       @Parameter(description = "Optional language tag, such as pt-BR, for metadata labels, descriptions, and watermarks. Omit to retain the current response behavior.")
+                                       @QueryParam("locale") String localeTag) {
+        Locale locale = null;
+        if (localeTag != null) {
+            try {
+                locale = new Locale.Builder().setLanguageTag(localeTag.replace('_', '-')).build();
+                if (locale.getLanguage().isEmpty()) {
+                    return badRequest(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.locale.languageRequired"));
+                }
+            } catch (IllformedLocaleException e) {
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.locale.invalid"));
+            }
+        }
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataverse dataverse = findDataverseUserCanSeeOrDie(dvIdtf, req);
@@ -991,7 +1004,7 @@ public class Dataverses extends AbstractApiBean {
                             datasetType
                     )
             );
-            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate, dataverse, datasetType));
+            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate, dataverse, datasetType, locale));
         } catch (WrappedResponse we) {
             return we.getResponse();
         }

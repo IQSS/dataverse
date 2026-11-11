@@ -869,9 +869,21 @@ public class JsonPrinter {
     }
 
     public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
+        return json(metadataBlocks, returnDatasetFieldTypes, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse, datasetType, null);
+    }
+
+    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes,
+            boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType, Locale locale) {
         JsonArrayBuilder arrayBuilder = JsonUtil.createArrayBuilder();
         for (MetadataBlock metadataBlock : metadataBlocks) {
-            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse, datasetType) : brief.json(metadataBlock));
+            JsonObjectBuilder block = returnDatasetFieldTypes
+                    ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse, datasetType, locale)
+                    : brief.json(metadataBlock);
+            if (!returnDatasetFieldTypes && locale != null) {
+                block.add("displayName", metadataText("metadatablock.displayName", metadataBlock.getName(),
+                        locale, metadataBlock.getDisplayName()));
+            }
+            arrayBuilder.add(block);
         }
         return arrayBuilder;
     }
@@ -903,10 +915,16 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse, DatasetType datasetType) {
+        return json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes, ownerDataverse, datasetType, null);
+    }
+
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes,
+            Dataverse ownerDataverse, DatasetType datasetType, Locale locale) {
         JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder()
                 .add("id", metadataBlock.getId())
                 .add("name", metadataBlock.getName())
-                .add("displayName", metadataBlock.getDisplayName());
+                .add("displayName", metadataText("metadatablock.displayName", metadataBlock.getName(),
+                        locale, metadataBlock.getDisplayName()));
         
         jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
@@ -931,7 +949,7 @@ public class JsonPrinter {
                 if (datasetFieldType.isInclude() && (!printOnlyDisplayedOnCreateDatasetFieldTypes
                         || fieldDisplayOnCreate || datasetFieldType.isRequired()
                         || (datasetFieldType.isRequiredDV() && (level != null)))) {
-                    fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
+                    fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse, locale));
                 }
             }
         }
@@ -964,15 +982,30 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetFieldType fld, Dataverse ownerDataverse) {
+        return json(fld, ownerDataverse, null);
+    }
+
+    public static JsonObjectBuilder json(DatasetFieldType fld, Dataverse ownerDataverse, Locale locale) {
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         fieldsBld.add("name", fld.getName());
-        fieldsBld.add("displayName", fld.getDisplayName());
+        String blockName = fld.getMetadataBlock() == null ? null : fld.getMetadataBlock().getName();
+        String title = metadataText("datasetfieldtype." + fld.getName() + ".title", blockName, locale, fld.getTitle());
+        String displayName = locale == null ? fld.getDisplayName() : title;
+        if (locale != null && fld.isHasParent()
+                && !fld.getParentDatasetFieldType().getTitle().equals(fld.getTitle())) {
+            DatasetFieldType parent = fld.getParentDatasetFieldType();
+            displayName = metadataText("datasetfieldtype." + parent.getName() + ".title", blockName,
+                    locale, parent.getTitle()) + " " + title;
+        }
+        fieldsBld.add("displayName", displayName);
         fieldsBld.add("displayOnCreate", fld.shouldDisplayOnCreate());
-        fieldsBld.add("title", fld.getTitle());
+        fieldsBld.add("title", title);
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("typeClass", typeClassString(fld));
-        fieldsBld.add("watermark", fld.getWatermark());
-        fieldsBld.add("description", fld.getDescription());
+        fieldsBld.add("watermark", metadataText("datasetfieldtype." + fld.getName() + ".watermark", blockName,
+                locale, fld.getWatermark()));
+        fieldsBld.add("description", metadataText("datasetfieldtype." + fld.getName() + ".description", blockName,
+                locale, fld.getDescription()));
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
         fieldsBld.add("isAdvancedSearchFieldType", fld.isAdvancedSearchFieldType());
@@ -1006,14 +1039,29 @@ public class JsonPrinter {
                     }
                 }
                 //This assumes a child have can't be displayOnCreate=false when the parent has it true (i.e. we're not excluding children based on testing displayOnCreate (or required) here.)
-                if(subFld.isInclude()) {
-                  subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
+                if (subFld.isInclude()) {
+                    subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse, locale));
                 }
             }
             fieldsBld.add("childFields", subFieldsBld);
         }
 
         return fieldsBld;
+    }
+
+    /**
+     * Resolve presentation text without changing the process or request locale.
+     */
+    private static String metadataText(String key, String blockName, Locale locale, String fallback) {
+        if (locale == null || blockName == null) {
+            return fallback;
+        }
+        try {
+            String translated = BundleUtil.getStringFromPropertyFile(key, blockName, locale);
+            return translated == null ? fallback : translated;
+        } catch (MissingResourceException e) {
+            return fallback;
+        }
     }
 
     public static JsonObjectBuilder json(FileMetadata fmd){
