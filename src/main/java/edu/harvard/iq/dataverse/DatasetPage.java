@@ -2257,20 +2257,21 @@ public class DatasetPage implements java.io.Serializable {
             Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
-
-            generatePidEarly(); // note that this requires the default template to be set first.
-
             if (defaultTemplate != null) {
                 selectedTemplate = getLastLoadedTemplate(defaultTemplate);
                 //Initalize with the default if there is one 
                 dataset.setTemplate(selectedTemplate);
-                workingVersion = dataset.getOrCreateEditVersion(selectedTemplate, null);
-                updateDatasetFieldInputLevels();
-            } else {
-                workingVersion = dataset.getCreateVersion(licenseServiceBean.getDefault());
-                updateDatasetFieldInputLevels();
             }
 
+            generatePidEarlyIfNeeded(); // note that this requires the template to be set first.
+            
+            if(selectedTemplate != null) {
+                workingVersion = dataset.getOrCreateEditVersion(selectedTemplate, null);
+            } else {
+                workingVersion = dataset.getCreateVersion(licenseServiceBean.getDefault());
+            }
+            updateDatasetFieldInputLevels();
+            
             if (isHasPublicStore()){
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.label.fileAccess"),
                         BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
@@ -2353,17 +2354,14 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
 
-    private void generatePidEarly() {
-        // The create command should generate the identifier, we need it earlier if
-        // - requestDirectUploadUrl might get called
-        // - a template is used with custom terms of use.
+    private void generatePidEarlyIfNeeded() {
+        // The create command will generate the identifier, but we need it earlier if
+        // - requestDirectUploadUrl might get called (s3 storage needs the identifier to generate a direct upload URL)
+        // - a template is used with custom terms of use (the dataset globalId is used in generating a licenseUrl that is used in headers)
 
         var directUploadEnabled = systemConfig.directUploadEnabled(dataset);
 
-        // better safe than sorry: rather an abandoned PID in one of the cases than an NPE
-        // by <a href="#{DatasetUtil:getLicenseURI(workingVersion)}"
-        var withTermsOfUse = hasTermsOfUse(defaultTemplate)
-                             || hasTermsOfUse(selectedTemplate);
+        var withTermsOfUse = hasTermsOfUse(dataset.getTemplate());
 
         if (isEmpty(dataset.getIdentifier()) && (directUploadEnabled || withTermsOfUse)) {
             CommandContext ctxt = commandEngine.getContext();
@@ -2373,8 +2371,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private boolean hasTermsOfUse(Template template) {
-        template = getLastLoadedTemplate(template);
-        return template != null && !isEmpty(template.getDefaultTermsOfUseOrLicense().getTermsOfUse());
+        return template != null && (template.getDefaultTermsOfUseOrLicense().getLicense()==null);
     }
 
     private Template getLastLoadedTemplate(Template template) {
