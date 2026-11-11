@@ -48,7 +48,7 @@ class MetadataLocaleApiTest {
 
     @ParameterizedTest
     @NullSource
-    @ValueSource(strings = {"pt-BR", "pt_BR", "en", "zz-ZZ"})
+    @ValueSource(strings = {"fr-CA", "fr_CA", "en", "zz-ZZ"})
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void acceptsOptionalLocaleAndTranslatesBlockNames(String locale) throws Exception {
         Dataverse dataverse = new Dataverse();
@@ -67,13 +67,13 @@ class MetadataLocaleApiTest {
             assertEquals(200, response.getStatus());
             JsonObject result = ((JsonObject) response.getEntity()).getJsonArray("data").getJsonObject(0);
             String expected = locale == null ? "Database block name"
-                    : locale.startsWith("pt") ? "Bloco de teste" : "Test block";
+                    : locale.startsWith("fr") ? "Bloc de test" : "Test block";
             assertEquals(expected, result.getString("displayName"));
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "pt--BR", "en_US.UTF-8", "-"})
+    @ValueSource(strings = {"", "fr--CA", "en_US.UTF-8", "-"})
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void rejectsMalformedLocaleWithBundleMessage(String locale) {
         try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, locale)) {
@@ -97,13 +97,13 @@ class MetadataLocaleApiTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"pt--BR, Idioma inválido.", "und, Informe um idioma."})
+    @CsvSource({"fr--CA, Paramètre de langue invalide.", "und, Indiquez une langue."})
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void usesInstalledBundleForLocaleErrors(String locale, String expectedMessage,
             @TempDir Path languageDirectory) throws IOException {
         Files.writeString(languageDirectory.resolve("Bundle.properties"),
-                "dataverses.api.metadatablocks.locale.invalid=Idioma inválido.\n"
-                + "dataverses.api.metadatablocks.locale.languageRequired=Informe um idioma.\n");
+                "dataverses.api.metadatablocks.locale.invalid=Paramètre de langue invalide.\n"
+                + "dataverses.api.metadatablocks.locale.languageRequired=Indiquez une langue.\n");
         System.setProperty("dataverse.lang.directory", languageDirectory.toString());
 
         try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, locale)) {

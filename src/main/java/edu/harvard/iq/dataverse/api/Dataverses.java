@@ -979,7 +979,7 @@ public class Dataverses extends AbstractApiBean {
                                        @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
                                        @Parameter(description = "Dataset type name used to filter metadata blocks.")
                                        @QueryParam("datasetType") String datasetTypeIn,
-                                       @Parameter(description = "Optional language tag, such as pt-BR, for metadata labels, descriptions, and watermarks. Omit to retain the current response behavior.")
+                                       @Parameter(description = "Optional language tag, such as fr-CA, for metadata labels, descriptions, and watermarks. Omit to retain the current response behavior.")
                                        @QueryParam("locale") String localeTag) {
         Locale locale = null;
         if (localeTag != null) {

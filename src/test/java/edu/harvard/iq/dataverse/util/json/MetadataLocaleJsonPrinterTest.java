@@ -44,29 +44,29 @@ class MetadataLocaleJsonPrinterTest {
     @Test
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void translatesBlockFieldsAndCompoundChildren() {
-        JsonObject result = JsonPrinter.json(block, false, null, null, Locale.forLanguageTag("pt-BR")).build();
+        JsonObject result = JsonPrinter.json(block, false, null, null, Locale.forLanguageTag("fr-CA")).build();
 
-        assertEquals("Bloco de teste", result.getString("displayName"));
+        assertEquals("Bloc de test", result.getString("displayName"));
         JsonObject titleJson = result.getJsonObject("fields").getJsonObject("title");
-        assertEquals("Título", titleJson.getString("title"));
-        assertEquals("Título", titleJson.getString("displayName"));
-        assertEquals("Descrição do título", titleJson.getString("description"));
-        assertEquals("Digite o título", titleJson.getString("watermark"));
+        assertEquals("Titre", titleJson.getString("title"));
+        assertEquals("Titre", titleJson.getString("displayName"));
+        assertEquals("Description du titre", titleJson.getString("description"));
+        assertEquals("Saisissez le titre", titleJson.getString("watermark"));
         JsonObject child = result.getJsonObject("fields").getJsonObject("author")
                 .getJsonObject("childFields").getJsonObject("authorName");
-        assertEquals("Nome", child.getString("title"));
-        assertEquals("Autor Nome", child.getString("displayName"));
-        assertEquals("Descrição do nome", child.getString("description"));
-        assertEquals("Digite o nome", child.getString("watermark"));
+        assertEquals("Nom", child.getString("title"));
+        assertEquals("Auteur Nom", child.getString("displayName"));
+        assertEquals("Description du nom", child.getString("description"));
+        assertEquals("Saisissez le nom", child.getString("watermark"));
     }
 
     @Test
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void translatesBriefBlockList() {
         JsonArray result = JsonPrinter.json(List.of(block), false, false, null, null,
-                Locale.forLanguageTag("pt-BR")).build();
+                Locale.forLanguageTag("fr-CA")).build();
 
-        assertEquals("Bloco de teste", result.getJsonObject(0).getString("displayName"));
+        assertEquals("Bloc de test", result.getJsonObject(0).getString("displayName"));
         assertEquals("apiLocaleTest", result.getJsonObject(0).getString("name"));
         assertFalse(result.getJsonObject(0).containsKey("fields"));
     }
@@ -75,7 +75,7 @@ class MetadataLocaleJsonPrinterTest {
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void preservesFieldDefinitionsAndControlledVocabularyValues() {
         JsonObject original = JsonPrinter.json(title).build();
-        JsonObject translated = JsonPrinter.json(title, null, Locale.forLanguageTag("pt-BR")).build();
+        JsonObject translated = JsonPrinter.json(title, null, Locale.forLanguageTag("fr-CA")).build();
 
         for (String key : original.keySet()) {
             if (!List.of("displayName", "title", "description", "watermark").contains(key)) {
@@ -112,7 +112,7 @@ class MetadataLocaleJsonPrinterTest {
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void fallsBackToDatabaseWhenTranslationKeyIsUnavailable() {
         DatasetFieldType customField = field("customField", "Custom title");
-        JsonObject result = JsonPrinter.json(customField, null, Locale.forLanguageTag("pt-BR")).build();
+        JsonObject result = JsonPrinter.json(customField, null, Locale.forLanguageTag("fr-CA")).build();
 
         assertEquals("Custom title", result.getString("title"));
         assertEquals("Custom title", result.getString("displayName"));
@@ -124,7 +124,7 @@ class MetadataLocaleJsonPrinterTest {
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void fallsBackToDatabaseForCustomBlockWithoutBundle() {
         block.setName("apiLocaleTestWithoutBundle");
-        JsonObject result = JsonPrinter.json(block, false, null, null, Locale.forLanguageTag("pt-BR")).build();
+        JsonObject result = JsonPrinter.json(block, false, null, null, Locale.forLanguageTag("fr-CA")).build();
 
         assertEquals("Database block name", result.getString("displayName"));
         assertEquals("Database title", result.getJsonObject("fields").getJsonObject("title").getString("title"));
@@ -134,26 +134,26 @@ class MetadataLocaleJsonPrinterTest {
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void keepsExplicitLocalesIndependent() {
         Locale defaultLocale = Locale.getDefault();
-        JsonObject portuguese = JsonPrinter.json(title, null, Locale.forLanguageTag("pt-BR")).build();
+        JsonObject french = JsonPrinter.json(title, null, Locale.forLanguageTag("fr-CA")).build();
         JsonObject english = JsonPrinter.json(title, null, Locale.ENGLISH).build();
-        JsonObject portugueseAgain = JsonPrinter.json(title, null, Locale.forLanguageTag("pt-BR")).build();
+        JsonObject frenchAgain = JsonPrinter.json(title, null, Locale.forLanguageTag("fr-CA")).build();
 
-        assertEquals("Título", portuguese.getString("title"));
+        assertEquals("Titre", french.getString("title"));
         assertEquals("Title", english.getString("title"));
-        assertEquals(portuguese, portugueseAgain);
+        assertEquals(french, frenchAgain);
         assertEquals(defaultLocale, Locale.getDefault());
     }
 
     @Test
     @SystemProperty(key = "dataverse.lang.directory", value = "")
     void usesInstalledLanguageBundle(@TempDir Path languageDirectory) throws IOException {
-        Files.writeString(languageDirectory.resolve("apiLocaleTest_pt_BR.properties"),
-                "datasetfieldtype.title.title=Título instalado\n");
+        Files.writeString(languageDirectory.resolve("apiLocaleTest_fr_CA.properties"),
+                "datasetfieldtype.title.title=Titre installé\n");
         System.setProperty("dataverse.lang.directory", languageDirectory.toString());
 
-        JsonObject result = JsonPrinter.json(title, null, Locale.forLanguageTag("pt-BR")).build();
+        JsonObject result = JsonPrinter.json(title, null, Locale.forLanguageTag("fr-CA")).build();
 
-        assertEquals("Título instalado", result.getString("title"));
+        assertEquals("Titre installé", result.getString("title"));
         assertEquals("Database description", result.getString("description"));
     }
 
