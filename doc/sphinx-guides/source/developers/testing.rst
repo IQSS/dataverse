@@ -552,9 +552,9 @@ Browser-Based Testing
 Browser-Based Testing of JSF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The JSF frontend is being tested with Playwright via a test suite from https://github.com/gdcc/dataverse-jsf-tests (see https://github.com/IQSS/dataverse/pull/12526). The suite is written in Java, with Playwright for Java and JUnit 5, and lives in that repository's ``java`` branch. Each browser runs in its own job of the "Dataverse Tests" workflow described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782), which runs ``mvn verify -Ddataverse.test.jsf.browser=<browser>`` in a checkout of the suite.
+The JSF frontend is being tested with Playwright via a test suite in the ``modules/dataverse-jsf-tests`` directory of the main repo (see https://github.com/IQSS/dataverse/pull/12526 and https://github.com/IQSS/dataverse/issues/12797). The suite is written in Java, with Playwright for Java and JUnit 5, and is a standalone Maven project that is not part of the main build. Each browser runs in its own job of the "Dataverse Tests" workflow described under `Continuous Integration`_ (see https://github.com/IQSS/dataverse/issues/12782), which runs ``mvn verify -Ddataverse.test.jsf.browser=<browser>`` in that directory.
 
-To run the suite yourself, you need Java and Maven, but no Node.js. See the README of the ``java`` branch for the settings it reads, such as ``BASE_URL``.
+To run the suite yourself, you need Java and Maven, but no Node.js. Start a Dataverse instance, then run ``mvn -f modules/dataverse-jsf-tests verify`` from the root of the repo. See the `README <https://github.com/IQSS/dataverse/tree/develop/modules/dataverse-jsf-tests>`__ of the suite for the settings it reads, such as ``BASE_URL``.
 
 Browser-Based Testing of the SPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

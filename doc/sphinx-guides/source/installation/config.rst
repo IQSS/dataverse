@@ -2756,7 +2756,7 @@ Configure a limit to the maximum number of Datafiles that can be uploaded to a D
 Notes:
 
 - This is a default that can be overwritten in any Dataverse/Collection or Dataset.
-- A value less than 1 will be treated as no limit set.
+- A value less than 0 will be treated as no limit set.
 - Changing this value will not delete any existing files. It is only intended for preventing new files from being uploaded.
 - Superusers will not be governed by this rule.
 
