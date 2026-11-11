@@ -4887,11 +4887,23 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDatasetSubmitForReviewCustomText(){
-        String datasetSubmitForReviewCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+        String datasetSubmitForReviewCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText, session.getLocaleCode(), settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText));
         if (datasetSubmitForReviewCustomText != null && !datasetSubmitForReviewCustomText.isEmpty()) {
             return datasetSubmitForReviewCustomText;
         }
         return "";
+    }
+
+    public String getSubmitForReviewDatasetDisclaimerText() {
+        String submitForReviewDatasetDisclaimerText = settingsService.getValueForKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText, session.getLocaleCode(), settingsWrapper.getValueForKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText));
+        if (submitForReviewDatasetDisclaimerText != null && !submitForReviewDatasetDisclaimerText.isEmpty()) {
+            return submitForReviewDatasetDisclaimerText;
+        }
+        return "";
+    }
+
+    public Boolean isHasSubmitForReviewDatasetDisclaimerText() {
+        return !StringUtil.isEmpty(getSubmitForReviewDatasetDisclaimerText());
     }
 
     public String getTabularDataFileURL(Long fileid) {
@@ -6450,7 +6462,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isSubmitForReviewDisclaimerAcknowledged() {
-        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText();
+        return submitForReviewDisclaimerAcknowledged || !isHasSubmitForReviewDatasetDisclaimerText();
     }
 
     public void setSubmitForReviewDisclaimerAcknowledged(boolean submitForReviewDisclaimerAcknowledged) {

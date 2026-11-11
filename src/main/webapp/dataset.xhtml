@@ -2021,10 +2021,10 @@
                         <c:if test="#{showSubmitForReviewLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml"/>
                         </c:if>
-                        <ui:fragment rendered="#{valid and settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText()}">
+                        <ui:fragment rendered="#{valid and DatasetPage.isHasSubmitForReviewDatasetDisclaimerText()}">
                             <div class="form-group">
                                 <p:selectBooleanCheckbox class="text-danger" id="submitForReviewDisclaimer"
-                                                         itemLabel="#{MarkupChecker:sanitizeAdvancedHTML(settingsWrapper.getSubmitForReviewDatasetDisclaimerText())}"
+                                                         itemLabel="#{MarkupChecker:sanitizeAdvancedHTML(DatasetPage.getSubmitForReviewDatasetDisclaimerText())}"
                                                          escape="false"
                                                          value="#{DatasetPage.submitForReviewDisclaimerAcknowledged}">
                                     <p:ajax event="change" update="submitReviewDatasetButton"/>

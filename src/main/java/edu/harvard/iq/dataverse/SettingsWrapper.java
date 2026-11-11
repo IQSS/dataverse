@@ -880,15 +880,4 @@ public class SettingsWrapper implements java.io.Serializable {
     public Boolean isHasPublishDatasetDisclaimerText() {
         return !StringUtil.isEmpty(getPublishDatasetDisclaimerText());
     }
-
-    public String getSubmitForReviewDatasetDisclaimerText() {
-        if (submitForReviewDatasetDisclaimerText == null) {
-            submitForReviewDatasetDisclaimerText = getValueForKey(Key.SubmitForReviewDatasetDisclaimerText);
-        }
-        return submitForReviewDatasetDisclaimerText;
-    }
-
-    public Boolean isHasSubmitForReviewDatasetDisclaimerText() {
-        return !StringUtil.isEmpty(getSubmitForReviewDatasetDisclaimerText());
-    }
 }
