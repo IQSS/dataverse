@@ -2756,7 +2756,7 @@ Configure a limit to the maximum number of Datafiles that can be uploaded to a D
 Notes:
 
 - This is a default that can be overwritten in any Dataverse/Collection or Dataset.
-- A value less than 1 will be treated as no limit set.
+- A value less than 0 will be treated as no limit set.
 - Changing this value will not delete any existing files. It is only intended for preventing new files from being uploaded.
 - Superusers will not be governed by this rule.
 
@@ -4572,6 +4572,8 @@ To enable file-level PIDs for the entire installation::
 If you don't want to register file-based PIDs for your entire installation::
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+
+If you are using DataCite as your PID provider, resourceTypeGeneral will be "Other". See discussion at https://github.com/IQSS/dataverse/issues/5086.
 
 .. _:AllowEnablingFilePIDsPerCollection:
 

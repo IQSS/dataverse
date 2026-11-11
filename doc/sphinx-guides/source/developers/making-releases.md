@@ -140,17 +140,12 @@ See {ref}`locust` and <https://github.com/IQSS/dataverse/issues/12284>, for exam
 
 ## Build the Guides for the Release Candidate
 
-Go to <https://jenkins.dataverse.org/job/guides.dataverse.org/> and make the following adjustments to the config:
+Jenkins has been turned off. For the short-term, throw something at Don, who can build/push updated guides to guides.dataverse.org.
 
 - Repository URL: `https://github.com/IQSS/dataverse.git`
 - Branch Specifier (blank for 'any'): `*/develop`
-- `VERSION` (under "Build Steps"): use the next release version but add "-rc.1" to the end. Don't prepend a "v". Use `6.8-rc.1` (for example)
-
-Click "Save" then "Build Now".
 
 Make sure the guides directory appears in the expected location such as <https://guides.dataverse.org/en/6.8-rc.1/>
-
-When previewing the HTML version of docs from pull requests, we don't usually use this Jenkins job, relying instead on automated ReadTheDocs builds. The reason for doing this step now while we wait for feedback from the Curation Team is that it's an excellent time to fix the Jenkins job, if necessary, to accommodate any changes needed to continue to build the docs. For example, Sphinx might need to be updated or a dependency might need to be installed. Such changes should be listed in the release notes for documentation writers.
 
 ## Deploy Release Candidate to Demo
 
@@ -208,8 +203,8 @@ If this is a regular (non-hotfix) release, create a pull request to merge the "d
 After making the pull request, allow time for important tests pass:
 
 - Unit tests: Maven Tests
-- API tests: Container Integration Tests Workflow
-- JSF tests: Dataverse JSF Frontend Tests Workflow
+- API tests: "Dataverse API Tests" job of the Dataverse Tests workflow, which runs as part of Maven Tests
+- JSF tests: "Dataverse JSF Tests" jobs (one per browser) of the Dataverse Tests workflow, which runs as part of Maven Tests
 
 Don't worry about style and quality test failures such as these:
 
@@ -238,17 +233,12 @@ Check for merged pull requests that have no milestone by going to <https://githu
 (build-guides)=
 ## Build the Guides for the Release
 
-Go to <https://jenkins.dataverse.org/job/guides.dataverse.org/> and make the following adjustments to the config:
+Jenkins has been turned off. For the short-term, throw something at Don, who can build/push updated guides to guides.dataverse.org.
 
 - Repository URL: `https://github.com/IQSS/dataverse.git`
 - Branch Specifier (blank for 'any'): `*/master`
-- `VERSION` (under "Build Steps"): bump to the next release. Don't prepend a "v". Use `6.10.1` (for example)
-
-Click "Save" then "Build Now".
 
 Make sure the guides directory appears in the expected location such as <https://guides.dataverse.org/en/6.10.1/>
-
-As described below, we'll soon point the "latest" symlink to that new directory.
 
 (run-build-create-war)=
 ## Run a Build to Create the War File
@@ -304,7 +294,7 @@ Click the "Publish release" button.
 
 ## Update Guides Link
 
-"latest" at <https://guides.dataverse.org/en/latest/> is a symlink to the directory with the latest release. That directory (e.g. `6.10.1`) was put into place by the Jenkins "guides" job described above.
+"latest" at <https://guides.dataverse.org/en/latest/> is a symlink to the directory with the latest release.
 
 ssh into the guides server and update the symlink to point to the latest release, as in the example below.
 
@@ -350,13 +340,9 @@ Create a new branch (any name is fine but `prepare-next-iteration` is suggested)
 
 Create a pull request.
 
-Wait for checks to complete. It's ok (even expected) for the following check to fail:
+Wait for checks to complete. The new base image hasn't been published yet, but the "Dataverse Tests" workflow builds the base image from the pull request itself, so its checks should pass.
 
-- main-integration-tests-workflow from container_integration_tests.yml
-
-  - If you see an error like `Error:  DOCKER> Unable to pull 'gdcc/base:6.12-noble-p7.2026.2-j21' : {"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404) [{"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404)]` it's telling you that the Docker image can't be spun up for API testing because it doesn't exist yet. (The error above was just after the 6.11 release.) The image will exist once the pull request is approved and merged.
-
-Put the pull request through code review, like usual, but make sure reviewers know it's ok to ignore the check above.
+Put the pull request through code review, like usual.
 
 Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should be the first PR merged of the next release.
 
