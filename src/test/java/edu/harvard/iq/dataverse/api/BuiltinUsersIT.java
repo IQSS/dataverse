@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
@@ -405,7 +406,7 @@ public class BuiltinUsersIT {
     }
 
     private static String getUserAsJsonString(String username, String firstName, String lastName, String email) {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         builder.add(usernameKey, username);
         builder.add("firstName", firstName);
         builder.add("lastName", lastName);

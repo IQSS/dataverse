@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -61,7 +62,7 @@ public class Notifications extends AbstractApiBean {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             long unreadCount = userNotificationSvc.getUnreadNotificationCountByUser(au.getId());
-            return ok(Json.createObjectBuilder()
+            return ok(JsonUtil.createObjectBuilder()
                     .add("unreadCount", unreadCount));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -127,11 +128,11 @@ public class Notifications extends AbstractApiBean {
     public Response getMutedEmailsForUser(@Context ContainerRequestContext crc) {
         try {
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
-            JsonArrayBuilder mutedEmails = Json.createArrayBuilder();
+            JsonArrayBuilder mutedEmails = JsonUtil.createArrayBuilder();
             authenticatedUser.getMutedEmails().stream().forEach(
                     x -> mutedEmails.add(jsonObjectBuilder().add("name", x.name()).add("description", x.getDescription()))
             );
-            JsonObjectBuilder result = Json.createObjectBuilder().add("mutedEmails", mutedEmails);
+            JsonObjectBuilder result = JsonUtil.createObjectBuilder().add("mutedEmails", mutedEmails);
             return ok(result);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -198,11 +199,11 @@ public class Notifications extends AbstractApiBean {
     public Response getMutedNotificationsForUser(@Context ContainerRequestContext crc) {
         try {
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
-            JsonArrayBuilder mutedNotifications = Json.createArrayBuilder();
+            JsonArrayBuilder mutedNotifications = JsonUtil.createArrayBuilder();
             authenticatedUser.getMutedNotifications().stream().forEach(
                     x -> mutedNotifications.add(jsonObjectBuilder().add("name", x.name()).add("description", x.getDescription()))
             );
-            JsonObjectBuilder result = Json.createObjectBuilder().add("mutedNotifications", mutedNotifications);
+            JsonObjectBuilder result = JsonUtil.createObjectBuilder().add("mutedNotifications", mutedNotifications);
             return ok(result);
         } catch (WrappedResponse wr) {
             return wr.getResponse();

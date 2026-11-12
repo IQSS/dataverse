@@ -221,7 +221,7 @@ public class ShibServiceBean {
         XMLStreamReader xmlr = null;
 
         try {
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureXMLInputFactory();
             xmlr =  xmlFactory.createXMLStreamReader(new InputStreamReader((InputStream) mdqApiRequest.getInputStream()));
             
             while ( xmlr.next() == XMLStreamConstants.COMMENT );

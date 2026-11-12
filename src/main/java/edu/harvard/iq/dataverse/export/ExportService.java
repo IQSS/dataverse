@@ -64,7 +64,7 @@ public class ExportService {
     private Map<String, Exporter> exporterMap = new HashMap<>();
 
     private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
-
+    
     private ExportService() {
         /*
          * Step 1 - find the EXPORTERS dir and add all jar files there to a class loader
@@ -272,13 +272,41 @@ public class ExportService {
 
     }
 
-    // This method goes through all the Exporters and calls
-    // the "cacheExport()" method that will save the produced output
-    // in a file in the dataset directory, on each Exporter available.
-    // This is only for the latest published version.
+    // A convenience wrapper method; the actual implementation has been moved
+    // into exportFormats() below.
     public void exportAllFormats(Dataset dataset) throws ExportException {
+        exportFormats(dataset, List.of());
+    }
+    
+    /** 
+     * This method is added to supplement the classic exportAllFormats() in order
+     * to allow the metadata export APIs to selectively re-export only the formats
+     * specified. This is to finally allow an instance admin to avoid running
+     * a complete, from-scratch reexport when only _some_, or just one of them
+     * actually needs to be refreshed. On a large instance this can waste a
+     * significant amount of time and CPU cycles. (new as of 6.12)
+     * This method calls the cacheExport() method for every valid/supported
+     * format name supplied, or for every Exporter available, if an empty List
+     * is passed.
+     * Only the latest published version is used for exports.
+     * exportAllFormats() above is now a convenience wrapper, with the
+     * implementation moved here.
+     *
+     * @param dataset
+     * @param formatNames
+     * @throws ExportException
+     */
+    public void exportFormats(Dataset dataset, List<String> formatNames) throws ExportException {
+        if (dataset == null) {
+            throw new ExportException("exportFormats called with null Dataset");
+        }
+        
+        if (formatNames == null) {
+            throw new ExportException("exportFormats called with null formatNames (use an empty List for \"all\"");
+        }
+        
         try {
-            clearAllCachedFormats(dataset);
+            clearCachedFormats(dataset, formatNames);
         } catch (IOException ex) {
             Logger.getLogger(ExportService.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -292,45 +320,60 @@ public class ExportService {
 
             for (Exporter e : exporterMap.values()) {
                 String formatName = e.getFormatName();
-                if(e.getPrerequisiteFormatName().isPresent()) {
-                    String prereqFormatName = e.getPrerequisiteFormatName().get();
-                    try (InputStream preReqStream = getExport(dataset.getReleasedVersion(), prereqFormatName)) {
-                        dataProvider.setPrerequisiteInputStream(preReqStream);
+                if (formatNames.isEmpty() || formatNames.contains(formatName)) {
+                    if (e.getPrerequisiteFormatName().isPresent()) {
+                        String prereqFormatName = e.getPrerequisiteFormatName().get();
+                        try (InputStream preReqStream = getExport(dataset.getReleasedVersion(), prereqFormatName)) {
+                            dataProvider.setPrerequisiteInputStream(preReqStream);
+                            cacheExport(dataset, dataProvider, formatName, e);
+                            dataProvider.setPrerequisiteInputStream(null);
+                        } catch (IOException ioe) {
+                            throw new ExportException("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
+                        }
+                    } else {
                         cacheExport(dataset, dataProvider, formatName, e);
-                        dataProvider.setPrerequisiteInputStream(null);
-                    } catch (IOException ioe) {
-                        throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
                     }
-                } else {
-                    cacheExport(dataset, dataProvider, formatName, e);
                 }
             }
             // Finally, if we have been able to successfully export in all available
             // formats, we'll increment the "last exported" time stamp:
-            dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+            if (formatNames.isEmpty()) {
+                dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+            }
 
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
         } catch (RuntimeException e) {
-            e.printStackTrace();
             logger.log(Level.FINE, e.getMessage(), e);
             throw new ExportException(
                     "Unknown runtime exception exporting metadata. " + (e.getMessage() == null ? "" : e.getMessage()));
         }
-
     }
 
+    // A convenience wrapper method
     public void clearAllCachedFormats(Dataset dataset) throws IOException {
-        try {
+        clearCachedFormats(dataset, List.of());
+        dataset.setLastExportTime(null);
+    }
+    
+    public void clearCachedFormats(Dataset dataset, List<String> formatNames) throws IOException {
+        if (dataset == null) {
+            throw new ExportException("cleareCachedFormats called with null Dataset");
+        }
+        
+        if (formatNames == null) {
+            throw new ExportException("clearCachedFormats called with null formatNames (use an empty List for \"all\"");
+        }
 
-            for (Exporter e : exporterMap.values()) {
-                String formatName = e.getFormatName();
-                clearCachedExport(dataset, formatName);
+        for (Exporter e : exporterMap.values()) {
+            String formatName = e.getFormatName();
+            if (formatNames.isEmpty() || formatNames.contains(formatName)) {
+                try {
+                    clearCachedExport(dataset, formatName);
+                } catch (IOException ex) {
+                    // not fatal
+                }
             }
-
-            dataset.setLastExportTime(null);
-        } catch (IOException ex) {
-            // not fatal
         }
     }
 
@@ -379,7 +422,7 @@ public class ExportService {
         }
 
     }
-
+    
     public Exporter getExporter(String formatName) throws ExportException {
         Exporter e = exporterMap.get(formatName);
         if (e != null) {
@@ -460,9 +503,8 @@ public class ExportService {
             storageIO.deleteAuxObject("export_" + format + ".cached");
 
         } catch (IOException ex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+            throw new IOException("IO Exception caught deleting export_" + format + ".cached");
         }
-
     }
 
     // This method checks if the metadata has already been exported in this

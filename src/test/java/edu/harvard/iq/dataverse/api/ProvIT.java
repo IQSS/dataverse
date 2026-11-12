@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -78,7 +79,7 @@ public class ProvIT {
         assertEquals(200, publishDataset.getStatusCode());
         
         //Provenance FreeForm
-        JsonObject provFreeFormGood = Json.createObjectBuilder()
+        JsonObject provFreeFormGood = JsonUtil.createObjectBuilder()
                 .add("text", "I inherited this file from my grandfather.")
                 .build();
         
@@ -134,14 +135,14 @@ public class ProvIT {
         Long dataFileId = JsonPath.from(authorAddsFile.getBody().asString()).getLong("data.files[0].dataFile.id");
 
         //Provenance Json
-        JsonArray provJsonBadDueToBeingAnArray = Json.createArrayBuilder().add("bad").build();
-        JsonObject provJsonGood = Json.createObjectBuilder()
-                .add("entity", Json.createObjectBuilder()
-                    .add("d1", Json.createObjectBuilder()
+        JsonArray provJsonBadDueToBeingAnArray = JsonUtil.createArrayBuilder().add("bad").build();
+        JsonObject provJsonGood = JsonUtil.createObjectBuilder()
+                .add("entity", JsonUtil.createObjectBuilder()
+                    .add("d1", JsonUtil.createObjectBuilder()
                         .add("name", "first.txt")
                         .add("value", "#ddg.function")    
                         .add("scope", "fn"))
-                    .add("d2", Json.createObjectBuilder()
+                    .add("d2", JsonUtil.createObjectBuilder()
                         .add("rdt:name", "second.txt")
                         .add("rdt:value", "#ddg.function")    
                         .add("rdt:scope", "something"))        
@@ -164,7 +165,7 @@ public class ProvIT {
                 .statusCode(OK.getStatusCode());
 
         //Provenance FreeForm
-        JsonObject provFreeFormGood = Json.createObjectBuilder()
+        JsonObject provFreeFormGood = JsonUtil.createObjectBuilder()
                 .add("text", "I inherited this file from my grandfather.")
                 .build();
         Response uploadProvFreeForm = UtilIT.uploadProvFreeForm(dataFileId.toString(), provFreeFormGood, apiTokenForDepositor);

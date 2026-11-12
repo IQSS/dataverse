@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.DataCitation;
+
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.ListSplitUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -568,7 +569,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     
     @Override
     public JsonObject getProviderSpecification() {
-        JsonObjectBuilder providerSpecification = Json.createObjectBuilder();
+        JsonObjectBuilder providerSpecification = JsonUtil.createObjectBuilder();
         providerSpecification.add("id", id);
         providerSpecification.add("label", label);
         providerSpecification.add("protocol", protocol);
@@ -588,9 +589,5 @@ public abstract class AbstractPidProvider implements PidProvider {
         return publicizeIdentifier(dvObject);
     }
     
-    /** By default, this is not implemented */
-    @Override
-    public JsonObject getCSLJson(DatasetVersion datasetVersion) {
-        return new DataCitation(datasetVersion).getCSLJsonFormat();
-    }
+
 }

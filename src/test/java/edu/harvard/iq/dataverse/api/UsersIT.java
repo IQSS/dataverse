@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 
 import static io.restassured.RestAssured.given;
@@ -27,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UsersIT {
@@ -187,9 +187,9 @@ public class UsersIT {
         
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "my description")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
 
@@ -597,8 +597,7 @@ public class UsersIT {
                 .body("data.count", equalTo(2));
     }
 
-    // This test is disabled because it is only compatible with the containerized development environment and would cause the Jenkins job to fail.
-    @Disabled
+    @Test
     public void testRegisterOIDCUser() {
         // Set Up - Get the admin access token from the OIDC provider
         Response adminOidcLoginResponse = UtilIT.performKeycloakROPCLogin("admin", "admin");
@@ -768,7 +767,7 @@ public class UsersIT {
     }
 
     private Response convertUserFromBcryptToSha1(long idOfBcryptUserToConvert, String password) {
-        JsonObjectBuilder data = Json.createObjectBuilder();
+        JsonObjectBuilder data = JsonUtil.createObjectBuilder();
         data.add("builtinUserId", idOfBcryptUserToConvert);
         data.add("password", password);
         Response response = given()

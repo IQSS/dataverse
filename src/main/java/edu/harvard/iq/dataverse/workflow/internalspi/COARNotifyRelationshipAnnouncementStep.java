@@ -204,7 +204,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
      *         and @context
      */
     JsonArray getObjects(WorkflowContext ctxt, Map<String, DatasetField> fields) {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         Map<String, JsonValue> localContext = new HashMap<>();
         Map<Long, JsonObject> emptyCvocMap = new HashMap<Long, JsonObject>();
 
@@ -254,7 +254,7 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
         if (id == null || type == null) {
             return null;
         }
-        return Json.createObjectBuilder().add("as:object", id).add("as:relationship", type)
+        return JsonUtil.createObjectBuilder().add("as:object", id).add("as:relationship", type)
                 .add("as:subject", d.getGlobalId().asURL().toString())
                 .add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type", "Relationship").build();
     }
@@ -271,21 +271,21 @@ public class COARNotifyRelationshipAnnouncementStep implements WorkflowStep {
     }
 
     public static String buildAnnouncement(JsonObject rel, JsonObject target) {
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        JsonArrayBuilder context = Json.createArrayBuilder().add("https://www.w3.org/ns/activitystreams")
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+        JsonArrayBuilder context = JsonUtil.createArrayBuilder().add("https://www.w3.org/ns/activitystreams")
                 .add("https://coar-notify.net");
         job.add("@context", context);
         job.add("id", "urn:uuid:" + UUID.randomUUID().toString());
-        job.add("actor", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
+        job.add("actor", JsonUtil.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
                 .add("name", BrandingUtil.getInstallationBrandName()).add("type", "Service"));
-        JsonObjectBuilder coarContextBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder coarContextBuilder = JsonUtil.createObjectBuilder();
         coarContextBuilder.add("id", rel.getString("as:object"));
         job.add("context", coarContextBuilder.build());
         job.add("object", rel);
-        job.add("origin", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
+        job.add("origin", JsonUtil.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
                 .add("inbox", SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));
         job.add("target", target);
-        job.add("type", Json.createArrayBuilder().add("Announce").add("coar-notify:RelationshipAction"));
+        job.add("type", JsonUtil.createArrayBuilder().add("Announce").add("coar-notify:RelationshipAction"));
 
         return JsonUtil.prettyPrint(job.build());
     }

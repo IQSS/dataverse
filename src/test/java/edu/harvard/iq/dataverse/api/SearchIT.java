@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -22,6 +23,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import org.hamcrest.CoreMatchers;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
@@ -35,6 +37,7 @@ import jakarta.json.JsonObjectBuilder;
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -220,6 +223,7 @@ public class SearchIT {
 
         // search descending will get the latest 100.
         // This could fail if more than 100 get created between our update and the search. Highly unlikely
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         searchResponse = UtilIT.search("*&type=file&sort=date&order=desc&per_page=100&start=0&subtree=root" , apiToken);
         searchResponse.prettyPrint();
 
@@ -404,7 +408,7 @@ public class SearchIT {
         logger.info("Dataset created, no thumbnail expected:");
         Response getThumbnail1 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         getThumbnail1.prettyPrint();
-        JsonObject emptyObject = Json.createObjectBuilder().build();
+        JsonObject emptyObject = JsonUtil.createObjectBuilder().build();
         getThumbnail1.then().assertThat()
                 //                .body("data", CoreMatchers.equalTo(emptyObject))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
@@ -443,7 +447,7 @@ public class SearchIT {
 
         Response thumbnailCandidates1 = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, apiToken);
         thumbnailCandidates1.prettyPrint();
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         thumbnailCandidates1.then().assertThat()
                 .body("data", CoreMatchers.equalTo(emptyArray))
                 .statusCode(200);
@@ -567,6 +571,9 @@ public class SearchIT {
         uploadSecondImage.prettyPrint();
         uploadSecondImage.then().assertThat()
                 .statusCode(200);
+        // Let the upload's index job record its index time first: switching the thumbnail below saves the dataset as it
+        // was loaded, and would restore the older index time (see DatasetThumbnailIndexTimeIT).
+        UtilIT.sleepForDatasetIndex(datasetId.toString(), apiToken);
 
         Response getDatasetJson2 = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, apiToken);
         //odd that [0] gets the second uploaded file... replace with a find for dataverseproject.png
@@ -993,6 +1000,7 @@ public class SearchIT {
         
         // Wait a little while for the index to pick up the datasets, otherwise timing issue with searching for it.
         UtilIT.sleepForDatasetIndex(datasetId2.toString(), apiToken);
+        UtilIT.sleepForDatasetIndex(datasetId.toString(), apiToken);
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 
@@ -1083,6 +1091,8 @@ public class SearchIT {
         publishDataset2.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(datasetPid, apiToken);
+        UtilIT.sleepForDatasetIndex(datasetPid2, apiToken);
         Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchPublishedSubtree.prettyPrint();
         searchPublishedSubtree.then().assertThat()
@@ -1136,26 +1146,26 @@ public class SearchIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("geospatial"), apiToken);
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation").add("geospatial"), apiToken);
         setMetadataBlocks.prettyPrint();
         setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
 
-        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
-                .add("datasetVersion", Json.createObjectBuilder()
-                        .add("metadataBlocks", Json.createObjectBuilder()
-                                .add("citation", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+        JsonObjectBuilder datasetJson = JsonUtil.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "title")
                                                         .add("value", "Dataverse HQ")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Simpson, Homer")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1166,11 +1176,11 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "author")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("datasetContactEmail",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "hsimpson@mailinator.com")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1181,11 +1191,11 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "datasetContact")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("dsDescriptionValue",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Headquarters for Dataverse.")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1196,8 +1206,8 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "dsDescription")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add("Other")
                                                         )
                                                         .add("typeClass", "controlledVocabulary")
@@ -1206,39 +1216,39 @@ public class SearchIT {
                                                 )
                                         )
                                 )
-                                .add("geospatial", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+                                .add("geospatial", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "geographicBoundingBox")
                                                         .add("typeClass", "compound")
                                                         .add("multiple", true)
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         // The box is roughly on Cambridge, MA
                                                                         // See https://linestrings.com/bbox/#-71.187346,42.33661,-71.043056,42.409599
                                                                         .add("westLongitude",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "-71.187346")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "westLongitude")
                                                                         )
                                                                         .add("southLatitude",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "42.33661")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "southLatitude")
                                                                         )
                                                                         .add("eastLongitude",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "-71.043056")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "eastLongitude")
                                                                         )
                                                                         .add("northLatitude",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "42.409599")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1325,26 +1335,26 @@ public class SearchIT {
 
         // Using the "astrophysics" block because it contains all field types relevant for range queries
         // (int, float and date)
-        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocks.prettyPrint();
         setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
 
-        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
-                .add("datasetVersion", Json.createObjectBuilder()
-                        .add("metadataBlocks", Json.createObjectBuilder()
-                                .add("citation", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+        JsonObjectBuilder datasetJson = JsonUtil.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "title")
                                                         .add("value", "Test Astrophysics Dataset")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Simpson, Homer")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1355,11 +1365,11 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "author")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("datasetContactEmail",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "hsimpson@mailinator.com")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1370,11 +1380,11 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "datasetContact")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("dsDescriptionValue",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "This is a test dataset.")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1385,8 +1395,8 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "dsDescription")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add("Other")
                                                         )
                                                         .add("typeClass", "controlledVocabulary")
@@ -1395,16 +1405,16 @@ public class SearchIT {
                                                 )
                                         )
                                 )
-                                .add("astrophysics", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+                                .add("astrophysics", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "coverage.Temporal")
                                                         .add("typeClass", "compound")
                                                         .add("multiple", true)
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("coverage.Temporal.StartTime",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "2015-01-01")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1413,13 +1423,13 @@ public class SearchIT {
                                                                 )
                                                         )
                                                 )
-                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "coverage.ObjectCount")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                         .add("value", "9000")
                                                 )
-                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "coverage.SkyFraction")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
@@ -1516,7 +1526,7 @@ public class SearchIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation"), apiToken);
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation"), apiToken);
         setMetadataBlocks.prettyPrint();
         setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -1524,22 +1534,22 @@ public class SearchIT {
         // (ISO-8601 format, e.g. YYYY-MM-DDThh:mm:ssZ, YYYYY-MM-DD, YYYY-MM, YYYY)
         // (See: https://solr.apache.org/guide/solr/latest/indexing-guide/date-formatting-math.html)
         // So the date currently cannot be indexed
-        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
-                .add("datasetVersion", Json.createObjectBuilder()
-                        .add("metadataBlocks", Json.createObjectBuilder()
-                                .add("citation", Json.createObjectBuilder()
-                                        .add("fields", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
+        JsonObjectBuilder datasetJson = JsonUtil.createObjectBuilder()
+                .add("datasetVersion", JsonUtil.createObjectBuilder()
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder()
+                                .add("citation", JsonUtil.createObjectBuilder()
+                                        .add("fields", JsonUtil.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "title")
                                                         .add("value", "Test Dataset")
                                                         .add("typeClass", "primitive")
                                                         .add("multiple", false)
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("authorName",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "Simpson, Homer")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1550,11 +1560,11 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "author")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("datasetContactEmail",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "hsimpson@mailinator.com")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1565,11 +1575,11 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "datasetContact")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("dsDescriptionValue",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "This is a test dataset.")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1580,22 +1590,22 @@ public class SearchIT {
                                                         .add("multiple", true)
                                                         .add("typeName", "dsDescription")
                                                 )
-                                                .add(Json.createObjectBuilder()
-                                                        .add("value", Json.createArrayBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
                                                                 .add("Other")
                                                         )
                                                         .add("typeClass", "controlledVocabulary")
                                                         .add("multiple", true)
                                                         .add("typeName", "subject")
                                                 )
-                                                .add(Json.createObjectBuilder()
+                                                .add(JsonUtil.createObjectBuilder()
                                                         .add("typeName", "timePeriodCovered")
                                                         .add("typeClass", "compound")
                                                         .add("multiple", true)
-                                                        .add("value", Json.createArrayBuilder()
-                                                                .add(Json.createObjectBuilder()
+                                                        .add("value", JsonUtil.createArrayBuilder()
+                                                                .add(JsonUtil.createObjectBuilder()
                                                                         .add("timePeriodCoveredStart",
-                                                                                Json.createObjectBuilder()
+                                                                                JsonUtil.createObjectBuilder()
                                                                                         .add("value", "15-01-01")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
@@ -1981,10 +1991,10 @@ public class SearchIT {
                 .statusCode(200);
         pathToFile = "src/test/resources/tab/test.tab";
         String searchableUniqueId = "testtab"+ UUID.randomUUID().toString().substring(0, 8); // so the search only returns 1 file
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", searchableUniqueId)
                 .add("restrict", "true")
-                .add("categories", Json.createArrayBuilder().add("Data"));
+                .add("categories", JsonUtil.createArrayBuilder().add("Data"));
         Response uploadTabFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
         uploadTabFile.prettyPrint();
         uploadTabFile.then().assertThat()
@@ -2006,6 +2016,7 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         Response searchResp = UtilIT.search("dataverseproject", apiToken);
         searchResp.prettyPrint();
         searchResp.then().assertThat()
@@ -2292,6 +2303,7 @@ public class SearchIT {
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         // Test that the Dataverse collection that the dataset was created in is returned
         Response searchResponse = UtilIT.search("*", apiToken, "&subtree=" + dataverseAlias + "&type=dataset&show_collections=true");
         searchResponse.prettyPrint();
@@ -2360,6 +2372,7 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
         // Verify no files in search results initially
         Response searchBeforeFileUpload = UtilIT.search("parentId:" + datasetId, apiToken);
         searchBeforeFileUpload.prettyPrint();
@@ -2463,11 +2476,112 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    // The keyword term URIs are external vocabulary terms. The retrieval URI points to a closed port, so no
+    // vocabulary service is needed: indexing looks the terms up in the database all the same.
+    private static final String KEYWORD_CVOC_CONF = """
+            [{
+              "field-name": "keyword",
+              "term-uri-field": "keywordTermURI",
+              "cvoc-url": "https://example.org/vocab/",
+              "js-url": "https://example.org/vocab/script.js",
+              "protocol": "skosmos",
+              "retrieval-uri": "http://localhost:9/{0}",
+              "allow-free-text": false,
+              "languages": "en",
+              "vocabs": {"example": {"vocabularyUri": "https://example.org/vocab/", "uriSpace": "https://example.org/vocab/term/"}},
+              "managed-fields": {},
+              "retrieval-filtering": {
+                "@context": {"termName": "https://schema.org/name", "lang": "@language", "value": "@value"},
+                "@id": {"pattern": "{0}", "params": ["@id"]},
+                "termName": {"pattern": "{0}", "params": ["/graph/uri=@id/prefLabel"]}
+              }
+            }]""";
+
+    /**
+     * Indexing looks up every external vocabulary term in the database. When each lookup first checks the
+     * whole dataset for changes, the time grows with the square of the number of terms (#12765).
+     */
+    @Test
+    public void testIndexDatasetWithManyExternalVocabularyTerms() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response getCvocConf = UtilIT.getSetting(SettingsServiceBean.Key.CVocConf);
+        String previousCvocConf = getCvocConf.getStatusCode() == OK.getStatusCode() ? getCvocConf.jsonPath().getString("data.message") : null;
+        UtilIT.setSetting(SettingsServiceBean.Key.CVocConf, KEYWORD_CVOC_CONF).then().assertThat().statusCode(OK.getStatusCode());
+        try {
+            int terms = 3000;
+            // not through UtilIT.createDataset, which prints the whole dataset
+            Response createDatasetResponse = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    .body(datasetWithKeywordTerms(terms))
+                    .contentType("application/json")
+                    .post("/api/dataverses/" + dataverseAlias + "/datasets");
+            createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+            Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+            // a few seconds; minutes when every lookup checks the whole dataset
+            assertTrue(UtilIT.sleepForReindex(datasetId.toString(), apiToken, 30),
+                    "a dataset with " + terms + " vocabulary terms should be indexed within 30 seconds");
+
+            UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+            UtilIT.deleteDataverse(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+            UtilIT.deleteUser(UtilIT.getUsernameFromResponse(createUser)).then().assertThat().statusCode(OK.getStatusCode());
+        } finally {
+            if (previousCvocConf == null) {
+                UtilIT.deleteSetting(SettingsServiceBean.Key.CVocConf);
+            } else {
+                UtilIT.setSetting(SettingsServiceBean.Key.CVocConf, previousCvocConf);
+            }
+        }
+    }
+
+    private static String datasetWithKeywordTerms(int terms) throws IOException {
+        JsonArrayBuilder keywords = JsonUtil.createArrayBuilder();
+        for (int i = 1; i <= terms; i++) {
+            keywords.add(JsonUtil.createObjectBuilder()
+                    .add("keywordValue", primitiveField("keywordValue", "Term " + i))
+                    .add("keywordTermURI", primitiveField("keywordTermURI", "https://example.org/vocab/term/" + i))
+                    .add("keywordVocabulary", primitiveField("keywordVocabulary", "Example vocabulary"))
+                    .add("keywordVocabularyURI", primitiveField("keywordVocabularyURI", "https://example.org/vocab/")));
+        }
+        JsonObject dataset = JsonUtil.getJsonObject(Files.readString(Path.of("scripts/search/tests/data/dataset-finch1.json")));
+        JsonObject version = dataset.getJsonObject("datasetVersion");
+        JsonObject blocks = version.getJsonObject("metadataBlocks");
+        JsonObject citation = blocks.getJsonObject("citation");
+        JsonArray fields = JsonUtil.createArrayBuilder(citation.getJsonArray("fields"))
+                .add(JsonUtil.createObjectBuilder()
+                        .add("typeName", "keyword")
+                        .add("multiple", true)
+                        .add("typeClass", "compound")
+                        .add("value", keywords))
+                .build();
+        return JsonUtil.createObjectBuilder(dataset)
+                .add("datasetVersion", JsonUtil.createObjectBuilder(version)
+                        .add("metadataBlocks", JsonUtil.createObjectBuilder(blocks)
+                                .add("citation", JsonUtil.createObjectBuilder(citation).add("fields", fields))))
+                .build().toString();
+    }
+
+    private static JsonObject primitiveField(String typeName, String value) {
+        return JsonUtil.createObjectBuilder()
+                .add("typeName", typeName)
+                .add("multiple", false)
+                .add("typeClass", "primitive")
+                .add("value", value)
+                .build();
+    }
+
     private long uploadFile(Integer datasetId, String pathToFile, String apiToken) {
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "Test Data")
                 .add("directoryLabel", "data/subdir1")
-                .add("categories", Json.createArrayBuilder()
+                .add("categories", JsonUtil.createArrayBuilder()
                         .add("Data")
                 );
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);

@@ -358,42 +358,5 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
     }
 
-    /** Retrieve the CSL JSON - used in cases where this is not directly available from https://doi.org/
-     * i.e. for test DOIs and non-findable DOIs.
-     *  
-     */
-    @Override
-    public JsonObject getCSLJson(DatasetVersion dsv) {
-        if (dsv.isLatestVersion() && dsv.isReleased()) {
-            String doi = dsv.getDataset().getGlobalId().asRawIdentifier();
-            String doiUrl = getApiUrl() + "/dois/" + doi;
-    
-            HttpGet httpGet = new HttpGet(doiUrl);
-            
-            String userpass = getUsername() + ":" + getPassword();
-            String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
-            httpGet.setHeader(HttpHeaders.AUTHORIZATION, basicAuth);
-            httpGet.setHeader(HttpHeaders.ACCEPT, "application/vnd.citationstyles.csl+json");
-            
-            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-                return httpClient.execute(httpGet, response -> {
-                    int status = response.getCode();
-                    if (status != HttpStatus.SC_OK) {
-                        logger.warning("Incorrect Response Status from DataCite: " + status + " : " + response.getReasonPhrase());
-                        throw new IOException("Status: " + status);
-                    }
-                    logger.fine("getCSLJson status for " + doi + ": " + status);
-                    
-                    String cslString = EntityUtils.toString(response.getEntity());
-                    logger.fine(cslString);
-                    return JsonUtil.getJsonObject(cslString);
-                });
-            } catch (IOException e) {
-                logger.log(Level.WARNING, "Error getting CSL JSON for " + doi, e);
-                return super.getCSLJson(dsv);
-            }
-        } else {
-            return super.getCSLJson(dsv);
-        }
-    }
+
 }

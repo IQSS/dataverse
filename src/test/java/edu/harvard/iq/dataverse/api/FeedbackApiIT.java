@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -20,7 +21,7 @@ public class FeedbackApiIT {
 
     @Test
     public void testSupportRequest() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("fromEmail", "from@mailinator.com");
         job.add("subject", "Help!");
         job.add("body", "I need help.");
@@ -34,7 +35,7 @@ public class FeedbackApiIT {
 
     @Test
     public void testSubmitFeedbackOnRootDataverse() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         long rootDataverseId = 1;
         job.add("id", rootDataverseId);
         job.add("fromEmail", "from@mailinator.com");
@@ -75,7 +76,7 @@ public class FeedbackApiIT {
         long datasetId = JsonPath.from(createDataset.body().asString()).getLong("data.id");
         String pid = JsonPath.from(createDataset.body().asString()).getString("data.persistentId");
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
         job.add("id", datasetId);
         job.add("fromEmail", "from@mailinator.com");
         job.add("toEmail", "to@mailinator.com");

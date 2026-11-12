@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Set;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,28 +52,28 @@ public class DatasetFieldServiceBeanTest {
 
         JsonObject cvocEntry = prepare(fieldName, "src/test/resources/json/cvoc-skosmos.json");
 
-        JsonObject getExtVocabValueReturnedValue = Json.createObjectBuilder()
+        JsonObject getExtVocabValueReturnedValue = JsonUtil.createObjectBuilder()
                 .add("@id", termURI)
-                .add("termName", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("termName", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("lang", "fr")
                                 .add("value", "faux bourdon"))
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("lang", "en")
                                 .add("value", "drone (insects)")))
                 .add("vocabularyUri", "http://aims.fao.org/aos/agrovoc")
-                .add("synonyms", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("synonyms", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("lang", "fr")
                                 .add("value", "Abeille mâle"))
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("lang", "en")
                                 .add("value", "drone honey bees")))
-                .add("genericTerm", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("genericTerm", JsonUtil.createArrayBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("lang", "fr")
                                 .add("value", "Colonie d'abeilles"))
-                        .add(Json.createObjectBuilder()
+                        .add(JsonUtil.createObjectBuilder()
                                 .add("lang", "en")
                                 .add("value", "bee colonies")))
                 .build();
@@ -103,15 +104,15 @@ public class DatasetFieldServiceBeanTest {
 
         JsonObject cvocEntry = prepare(fieldName, "src/test/resources/json/cvoc-agroportal.json");
 
-        JsonObject getExtVocabValueReturnedValue = Json.createObjectBuilder()
+        JsonObject getExtVocabValueReturnedValue = JsonUtil.createObjectBuilder()
                 .add("@id", termURI)
-                .add("termName", Json.createObjectBuilder()
+                .add("termName", JsonUtil.createObjectBuilder()
                         .add("fr", "association de quartier")
                         .add("en", "neighborhood associations"))
                 .add("vocabularyName", "https://data.agroportal.lirmm.fr/ontologies/AGROVOC")
                 .add("vocabularyUri", "https://data.agroportal.lirmm.fr/ontologies/AGROVOC")
-                .add("synonyms", Json.createObjectBuilder()
-                        .add("en", Json.createArrayBuilder().add("neighborhood societies")))
+                .add("synonyms", JsonUtil.createObjectBuilder()
+                        .add("en", JsonUtil.createArrayBuilder().add("neighborhood societies")))
                 .build();
         Mockito.doReturn(getExtVocabValueReturnedValue).when(datasetFieldServiceBean).getExternalVocabularyValue(termURI);
         Mockito.doReturn(null).when(datasetFieldServiceBean).getExternalVocabularyValue(AdditionalMatchers.not(Mockito.eq(termURI)));
@@ -140,7 +141,7 @@ public class DatasetFieldServiceBeanTest {
 
         JsonObject cvocEntry = prepare(fieldName, "src/test/resources/json/cvoc-orcid.json");
 
-        JsonObject getExtVocabValueReturnedValue = Json.createObjectBuilder()
+        JsonObject getExtVocabValueReturnedValue = JsonUtil.createObjectBuilder()
                 .add("@id", termURI)
                 .add("scheme", "ORCID")
                 .add("@type", "https://schema.org/Person")
@@ -166,12 +167,12 @@ public class DatasetFieldServiceBeanTest {
         String termUri = "http://example.org/term/123";
 
         // Create a JSON structure with an array containing string values
-        JsonArrayBuilder tagsArrayBuilder = Json.createArrayBuilder();
-        JsonObject testObject = Json.createObjectBuilder().add("tag", Json.createArrayBuilder().add("research").add("science")).add("name", "one").build();
+        JsonArrayBuilder tagsArrayBuilder = JsonUtil.createArrayBuilder();
+        JsonObject testObject = JsonUtil.createObjectBuilder().add("tag", JsonUtil.createArrayBuilder().add("research").add("science")).add("name", "one").build();
         tagsArrayBuilder.add(testObject);
-        JsonObject testObject2 = Json.createObjectBuilder().add("tag", "art").add("name", "two").build();
+        JsonObject testObject2 = JsonUtil.createObjectBuilder().add("tag", "art").add("name", "two").build();
         tagsArrayBuilder.add(testObject2);
-        JsonObject testObject3 = Json.createObjectBuilder().add("tag", termUri).add("name", "three").build();
+        JsonObject testObject3 = JsonUtil.createObjectBuilder().add("tag", termUri).add("name", "three").build();
         tagsArrayBuilder.add(testObject3);
         JsonArray tags = tagsArrayBuilder.build();
 

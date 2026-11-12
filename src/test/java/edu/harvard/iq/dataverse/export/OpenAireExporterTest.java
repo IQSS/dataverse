@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.export;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlUtil;
@@ -10,14 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.Test;
@@ -66,10 +61,7 @@ public class OpenAireExporterTest {
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-spruce1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObjectFromFile("src/test/java/edu/harvard/iq/dataverse/export/dataset-spruce1.json");
         
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(jsonObject);
@@ -91,10 +83,7 @@ public class OpenAireExporterTest {
     @Test
     public void testValidateExportDataset() throws Exception {
         System.out.println("validateExportDataset");
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObjectFromFile("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
         
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(jsonObject);

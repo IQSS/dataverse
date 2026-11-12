@@ -233,7 +233,7 @@ public class Datasets extends AbstractApiBean {
             @Parameter(description = "Whether to include owner information in the response.")
             @QueryParam("returnOwners") boolean returnOwners) {
         return response( req -> {
-            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetUserCanSeeOrDie(id, req, true)));
+            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetUserCanSeeOrDie(id, req)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved, returnOwners);
             //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
@@ -296,7 +296,7 @@ public class Datasets extends AbstractApiBean {
                         .getReviews(commandEngine.submit(new GetDatasetReviewsCommand(req, dataset)));
                 String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject croissantJson = JsonUtil.getJsonObject(content);
-                String updatedContent = Json.createObjectBuilder(croissantJson)
+                String updatedContent = JsonUtil.createObjectBuilder(croissantJson)
                         .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
                 is = new ByteArrayInputStream(updatedContent.getBytes(StandardCharsets.UTF_8));
             }
@@ -511,11 +511,11 @@ public class Datasets extends AbstractApiBean {
     public Response listVersions(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id, @Parameter(description = "Whether files are excluded from the returned dataset version metadata.") @QueryParam("excludeFiles") Boolean excludeFiles,@Parameter(description = "Whether metadata blocks are excluded from the returned dataset version metadata.") @QueryParam("excludeMetadataBlocks") Boolean excludeMetadataBlocks, @Parameter(description = "Maximum number of results to return.") @QueryParam("limit") Integer limit, @Parameter(description = "Result offset.") @QueryParam("offset") Integer offset) {
 
         return response( req -> {
-            Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(id, req);
             Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
             Boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
 
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit) )
                                 .stream()
                                 .map( d -> json(d, deepLookup, includeMetadataBlocks) )
                                 .collect(toJsonArray()));
@@ -545,7 +545,7 @@ public class Datasets extends AbstractApiBean {
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions.
             boolean checkPerms = includeFiles;
 
-            Dataset dataset = findDatasetUserCanSeeOrDie(datasetId, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(datasetId, req);
             DatasetVersion requestedDatasetVersion = getDatasetVersionOrDie(req,
                                                                             versionId,
                                                                             dataset,
@@ -557,9 +557,6 @@ public class Datasets extends AbstractApiBean {
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
             }
-            if (includeFiles) {
-                requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
-            }
 
             // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting in the metadata block and that they have permission to do so
             // Let the JsonPrinter know to ignore the ExcludeEmailFromExport setting so the emails will show for this API call by permitted user
@@ -569,7 +566,7 @@ public class Datasets extends AbstractApiBean {
             }
 
             JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, null, includeFiles,
-                    returnOwners, includeMetadataBlocks, ignoreSettingExcludeEmailFromExport);
+                    returnOwners, includeMetadataBlocks, false, ignoreSettingExcludeEmailFromExport);
             return ok(jsonBuilder);
 
         }, getRequestUser(crc));
@@ -595,7 +592,7 @@ public class Datasets extends AbstractApiBean {
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req,false), uriInfo, headers, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers, includeDeaccessioned);
             DatasetVersionFilesServiceBean.FileOrderCriteria fileOrderCriteria;
             try {
                 fileOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ;
@@ -648,8 +645,8 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers, includeDeaccessioned, false);
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers, includeDeaccessioned, false);
+            JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
             jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
             jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion, fileSearchCriteria)));
             jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion, fileSearchCriteria)));
@@ -672,13 +669,13 @@ public class Datasets extends AbstractApiBean {
         LocalDate date = includeMDC == null || !includeMDC ? getMDCStartDate() : null;
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset ds = findDatasetUserCanSeeOrDie(datasetId, req, false);
+            Dataset ds = findDatasetUserCanSeeOrDie(datasetId, req);
             id = ds.getId();
             count = guestbookResponseService.getDownloadCountByDatasetId(id, date);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        JsonObjectBuilder job = Json.createObjectBuilder()
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder()
                 .add("id", id)
                 .add("downloadCount", count);
         if (date != null) {
@@ -711,7 +708,7 @@ public class Datasets extends AbstractApiBean {
         DatasetVersion version;
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            version = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers);
+            version = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -744,7 +741,7 @@ public class Datasets extends AbstractApiBean {
     public Response getVersionMetadata(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String datasetId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok(
                     jsonByBlocks(
-                        getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers )
+                        getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers )
                                 .getDatasetFields())), getRequestUser(crc));
     }
 
@@ -761,7 +758,7 @@ public class Datasets extends AbstractApiBean {
                                             @Context HttpHeaders headers) {
 
         return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers );
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers );
 
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
@@ -797,9 +794,9 @@ public class Datasets extends AbstractApiBean {
         }
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         try {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers);
             return Response
-                    .ok(Json.createObjectBuilder()
+                    .ok(JsonUtil.createObjectBuilder()
                             .add("linkset",
                                     new SignpostingResources(systemConfig, dsv,
                                             JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
@@ -979,7 +976,7 @@ public class Datasets extends AbstractApiBean {
             @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(id, req, false), uriInfo, headers);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(id, req), uriInfo, headers);
             OREMap ore = new OREMap(dsv,
                     settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
             return ok(ore.getOREMapBuilder(true));
@@ -1039,7 +1036,7 @@ public class Datasets extends AbstractApiBean {
             Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
             managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
-            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+            return ok(JsonUtil.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1074,7 +1071,7 @@ public class Datasets extends AbstractApiBean {
             Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
             managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
-            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+            return ok(JsonUtil.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
         } catch (WrappedResponse ex) {
             ex.printStackTrace();
@@ -1441,7 +1438,7 @@ public class Datasets extends AbstractApiBean {
                         if ((status == null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                             // Delete the record of any existing copy since it is now out of
                             // date/incorrect
-                            JsonObjectBuilder job = Json.createObjectBuilder();
+                            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                             job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                             updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                             datasetVersionSvc.persistArchivalCopyLocation(updateVersion);
@@ -1475,7 +1472,7 @@ public class Datasets extends AbstractApiBean {
                 if (errorMsg != null) {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
                 } else {
-                    return Response.ok(Json.createObjectBuilder()
+                    return Response.ok(JsonUtil.createObjectBuilder()
                             .add("status", ApiConstants.STATUS_OK)
                             .add("status_details", successMsg)
                             .add("data", json(ds)).build())
@@ -1737,7 +1734,7 @@ public class Datasets extends AbstractApiBean {
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(filesToEmbargo)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : filesToEmbargo) {
                 // superuser can overrule an existing embargo, even on released files
@@ -1787,7 +1784,7 @@ public class Datasets extends AbstractApiBean {
                                     .setUserIdentifier(authenticatedUser.getIdentifier()));
                 }
             }
-            return ok(Json.createObjectBuilder().add("message", "Files were embargoed"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "Files were embargoed"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -1863,7 +1860,7 @@ public class Datasets extends AbstractApiBean {
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(embargoFilesToUnset)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : embargoFilesToUnset) {
                 // superuser can overrule an existing embargo, even on released files
@@ -1904,7 +1901,7 @@ public class Datasets extends AbstractApiBean {
                 removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
                 actionLogSvc.log(removeRecord);
             }
-            return ok(Json.createObjectBuilder().add("message", "Embargo(es) were removed from files"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "Embargo(es) were removed from files"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -1997,7 +1994,7 @@ public class Datasets extends AbstractApiBean {
 
         // dateAvailable is within limits
         if (minRetentionDateTime != null){
-            if (dateUnavailable.isBefore(minRetentionDateTime)){
+            if (dateUnavailable.isBefore(minRetentionDateTime.minusDays(1))){
                 return error(Status.BAD_REQUEST, "Date unavailable can not be earlier than MinRetentionDurationInMonths: "+minRetentionDurationInMonths + " from now");
             }
         }
@@ -2039,7 +2036,7 @@ public class Datasets extends AbstractApiBean {
         List<Retention> orphanedRetentions = new ArrayList<Retention>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(filesToRetention)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : filesToRetention) {
                 // superuser can overrule an existing retention, even on released files
@@ -2089,7 +2086,7 @@ public class Datasets extends AbstractApiBean {
                                     .setUserIdentifier(authenticatedUser.getIdentifier()));
                 }
             }
-            return ok(Json.createObjectBuilder().add("message", "File(s) retention period has been set or updated"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "File(s) retention period has been set or updated"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -2174,7 +2171,7 @@ public class Datasets extends AbstractApiBean {
         List<Retention> orphanedRetentions = new ArrayList<Retention>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(retentionFilesToUnset)) {
-            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            JsonArrayBuilder restrictedFiles = JsonUtil.createArrayBuilder();
             boolean badFiles = false;
             for (DataFile datafile : retentionFilesToUnset) {
                 // superuser can overrule an existing retention, even on released files
@@ -2215,7 +2212,7 @@ public class Datasets extends AbstractApiBean {
                 removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
                 actionLogSvc.log(removeRecord);
             }
-            return ok(Json.createObjectBuilder().add("message", "Retention periods were removed from file(s)"));
+            return ok(JsonUtil.createObjectBuilder().add("message", "Retention periods were removed from file(s)"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -2319,7 +2316,7 @@ public class Datasets extends AbstractApiBean {
         String persistentId;
         try {
             DataverseRequest req = createDataverseRequest(user);
-            if (DatasetUtil.getLicense(getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetUserCanSeeOrDie(id, req, false), uriInfo, headers)) != null) {
+            if (DatasetUtil.getLicense(getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetUserCanSeeOrDie(id, req), uriInfo, headers)) != null) {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
@@ -2343,7 +2340,7 @@ public class Datasets extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
-            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
 
             if (!dataset.isReleased() && !permissionService.hasPermissionsFor(u, dataset, EnumSet.of(Permission.ViewUnpublishedDataset))) {
                 return error(Response.Status.FORBIDDEN, "User is not allowed to list the link(s) of this dataset");
@@ -2351,17 +2348,17 @@ public class Datasets extends AbstractApiBean {
 
             long datasetId = dataset.getId();
             List<Dataverse> dvsThatLinkToThisDatasetId = dataverseSvc.findDataversesThatLinkToThisDatasetId(datasetId);
-            JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = JsonUtil.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDatasetId) {
                 if (dataverse.isReleased() || this.permissionService.hasPermissionsFor(u, dataverse, EnumSet.of(Permission.ViewUnpublishedDataverse))) {
-                    JsonObjectBuilder datasetBuilder = Json.createObjectBuilder();
+                    JsonObjectBuilder datasetBuilder = JsonUtil.createObjectBuilder();
                     datasetBuilder.add("id", dataverse.getId());
                     datasetBuilder.add("alias", dataverse.getAlias());
                     datasetBuilder.add("displayName", dataverse.getDisplayName());
                     dataversesThatLinkToThisDatasetIdBuilder.add(datasetBuilder.build());
                 }
             }
-            JsonObjectBuilder response = Json.createObjectBuilder();
+            JsonObjectBuilder response = JsonUtil.createObjectBuilder();
             response.add("id", datasetId);
             response.add("identifier", dataset.getIdentifier());
             response.add("linked-dataverses", dataversesThatLinkToThisDatasetIdBuilder);
@@ -2457,7 +2454,7 @@ public class Datasets extends AbstractApiBean {
     public Response getAssignments(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String id) {
         return response(req ->
                 ok(execCommand(
-                        new ListRoleAssignments(req, findDatasetUserCanSeeOrDie(id, req, false)))
+                        new ListRoleAssignments(req, findDatasetUserCanSeeOrDie(id, req)))
                         .stream().map(ra -> json(ra)).collect(toJsonArray())), getRequestUser(crc));
     }
 
@@ -2498,7 +2495,7 @@ public class Datasets extends AbstractApiBean {
             description = "Returns preview URL data for a dataset.")
     public Response getPreviewUrlData(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         return response( req -> {
-            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetUserCanSeeOrDie(idSupplied, req, false)));
+            PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetUserCanSeeOrDie(idSupplied, req)));
             return (privateUrl != null) ? ok(json(privateUrl))
                     : error(Response.Status.NOT_FOUND, "Private URL not found.");
         }, getRequestUser(crc));
@@ -2545,16 +2542,16 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetThumbnailCandidates(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
             boolean canUpdateThumbnail = false;
             canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
             if (!canUpdateThumbnail) {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
             }
-            JsonArrayBuilder data = Json.createArrayBuilder();
+            JsonArrayBuilder data = JsonUtil.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
             for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
-                JsonObjectBuilder candidate = Json.createObjectBuilder();
+                JsonObjectBuilder candidate = JsonUtil.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {
                     logger.fine("found a candidate!");
@@ -2581,7 +2578,7 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetThumbnail(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
             InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             if(is == null) {
                 return notFound("Thumbnail not available");
@@ -2601,7 +2598,7 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetLogo(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
             InputStream is = DatasetUtil.getLogoAsInputStream(dataset);
             if (is == null) {
                 return notFound("Logo not available");
@@ -2679,7 +2676,7 @@ public class Datasets extends AbstractApiBean {
 
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             DataverseRequest req = createDataverseRequest(user);
-            dataset = findDatasetUserCanSeeOrDie(id, req, false);
+            dataset = findDatasetUserCanSeeOrDie(id, req);
             ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(user), dataset));
 
             DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, user.getId(), "script downloaded");
@@ -2747,7 +2744,7 @@ public class Datasets extends AbstractApiBean {
                         JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, new Long(totalSize), importMode));
                         long jobId = jsonFromImportJobKickoff.getInt("executionId");
                         String message = jsonFromImportJobKickoff.getString("message");
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add("jobId", jobId);
                         job.add("message", message);
                         return ok(job);
@@ -2791,7 +2788,7 @@ public class Datasets extends AbstractApiBean {
                             logger.log(Level.SEVERE, constraintError);
                         }
 
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         return ok(job);
 
                     } catch (IOException e) {
@@ -2830,7 +2827,7 @@ public class Datasets extends AbstractApiBean {
     public Response submitForReview(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied) {
         try {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied)));
-            JsonObjectBuilder result = Json.createObjectBuilder();
+            JsonObjectBuilder result = JsonUtil.createObjectBuilder();
 
             boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
 
@@ -2867,7 +2864,7 @@ public class Datasets extends AbstractApiBean {
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
 
-            JsonObjectBuilder result = Json.createObjectBuilder();
+            JsonObjectBuilder result = JsonUtil.createObjectBuilder();
             result.add("inReview", false);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
             return ok(result);
@@ -2886,9 +2883,9 @@ public class Datasets extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset ds = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset ds = findDatasetUserCanSeeOrDie(idSupplied, req);
             List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(ds.getCategories());
-            JsonArrayBuilder fileCategoriesArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder fileCategoriesArrayBuilder = JsonUtil.createArrayBuilder();
             for (String fieldName : datasetFileCategories) {
                 fileCategoriesArrayBuilder.add(fieldName);
             }
@@ -2912,7 +2909,7 @@ public class Datasets extends AbstractApiBean {
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
-            Dataset ds = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset ds = findDatasetUserCanSeeOrDie(idSupplied, req);
             DatasetVersion dsv = ds.getLatestVersion();
 
 
@@ -2931,7 +2928,7 @@ public class Datasets extends AbstractApiBean {
             if (canSeeStatus) {
                 List<CurationStatus> statuses = includeHistory ? dsv.getCurationStatuses() : Collections.singletonList(dsv.getCurrentCurationStatus());
                 if (includeHistory) {
-                    JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+                    JsonArrayBuilder arrayBuilder = JsonUtil.createArrayBuilder();
                     for (CurationStatus status : statuses) {
                         arrayBuilder.add(curationStatusToJson(status));
                     }
@@ -2949,7 +2946,7 @@ public class Datasets extends AbstractApiBean {
 
     private JsonObject curationStatusToJson(CurationStatus status) {
         if (status == null) {
-            return Json.createObjectBuilder().build();
+            return JsonUtil.createObjectBuilder().build();
         }
         return NullSafeJsonBuilder.jsonObjectBuilder()
                 .add("label", status.getLabel())
@@ -3012,7 +3009,7 @@ public class Datasets extends AbstractApiBean {
         try {
             User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
-            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
 
             boolean canUpdateDataset = false;
             canUpdateDataset = permissionSvc.requestOn(req, dataset)
@@ -3421,7 +3418,7 @@ public class Datasets extends AbstractApiBean {
     DataverseRequest req = createDataverseRequest(authUser);
         Dataset dataset;
         try {
-            dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -3465,7 +3462,7 @@ public class Datasets extends AbstractApiBean {
                                       @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset ds = findDatasetUserCanSeeOrDie(id, req, false);
+            Dataset ds = findDatasetUserCanSeeOrDie(id, req);
             DatasetVersion dsv1 = getDatasetVersionOrDie(req, versionId1, ds, uriInfo, headers, includeDeaccessioned);
             DatasetVersion dsv2 = getDatasetVersionOrDie(req, versionId2, ds, uriInfo, headers, includeDeaccessioned);
             if (dsv1.getCreateTime().getTime() > dsv2.getCreateTime().getTime()) {
@@ -3488,7 +3485,7 @@ public class Datasets extends AbstractApiBean {
                                               @Parameter(description = "Result offset.") @QueryParam("offset") Integer offset) {
         return response(req -> {
             try {
-                Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
+                Dataset dataset = findDatasetUserCanSeeOrDie(id, req);
                 List<DatasetVersionSummary> versionSummaries = execCommand(new GetDatasetVersionSummariesCommand(req, dataset, limit, offset));
                 JsonArrayBuilder versionSummariesArrayBuilder = jsonDatasetVersionSummaries(versionSummaries);
                 long datasetVersionTotalCount = execCommand(new GetDatasetVersionCountCommand(req, dataset));
@@ -3612,7 +3609,7 @@ public class Datasets extends AbstractApiBean {
         Dataset dataset = null;
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            dataset = findDatasetUserCanSeeOrDie(id, req, false);
+            dataset = findDatasetUserCanSeeOrDie(id, req);
             Set<DatasetLock> locks;
             if (lockType == null) {
                 locks = dataset.getLocks();
@@ -3787,11 +3784,11 @@ public class Datasets extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
-            JsonArrayBuilder datasetsCitations = Json.createArrayBuilder();
+            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
+            JsonArrayBuilder datasetsCitations = JsonUtil.createArrayBuilder();
             List<DatasetExternalCitations> externalCitations = datasetExternalCitationsService.getDatasetExternalCitationsByDataset(dataset);
             for (DatasetExternalCitations citation : externalCitations) {
-                JsonObjectBuilder candidateObj = Json.createObjectBuilder();
+                JsonObjectBuilder candidateObj = JsonUtil.createObjectBuilder();
                 /**
                  * In the future we can imagine storing and presenting more
                  * information about the citation such as the title of the paper
@@ -3827,7 +3824,7 @@ public class Datasets extends AbstractApiBean {
             description = "Returns the storage size for files in a dataset, optionally including cached values.")
     public Response getStorageSize(@Context ContainerRequestContext crc, @Parameter(description = "Dataset id or persistent identifier.") @PathParam("identifier") String dvIdtf, @Parameter(description = "Whether cached values may be included.") @QueryParam("includeCached") boolean includeCached) {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetUserCanSeeOrDie(dvIdtf, req, false), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetUserCanSeeOrDie(dvIdtf, req), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
     }
 
     @GET
@@ -3867,10 +3864,10 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid mode: " + mode);
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetUserCanSeeOrDie(dvIdtf, req, false), uriInfo, headers, includeDeaccessioned, false);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetUserCanSeeOrDie(dvIdtf, req), uriInfo, headers, includeDeaccessioned, false);
             long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileSearchCriteria, fileDownloadSizeMode);
             String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
             jsonObjectBuilder.add("message", message);
             jsonObjectBuilder.add("storageSize", datasetStorageSize);
             return ok(jsonObjectBuilder);
@@ -3885,7 +3882,7 @@ public class Datasets extends AbstractApiBean {
     public Response getMakeDataCountMetric(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String idSupplied, @Parameter(description = "Make Data Count metric name.") @PathParam("metric") String metricSupplied, @Parameter(description = "Metric month in YYYYMM format.") @PathParam("yyyymm") String yyyymm, @Parameter(description = "Country filter for metric results.") @QueryParam("country") String country) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(idSupplied, req);
             NullSafeJsonBuilder jsonObjectBuilder = jsonObjectBuilder();
             MakeDataCountUtil.MetricType metricType = null;
             try {
@@ -4002,7 +3999,7 @@ public class Datasets extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req, false);
+            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req);
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
@@ -4105,7 +4102,7 @@ public class Datasets extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(user);
-            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req,false);
+            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -4211,7 +4208,7 @@ public class Datasets extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(user);
-            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req, false);
+            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -4236,12 +4233,12 @@ public class Datasets extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
-            dataset = findDatasetUserCanSeeOrDie(id, req, false);
+            dataset = findDatasetUserCanSeeOrDie(id, req);
 
             Set<Permission> perms = new HashSet<Permission>();
             perms.add(Permission.ViewUnpublishedDataset);
             boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
-            JsonObjectBuilder timestamps = Json.createObjectBuilder();
+            JsonObjectBuilder timestamps = JsonUtil.createObjectBuilder();
             logger.fine("CSD: " + canSeeDraft);
             logger.fine("IT: " + dataset.getIndexTime());
             logger.fine("MT: " + dataset.getModificationTime());
@@ -4364,7 +4361,7 @@ public class Datasets extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(authUser);
-            dataset = findDatasetUserCanSeeOrDie(datasetId, req, false);
+            dataset = findDatasetUserCanSeeOrDie(datasetId, req);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -4386,15 +4383,15 @@ public class Datasets extends AbstractApiBean {
             referenceEndpointsWithPaths = GlobusAccessibleStore.getReferenceEndpointsWithPaths(storeId);
         }
 
-        JsonObjectBuilder queryParams = Json.createObjectBuilder();
+        JsonObjectBuilder queryParams = JsonUtil.createObjectBuilder();
         queryParams.add("queryParameters",
-                Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
-                        .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
-                        .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
-                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
-                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}")));
+                JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("datasetId", "{datasetId}"))
+                        .add(JsonUtil.createObjectBuilder().add("siteUrl", "{siteUrl}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
+                        .add(JsonUtil.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetPid", "{datasetPid}")));
         JsonObject substitutedParams = tokenUtil.getParams(queryParams.build());
-        JsonObjectBuilder params = Json.createObjectBuilder();
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder();
         substitutedParams.keySet().forEach((key) -> {
             params.add(key, substitutedParams.get(key));
         });
@@ -4415,29 +4412,29 @@ public class Datasets extends AbstractApiBean {
             params.add("referenceEndpointsWithPaths", referenceEndpointsWithPaths);
         }
         int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
-        JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
+        JsonArrayBuilder allowedApiCalls = JsonUtil.createArrayBuilder();
         String requestCallName = managed ? "requestGlobusTransferPaths" : "requestGlobusReferencePaths";
         allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
+                JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusUploadPaths")
                         .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         if(managed) {
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         } else {
-            allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addFiles")
+            allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "addFiles")
                     .add(URLTokenUtil.HTTP_METHOD, "POST")
                     .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addFiles")
                     .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         }
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
                 .add(URLTokenUtil.HTTP_METHOD, "GET")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
                 .add(URLTokenUtil.TIMEOUT, 5));
         allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
+                JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
                         .add(URLTokenUtil.TIMEOUT, 5));
 
@@ -4703,7 +4700,7 @@ public class Datasets extends AbstractApiBean {
 
         try {
             DataverseRequest req = createDataverseRequest(authUser);
-            dataset = findDatasetUserCanSeeOrDie(datasetId, req, false);
+            dataset = findDatasetUserCanSeeOrDie(datasetId, req);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -4724,15 +4721,15 @@ public class Datasets extends AbstractApiBean {
         boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
         String transferEndpoint = null;
 
-        JsonObjectBuilder queryParams = Json.createObjectBuilder();
+        JsonObjectBuilder queryParams = JsonUtil.createObjectBuilder();
         queryParams.add("queryParameters",
-                Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
-                        .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
-                        .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
-                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
-                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}")));
+                JsonUtil.createArrayBuilder().add(JsonUtil.createObjectBuilder().add("datasetId", "{datasetId}"))
+                        .add(JsonUtil.createObjectBuilder().add("siteUrl", "{siteUrl}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
+                        .add(JsonUtil.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(JsonUtil.createObjectBuilder().add("datasetPid", "{datasetPid}")));
         JsonObject substitutedParams = tokenUtil.getParams(queryParams.build());
-        JsonObjectBuilder params = Json.createObjectBuilder();
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder();
         substitutedParams.keySet().forEach((key) -> {
             params.add(key, substitutedParams.get(key));
         });
@@ -4743,22 +4740,22 @@ public class Datasets extends AbstractApiBean {
         }
         params.add("files", files);
         int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
-        JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
+        JsonArrayBuilder allowedApiCalls = JsonUtil.createArrayBuilder();
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/monitorGlobusDownload")
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusDownload")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusDownload")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE,
                         "/api/v1/datasets/{datasetId}/requestGlobusDownload?downloadId=" + downloadId)
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+        allowedApiCalls.add(JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
                 .add(URLTokenUtil.HTTP_METHOD, "GET")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
                 .add(URLTokenUtil.TIMEOUT, 5));
         allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
+                JsonUtil.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
                         .add(URLTokenUtil.TIMEOUT, 5));
 
@@ -5401,7 +5398,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
             DataverseRequest req = createDataverseRequest(au);
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo,
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo,
                     headers, true);
 
             if (dsv.getArchivalCopyLocation() == null) {
@@ -5645,7 +5642,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
 
         // Return the URL in a JSON response
-        return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
+        return ok(JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
                 .add("datasetId", dataset.getId()).add("preview", preview));
 
     } catch (Exception ex) {
@@ -5673,7 +5670,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
                                             @Parameter(description = "Locale for localized Globus metadata.") @QueryParam(value = "locale") String locale) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            DatasetVersion target = getDatasetVersionOrDie(req, version, findDatasetUserCanSeeOrDie(datasetId, req, false), null, null);
+            DatasetVersion target = getDatasetVersionOrDie(req, version, findDatasetUserCanSeeOrDie(datasetId, req), null, null);
             if (target == null) {
                 return error(BAD_REQUEST, "DatasetVersion not found.");
             }
@@ -5703,7 +5700,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetSummaryFieldNames() {
         String customFieldNames = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
         String[] fieldNames = DatasetUtil.getDatasetSummaryFieldNames(customFieldNames);
-        JsonArrayBuilder fieldNamesArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder fieldNamesArrayBuilder = JsonUtil.createArrayBuilder();
         for (String fieldName : fieldNames) {
             fieldNamesArrayBuilder.add(fieldName);
         }
@@ -5857,7 +5854,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         boolean checkFilePerms = false;
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-        DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers,
+        DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers,
                 includeDeaccessioned, checkFilePerms);
         return dsv.getCitation(format, true, false);
     }
@@ -5910,7 +5907,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req, false);
+            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req);
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
@@ -6002,12 +5999,12 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         User requestUser = getRequestUser(crc);
         try {
             DataverseRequest req = createDataverseRequest(requestUser);
-            dataset = findDatasetUserCanSeeOrDie(datasetId, req, false);
+            dataset = findDatasetUserCanSeeOrDie(datasetId, req);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
 
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         jsonObjectBuilder.add("canViewUnpublishedDataset", permissionService.userOn(requestUser, dataset).has(Permission.ViewUnpublishedDataset));
         jsonObjectBuilder.add("canEditDataset", permissionService.userOn(requestUser, dataset).has(Permission.EditDataset));
         jsonObjectBuilder.add("canPublishDataset", permissionService.userOn(requestUser, dataset).has(Permission.PublishDataset));
@@ -6028,7 +6025,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
                                                  @Context UriInfo uriInfo,
                                                  @Context HttpHeaders headers) {
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers, includeDeaccessioned);
             return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
         }, getRequestUser(crc));
     }
@@ -6082,7 +6079,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
 
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req, false);
+            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req);
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
@@ -6173,7 +6170,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
     public Response getDatasetTypes(@Parameter(description = "Language preference for localized dataset type labels.")
             @HeaderParam(ACCEPT_LANGUAGE) String acceptLanguage) {
         Locale locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         for (DatasetType datasetType : datasetTypeSvc.listAll()) {
             jab.add(datasetType.toJson(locale));
         }
@@ -6235,7 +6232,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         String displayNameIn = null;
         String descriptionIn = null;
 
-        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        JsonArrayBuilder datasetTypesAfter = JsonUtil.createArrayBuilder();
         List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
         List<License> licensesToSave = new ArrayList<>();
 
@@ -6379,11 +6376,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         } else {
             datasetType = datasetTypeSvc.getByName(idOrName);
         }
-        JsonArrayBuilder datasetTypesBefore = Json.createArrayBuilder();
+        JsonArrayBuilder datasetTypesBefore = JsonUtil.createArrayBuilder();
         for (MetadataBlock metadataBlock : datasetType.getMetadataBlocks()) {
             datasetTypesBefore.add(metadataBlock.getName());
         }
-        JsonArrayBuilder datasetTypesAfter = Json.createArrayBuilder();
+        JsonArrayBuilder datasetTypesAfter = JsonUtil.createArrayBuilder();
         List<MetadataBlock> metadataBlocksToSave = new ArrayList<>();
         if (jsonBody != null && !jsonBody.isEmpty()) {
             JsonArray json = JsonUtil.getJsonArray(jsonBody);
@@ -6401,8 +6398,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
         try {
             execCommand(new UpdateDatasetTypeLinksToMetadataBlocksCommand(createDataverseRequest(getRequestUser(crc)), datasetType, metadataBlocksToSave));
-            return ok(Json.createObjectBuilder()
-                    .add("linkedMetadataBlocks", Json.createObjectBuilder()
+            return ok(JsonUtil.createObjectBuilder()
+                    .add("linkedMetadataBlocks", JsonUtil.createObjectBuilder()
                             .add("before", datasetTypesBefore)
                             .add("after", datasetTypesAfter))
             );
@@ -6433,11 +6430,11 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         } else {
             datasetType = datasetTypeSvc.getByName(idOrName);
         }
-        JsonArrayBuilder licensesBefore = Json.createArrayBuilder();
+        JsonArrayBuilder licensesBefore = JsonUtil.createArrayBuilder();
         for (License license : datasetType.getLicenses()) {
             licensesBefore.add(license.getName());
         }
-        JsonArrayBuilder licensesAfter = Json.createArrayBuilder();
+        JsonArrayBuilder licensesAfter = JsonUtil.createArrayBuilder();
         List<License> licensesToSave = new ArrayList<>();
         if (jsonBody != null && !jsonBody.isEmpty()) {
             JsonArray json = JsonUtil.getJsonArray(jsonBody);
@@ -6455,8 +6452,8 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
         try {
             execCommand(new UpdateDatasetTypeAvailableLicensesCommand(createDataverseRequest(getRequestUser(crc)), datasetType, licensesToSave));
-            return ok(Json.createObjectBuilder()
-                    .add("availableLicenses", Json.createObjectBuilder()
+            return ok(JsonUtil.createObjectBuilder()
+                    .add("availableLicenses", JsonUtil.createObjectBuilder()
                             .add("before", licensesBefore)
                             .add("after", licensesAfter))
             );
@@ -6606,10 +6603,10 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req, false), uriInfo, headers);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetUserCanSeeOrDie(datasetId, req), uriInfo, headers);
             String note = datasetVersion.getVersionNote();
             if(note == null) {
-                return ok(Json.createObjectBuilder());
+                return ok(JsonUtil.createObjectBuilder());
             }
             return ok(note);
         }, getRequestUser(crc));
@@ -6697,7 +6694,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             @PathParam("identifier") String id,
             @Context HttpHeaders headers) {
         return response(req -> {
-            Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(id, req);
 
             // user is authenticated
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -6717,7 +6714,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             @PathParam("identifier") String id,
             @Context HttpHeaders headers) {
         return response(req -> {
-            Dataset dataset = findDatasetUserCanSeeOrDie(id, req, false);
+            Dataset dataset = findDatasetUserCanSeeOrDie(id, req);
 
             // user is authenticated
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -6796,7 +6793,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             @QueryParam("showInherited") boolean showInherited) throws WrappedResponse {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            Long bytesAllocated = execCommand(new GetDatasetQuotaCommand(req, findDatasetUserCanSeeOrDie(dvIdtf, req, false), showInherited));
+            Long bytesAllocated = execCommand(new GetDatasetQuotaCommand(req, findDatasetUserCanSeeOrDie(dvIdtf, req), showInherited));
             if (bytesAllocated != null) {
                 return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataset.storage.quota.allocation"),bytesAllocated));
             }
@@ -6864,7 +6861,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("identifier") String identifier) throws WrappedResponse {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataset.storage.use"),
-                execCommand(new GetDatasetStorageUseCommand(req, findDatasetUserCanSeeOrDie(identifier, req, false))))), getRequestUser(crc));
+                execCommand(new GetDatasetStorageUseCommand(req, findDatasetUserCanSeeOrDie(identifier, req))))), getRequestUser(crc));
     }
     
     @GET
@@ -6887,7 +6884,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         }
         DataverseRequest req = createDataverseRequest(user);
         try {
-            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req, false);
+            dataset = findDatasetUserCanSeeOrDie(dvIdtf, req);
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }

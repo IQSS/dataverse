@@ -267,7 +267,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc, datasetTypeSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc, datasetTypeSvc, templateSvc);
         }
     });
 
@@ -418,27 +418,23 @@ public abstract class AbstractApiBean {
         return template;
     }
     
-    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
+    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String linkingDataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;
-        Dataverse dataverse = findDataverseOrDie(dataverseId);
+        Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
         Dataverse linkedDataverse = findDataverseOrDie(linkedDataverseId);
         try {
-            dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverse.getId());
+            dvld = dvLinkingService.findDataverseLinkingDataverse(linkingDataverse.getId(), linkedDataverse.getId());
             if (dvld == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(linkingDataverseId, linkedDataverseId))));
             }
             return dvld;
         } catch (NumberFormatException nfe) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(linkingDataverseId, linkedDataverseId))));
         }
     }
 
     protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
-        return findDatasetOrDie(id, false);
-    }
-
-    protected Dataset findDatasetOrDie(String id, boolean deep) throws WrappedResponse {
         Long datasetId;
         Dataset dataset;
         if (isNumeric(id)) {
@@ -478,11 +474,7 @@ public abstract class AbstractApiBean {
                         notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(ApiConstants.PERSISTENT_ID_KEY.substring(1)))));
             }
         }
-        if (deep) {
-            dataset = datasetSvc.findDeep(datasetId);
-        } else {
-            dataset = datasetSvc.find(datasetId);
-        }
+        dataset = datasetSvc.find(datasetId);
         if (dataset == null) {
             throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
         }
@@ -493,12 +485,11 @@ public abstract class AbstractApiBean {
      *
      * @param id - the dataset identifier
      * @param req - the DataverseRequest
-     * @param deep - whether to perform a deep search
      * @return the dataset if found and visible, otherwise throws WrappedResponse
      * @throws WrappedResponse if dataset is not found (in findDatasetOrDie()) or not visible
      */
-    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req, boolean deep) throws WrappedResponse {
-        Dataset dataset = findDatasetOrDie(id, deep);
+    protected Dataset findDatasetUserCanSeeOrDie(String id, DataverseRequest req) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(id);
         if (dataset.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataset)) {
             throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
         }
@@ -851,9 +842,9 @@ public abstract class AbstractApiBean {
         }
         
         // Or Json by default
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
         for (DataverseRoleServiceBean.RoleAssignmentHistoryConsolidatedEntry entry : history) {
-            JsonObjectBuilder job = Json.createObjectBuilder()
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder()
                     .add("definedOn", entry.getDefinitionPointIdsAsString())
                     .add("assigneeIdentifier", entry.getAssigneeIdentifier())
                     .add("roleName", entry.getRoleName());
@@ -1016,7 +1007,7 @@ public abstract class AbstractApiBean {
         String incidentId = UUID.randomUUID().toString();
         logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
         return Response.status(500)
-                .entity(Json.createObjectBuilder()
+                .entity(JsonUtil.createObjectBuilder()
                         .add("status", "ERROR")
                         .add("code", 500)
                         .add("message", "Internal server error. More details available at the server logs.")
@@ -1067,9 +1058,9 @@ public abstract class AbstractApiBean {
         // This is a highly used response builder, which is why this is an experimental opt-in change!
         // TODO: This will be removed in a future version.
         if (FeatureFlags.UNIFY_API_RESPONSE_MESSAGE_STYLE.enabled()) {
-            return ok(null, Json.createValue(msg), null);
+            return ok(null, JsonUtil.createValue(msg), null);
         } else {
-            return ok(Json.createObjectBuilder().add("message", msg).build(), null, null);
+            return ok(JsonUtil.createObjectBuilder().add("message", msg).build(), null, null);
         }
     }
     
@@ -1078,9 +1069,9 @@ public abstract class AbstractApiBean {
         // This is a scarcely used way to build a response, mostly relevant to admins, which is why we make it opt-out.
         // TODO: This will be removed in a future version.
         if (JvmSettings.LEGACY_API_RESPONSE_MESSAGE_STYLE.lookupOptional(Boolean.class).orElse(false)) {
-            return ok(bld.build(), Json.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
+            return ok(bld.build(), JsonUtil.createObjectBuilder().add(ApiConstants.MESSAGE_FIELD, msg).build(), null);
         } else {
-            return ok(bld.build(), Json.createValue(msg), null);
+            return ok(bld.build(), JsonUtil.createValue(msg), null);
         }
     }
 
@@ -1089,7 +1080,7 @@ public abstract class AbstractApiBean {
     }
 
     protected Response ok(long value) {
-        return ok(Json.createValue(value), null, null);
+        return ok(JsonUtil.createValue(value), null, null);
     }
 
     /**
@@ -1113,7 +1104,7 @@ public abstract class AbstractApiBean {
 
     protected Response created( String uri, JsonObjectBuilder bld ) {
         return Response.created( URI.create(uri) )
-                .entity( Json.createObjectBuilder()
+                .entity( JsonUtil.createObjectBuilder()
                 .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_OK)
                 .add(ApiConstants.DATA_FIELD, bld).build())
                 .type(MediaType.APPLICATION_JSON)
@@ -1122,7 +1113,7 @@ public abstract class AbstractApiBean {
     
     protected Response accepted(JsonObjectBuilder bld) {
         return Response.accepted()
-                .entity(Json.createObjectBuilder()
+                .entity(JsonUtil.createObjectBuilder()
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_WF_IN_PROGRESS)
                         .add(ApiConstants.DATA_FIELD, bld).build()
                 ).build();
@@ -1130,7 +1121,7 @@ public abstract class AbstractApiBean {
     
     protected Response accepted() {
         return Response.accepted()
-                .entity(Json.createObjectBuilder()
+                .entity(JsonUtil.createObjectBuilder()
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }
@@ -1148,7 +1139,7 @@ public abstract class AbstractApiBean {
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_ERROR)
                         .add(ApiConstants.MESSAGE_FIELD, msg)
-                        .add("fieldErrors", Json.createObjectBuilder(fieldErrors).build())
+                        .add("fieldErrors", JsonUtil.createObjectBuilder(fieldErrors).build())
                         .build()
                 )
                 .type(MediaType.APPLICATION_JSON_TYPE)

@@ -1,12 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -67,7 +66,7 @@ public class JsonLDExportIT {
             String problematicDescription =
                 "File contains <CSP data, <img tag, <script and text ending with <";
 
-            JsonObjectBuilder fileMetadata = Json.createObjectBuilder()
+            JsonObjectBuilder fileMetadata = JsonUtil.createObjectBuilder()
                 .add("description", problematicDescription)
                 .add("label", "test-file-with-csp-tag.tab");
 
@@ -108,11 +107,7 @@ public class JsonLDExportIT {
 
                 // Verify valid JSON
                 assertDoesNotThrow(
-                    () -> {
-                        jakarta.json.Json.createReader(
-                            new java.io.StringReader(responseBody)
-                        ).readObject();
-                    },
+                    () -> JsonUtil.getJsonObject(responseBody),
                     "JSON-LD export should produce valid JSON"
                 );
 

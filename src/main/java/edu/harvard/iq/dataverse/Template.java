@@ -441,7 +441,7 @@ public class Template implements Serializable {
     
     //Keep instructions up-to-date on any change
     public void updateInstructions() {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         getInstructionsMap().forEach((key, value) -> {
             if (value != null)
                 builder.add(key, value);

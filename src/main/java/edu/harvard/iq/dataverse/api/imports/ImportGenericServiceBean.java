@@ -2,16 +2,8 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.ForeignMetadataFieldMapping;
-import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.api.dto.*;  
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.api.dto.*;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
@@ -34,23 +26,22 @@ import java.util.*;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import javax.xml.stream.XMLInputFactory;
 import net.handle.hdllib.HandleException;
 import net.handle.hdllib.HandleResolver;
 
+import javax.xml.stream.XMLInputFactory;
 
 /**
  *
@@ -80,6 +71,9 @@ public class ImportGenericServiceBean {
 
     @EJB
     DatasetTypeServiceBean datasetTypeService;
+
+    @EJB
+    TemplateServiceBean templateService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -115,9 +109,8 @@ public class ImportGenericServiceBean {
             Gson gson = new Gson();
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             logger.fine(json);
-            JsonReader jsonReader = Json.createReader(new StringReader(json));
-            JsonObject obj = jsonReader.readObject();
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService).parseDatasetVersion(obj, datasetVersion);
+            JsonObject obj = JsonUtil.getJsonObject(json);
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService).parseDatasetVersion(obj, datasetVersion);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);

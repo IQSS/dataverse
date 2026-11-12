@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -20,16 +19,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
@@ -298,8 +296,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         cvocMapByTermUri=new HashMap<>();
         cvocFieldSet = new HashSet<>();
 
-        try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
-            JsonArray cvocConfJsonArray = jsonReader.readArray();
+        try {
+            JsonArray cvocConfJsonArray = JsonUtil.getJsonArray(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf));
             for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
                 DatasetFieldType dft = findByNameOpt(jo.getString("field-name"));
                 if (dft == null) {
@@ -345,7 +343,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     }
                 }
             }
-            } catch(JsonException e) {
+        } catch(JsonException e) {
                 logger.warning("Ignoring External Vocabulary setting due to parsing error: " + e.getLocalizedMessage());
             }
         return byTermUriField ? cvocMapByTermUri : cvocMap;
@@ -406,10 +404,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public Set<String> getIndexableStringsByTermUri(String termUri, JsonObject cvocEntry, String indexingField) {
         Set<String> strings = new HashSet<>();
         JsonObject jo = getExternalVocabularyValue(termUri);
-        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-        String termUriField = cvocEntry.getJsonString("term-uri-field").getString();
 
         if (jo != null) {
+            JsonObject filtering = getRetrievalFilteringObject(cvocEntry, termUri);
+            String termUriField = cvocEntry.getJsonString("term-uri-field").getString();
+
             try {
                 for (String key : jo.keySet()) {
                     String indexIn = filtering.getJsonObject(key).getString("indexIn", null);
@@ -467,6 +466,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return strings;
     }
 
+    private JsonObject getRetrievalFilteringObject(JsonObject cvocEntry, String termUri) {
+        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+        //Check for per-vocab filtering
+        JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
+        for (String key : vocabs.keySet()) {
+            JsonObject vocab = vocabs.getJsonObject(key);
+            if (vocab.containsKey("uriSpace")) {
+                if (termUri.startsWith(vocab.getString("uriSpace"))) {
+                    if (vocab.containsKey("retrieval-filtering")) {
+                        filtering = vocab.getJsonObject("retrieval-filtering");
+                    }
+                    break;
+                }
+            }
+        }
+        return filtering;
+    }
+
     /**
      * Perform a query to retrieve a cached value from the externalvocabularvalue table
      * @param termUri
@@ -479,8 +496,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             ExternalVocabularyValue.class)
                     .setParameter("uri", termUri).getSingleResult();
             String valString = evv.getValue();
-            try (JsonReader jr = Json.createReader(new StringReader(valString))) {
-                return jr.readObject();
+            try {
+                return JsonUtil.getJsonObject(valString);
             } catch (Exception e) {
                 logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
             }
@@ -499,7 +516,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @param relatedDatasetFields  - siblings or childs of the term
      */
     public void registerExternalTerm(JsonObject cvocEntry, String term, List<DatasetField> relatedDatasetFields) {
-        String retrievalUri = cvocEntry.getString("retrieval-uri");
+        String retrievalUri = cvocEntry.getString("retrieval-uri", null);
         String termUriFieldName = cvocEntry.getString("term-uri-field");
         String prefix = cvocEntry.getString("prefix", null);
         if(StringUtils.isBlank(term)) {
@@ -514,6 +531,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             if (vocab.containsKey("uriSpace")) {
                 if (term.startsWith(vocab.getString("uriSpace"))) {
                     isExternal = true;
+                    // A specific vocabulary can override the top-level retrieval-uri and prefix
+                    if (vocab.containsKey("retrieval-uri")) {
+                        retrievalUri = vocab.getString("retrieval-uri");
+                    }
+                    if (vocab.containsKey("prefix")) {
+                        prefix = vocab.getString("prefix");
+                    }
                     break;
                 }
             }
@@ -522,6 +546,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.fine("Ignoring free text entry: " + term);
             return;
         }
+        if (isExternal && (retrievalUri == null)) {
+            logger.warning("No retrieval-uri found for term " + term);
+            return;
+        }
+
         logger.fine("Registering term: " + term);
         try {
             //Assure the term is in URI form - should be if the uriSpace entry was correct
@@ -582,8 +611,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == 200) {
                         logger.fine("Returned data: " + data);
-                        try (JsonReader jsonReader = Json.createReader(new StringReader(data))) {
-                            String dataObj = filterResponse(cvocEntry, jsonReader.readObject(), term).toString();
+                        try {
+                            String dataObj = filterResponse(cvocEntry, JsonUtil.getJsonObject(data), term).toString();
                             evv.setValue(dataObj);
                             evv.setLastUpdateDate(Timestamp.from(Instant.now()));
                             logger.fine("JsonObject: " + dataObj);
@@ -645,97 +674,94 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      */
     private JsonObject filterResponse(JsonObject cvocEntry, JsonObject readObject, String termUri) {
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-        logger.fine("RF: " + filtering.toString());
-        JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
-        logger.fine("MF: " + managedFields.toString());
-        int nrOfNotFound = 0;
-        for (String filterKey : filtering.keySet()) {
-            if (!filterKey.equals("@context")) {
-                try {
-                    JsonObject filter = filtering.getJsonObject(filterKey);
-                    logger.fine("F: " + filter.toString());
-                    JsonArray params = filter.getJsonArray("params");
-                    if (params == null) {
-                        params = Json.createArrayBuilder().build();
-                    }
-                    logger.fine("Params: " + params.toString());
-                    List<Object> vals = new ArrayList<Object>();
-                    for (int i = 0; i < params.size(); i++) {
-                        String param = params.getString(i);
-                        if (param.startsWith("/")) {
-                            // Remove leading /
-                            param = param.substring(1);
-                            String[] pathParts = param.split("/");
-                            logger.fine("PP: " + String.join(", ", pathParts));
-                            var foundPart = processPathSegment(0, pathParts, readObject, termUri);
-                            if (foundPart == null) {
-                                nrOfNotFound ++ ;
-                                logger.warning("External Vocabulary: no value found for %s - %s".formatted(filterKey, param));
+        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
+        JsonObject filtering = getRetrievalFilteringObject(cvocEntry, termUri);
+        if(filtering != null) {
+            logger.fine("RF: " + filtering.toString());
+            int nrOfNotFound = 0;
+            for (String filterKey : filtering.keySet()) {
+                if (!filterKey.equals("@context")) {
+                    try {
+                        JsonObject filter = filtering.getJsonObject(filterKey);
+                        logger.fine("F: " + filter.toString());
+                        JsonArray params = filter.getJsonArray("params");
+                        if (params == null) {
+                            params = JsonUtil.createArrayBuilder().build();
+                        }
+                        logger.fine("Params: " + params.toString());
+                        List<Object> vals = new ArrayList<Object>();
+                        for (int i = 0; i < params.size(); i++) {
+                            String param = params.getString(i);
+                            if (param.startsWith("/")) {
+                                // Remove leading /
+                                param = param.substring(1);
+                                String[] pathParts = param.split("/");
+                                logger.fine("PP: " + String.join(", ", pathParts));
+                                var foundPart = processPathSegment(0, pathParts, readObject, termUri);
+                                if (foundPart == null) {
+                                    nrOfNotFound++;
+                                    logger.warning("External Vocabulary: no value found for %s - %s".formatted(filterKey, param));
+                                } else {
+                                    vals.add(i, foundPart);
+                                    logger.fine("Added param value: " + i + ": " + vals.get(i));
+                                }
                             } else {
-                                vals.add(i, foundPart);
-                                logger.fine("Added param value: " + i + ": " + vals.get(i));
+                                logger.fine("Param is: " + param);
+                                // param is not a path - either a reference to the term URI
+                                if (param.equals("@id")) {
+                                    logger.fine("Adding id param: " + termUri);
+                                    vals.add(i, termUri);
+                                } else {
+                                    // or a hardcoded value
+                                    logger.fine("Adding hardcoded param: " + param);
+                                    vals.add(i, param);
+                                }
+                            }
+                        }
+                        // Shortcut: nominally using a pattern of {0} and a param that is @id or
+                        // hardcoded value allows the same options as letting the pattern itself be @id
+                        // or a hardcoded value
+                        String pattern = filter.getString("pattern");
+                        logger.fine("Pattern: " + pattern);
+                        if (pattern.equals("@id")) {
+                            logger.fine("Added #id pattern: " + filterKey + ": " + termUri);
+                            job.add(filterKey, termUri);
+                        } else if (pattern.contains("{")) {
+                            if (vals.isEmpty()) {
+                                if (nrOfNotFound == 0) {
+                                    logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
+                                }
+                            } else {
+                                if (pattern.equals("{0}")) {
+                                    if (vals.get(0) instanceof JsonArray) {
+                                        job.add(filterKey, (JsonArray) vals.get(0));
+                                    } else if (vals.get(0) instanceof JsonObject) {
+                                        job.add(filterKey, (JsonObject) vals.get(0));
+                                    } else {
+                                        job.add(filterKey, (String) vals.get(0));
+                                    }
+                                } else {
+                                    String result = MessageFormat.format(pattern, vals.toArray());
+                                    logger.fine("Result: " + result);
+                                    job.add(filterKey, result);
+                                    logger.fine("Added : " + filterKey + ": " + result);
+                                }
                             }
                         } else {
-                            logger.fine("Param is: " + param);
-                            // param is not a path - either a reference to the term URI
-                            if (param.equals("@id")) {
-                                logger.fine("Adding id param: " + termUri);
-                                vals.add(i, termUri);
-                            } else {
-                                // or a hardcoded value
-                                logger.fine("Adding hardcoded param: " + param);
-                                vals.add(i, param);
-                            }
+                            logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
+                            job.add(filterKey, pattern);
                         }
+                    } catch (Exception e) {
+                        logger.warning("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
+                                + e.getMessage());
+                        e.printStackTrace();
                     }
-                    // Shortcut: nominally using a pattern of {0} and a param that is @id or
-                    // hardcoded value allows the same options as letting the pattern itself be @id
-                    // or a hardcoded value
-                    String pattern = filter.getString("pattern");
-                    logger.fine("Pattern: " + pattern);
-                    if (pattern.equals("@id")) {
-                        logger.fine("Added #id pattern: " + filterKey + ": " + termUri);
-                        job.add(filterKey, termUri);
-                    } else if (pattern.contains("{")) {
-                        if (vals.isEmpty()) {
-                            if (nrOfNotFound == 0) {
-                                logger.warning("External Vocabulary: " + termUri + " - No value found for " + filterKey);
-                            }
-                        }
-                        else {
-                            if (pattern.equals("{0}")) {
-                                if (vals.get(0) instanceof JsonArray) {
-                                    job.add(filterKey, (JsonArray) vals.get(0));
-                                }
-                                else if (vals.get(0) instanceof JsonObject) {
-                                    job.add(filterKey, (JsonObject) vals.get(0));
-                                }
-                                else {
-                                    job.add(filterKey, (String) vals.get(0));
-                                }
-                            }
-                            else {
-                                String result = MessageFormat.format(pattern, vals.toArray());
-                                logger.fine("Result: " + result);
-                                job.add(filterKey, result);
-                                logger.fine("Added : " + filterKey + ": " + result);
-                            }
-                        }
-                    } else {
-                        logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
-                        job.add(filterKey, pattern);
-                    }
-                } catch (Exception e) {
-                    logger.warning("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
-                            + e.getMessage());
-                    e.printStackTrace();
                 }
             }
-        }
-        if(nrOfNotFound>0) {
-            logger.warning("External Vocabulary: " + termUri + " - Failed to find value(s) reported above in " +readObject);
+
+            if (nrOfNotFound > 0) {
+                logger.warning("External Vocabulary: " + termUri + " - Failed to find value(s) reported above in " + readObject);
+            }
         }
         JsonObject filteredResponse = job.build();
         if(filteredResponse.isEmpty()) {
@@ -790,7 +816,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         }
                     }
                 } else {
-                    JsonArrayBuilder parts = Json.createArrayBuilder();
+                    JsonArrayBuilder parts = JsonUtil.createArrayBuilder();
                     for (JsonValue subPath : arr) {
                         if (subPath instanceof JsonObject) {
                             JsonValue nextValue = ((JsonObject) subPath).get(keyVal[0]);

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.json.Json;
@@ -35,7 +36,7 @@ public class PostExternalSearchServiceBean extends AbstractExternalSearchService
 
         // Create JSON object with search parameters JsonObject searchParams =
         return NullSafeJsonBuilder.jsonObjectBuilder().add("query", query)
-                .add("filterQueries", Json.createArrayBuilder(filterQueries)).add("sortField", sortField)
+                .add("filterQueries", JsonUtil.createArrayBuilder(filterQueries)).add("sortField", sortField)
                 .add("sortOrder", sortOrder).add("paginationStart", paginationStart)
                 .add("onlyDataRelatedToMe", onlyDataRelatedToMe).add("numResultsPerPage", numResultsPerPage)
                 .add("geoPoint", geoPoint).add("geoRadius", geoRadius).build();

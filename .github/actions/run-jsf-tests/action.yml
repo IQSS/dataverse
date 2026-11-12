@@ -1,0 +1,62 @@
+---
+name: "Run JSF Tests"
+description: "Run the Java JSF frontend test suite from gdcc/dataverse-jsf-tests (Playwright for Java, JUnit 5) in one browser against a running Dataverse stack, and upload its results. Expects the stack to be up (start-dataverse-stack), Java and Maven to be set up (setup-maven), and the BASE_URL, DV_* and related variables to be set by the calling job."
+inputs:
+  browser:
+    description: "Browser to test with: chromium, firefox or webkit"
+    required: true
+  ref:
+    description: "Branch, tag or commit of gdcc/dataverse-jsf-tests to run"
+    required: false
+    default: "java"
+runs:
+  using: composite
+  steps:
+
+    # ---------------------------
+    # CHECKOUT THE JSF SUITE
+    # ---------------------------
+    - name: Checkout dataverse-jsf-tests
+      uses: actions/checkout@v7
+      with:
+        repository: gdcc/dataverse-jsf-tests
+        ref: ${{ inputs.ref }}
+        path: dataverse-jsf-tests
+
+    # ---------------------------
+    # INSTALL BROWSER SYSTEM LIBRARIES
+    # ---------------------------
+    # Only this browser's OS libraries, through Playwright's Java CLI. The suite downloads
+    # the browser itself when its run starts.
+    - name: Install browser system libraries (${{ inputs.browser }})
+      shell: bash
+      run: >-
+        mvn -B -q test-compile exec:java
+        -Dexec.mainClass=com.microsoft.playwright.CLI
+        -Dexec.classpathScope=test
+        -Dexec.args="install-deps ${{ inputs.browser }}"
+      working-directory: dataverse-jsf-tests
+
+    # ---------------------------
+    # RUN THE JSF TESTS
+    # ---------------------------
+    # The suite logs in before its first test and runs only the selected browser
+    # (its browser-<name> profile). Fails if any test failed.
+    - name: Run JSF tests (${{ inputs.browser }})
+      shell: bash
+      run: mvn -B verify -Ddataverse.test.jsf.browser=${{ inputs.browser }}
+      working-directory: dataverse-jsf-tests
+
+    # ---------------------------
+    # UPLOAD TEST RESULTS
+    # ---------------------------
+    # JUnit reports, plus a trace, video and final screenshot per test.
+    - name: Upload JSF test results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: jsf-test-results-${{ inputs.browser }}
+        path: |
+          dataverse-jsf-tests/target/failsafe-reports/${{ inputs.browser }}/
+          dataverse-jsf-tests/target/playwright/
+        retention-days: 14

@@ -5,7 +5,7 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:jsf="http://xmlns.jcp.org/jsf">
     <!-- Dialog Contact Form -->
-    <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true">
+    <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true" dynamic="true">
         <p:fragment>
             <h:form id="emailForm" class="form-horizontal">
                 <p:focus context="contactDialog"/>

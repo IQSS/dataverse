@@ -230,6 +230,12 @@ Integrate with the Local Contexts platform, enabling the use of Traditional Know
 +++
 {doc}`More information.</installation/localcontexts>`
 ```
+
+```{grid-item-card} Locally FAIR Data (Experimental)
+Some datasets' existence cannot be shared with the public right away, but should be findable and accessible to certain groups of people.
++++
+{ref}`More information.<locally-fair>`
+```
 ````
 
 ````{grid} 1 2 2 3

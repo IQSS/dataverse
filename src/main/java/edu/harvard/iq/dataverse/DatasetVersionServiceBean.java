@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -161,23 +163,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return em.find(DatasetVersion.class, pk);
     }
     
-    public DatasetVersion findDeep(Object pk) {
-        return (DatasetVersion) em.createNamedQuery("DatasetVersion.findById")
-            .setParameter("id", pk)
-            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestRequest")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.thumbnailForDataset")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.retention")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
-            .getSingleResult();
-    }
-
     /**
      * Performs the same database lookup as the one behind {@code Dataset.getVersions()}.
      * <p>
@@ -1159,7 +1144,7 @@ w
     }
 
     public JsonObjectBuilder fixMissingUnf(String datasetVersionId, boolean forceRecalculate) {
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
         if (datasetVersionId == null || datasetVersionId.isEmpty()) {
             info.add("message", "datasetVersionId was null or empty!");
             return info;
@@ -1279,8 +1264,7 @@ w
     /**
      * Execute a query to return DatasetVersion
      * 
-     * @param queryString
-     * @return 
+     * @return
      */
     public List<DatasetVersion> getUnarchivedDatasetVersions(){
         
@@ -1368,4 +1352,5 @@ w
             logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
         }
     }
+
 }

@@ -47,7 +47,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -115,44 +114,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.find(Dataset.class, pk);
     }
 
-    /**
-     * Retrieve a dataset with the deep underlying structure in one query execution.
-     * This is a more optimal choice when accessing files of a dataset.
-     * In a contrast, the find() method does not pre-fetch the file objects and results in point queries when accessing these objects.
-     * Since the files have a deep structure, many queries can be prevented by using the findDeep() method, especially for large datasets
-     * containing many files, and when iterating over all the files.
-     * When you are not going to access the file objects, the default find() method is better because of the lazy loading.
-     * @return a dataset with pre-fetched file objects
-     */
-    public Dataset findDeep(Object pk) {
-        try {
-            return (Dataset) em.createNamedQuery("Dataset.findById")
-                    .setParameter("id", pk)
-                    // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
-                    .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
-                    .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
-                    .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
-                    .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
-                    .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
-                    .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
-                    //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
-                    .setHint("eclipselink.left-join-fetch", "o.files.embargo")
-                    .setHint("eclipselink.left-join-fetch", "o.files.retention")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
-                    .setHint("eclipselink.left-join-fetch", "o.files.owner")
-                    .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
-                    .setHint("eclipselink.left-join-fetch", "o.files.creator")
-                    .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
-                    .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
-                    .getSingleResult();
-        } catch (NoResultException | NonUniqueResultException ex) {
-            return null;
-        }
-    }
-    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -510,7 +471,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.merge(datasetLock);
     }
 
-    /*
+    /**
      * Lists all dataset locks, optionally filtered by lock type or user, or both
      * @param lockType
      * @param user
@@ -701,8 +662,8 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     // reExportAll with a date *forces* a reexport on all published datasets that were not exported or were exported before the date;
     @Asynchronous
-    public void reExportAllAsync(Date reExportDate) {
-        exportAllDatasets(true, reExportDate);
+    public void reExportAllAsync(Date reExportDate, List<String> formatNames) {
+        exportAllDatasets(true, reExportDate, formatNames);
         
     }
 
@@ -724,11 +685,14 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     private void exportAllDatasets(boolean b) {
-     exportAllDatasets(b, null);
+     exportAllDatasets(b, null, List.of());
     }
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    private void exportAllDatasets(boolean forceReExport, Date reExportDate) {
+    private void exportAllDatasets(boolean forceReExport, Date reExportDate, List<String> formatNames) {
+        if (formatNames == null) {
+            throw new IllegalArgumentException("exportAllDatasets called with null formatNames (use an empty List for \"all\"");
+        }
         Integer countAll = 0;
         Integer countSuccess = 0;
         Integer countError = 0;
@@ -775,7 +739,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                                             || dataset.getLastExportTime().before(publicationDate))))) {
                         countAll++;
                         try {
-                            recordService.exportAllFormatsInNewTransaction(dataset);
+                            recordService.exportFormatsInNewTransaction(dataset, formatNames);
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
@@ -803,13 +767,18 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @Asynchronous
     public void reExportDatasetAsync(Dataset dataset) {
-        exportDataset(dataset, true);
+        exportDataset(dataset, true, List.of());
+    }
+    
+    @Asynchronous
+    public void reExportDatasetAsync(Dataset dataset, List<String> formatNames) {
+        exportDataset(dataset, true, formatNames);
     }
 
-    public void exportDataset(Dataset dataset, boolean forceReExport) {
+    private void exportDataset(Dataset dataset, boolean forceReExport, List<String> formatNames) {
         if (dataset != null) {
             // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets,
-            // but when only one dataset is exported we do not log in a separate export logging file
+            // but when only one dataset is exported we do not use a dedicated log file
             if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
                 // can't trust dataset.getPublicationDate(), no.
@@ -818,7 +787,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                         && (dataset.getLastExportTime() == null
                         || dataset.getLastExportTime().before(publicationDate)))) {
                     try {
-                        recordService.exportAllFormatsInNewTransaction(dataset);
+                        recordService.exportFormatsInNewTransaction(dataset, formatNames);
                         logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                     } catch (Exception ex) {
                         logger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);

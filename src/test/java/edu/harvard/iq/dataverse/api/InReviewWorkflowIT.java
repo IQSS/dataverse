@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
@@ -137,7 +138,7 @@ public class InReviewWorkflowIT {
                 .statusCode(OK.getStatusCode());
 
         String joeRandomComments = "Joe Random says you'll never graduate.";
-        JsonObjectBuilder joeRandObj = Json.createObjectBuilder();
+        JsonObjectBuilder joeRandObj = JsonUtil.createObjectBuilder();
         joeRandObj.add("reasonForReturn", joeRandomComments);
 
         Response curatorChecksNotificationsAndFindsWorkToDo = UtilIT.getNotifications(curatorApiToken);
@@ -234,14 +235,12 @@ public class InReviewWorkflowIT {
             boolean exerciseConcurrentModificationException = false;
             if (exerciseConcurrentModificationException) {
                 String comments = "How do we feel about concurrency?";
-                JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+                JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
                 jsonObjectBuilder.add("reasonForReturn", comments);
                 Response returnToAuthor = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
                 returnToAuthor.prettyPrint();
             } else {
                 // Increasing the sleep delay here, from 2 to 10 sec.;
-                // With the 2 sec. delay, it appears to have been working consistently
-                // on Jenkins (because it's fast, I'm guessing?) - but
                 // I kept seeing an error on my own build at this point once in a while,
                 // because the dataset is still locked when we try to edit it,
                 // a few lines down. -- L.A. Oct. 2018
@@ -285,7 +284,7 @@ public class InReviewWorkflowIT {
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.
         String noComments = "";
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
         jsonObjectBuilder.add("reasonForReturn", noComments);
         Response returnToAuthorNoComment = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
         returnToAuthorNoComment.prettyPrint();

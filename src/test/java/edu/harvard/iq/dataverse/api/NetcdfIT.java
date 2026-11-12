@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -194,7 +195,7 @@ public class NetcdfIT {
 
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("geospatial"), apiToken);
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, JsonUtil.createArrayBuilder().add("citation").add("geospatial"), apiToken);
         setMetadataBlocks.prettyPrint();
         setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
 

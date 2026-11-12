@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.locality.StorageSiteUtil;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -28,7 +30,7 @@ public class StorageSites extends AbstractApiBean {
     public Response listAll() {
         List<StorageSite> storageSites = storageSiteSvc.findAll();
         if (storageSites != null && !storageSites.isEmpty()) {
-            JsonArrayBuilder sites = Json.createArrayBuilder();
+            JsonArrayBuilder sites = JsonUtil.createArrayBuilder();
             storageSites.forEach((storageSite) -> {
                 sites.add(storageSite.toJsonObjectBuilder());
             });

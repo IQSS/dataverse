@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import java.io.StringReader;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -14,10 +13,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -113,8 +110,7 @@ public class DatasetVersionTest {
         datasetVersion.setTermsOfUseAndAccess(terms);
         String jsonLd = datasetVersion.getJsonLd();
         logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(jsonLd);
         assertEquals("http://schema.org", obj.getString("@context"));
         assertEquals("Dataset", obj.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
@@ -127,7 +123,7 @@ public class DatasetVersionTest {
         // TODO: if it ever becomes easier to mock a dataset title, test it.
         assertEquals("", obj.getString("name"));
         // TODO: If it ever becomes easier to mock authors, test them.
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
         assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
@@ -167,8 +163,7 @@ public class DatasetVersionTest {
 
         String jsonLd = datasetVersion.getJsonLd();
         logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(jsonLd);
         assertEquals("http://schema.org", obj.getString("@context"));
         assertEquals("Dataset", obj.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
@@ -181,7 +176,7 @@ public class DatasetVersionTest {
         // TODO: if it ever becomes easier to mock a dataset title, test it.
         assertEquals("", obj.getString("name"));
         // TODO: If it ever becomes easier to mock authors, test them.
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
         assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
@@ -207,8 +202,7 @@ public class DatasetVersionTest {
         assertEquals("", datasetVersion.getPublicationDateAsString());
         String jsonLd = datasetVersion.getJsonLd();
         logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(jsonLd);
         assertEquals("http://schema.org", obj.getString("@context"));
         assertEquals("DRAFT", obj.getString("version"));
     }

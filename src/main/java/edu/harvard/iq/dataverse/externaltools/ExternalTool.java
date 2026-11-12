@@ -296,14 +296,14 @@ public class ExternalTool implements Serializable {
     }
 
     public JsonObjectBuilder toJson() {
-        JsonObjectBuilder jab = Json.createObjectBuilder();
+        JsonObjectBuilder jab = JsonUtil.createObjectBuilder();
         jab.add("id", getId());
         jab.add(DISPLAY_NAME, getDisplayName());
         if (getToolName() != null) {
             jab.add(TOOL_NAME, getToolName());
         }
         jab.add(DESCRIPTION, getDescription());
-        JsonArrayBuilder types = Json.createArrayBuilder();
+        JsonArrayBuilder types = JsonUtil.createArrayBuilder();
         for (ExternalToolType externalToolType : externalToolTypes) {
             types.add(externalToolType.getType().text);
         }

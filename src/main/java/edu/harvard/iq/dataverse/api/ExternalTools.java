@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.DELETE;
@@ -28,7 +30,7 @@ public class ExternalTools extends AbstractApiBean {
     @Operation(summary = "Lists external tools",
             description = "Returns all registered external tools as JSON.")
     public Response getExternalTools() {
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         externalToolService.findAll().forEach((externalTool) -> {
             jab.add(externalTool.toJson());
         });
