@@ -656,15 +656,7 @@ This endpoint supports the following optional query parameters:
 - ``returnDatasetFieldTypes``: Whether or not to return the dataset field types present in each metadata block. If not set, the default value is false.
 - ``onlyDisplayedOnCreate``: Whether or not to return only the metadata blocks that are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
 - ``datasetType``: Optionally return additional fields from metadata blocks that are linked with a particular dataset type (see :ref:`dataset-types` in the User Guide). Pass a single dataset type as a string. For a list of dataset types you can pass, see :ref:`api-list-dataset-types`.
-- ``locale``: Optionally select the language of metadata block display names and field titles, display names, descriptions, and watermarks, including child fields of compound fields. Use a language tag such as ``fr-CA``; underscore-separated forms such as ``fr_CA`` are also accepted. Translations are resolved using the language bundles installed in Dataverse and the standard resource bundle fallback. If no bundle or key is available, the corresponding value stored in the database is used. Omitting this parameter preserves the current response behavior. Empty or malformed values, and tags without a language, return HTTP ``400 Bad Request``.
-
-For example, to request Canadian French labels and field definitions:
-
-.. code-block:: bash
-
-  curl "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&locale=fr-CA"
-
-The ``locale`` parameter changes presentation text only. Field identifiers, types, validation rules, and controlled vocabulary values are unchanged. It also translates block display names when ``returnDatasetFieldTypes`` is false. It does not translate dataset metadata values or change the server's default locale. The ``Accept-Language`` header does not select the language for this endpoint.
+- ``locale``: Language tag for metadata block and field labels, descriptions, and watermarks (e.g. ``fr-CA`` or ``fr_CA``). Uses installed language bundles with fallback to default values. If omitted, the current response behavior is preserved.
 
 An example using the optional query parameters is presented below:
 
@@ -675,13 +667,13 @@ An example using the optional query parameters is presented below:
   export ID=root
   export DATASET_TYPE=software
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=$DATASET_TYPE"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=$DATASET_TYPE&locale=fr-CA"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=software"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=software&locale=fr-CA"
 
 .. _define-metadata-blocks-for-a-dataverse-collection:
 
