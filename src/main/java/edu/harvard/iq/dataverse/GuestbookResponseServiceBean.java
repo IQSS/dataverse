@@ -318,7 +318,7 @@ public class GuestbookResponseServiceBean {
         for (Object[] result : guestbookResults) {
             Object[] singleResult = new Object[6];
 
-            Integer guestbookResponseId = ((Number)result[0]).intValue();
+            Integer guestbookResponseId = result[0] == null ? null : ((Number) result[0]).intValue();
 
             if (guestbookResponseId != null) {
                 singleResult[0] = result[1];
