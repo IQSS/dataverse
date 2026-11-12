@@ -223,6 +223,24 @@ public class OpenAireExportUtilTest {
                 stringWriter.toString());
     }
     
+    @Test
+    void testNameIdentifier_validUrlScheme() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-name-identifier-test.txt", DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+
+        // when
+        OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+
+        String xmlOutput = stringWriter.toString();
+
+        // Assert
+        assertTrue(xmlOutput.contains("schemeURI=\"https://orcid.org\""));
+        assertTrue(xmlOutput.contains("nameIdentifierScheme=\"ORCID\""));
+        assertTrue(xmlOutput.contains(">https://orcid.org/0000-0002-1825-0097</nameIdentifier>"));
+    }
+    
     /**
      * Test: 3, Title (with optional type sub-properties) (M)
      *
