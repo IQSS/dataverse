@@ -4510,9 +4510,8 @@ public class FilesIT {
         JsonObject data = JsonUtil.getJsonObject(externalToolResponse.getBody().asString());
         JsonParser parser = new JsonParser();
         ExternalTool externalTool = parser.parseExternalTool(data.getJsonObject("data"));
-        String body = "{\"preview\":true," + guestbookResponse;
-        JsonObject jsonObject = JsonUtil.getJsonObject(body);
-        Response toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, jsonObject);
+
+        Response toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true," + guestbookResponse));
         toolUrlResponse.prettyPrint();
         assertEquals(200, toolUrlResponse.getStatusCode());
         int guestbookResponseId = JsonPath.from(toolUrlResponse.body().asString()).getInt("data.gbrids");
@@ -4544,5 +4543,10 @@ public class FilesIT {
         int firstViewImage = listResponse.prettyPrint().indexOf(",View Image,dataverseproject.png");
         int lastViewImage = listResponse.prettyPrint().indexOf(",View Image,dataverseproject.png");
         assertTrue(firstViewImage != -1 && firstViewImage == lastViewImage); // exactly once
+
+        // Test without guestbook response
+        toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true}"));
+        toolUrlResponse.prettyPrint();
+        assertEquals(400, toolUrlResponse.getStatusCode());
     }
 }
