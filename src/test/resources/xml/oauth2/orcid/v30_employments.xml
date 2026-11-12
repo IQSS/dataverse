@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<activities:employments path="/0000-0002-1825-0097/employments" xmlns:common="http://www.orcid.org/ns/common" xmlns:employment="http://www.orcid.org/ns/employment" xmlns:activities="http://www.orcid.org/ns/activities">
+    <common:last-modified-date>2024-05-02T14:00:00.000Z</common:last-modified-date>
+    <activities:affiliation-group>
+        <common:last-modified-date>2024-05-02T14:00:00.000Z</common:last-modified-date>
+        <common:external-ids/>
+        <employment:employment-summary put-code="3" display-index="1" path="/0000-0002-1825-0097/employment/3" visibility="public">
+            <common:department-name>Department of Physics</common:department-name>
+            <common:role-title>Lecturer</common:role-title>
+            <common:start-date>
+                <common:year>2010</common:year>
+                <common:month>01</common:month>
+            </common:start-date>
+            <common:end-date>
+                <common:year>2014</common:year>
+                <common:month>12</common:month>
+            </common:end-date>
+            <common:organization>
+                <common:name>Past University</common:name>
+                <common:disambiguated-organization>
+                    <common:disambiguated-organization-identifier>https://ror.org/05gq02987</common:disambiguated-organization-identifier>
+                    <common:disambiguation-source>ROR</common:disambiguation-source>
+                </common:disambiguated-organization>
+            </common:organization>
+        </employment:employment-summary>
+    </activities:affiliation-group>
+    <activities:affiliation-group>
+        <common:last-modified-date>2024-05-02T14:00:00.000Z</common:last-modified-date>
+        <common:external-ids/>
+        <employment:employment-summary put-code="2" display-index="1" path="/0000-0002-1825-0097/employment/2" visibility="public">
+            <common:role-title>Visiting Scholar</common:role-title>
+            <common:start-date>
+                <common:year>2015</common:year>
+            </common:start-date>
+            <common:organization>
+                <common:name>Ringgold Institute</common:name>
+                <common:disambiguated-organization>
+                    <common:disambiguated-organization-identifier>5468</common:disambiguated-organization-identifier>
+                    <common:disambiguation-source>RINGGOLD</common:disambiguation-source>
+                </common:disambiguated-organization>
+            </common:organization>
+        </employment:employment-summary>
+    </activities:affiliation-group>
+    <activities:affiliation-group>
+        <common:last-modified-date>2024-05-02T14:00:00.000Z</common:last-modified-date>
+        <common:external-ids/>
+        <employment:employment-summary put-code="1" display-index="1" path="/0000-0002-1825-0097/employment/1" visibility="public">
+            <common:department-name>Institute for Quantitative Social Science</common:department-name>
+            <common:role-title>Research Data Manager</common:role-title>
+            <common:start-date>
+                <common:year>2021</common:year>
+                <common:month>09</common:month>
+                <common:day>01</common:day>
+            </common:start-date>
+            <common:organization>
+                <common:name>Harvard University</common:name>
+                <common:disambiguated-organization>
+                    <common:disambiguated-organization-identifier>https://ror.org/03vek6s52</common:disambiguated-organization-identifier>
+                    <common:disambiguation-source>ROR</common:disambiguation-source>
+                </common:disambiguated-organization>
+            </common:organization>
+        </employment:employment-summary>
+    </activities:affiliation-group>
+</activities:employments>

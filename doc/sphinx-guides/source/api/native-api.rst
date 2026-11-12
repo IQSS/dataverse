@@ -6497,6 +6497,62 @@ Place this ``user-add.json`` file in your current directory and run the followin
 
 Optionally, you may use a third query parameter "sendEmailNotification=false" to explicitly disable sending an email notification to the new user.
 
+.. _sign-up-builtin-user:
+
+Sign Up as a Builtin User
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New users can create their own builtin account without an API token or the ``:BuiltinUsersKey``.
+
+The endpoint is only available when the :ref:`dataverse.feature.api-builtin-user-signup` feature flag is enabled and :ref:`conf-allow-signup` is not set to "false". Requests are rate-limited per client IP address, see :ref:`dataverse.api.signup.rate-limit-per-hour`.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -X POST -H "Content-Type: application/json" "$SERVER_URL/api/users/signup" --data '{
+    "username": "dataverse",
+    "firstName": "Test",
+    "lastName": "Dataverse",
+    "emailAddress": "dataverse@example.edu",
+    "password": "Str0ngPassw0rd",
+    "affiliation": "Harvard University",
+    "position": "Researcher",
+    "termsAccepted": true
+  }'
+
+The fields are validated with the same rules as the "Sign Up" page: the username must be valid and not already taken, the email address must be valid and not already in use, the password must satisfy the password policy (see :ref:`:PVMinLength` and the related settings), and ``termsAccepted`` must be ``true``. ``affiliation`` and ``position`` are optional. Invalid fields are reported in a ``fieldErrors`` object in a 400 response.
+
+On success, the account is created right away with a ``201 Created`` response that includes the new user's identifier, and the user receives the standard welcome email with a link to confirm their email address. No API token is returned; the new user logs in as usual.
+
+Connecting an ORCID iD While Signing Up
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When an ORCID OAuth2 provider is configured (see :doc:`/installation/orcid`; it may be registered with ``"enabled": false`` so it is not offered as a login option), a new user can authenticate their ORCID iD during sign-up, and it is saved to their account as an authenticated ORCID.
+
+This works with the production ORCID registry or the ORCID sandbox, whichever the configured provider uses: an installation can reuse its existing production ORCID client, as long as the redirect URL below is also registered for that client at ORCID. ORCID doesn't accept ``localhost`` redirect URLs, so a development installation using the sandbox can register ``http://127.0.0.1:8000/modern/sign-up`` instead and list it in :ref:`dataverse.api.signup.orcid-redirect-uris`.
+
+Connecting an ORCID iD takes three requests, none of which need an API token:
+
+1. Create a random ``$CODE_VERIFIER`` (43 to 128 characters from ``A-Z``, ``a-z``, ``0-9``, ``-``, ``.``, ``_`` and ``~``) and keep it on the client. ``$CODE_CHALLENGE`` is its SHA-256 hash, base64url-encoded without padding, as for the ``S256`` method of PKCE (RFC 7636). This ties the ORCID response to the client that started the flow, so a link with someone else's ``code`` and ``state`` can't be used to connect their ORCID iD.
+
+   .. code-block:: bash
+
+     export CODE_VERIFIER=$(openssl rand -base64 48 | tr '+/' '-_' | tr -d '=\n')
+     export CODE_CHALLENGE=$(printf '%s' "$CODE_VERIFIER" | openssl dgst -sha256 -binary | openssl base64 | tr '+/' '-_' | tr -d '=\n')
+
+2. ``GET $SERVER_URL/api/users/signup/orcid/authorize?redirectUri=$REDIRECT_URI&codeChallenge=$CODE_CHALLENGE`` returns an ``authorizationUrl``. Send the user's browser there. ``$REDIRECT_URI`` must be ``$SERVER_URL/modern/sign-up``, or one of the URLs listed in :ref:`dataverse.api.signup.orcid-redirect-uris` when that setting is used.
+3. After the user signs in at ORCID, ORCID redirects back to ``$REDIRECT_URI`` with ``code`` and ``state`` query parameters. Post them, with the same ``redirectUri`` and the ``codeVerifier``, to ``POST $SERVER_URL/api/users/signup/orcid``:
+
+   .. code-block:: bash
+
+     curl -X POST -H "Content-Type: application/json" "$SERVER_URL/api/users/signup/orcid" --data '{"code": "'$CODE'", "state": "'$STATE'", "redirectUri": "'$REDIRECT_URI'", "codeVerifier": "'$CODE_VERIFIER'"}'
+
+   The response contains the ORCID iD (``orcid``), any name, email, affiliation, and position the user shares on their ORCID record, which can be used to pre-fill the sign-up form, and an ``orcidToken``. It also suggests a ``username`` (the part of the primary email before the "@", or the given and family names joined with a dot) when that username is valid and not already taken. The affiliation and position come from the user's current employment on their ORCID record (the one with the latest start date); when ORCID identifies that organization with a ROR ID, it is returned as ``affiliationRor`` (for example ``https://ror.org/03vek6s52``). ``affiliationRor`` is informational for now: the sign-up request doesn't accept it yet. A 409 response means the ORCID iD is already linked to another account.
+4. Include the ``orcidToken`` in the sign-up request above. It is valid for 30 minutes.
+
+Note that this endpoint is not to be confused with ``POST /api/users/register`` (see :ref:`bearer-tokens`), which creates an account for a user who has already authenticated with an OIDC identity provider.
+
 Roles
 -----
 

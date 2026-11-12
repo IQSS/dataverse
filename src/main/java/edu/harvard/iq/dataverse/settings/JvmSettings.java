@@ -96,6 +96,10 @@ public enum JvmSettings {
     // API: MDC Citation updates
     SCOPE_API_MDC(SCOPE_API, "mdc"),
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
+    // API: Builtin user sign-up
+    SCOPE_API_SIGNUP(SCOPE_API, "signup"),
+    API_SIGNUP_RATE_LIMIT_PER_HOUR(SCOPE_API_SIGNUP, "rate-limit-per-hour"),
+    API_SIGNUP_ORCID_REDIRECT_URIS(SCOPE_API_SIGNUP, "orcid-redirect-uris"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
