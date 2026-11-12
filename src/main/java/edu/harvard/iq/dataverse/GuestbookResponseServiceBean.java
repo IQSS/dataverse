@@ -309,9 +309,9 @@ public class GuestbookResponseServiceBean {
                 // guestbook responses - can make a difference on a guestbook with 
                 // an insane amount of responses. -- L.A.
                 customQandAs = mapCustomQuestionAnswersAsLists(dataverseId, 
-                        guestbookId, 
-                        (Integer)(guestbookResults.get(0)[0]), 
-                        (Integer)(guestbookResults.get(guestbookResults.size()-1)[0]));
+                        guestbookId,
+                        ((Number) guestbookResults.get(0)[0]).intValue(),
+                        ((Number) guestbookResults.get(guestbookResults.size()-1)[0]).intValue());
             }
         }
 
