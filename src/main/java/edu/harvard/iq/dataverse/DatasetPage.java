@@ -2361,17 +2361,14 @@ public class DatasetPage implements java.io.Serializable {
 
         var directUploadEnabled = systemConfig.directUploadEnabled(dataset);
 
-        var withTermsOfUse = hasTermsOfUse(dataset.getTemplate());
+        var template = dataset.getTemplate();
+        var hasTermsOfUse = template != null && (template.getDefaultTermsOfUseOrLicense().getLicense() == null);
 
-        if (isEmpty(dataset.getIdentifier()) && (directUploadEnabled || withTermsOfUse)) {
+        if (isEmpty(dataset.getIdentifier()) && (directUploadEnabled || hasTermsOfUse)) {
             CommandContext ctxt = commandEngine.getContext();
             PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
             pidProvider.generatePid(dataset);
         }
-    }
-
-    private boolean hasTermsOfUse(Template template) {
-        return template != null && (template.getDefaultTermsOfUseOrLicense().getLicense()==null);
     }
 
     private Template getLastLoadedTemplate(Template template) {
