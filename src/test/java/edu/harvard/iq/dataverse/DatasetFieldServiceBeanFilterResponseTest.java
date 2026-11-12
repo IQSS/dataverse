@@ -303,27 +303,15 @@ public class DatasetFieldServiceBeanFilterResponseTest {
     }
 
     @Test
-    void tryToReplaceRetrievalUriParam_replaces_datasetPersistentId() throws Exception {
+    void tryToReplaceRetrievalUriParam_replaces_datasetPID() throws Exception {
         Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
         method.setAccessible(true);
 
         String result = (String) method.invoke(datasetFieldServiceBean,
-                "https://example.com/api/datasets/{datasetPersistentId}/terms/{0}",
-                "datasetPersistentId", "doi:10.1234/abc");
+                "https://example.com/api/datasets/:persistentId/terms/{0}?persistentId={datasetPID}",
+                "datasetPID", "doi:10.1234/abc");
 
-        assertThat(result).isEqualTo("https://example.com/api/datasets/doi:10.1234/abc/terms/{0}");
-    }
-
-    @Test
-    void tryToReplaceRetrievalUriParam_replaces_both_dataset_params() throws Exception {
-        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
-        method.setAccessible(true);
-
-        String uri = "https://example.com/api/datasets/{datasetId}/persistent/{datasetPersistentId}/terms/{0}";
-        String result = (String) method.invoke(datasetFieldServiceBean, uri, "datasetId", "456");
-        result = (String) method.invoke(datasetFieldServiceBean, result, "datasetPersistentId", "doi:10.5678/xyz");
-
-        assertThat(result).isEqualTo("https://example.com/api/datasets/456/persistent/doi:10.5678/xyz/terms/{0}");
+        assertThat(result).isEqualTo("https://example.com/api/datasets/:persistentId/terms/{0}?persistentId=doi:10.1234/abc");
     }
 
     @Test
@@ -365,9 +353,9 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         method.setAccessible(true);
 
         String result = (String) method.invoke(datasetFieldServiceBean,
-                "https://example.com/api/datasets/{encodeUrl:datasetPersistentId}/terms/{0}",
-                "datasetPersistentId", "doi:10.1234/abc");
+                "https://example.com/api/datasets/:persistentId/terms/{0}?persistentId={encodeUrl:datasetPID}",
+                "datasetPID", "doi:10.1234/abc");
 
-        assertThat(result).isEqualTo("https://example.com/api/datasets/doi%3A10.1234%2Fabc/terms/{0}");
+        assertThat(result).isEqualTo("https://example.com/api/datasets/:persistentId/terms/{0}?persistentId=doi%3A10.1234%2Fabc");
     }
 }

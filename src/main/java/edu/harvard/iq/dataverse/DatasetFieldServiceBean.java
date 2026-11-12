@@ -577,7 +577,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     if (dataset != null) {
                         retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, "datasetId", String.valueOf(dataset.getId()));
                         if (dataset.getGlobalId() != null) {
-                            retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, "datasetPersistentId", dataset.getGlobalId().asString());
+                            retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, "datasetPID", dataset.getGlobalId().asString());
                         }
                     }
                 } catch (InvalidParameterException e) {
