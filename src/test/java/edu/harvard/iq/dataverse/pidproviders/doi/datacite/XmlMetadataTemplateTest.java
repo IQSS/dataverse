@@ -149,8 +149,9 @@ public class XmlMetadataTemplateTest {
         dataset.setVersions(new ArrayList<>(List.of(version)));
         version.setVersionNumber(1L);
         version.setMinorVersionNumber(0L);
-        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
-        
+        version.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        version.setTermsOfAccess(new TermsOfAccess());
+
         version=dataset.getLatestVersionForCopy();
         
         DataFile versionFile = new DataFile();
