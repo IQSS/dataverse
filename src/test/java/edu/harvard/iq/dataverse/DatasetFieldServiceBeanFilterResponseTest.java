@@ -12,8 +12,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.InvalidParameterException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DatasetFieldServiceBeanFilterResponseTest {
 
@@ -286,5 +288,86 @@ public class DatasetFieldServiceBeanFilterResponseTest {
         Method filterResponseMethod = DatasetFieldServiceBean.class.getDeclaredMethod("filterResponse", JsonObject.class, JsonObject.class, String.class);
         filterResponseMethod.setAccessible(true);
         return (JsonObject) filterResponseMethod.invoke(datasetFieldServiceBean, cvocEntry, readObject, termURI);
+    }
+
+    @Test
+    void tryToReplaceRetrievalUriParam_replaces_datasetId() throws Exception {
+        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
+        method.setAccessible(true);
+
+        String result = (String) method.invoke(datasetFieldServiceBean,
+                "https://example.com/api/datasets/{datasetId}/terms/{0}",
+                "datasetId", "123");
+
+        assertThat(result).isEqualTo("https://example.com/api/datasets/123/terms/{0}");
+    }
+
+    @Test
+    void tryToReplaceRetrievalUriParam_replaces_datasetPersistentId() throws Exception {
+        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
+        method.setAccessible(true);
+
+        String result = (String) method.invoke(datasetFieldServiceBean,
+                "https://example.com/api/datasets/{datasetPersistentId}/terms/{0}",
+                "datasetPersistentId", "doi:10.1234/abc");
+
+        assertThat(result).isEqualTo("https://example.com/api/datasets/doi:10.1234/abc/terms/{0}");
+    }
+
+    @Test
+    void tryToReplaceRetrievalUriParam_replaces_both_dataset_params() throws Exception {
+        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
+        method.setAccessible(true);
+
+        String uri = "https://example.com/api/datasets/{datasetId}/persistent/{datasetPersistentId}/terms/{0}";
+        String result = (String) method.invoke(datasetFieldServiceBean, uri, "datasetId", "456");
+        result = (String) method.invoke(datasetFieldServiceBean, result, "datasetPersistentId", "doi:10.5678/xyz");
+
+        assertThat(result).isEqualTo("https://example.com/api/datasets/456/persistent/doi:10.5678/xyz/terms/{0}");
+    }
+
+    @Test
+    void tryToReplaceRetrievalUriParam_skips_missing_param() throws Exception {
+        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
+        method.setAccessible(true);
+
+        String uri = "https://example.com/api/terms/{0}";
+        String result = (String) method.invoke(datasetFieldServiceBean, uri, "datasetId", "123");
+
+        assertThat(result).isEqualTo("https://example.com/api/terms/{0}");
+    }
+
+    @Test
+    void tryToReplaceRetrievalUriParam_throws_on_blank_value() throws Exception {
+        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
+        method.setAccessible(true);
+
+        assertThatThrownBy(() -> method.invoke(datasetFieldServiceBean,
+                "https://example.com/api/datasets/{datasetId}/terms/{0}",
+                "datasetId", ""))
+                .hasCauseInstanceOf(InvalidParameterException.class);
+    }
+
+    @Test
+    void tryToReplaceRetrievalUriParam_throws_on_null_value() throws Exception {
+        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
+        method.setAccessible(true);
+
+        assertThatThrownBy(() -> method.invoke(datasetFieldServiceBean,
+                "https://example.com/api/datasets/{datasetId}/terms/{0}",
+                "datasetId", (String) null))
+                .hasCauseInstanceOf(InvalidParameterException.class);
+    }
+
+    @Test
+    void tryToReplaceRetrievalUriParam_encodes_url_for_datasetPersistentId() throws Exception {
+        Method method = DatasetFieldServiceBean.class.getDeclaredMethod("tryToReplaceRetrievalUriParam", String.class, String.class, String.class);
+        method.setAccessible(true);
+
+        String result = (String) method.invoke(datasetFieldServiceBean,
+                "https://example.com/api/datasets/{encodeUrl:datasetPersistentId}/terms/{0}",
+                "datasetPersistentId", "doi:10.1234/abc");
+
+        assertThat(result).isEqualTo("https://example.com/api/datasets/doi%3A10.1234%2Fabc/terms/{0}");
     }
 }
