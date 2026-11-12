@@ -18,7 +18,7 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
-            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : workingVersion.title}#{!DatasetPage.anonymizedAccess ? ' - ' . dataverse.name : ''}"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? bundle['dataset.pageTitle'] : workingVersion.title.concat(!DatasetPage.anonymizedAccess ? ' - '.concat(dataverse.name) : '')}"/>
             <ui:param name="deaccessioned" value="#{DatasetPage.workingVersion.deaccessioned}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
             <ui:param name="showDataverseHeader" value="#{!DatasetPage.anonymizedAccess}"/>
