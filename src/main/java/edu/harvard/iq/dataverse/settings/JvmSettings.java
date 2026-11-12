@@ -89,6 +89,7 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     API_ALLOW_INCOMPLETE_METADATA(SCOPE_API, "allow-incomplete-metadata"),
+    API_LAST_API_USE_INTERVAL(SCOPE_API, "last-api-use-interval"),
     // API: BLOCKED_API SETTINGS
     SCOPE_API_BLOCKED(SCOPE_API, "blocked"),
     API_BLOCKED_ENDPOINTS(SCOPE_API_BLOCKED, "endpoints"),

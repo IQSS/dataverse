@@ -2769,7 +2769,7 @@ Configure a limit to the maximum number of Datafiles that can be uploaded to a D
 Notes:
 
 - This is a default that can be overwritten in any Dataverse/Collection or Dataset.
-- A value less than 1 will be treated as no limit set.
+- A value less than 0 will be treated as no limit set.
 - Changing this value will not delete any existing files. It is only intended for preventing new files from being uploaded.
 - Superusers will not be governed by this rule.
 
@@ -3406,6 +3406,20 @@ Defaults to ``false``.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.api.last-api-use-interval:
+
+dataverse.api.last-api-use-interval
++++++++++++++++++++++++++++++++++++
+
+The minimum interval, in seconds, between updates of an authenticated user's "last API use time" in the database.
+Only takes effect when the :ref:`dataverse.feature.delay-lastapiuse-update` feature flag is enabled.
+With the flag enabled, the timestamp is only updated on an authenticated API call if the currently recorded value is at least this old.
+
+Defaults to ``3600`` (one hour).
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_LAST_API_USE_INTERVAL``.
 
 .. _dataverse.api.blocked.endpoints:
 
@@ -4248,6 +4262,15 @@ dataverse.feature.allow-locally-fair-data
 Allows support for Locally FAIR collections and datasets.
 When enabled, selected content can remain visible only to authorized users or groups within a Dataverse installation.
 See :ref:`locally-fair` for more information.
+
+.. _dataverse.feature.delay-lastapiuse-update:
+
+dataverse.feature.delay-lastapiuse-update
++++++++++++++++++++++++++++++++++++++++++
+
+By default, Dataverse updates an authenticated user's "last API use time" in the database after every authenticated API call.
+With this flag enabled, the timestamp is only updated if the currently recorded value is older than the interval set with :ref:`dataverse.api.last-api-use-interval` (one hour by default).
+This avoids a database update after every call from clients that make frequent API requests, at the cost of the recorded time being up to that interval out of date.
 
 .. _:ApplicationServerSettings:
 

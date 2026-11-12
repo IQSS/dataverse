@@ -271,7 +271,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>32.1.2-jre</version>
+            <version>33.7.2-jre</version>
             <type>jar</type>
         </dependency>
         
@@ -578,13 +578,11 @@
             <artifactId>xoai-service-provider</artifactId>
             <version>${gdcc.xoai.version}</version>
         </dependency>
-        <!-- Added for AutoService -->
+        <!-- AutoService annotation (compile-time). The processor is in annotationProcessorPaths. -->
         <dependency>
             <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service</artifactId>
+            <artifactId>auto-service-annotations</artifactId>
             <version>${auto-service.version}</version>
-            <optional>true</optional>
-            <type>jar</type>
         </dependency>
         <!-- For API File Upload: 1 of 2 -->
         <dependency>
@@ -1291,6 +1289,7 @@
                 <SOLR_VERSION>${solr.version}</SOLR_VERSION>
                 <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
                 <SKIP_DEPLOY>${app.skipDeploy}</SKIP_DEPLOY>
+                <JAVA_AGENTS></JAVA_AGENTS>
             </properties>
         
             <build>
