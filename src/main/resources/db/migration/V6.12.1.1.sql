@@ -36,6 +36,9 @@ BEGIN
     CREATE INDEX IF NOT EXISTS index_datasetversion_default_termsofuseorlicense_id
         ON datasetversion (default_termsofuseorlicense_id);
 
+    CREATE INDEX IF NOT EXISTS index_datasetversion_termsofaccess_id
+        ON datasetversion (termsofaccess_id);
+
     BEGIN
         ALTER TABLE termsofuseorlicense ADD CONSTRAINT fk_termsofuseorlicense_license_id FOREIGN KEY (license_id) REFERENCES license(id);
     EXCEPTION
@@ -88,13 +91,13 @@ BEGIN
         UPDATE datasetversion
         SET termsofaccess_id = termsofuseandaccess_id,
             default_termsofuseorlicense_id = termsofuseandaccess_id
-        WHERE termsofaccess_id IS NULL OR default_termsofuseorlicense_id IS NULL;
+        WHERE termsofaccess_id IS NULL AND default_termsofuseorlicense_id IS NULL;
     END IF;
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='template' AND column_name='termsofuseandaccess_id') THEN
         UPDATE template
         SET termsofaccess_id = termsofuseandaccess_id,
             default_termsofuseorlicense_id = termsofuseandaccess_id
-        WHERE termsofaccess_id IS NULL OR default_termsofuseorlicense_id IS NULL;
+        WHERE termsofaccess_id IS NULL AND default_termsofuseorlicense_id IS NULL;
     END IF;
 
     -- Drop the old termsofuseandaccess references, since we have migrated the data to the new tables.
