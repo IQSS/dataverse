@@ -303,6 +303,19 @@ public enum FeatureFlags {
      * @since Dataverse 6.10
      */
     ALLOW_LOCALLY_FAIR_DATA("allow-locally-fair-data"),
+    /**
+     * By default, the lastApiUseTime timestamp of an authenticated user is updated
+     * in the database on every authenticated API call. With this flag enabled, the
+     * timestamp is only updated if the currently recorded value is older than the
+     * interval configured with {@link JvmSettings#API_LAST_API_USE_INTERVAL}
+     * (3600 seconds by default). This avoids an UPDATE on the authenticateduser
+     * table after every call when a client makes frequent API requests.
+     *
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.delay-lastapiuse-update"
+     * @since Dataverse 6.13
+     */
+    DELAY_LASTAPIUSE_UPDATE("delay-lastapiuse-update"),
     ;
     
     
