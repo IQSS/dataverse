@@ -416,7 +416,8 @@ public class JsonParser {
         Dataset dataset = new Dataset();
         dataset.setOwner(owner);
         if (isUserSupplied) {
-            validateUserSuppliedDatasetFields(obj, dataset);
+            Dataset incoming = parseDataset(obj, owner, false, allowFiles);
+            validateRestrictedFields(incoming, dataset);
         }
         if (!isUserSupplied) {
             dataset.setAuthority(obj.getString("authority", null));
@@ -475,12 +476,14 @@ public class JsonParser {
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean isUserSupplied, boolean allowFiles) throws JsonParseException {
+        boolean skipValidation = (dsv == null);
         if (dsv == null) {
             dsv = new DatasetVersion();
         }
         try {
-            if (isUserSupplied) {
-                validateUserSuppliedVersionFields(obj, dsv);
+            if (isUserSupplied && !skipValidation) {
+                DatasetVersion incoming = parseDatasetVersion(obj, null, false);
+                validateRestrictedFields(incoming, dsv);
             }
             if (!isUserSupplied) {
                 dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
@@ -634,15 +637,21 @@ public class JsonParser {
 
     public Guestbook parseGuestbook(JsonObject obj, Guestbook gb, boolean isUserSupplied) throws JsonParseException {
         try {
-            if (isUserSupplied) {
-                validateUserSuppliedGuestbookFields(obj, gb);
+            if (isUserSupplied && gb != null) {
+                Guestbook incoming = parseGuestbook(obj, new Guestbook(), false);
+                validateRestrictedFields(incoming, gb);
             }
             if (obj.containsKey("id")) {
                 gb.setId(Long.valueOf(obj.getInt("id")));
             }
             if (!isUserSupplied) {
                 if (obj.containsKey("createTime")) {
-                    gb.setCreateTime(parseDate(obj.getString("createTime", null)));
+                    String ct = obj.getString("createTime", null);
+                    try {
+                        gb.setCreateTime(parseTime(ct));
+                    } catch (ParseException ex) {
+                        gb.setCreateTime(parseDate(ct));
+                    }
                 }
             }
             gb.setName(obj.getString("name", null));
@@ -1383,42 +1392,32 @@ public class JsonParser {
         return str == null ? defaultValue : Integer.parseInt(str);
     }
 
-    private void validateUserSuppliedDatasetFields(JsonObject obj, Dataset ds) throws JsonParseException {
+    public void validateRestrictedFields(Dataset incoming, Dataset existing) throws JsonParseException {
         List<String> diffs = new ArrayList<>();
-        if (obj.containsKey("authority") && !obj.isNull("authority")) {
-            if (!Objects.equals(obj.getString("authority", null), ds.getAuthority())) {
-                diffs.add("authority");
+        if (incoming.getAuthority() != null && !Objects.equals(incoming.getAuthority(), existing.getAuthority())) {
+            diffs.add("authority");
+        }
+        if (incoming.getProtocol() != null && !Objects.equals(incoming.getProtocol(), existing.getProtocol())) {
+            diffs.add("protocol");
+        }
+        if (incoming.getIdentifier() != null && !Objects.equals(incoming.getIdentifier(), existing.getIdentifier())) {
+            diffs.add("identifier");
+        }
+        if (incoming.getDatasetFileCountLimit() != null && !Objects.equals(incoming.getDatasetFileCountLimit(), existing.getDatasetFileCountLimit())) {
+            diffs.add("datasetFileCountLimit");
+        }
+        if (incoming.getDatasetType() != null) {
+            String incomingName = incoming.getDatasetType().getName();
+            String existingName = existing.getDatasetType() != null ? existing.getDatasetType().getName() : null;
+            if (!Objects.equals(incomingName, existingName)) {
+                // If it's the default and existing is null, it's NOT a diff because it's the default.
+                if (!(existingName == null && DatasetType.DEFAULT_DATASET_TYPE.equals(incomingName))) {
+                    diffs.add("datasetType");
+                }
             }
         }
-        if (obj.containsKey("protocol") && !obj.isNull("protocol")) {
-            if (!Objects.equals(obj.getString("protocol", null), ds.getProtocol())) {
-                diffs.add("protocol");
-            }
-        }
-        if (obj.containsKey("identifier") && !obj.isNull("identifier")) {
-            if (!Objects.equals(obj.getString("identifier", null), ds.getIdentifier())) {
-                diffs.add("identifier");
-            }
-        }
-        if (obj.containsKey("datasetFileCountLimit") && !obj.isNull("datasetFileCountLimit")) {
-            Integer val = obj.getInt("datasetFileCountLimit", -1);
-            if (val == -1) {
-                val = null;
-            }
-            if (!Objects.equals(val, ds.getDatasetFileCountLimit())) {
-                diffs.add("datasetFileCountLimit");
-            }
-        }
-        if (obj.containsKey("datasetType") && !obj.isNull("datasetType")) {
-            String val = obj.getString("datasetType", null);
-            if (ds.getDatasetType() == null || !Objects.equals(val, ds.getDatasetType().getName())) {
-                diffs.add("datasetType");
-            }
-        }
-        if (obj.containsKey("storageIdentifier") && !obj.isNull("storageIdentifier")) {
-            if (!Objects.equals(obj.getString("storageIdentifier", null), ds.getStorageIdentifier())) {
-                diffs.add("storageIdentifier");
-            }
+        if (incoming.getStorageIdentifier() != null && !Objects.equals(incoming.getStorageIdentifier(), existing.getStorageIdentifier())) {
+            diffs.add("storageIdentifier");
         }
 
         if (!diffs.isEmpty()) {
@@ -1428,76 +1427,44 @@ public class JsonParser {
         }
     }
 
-    private void validateUserSuppliedVersionFields(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
+    public void validateRestrictedFields(DatasetVersion incoming, DatasetVersion existing) throws JsonParseException {
         List<String> diffs = new ArrayList<>();
 
-        if (obj.containsKey("id") && !obj.isNull("id")) {
-            Long val = parseLong(obj.getString("id", null));
-            if (!Objects.equals(val, dsv.getId())) {
-                diffs.add("id");
-            }
+        if (incoming.getId() != null && !Objects.equals(incoming.getId(), existing.getId())) {
+            diffs.add("id");
         }
-        if (obj.containsKey("versionNumber") && !obj.isNull("versionNumber")) {
-            Long val = (long) obj.getInt("versionNumber");
-            if (!Objects.equals(val, dsv.getVersionNumber())) {
-                diffs.add("versionNumber");
-            }
+        if (incoming.getVersionNumber() != null && !Objects.equals(incoming.getVersionNumber(), existing.getVersionNumber())) {
+            diffs.add("versionNumber");
         }
-        if (obj.containsKey("minorVersionNumber") && !obj.isNull("minorVersionNumber")) {
-            Long val = parseLong(obj.getString("minorVersionNumber", null));
-            if (!Objects.equals(val, dsv.getMinorVersionNumber())) {
-                diffs.add("minorVersionNumber");
-            }
+        if (incoming.getMinorVersionNumber() != null && !Objects.equals(incoming.getMinorVersionNumber(), existing.getMinorVersionNumber())) {
+            diffs.add("minorVersionNumber");
         }
-        if (obj.containsKey("versionState") && !obj.isNull("versionState")) {
-            String val = obj.getString("versionState", null);
-            if (dsv.getVersionState() == null || !Objects.equals(val, dsv.getVersionState().name())) {
-                diffs.add("versionState");
-            }
+        if (incoming.getVersionState() != null && !Objects.equals(incoming.getVersionState(), existing.getVersionState())) {
+            diffs.add("versionState");
         }
-        if (obj.containsKey("UNF") && !obj.isNull("UNF")) {
-            if (!Objects.equals(obj.getString("UNF", null), dsv.getUNF())) {
-                diffs.add("UNF");
-            }
+        if (incoming.getUNF() != null && !Objects.equals(incoming.getUNF(), existing.getUNF())) {
+            diffs.add("UNF");
         }
-        if (obj.containsKey("releaseTime") && !obj.isNull("releaseTime")) {
-            if (!timeMatch(obj.getString("releaseTime", null), dsv.getReleaseTime())) {
-                diffs.add("releaseTime");
-            }
-        } else if (obj.containsKey("releaseDate") && !obj.isNull("releaseDate")) {
-            if (!timeMatch(obj.getString("releaseDate", null), dsv.getReleaseTime())) {
-                diffs.add("releaseDate");
-            }
+        if (incoming.getReleaseTime() != null && !timeMatch(incoming.getReleaseTime(), existing.getReleaseTime())) {
+            diffs.add("releaseTime");
         }
-        if (obj.containsKey("createTime") && !obj.isNull("createTime")) {
-            if (!timeMatch(obj.getString("createTime", null), dsv.getCreateTime())) {
-                diffs.add("createTime");
-            }
+        if (incoming.getCreateTime() != null && !timeMatch(incoming.getCreateTime(), existing.getCreateTime())) {
+            diffs.add("createTime");
         }
-        if (obj.containsKey("lastUpdateTime") && !obj.isNull("lastUpdateTime")) {
-            if (!timeMatch(obj.getString("lastUpdateTime", null), dsv.getLastUpdateTime())) {
-                diffs.add("lastUpdateTime");
-            }
+        if (incoming.getLastUpdateTime() != null && !timeMatch(incoming.getLastUpdateTime(), existing.getLastUpdateTime())) {
+            diffs.add("lastUpdateTime");
         }
-        if (obj.containsKey("archiveTime") && !obj.isNull("archiveTime")) {
-            if (!timeMatch(obj.getString("archiveTime", null), dsv.getArchiveTime())) {
-                diffs.add("archiveTime");
-            }
+        if (incoming.getArchiveTime() != null && !timeMatch(incoming.getArchiveTime(), existing.getArchiveTime())) {
+            diffs.add("archiveTime");
         }
-        if (obj.containsKey("versionNote") && !obj.isNull("versionNote")) {
-            if (!Objects.equals(obj.getString("versionNote", null), dsv.getVersionNote())) {
-                diffs.add("versionNote");
-            }
+        if (incoming.getVersionNote() != null && !Objects.equals(incoming.getVersionNote(), existing.getVersionNote())) {
+            diffs.add("versionNote");
         }
-        if (obj.containsKey("deaccessionNote") && !obj.isNull("deaccessionNote")) {
-            if (!Objects.equals(obj.getString("deaccessionNote", null), dsv.getDeaccessionNote())) {
-                diffs.add("deaccessionNote");
-            }
+        if (incoming.getDeaccessionNote() != null && !Objects.equals(incoming.getDeaccessionNote(), existing.getDeaccessionNote())) {
+            diffs.add("deaccessionNote");
         }
-        if (obj.containsKey("deaccessionLink") && !obj.isNull("deaccessionLink")) {
-            if (!Objects.equals(obj.getString("deaccessionLink", null), dsv.getDeaccessionLink())) {
-                diffs.add("deaccessionLink");
-            }
+        if (incoming.getDeaccessionLink() != null && !Objects.equals(incoming.getDeaccessionLink(), existing.getDeaccessionLink())) {
+            diffs.add("deaccessionLink");
         }
 
         if (!diffs.isEmpty()) {
@@ -1507,38 +1474,23 @@ public class JsonParser {
         }
     }
 
-    private boolean timeMatch(String jsonTime, Date ts) {
-        if (jsonTime == null || jsonTime.isEmpty()) {
-            return ts == null;
+    private boolean timeMatch(Date d1, Date d2) {
+        if (d1 == null) {
+            return d2 == null;
         }
-        if (ts == null) {
+        if (d2 == null) {
             return false;
         }
-        try {
-            Date parsed = null;
-            try {
-                parsed = parseTime(jsonTime);
-            } catch (ParseException e) {
-                parsed = parseDate(jsonTime);
-            }
-            return parsed.getTime() == ts.getTime();
-        } catch (Exception e) {
-            return false;
-        }
+        return d1.getTime() == d2.getTime();
     }
 
-    private void validateUserSuppliedGuestbookFields(JsonObject obj, Guestbook gb) throws JsonParseException {
+    public void validateRestrictedFields(Guestbook incoming, Guestbook existing) throws JsonParseException {
         List<String> diffs = new ArrayList<>();
-        if (obj.containsKey("id") && !obj.isNull("id")) {
-            Long val = (long) obj.getInt("id");
-            if (!Objects.equals(val, gb.getId())) {
-                diffs.add("id");
-            }
+        if (incoming.getId() != null && !Objects.equals(incoming.getId(), existing.getId())) {
+            diffs.add("id");
         }
-        if (obj.containsKey("createTime") && !obj.isNull("createTime")) {
-            if (!timeMatch(obj.getString("createTime", null), gb.getCreateTime())) {
-                diffs.add("createTime");
-            }
+        if (incoming.getCreateTime() != null && !timeMatch(incoming.getCreateTime(), existing.getCreateTime())) {
+            diffs.add("createTime");
         }
         if (!diffs.isEmpty()) {
             String msg = "Restricted fields cannot be changed: " + String.join(", ", diffs);
@@ -1546,6 +1498,7 @@ public class JsonParser {
             throw new JsonParseException(msg);
         }
     }
+
 
 
     public String parseHarvestingClient(JsonObject obj, HarvestingClient harvestingClient) throws JsonParseException {

@@ -914,54 +914,30 @@ public class Datasets extends AbstractApiBean {
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
             
-            // To support "GET then PUT" workflows, we compare restricted fields against the latest version.
-            // We use a fresh object to avoid modifying the managed entity during parsing.
-            DatasetVersion latest = ds.getLatestVersion();
-            DatasetVersion base = new DatasetVersion();
-            base.setId(latest.getId());
-            base.setVersionNumber(latest.getVersionNumber());
-            base.setMinorVersionNumber(latest.getMinorVersionNumber());
-            base.setVersionState(latest.getVersionState());
-            base.setUNF(latest.getUNF());
-            base.setReleaseTime(latest.getReleaseTime());
-            base.setCreateTime(latest.getCreateTime());
-            base.setLastUpdateTime(latest.getLastUpdateTime());
-            base.setArchiveTime(latest.getArchiveTime());
-            base.setVersionNote(latest.getVersionNote());
-            base.setDeaccessionNote(latest.getDeaccessionNote());
-            base.setDeaccessionLink(latest.getDeaccessionLink());
+            // Parse EVERYTHING from JSON into a temporary object for validation and field copying.
+            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json, null, false);
             
-            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json, base, true);
-
-            // creation and modification dates are updated by the commands.
-            incomingVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-            incomingVersion.setDataset(ds);
-
             if (json.containsKey("files") || json.containsKey("fileMetadatas")){
                 return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
             }
+            
+            // To support "GET then PUT" workflows, we compare restricted fields against the latest version.
+            jsonParser().validateRestrictedFields(incomingVersion, ds.getLatestVersion());
 
-            boolean updateDraft = ds.getLatestVersion().isDraft();
-
-            DatasetVersion managedVersion;
-            if (updateDraft) {
-                final DatasetVersion editVersion = ds.getOrCreateEditVersion();
-                editVersion.setDatasetFields(incomingVersion.getDatasetFields());
-                editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
-                editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
-                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(editVersion.getTermsOfUseAndAccess(), null);
-                if (!hasValidTerms) {
-                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
-                }
-                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getOrCreateEditVersion();
-            } else {
-                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(incomingVersion.getTermsOfUseAndAccess(), null);
-                if (!hasValidTerms) {
-                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
-                }
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
+            // Get existing draft version or create new one as needed
+            final DatasetVersion editVersion = ds.getOrCreateEditVersion();
+            editVersion.setDatasetFields(incomingVersion.getDatasetFields());
+            editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
+            editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
+            
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(editVersion.getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
             }
+            
+            Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            // Latest version is the draft
+            DatasetVersion managedVersion = managedDataset.getLatestVersion();
             return ok( json(managedVersion, true) );
 
         } catch (JsonParseException ex) {
