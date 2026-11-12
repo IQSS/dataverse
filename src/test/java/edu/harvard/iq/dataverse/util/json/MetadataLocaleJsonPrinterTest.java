@@ -50,7 +50,7 @@ class MetadataLocaleJsonPrinterTest {
         JsonObject titleJson = result.getJsonObject("fields").getJsonObject("title");
         assertEquals("Titre", titleJson.getString("title"));
         assertEquals("Titre", titleJson.getString("displayName"));
-        assertEquals("Description du titre", titleJson.getString("description"));
+        assertEquals("Description française du titre", titleJson.getString("description"));
         assertEquals("Saisissez le titre", titleJson.getString("watermark"));
         JsonObject child = result.getJsonObject("fields").getJsonObject("author")
                 .getJsonObject("childFields").getJsonObject("authorName");
@@ -106,6 +106,17 @@ class MetadataLocaleJsonPrinterTest {
 
         assertEquals("Title", result.getString("title"));
         assertEquals("Title description", result.getString("description"));
+    }
+
+    @Test
+    @SystemProperty(key = "dataverse.lang.directory", value = "")
+    void fallsBackToLanguageAndBaseBundlesWhenRegionalBundleIsUnavailable() {
+        JsonObject result = JsonPrinter.json(block, false, null, null, Locale.forLanguageTag("fr-FR")).build();
+
+        assertEquals("Bloc de test français", result.getString("displayName"));
+        JsonObject titleJson = result.getJsonObject("fields").getJsonObject("title");
+        assertEquals("Description française du titre", titleJson.getString("description"));
+        assertEquals("Title", titleJson.getString("title"));
     }
 
     @Test

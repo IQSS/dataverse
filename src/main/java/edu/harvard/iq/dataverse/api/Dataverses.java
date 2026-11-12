@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
 import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItemServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.i18n.I18nUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
@@ -53,6 +54,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -979,18 +981,14 @@ public class Dataverses extends AbstractApiBean {
                                        @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes,
                                        @Parameter(description = "Dataset type name used to filter metadata blocks.")
                                        @QueryParam("datasetType") String datasetTypeIn,
-                                       @Parameter(description = "Optional language tag, such as fr-CA, for metadata labels, descriptions, and watermarks. Omit to retain the current response behavior.")
-                                       @QueryParam("locale") String localeTag) {
-        Locale locale = null;
-        if (localeTag != null) {
-            try {
-                locale = new Locale.Builder().setLanguageTag(localeTag.replace('_', '-')).build();
-                if (locale.getLanguage().isEmpty()) {
-                    return badRequest(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.locale.languageRequired"));
-                }
-            } catch (IllformedLocaleException e) {
-                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.locale.invalid"));
-            }
+                                       @Parameter(description = "Language preferences for translated metadata labels, descriptions, and watermarks (e.g. fr-CA,fr;q=0.8). Omit or leave empty to retain the current response behavior.")
+                                       @HeaderParam(HttpHeaders.ACCEPT_LANGUAGE) String acceptLanguage) {
+        Locale locale;
+        try {
+            locale = I18nUtil.parseAcceptLanguageHeader(acceptLanguage);
+        } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e) {
+            // JDK 21's language-range parser can throw ArrayIndexOutOfBoundsException for "-".
+            return badRequest(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.acceptLanguage.invalid"));
         }
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));

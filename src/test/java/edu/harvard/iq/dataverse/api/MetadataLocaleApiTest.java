@@ -17,11 +17,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -47,10 +47,24 @@ class MetadataLocaleApiTest {
     private Dataverses target;
 
     @ParameterizedTest
-    @NullSource
-    @ValueSource(strings = {"fr-CA", "fr_CA", "en", "zz-ZZ"})
+    @CsvSource(value = {
+        "NULL|Database block name",
+        "''|Database block name",
+        "fr-CA|Bloc de test",
+        "fr|Bloc de test français",
+        "en|Test block",
+        "de|Test block",
+        "zz-ZZ|Test block",
+        "frCA|Test block",
+        "fr-CAN|Test block",
+        "und|Test block",
+        "*|Test block",
+        "fr-CA,fr;q=0.8,en;q=0.6|Bloc de test",
+        "en;q=0.5,fr-CA;q=0.9|Bloc de test",
+        "de,fr-CA;q=0.8|Test block"
+    }, delimiter = '|', nullValues = "NULL")
     @SystemProperty(key = "dataverse.lang.directory", value = "")
-    void acceptsOptionalLocaleAndTranslatesBlockNames(String locale) throws Exception {
+    void acceptsLanguageHeaderAndTranslatesBlockNames(String acceptLanguage, String expectedName) throws Exception {
         Dataverse dataverse = new Dataverse();
         dataverse.setId(1L);
         dataverse.setAlias("root");
@@ -63,52 +77,35 @@ class MetadataLocaleApiTest {
         block.setDatasetFieldTypes(List.of());
         when(engineSvc.submit(any(ListMetadataBlocksCommand.class))).thenReturn(List.of(block));
 
-        try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, locale)) {
+        try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, acceptLanguage)) {
             assertEquals(200, response.getStatus());
             JsonObject result = ((JsonObject) response.getEntity()).getJsonArray("data").getJsonObject(0);
-            String expected = locale == null ? "Database block name"
-                    : locale.startsWith("fr") ? "Bloc de test" : "Test block";
-            assertEquals(expected, result.getString("displayName"));
+            assertEquals(expectedName, result.getString("displayName"));
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "fr--CA", "en_US.UTF-8", "-"})
+    @ValueSource(strings = {"fr#CA", "fr_CA", "fr--CA", "en_US.UTF-8", "-", "fr;q=invalid", "fr;q=1.5"})
     @SystemProperty(key = "dataverse.lang.directory", value = "")
-    void rejectsMalformedLocaleWithBundleMessage(String locale) {
-        try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, locale)) {
+    void rejectsMalformedLanguageHeaderWithBundleMessage(String acceptLanguage) {
+        try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, acceptLanguage)) {
             assertEquals(400, response.getStatus());
-            assertEquals(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.locale.invalid"),
+            assertEquals(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.acceptLanguage.invalid"),
                     ((JsonObject) response.getEntity()).getString("message"));
         }
         verifyNoInteractions(engineSvc);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"und", "x-private"})
+    @Test
     @SystemProperty(key = "dataverse.lang.directory", value = "")
-    void rejectsLocaleWithoutLanguageWithBundleMessage(String locale) {
-        try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, locale)) {
-            assertEquals(400, response.getStatus());
-            assertEquals(BundleUtil.getStringFromBundle("dataverses.api.metadatablocks.locale.languageRequired"),
-                    ((JsonObject) response.getEntity()).getString("message"));
-        }
-        verifyNoInteractions(engineSvc);
-    }
-
-    @ParameterizedTest
-    @CsvSource({"fr--CA, Paramètre de langue invalide.", "und, Indiquez une langue."})
-    @SystemProperty(key = "dataverse.lang.directory", value = "")
-    void usesInstalledBundleForLocaleErrors(String locale, String expectedMessage,
-            @TempDir Path languageDirectory) throws IOException {
+    void usesInstalledBundleForMalformedHeaderError(@TempDir Path languageDirectory) throws IOException {
         Files.writeString(languageDirectory.resolve("Bundle.properties"),
-                "dataverses.api.metadatablocks.locale.invalid=Paramètre de langue invalide.\n"
-                + "dataverses.api.metadatablocks.locale.languageRequired=Indiquez une langue.\n");
+                "dataverses.api.metadatablocks.acceptLanguage.invalid=En-tête Accept-Language invalide.\n");
         System.setProperty("dataverse.lang.directory", languageDirectory.toString());
 
-        try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, locale)) {
+        try (Response response = target.listMetadataBlocks(requestContext, "root", false, false, null, "fr#CA")) {
             assertEquals(400, response.getStatus());
-            assertEquals(expectedMessage, ((JsonObject) response.getEntity()).getString("message"));
+            assertEquals("En-tête Accept-Language invalide.", ((JsonObject) response.getEntity()).getString("message"));
         }
     }
 }
