@@ -656,7 +656,14 @@ This endpoint supports the following optional query parameters:
 - ``returnDatasetFieldTypes``: Whether or not to return the dataset field types present in each metadata block. If not set, the default value is false.
 - ``onlyDisplayedOnCreate``: Whether or not to return only the metadata blocks that are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
 - ``datasetType``: Optionally return additional fields from metadata blocks that are linked with a particular dataset type (see :ref:`dataset-types` in the User Guide). Pass a single dataset type as a string. For a list of dataset types you can pass, see :ref:`api-list-dataset-types`.
-- ``locale``: Language tag for metadata block and field labels, descriptions, and watermarks (e.g. ``fr-CA`` or ``fr_CA``). Uses installed language bundles with fallback to default values. If omitted, the current response behavior is preserved.
+
+The optional ``Accept-Language`` header selects translated metadata block and field labels, descriptions, and watermarks, including compound child fields. It accepts language ranges such as ``fr-CA,fr;q=0.8,en;q=0.6`` and uses the highest-priority range, even if its translation is unavailable. An absent or empty header preserves the current response behavior. Identifiers, field definitions, and controlled vocabulary values are unchanged.
+
+.. note::
+
+  Bundle lookup falls back from ``fr-CA`` to ``fr``. If neither bundle exists, Java tries the server's default locale and base bundle. Missing text ultimately uses database values. An unavailable translation returns HTTP ``200``, not an error.
+
+  BCP 47 language tags use hyphens: ``fr_CA`` and malformed ranges such as ``fr#CA`` return HTTP ``400 Bad Request``. Parsing checks syntax, not whether a language is registered: ``frCA`` and ``fr-CAN`` are parsed as languages ``frca`` and ``can``. ``und`` and ``*`` use the base bundle.
 
 An example using the optional query parameters is presented below:
 
@@ -667,13 +674,13 @@ An example using the optional query parameters is presented below:
   export ID=root
   export DATASET_TYPE=software
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=$DATASET_TYPE&locale=fr-CA"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Accept-Language: fr-CA" "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=$DATASET_TYPE"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=software&locale=fr-CA"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Accept-Language: fr-CA" "https://demo.dataverse.org/api/dataverses/root/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true&datasetType=software"
 
 .. _define-metadata-blocks-for-a-dataverse-collection:
 
