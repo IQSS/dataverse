@@ -356,11 +356,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public Long getMaxTotalUploadSizeInBytes() {
-        return maxTotalUploadSizeInBytes;
+        return uploadSessionQuota == null
+                ? maxTotalUploadSizeInBytes
+                : uploadSessionQuota.getRemainingQuotaInBytes();
     }
     
     public String getHumanMaxTotalUploadSizeInBytes() {
-        return FileSizeChecker.bytesToHumanReadable(maxTotalUploadSizeInBytes);
+        return FileSizeChecker.bytesToHumanReadable(getMaxTotalUploadSizeInBytes());
     }
     
     public boolean isStorageQuotaEnforced() {
@@ -981,6 +983,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
 
+                releaseUploadQuota(markedForDelete.getDataFile());
+
                 FileMetadataUtil.removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
                 FileMetadataUtil.removeDataFileFromList(newFiles, markedForDelete.getDataFile());
                 FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
@@ -1008,6 +1012,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             logger.fine(successMessage);
             JsfHelper.addFlashMessage(successMessage);
+        }
+    }
+
+    private void releaseUploadQuota(DataFile dataFile) {
+        if (uploadSessionQuota != null && dataFile.getFilesize() > 0) {
+            uploadSessionQuota.setTotalUsageInBytes(Math.max(0L,
+                    uploadSessionQuota.getTotalUsageInBytes() - dataFile.getFilesize()));
         }
     }
 
@@ -2190,6 +2201,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                     Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
+
+                    // Direct upload has already stored the file in S3.
+                    // Remove it if Dataverse rejects the upload.
+                    try {
+                        sio.delete();
+                    } catch (IOException deleteEx) {
+                        logger.log(
+                            Level.WARNING,
+                            "Failed to delete rejected direct upload {0}: {1}",
+                            new Object[]{fileName, deleteEx.getMessage()}
+                        );
+                    }
+
+                    // Show the actual command error to the user.
+                    errorMessages.add(ex.getMessage());
+                    return;
                 }
 
                 if (datafiles == null) {
