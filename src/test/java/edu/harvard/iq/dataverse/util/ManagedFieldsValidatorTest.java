@@ -150,6 +150,7 @@ public class ManagedFieldsValidatorTest {
     @Test
     public void testValidateManagedFields_TimeMatch() throws JsonParseException {
         DatasetVersion existing = new DatasetVersion();
+        existing.setId(1L);
         Date now = new Date();
         existing.setReleaseTime(now);
         
@@ -159,6 +160,22 @@ public class ManagedFieldsValidatorTest {
         ManagedFieldsValidator.validateManagedFields(incoming, existing);
         
         incoming.setReleaseTime(new Date(now.getTime() + 1000));
+        assertThrows(JsonParseException.class, () -> ManagedFieldsValidator.validateManagedFields(incoming, existing));
+    }
+
+    @Test
+    public void testValidateManagedFields_DatasetVersion_StrictOnCreation() throws JsonParseException {
+        DatasetVersion existing = new DatasetVersion();
+        // ID is null, so it's a new version
+        
+        DatasetVersion incoming = new DatasetVersion();
+        incoming.setReleaseTime(new Date());
+        
+        // Should FAIL because it's strictly enforced
+        assertThrows(JsonParseException.class, () -> ManagedFieldsValidator.validateManagedFields(incoming, existing));
+        
+        incoming.setReleaseTime(null);
+        incoming.setVersionNumber(1L);
         assertThrows(JsonParseException.class, () -> ManagedFieldsValidator.validateManagedFields(incoming, existing));
     }
 }

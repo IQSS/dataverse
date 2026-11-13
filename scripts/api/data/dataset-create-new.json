@@ -1,8 +1,4 @@
 {
-  "authority": "anAuthority",
-  "identifier": "dataset-one",
-  "persistentUrl": "http://dx.doi.org/10.5072/FK2/9",
-  "protocol": "chadham-house-rule",
   "datasetVersion": {
     "license": {
       "name": "CC0 1.0",
