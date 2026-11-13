@@ -117,12 +117,6 @@ BEGIN
     ALTER TABLE IF EXISTS public.termsofuseandaccess DROP CONSTRAINT IF EXISTS fk_termsofuseandcesss_license_id; -- typo in the past? cleaning up anyway
     DROP TABLE IF EXISTS termsofuseandaccess;
 
-    -- Grant privileges to dvnuser for the new tables and sequences
-
-    GRANT SELECT, INSERT, UPDATE, DELETE ON termsofaccess TO dvnuser;
-    GRANT SELECT, INSERT, UPDATE, DELETE ON termsofuseorlicense TO dvnuser;
-    GRANT USAGE, SELECT ON SEQUENCE termsofaccess_id_seq TO dvnuser;
-    GRANT USAGE, SELECT ON SEQUENCE termsofuseorlicense_id_seq TO dvnuser;
 END
 $$;
 
