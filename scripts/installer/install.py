@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os.path
+import glob
 from os import fdopen
 from os import environ
 from os import getuid
@@ -223,9 +224,17 @@ if gfDir != "":
 if not pgOnly:
    print("Checking for required components...")
    # 1a. check to see if warfile is available
-   warfile = "dataverse.war"
+   # the installer bundle contains a versioned war file, e.g. dataverse-6.12.1.war
    warfileVersion = ""
-   if not os.path.isfile(warfile):
+   localWarfiles = glob.glob("dataverse*.war")
+   if len(localWarfiles) > 1:
+      sys.exit("Found more than one war file in the current directory (" + ", ".join(localWarfiles) + ").\nPlease leave only the one you want to deploy.")
+   if len(localWarfiles) == 1:
+      warfile = localWarfiles[0]
+      versionMatch = re.match(r'dataverse-(.+)\.war$', warfile)
+      if versionMatch:
+         warfileVersion = versionMatch.group(1)
+   else:
       # get dataverse version from pom.xml
       tree = ET.ElementTree(file='../../modules/dataverse-parent/pom.xml')
       for elem in tree.iter("*"):
