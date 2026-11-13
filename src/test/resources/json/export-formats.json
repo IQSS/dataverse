@@ -3,7 +3,7 @@
   "data": {
     "OAI_ORE": {
       "displayName": "OAI_ORE",
-      "mediaType": "application/json",
+      "mediaType": "application/ld+json",
       "isHarvestable": false,
       "isVisibleInUserInterface": true
     },
