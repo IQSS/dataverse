@@ -348,6 +348,11 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
 
+            // Check if collection exists
+            if (dataverse == null) {
+                return permissionsWrapper.notFound();
+            }
+
             // Check permissions for unreleased dataverse and Locally FAIR permissions for released dataverses
             boolean releasedAndCanView = dataverse.isReleased() && (!dataverse.isLocallyFAIR() || permissionsWrapper
                     .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataverse));

@@ -27,6 +27,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -308,10 +309,13 @@ public class IndexServiceBean {
 
     }
     
+    /**
+     * Indexes right away: batch reindexes go one dataset at a time instead of queueing them all at once.
+     */
     @TransactionAttribute(REQUIRES_NEW)
     public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
-        asyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
+        indexDatasetWithPermit(datasetId, doNormalSolrDocCleanUp);
     }
     
     // Ids of the datasets being indexed asynchronously right now. The value records whether indexing was requested
@@ -397,6 +401,10 @@ public class IndexServiceBean {
 
     @Asynchronous
     public void indexDatasetInBackground(Long datasetId, boolean doNormalSolrDocCleanUp) {
+        indexDatasetWithPermit(datasetId, doNormalSolrDocCleanUp);
+    }
+
+    private void indexDatasetWithPermit(Long datasetId, boolean doNormalSolrDocCleanUp) {
         try {
             acquirePermitFromSemaphore();
             doAsyncIndexDataset(datasetId, doNormalSolrDocCleanUp);
@@ -428,6 +436,8 @@ public class IndexServiceBean {
      */
     @TransactionAttribute(REQUIRES_NEW)
     public void indexDatasetNow(Long datasetId, boolean doNormalSolrDocCleanUp) throws SolrServerException, IOException {
+        // Indexing only reads: skip the change check over all loaded entities before each query.
+        em.setFlushMode(FlushModeType.COMMIT);
         Dataset dataset = datasetService.find(datasetId);
         if (dataset == null) {
             logger.log(Level.INFO, "Dataset {0} no longer exists, nothing to index", datasetId);

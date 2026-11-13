@@ -37,6 +37,7 @@ The optional field ``guestbookRoot``, when set to true, will allow datasets in t
 The controlled vocabulary for ``dataverseType`` is the following:
 
 - ``DEPARTMENT``
+- ``DIVISION``
 - ``JOURNALS``
 - ``LABORATORY``
 - ``ORGANIZATIONS_INSTITUTIONS``

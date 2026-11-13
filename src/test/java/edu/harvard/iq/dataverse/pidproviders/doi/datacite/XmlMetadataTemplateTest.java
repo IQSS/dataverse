@@ -1,22 +1,8 @@
 package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataCitation;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetAuthor;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
@@ -53,6 +39,9 @@ import java.util.Set;
 import javax.xml.transform.stream.StreamSource;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -90,6 +79,93 @@ public class XmlMetadataTemplateTest {
 
     }
 
+    @ParameterizedTest
+    @EnumSource(value = VersionState.class, names = {"DRAFT", "RELEASED", "DEACCESSIONED"})
+    public void testFileResourceTypeGeneral(VersionState state) {
+        Dataset dataset = resourceTypeTestDataset(DatasetType.DATASET_TYPE_DATASET);
+        DatasetVersion version = dataset.getLatestVersionForCopy();
+        version.setVersionState(state);
+        version.setVersionNumber(1L);
+        version.setMinorVersionNumber(0L);
+        version.setReleaseTime(java.sql.Timestamp.valueOf("2026-01-01 00:00:00"));
+        DataFile file = new DataFile();
+        file.setOwner(dataset);
+        file.setGlobalId(new GlobalId("doi", "10.5072", "FK2/ABCDEF/FILE", null, null, null));
+        file.setFilesize(10L);
+        FileMetadata metadata = new FileMetadata();
+        metadata.setDataFile(file);
+        metadata.setDatasetVersion(version);
+        file.setFileMetadatas(List.of(metadata));
+
+        String xml = new XmlMetadataTemplate(new DoiMetadata()).generateXML(file);
+
+        assertEquals("Other", XmlPath.from(xml).getString("resource.resourceType.@resourceTypeGeneral"));
+        assertEquals("", XmlPath.from(xml).getString("resource.resourceType"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"dataset, Dataset", "software, Software", "workflow, Workflow", "review, Other", "custom, Dataset"})
+    public void testDatasetResourceTypeGeneral(String datasetType, String expectedResourceType) {
+        Dataset dataset = resourceTypeTestDataset(datasetType);
+
+        String xml = new XmlMetadataTemplate(new DoiMetadata()).generateXML(dataset);
+
+        assertEquals(expectedResourceType, XmlPath.from(xml).getString("resource.resourceType.@resourceTypeGeneral"));
+        assertEquals("review".equals(datasetType) ? "Review" : "", XmlPath.from(xml).getString("resource.resourceType"));
+    }
+
+    private Dataset resourceTypeTestDataset(String typeName) {
+        Dataset dataset = new Dataset();
+        dataset.setGlobalId(new GlobalId("doi", "10.5072", "FK2/ABCDEF", null, null, null));
+        DatasetType type = new DatasetType();
+        type.setName(typeName);
+        dataset.setDatasetType(type);
+        DatasetVersion version = new DatasetVersion();
+        version.setDataset(dataset);
+        version.setVersionState(VersionState.DRAFT);
+        version.setDatasetFields(new ArrayList<>());
+        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        dataset.setVersions(new ArrayList<>(List.of(version)));
+        return dataset;
+    }
+
+    @Test
+    public void testDatasetFileMetadataUsesLatestVersionFiles() {
+        Dataset dataset = new Dataset();
+        dataset.setGlobalId(new GlobalId("doi", "10.5072", "FK2/ABCDEF", null, null, null));
+        DatasetType type = new DatasetType();
+        type.setName(DatasetType.DEFAULT_DATASET_TYPE);
+        dataset.setDatasetType(type);
+        DatasetVersion version = new DatasetVersion();
+        version.setDataset(dataset);
+        version.setVersionState(VersionState.RELEASED);
+        dataset.setVersions(new ArrayList<>(List.of(version)));
+        version.setVersionNumber(1L);
+        version.setMinorVersionNumber(0L);
+        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        
+        version=dataset.getLatestVersionForCopy();
+        
+        DataFile versionFile = new DataFile();
+        versionFile.setFilesize(10L);
+        versionFile.setContentType("text/csv");
+        FileMetadata versionMetadata = new FileMetadata();
+        versionMetadata.setDataFile(versionFile);
+        versionMetadata.setDatasetVersion(version);
+        version.setFileMetadatas(new ArrayList<>(List.of(versionMetadata)));
+
+        DataFile fileFromAnotherVersion = new DataFile();
+        fileFromAnotherVersion.setFilesize(20L);
+        fileFromAnotherVersion.setContentType("application/json");
+        dataset.setFiles(new ArrayList<>(List.of(versionFile, fileFromAnotherVersion)));
+
+        String xml = new XmlMetadataTemplate(new DoiMetadata()).generateXML(dataset);
+        XmlPath xmlPath = XmlPath.from(xml);
+
+        assertEquals(List.of("10"), xmlPath.getList("resource.sizes.size"));
+        assertEquals(List.of("text/csv"), xmlPath.getList("resource.formats.format"));
+    }
+    
     /**
      * A minimal example to assure that the XMLMetadataTemplate generates output
      * consistent with the DataCite XML v4.5 schema.
