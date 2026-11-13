@@ -146,10 +146,10 @@ $$;
 DO $$
 BEGIN
   BEGIN
-    INSERT INTO license (uri, name, shortdescription, active, isDefault, iconurl)
+    INSERT INTO license (uri, name, shortdescription, active, isDefault, iconurl, sortorder)
     VALUES ('http://creativecommons.org/publicdomain/zero/1.0', 'CC0 1.0',
             'Creative Commons CC0 1.0 Universal Public Domain Dedication.',
-            true, true, 'https://licensebuttons.net/p/zero/1.0/88x31.png');
+            true, true, 'https://licensebuttons.net/p/zero/1.0/88x31.png', 1);
   EXCEPTION
     WHEN unique_violation THEN RAISE NOTICE 'CC0 license has already been added to the license table';
   END;
