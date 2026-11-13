@@ -264,7 +264,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         // append the search clauses that limit the search to a) datasets
         // b) published and c) local: 
         // SearchFields.TYPE
-        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
+        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING + " AND -" + SearchFields.LOCALLY_FAIR + ":" + true);
         
         return query;
     }

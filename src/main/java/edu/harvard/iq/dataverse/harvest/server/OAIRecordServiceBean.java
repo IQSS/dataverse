@@ -94,7 +94,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 Dataset dataset = datasetService.find(datasetId);
                 if (dataset == null) {
                     setUpdateLogger.fine("failed to find dataset!");
-                } else if (dataset.isReleased() && !dataset.isDeaccessioned()) {
+                } else if (dataset.isReleased() && !dataset.isDeaccessioned() && !dataset.isLocallyFAIR()) {
                     // This means this is a published dataset
                     setUpdateLogger.fine("found published dataset.");
 

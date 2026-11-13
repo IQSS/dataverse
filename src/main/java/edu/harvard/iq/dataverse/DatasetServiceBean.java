@@ -299,6 +299,25 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     /**
+     * Find a dataset but filter according to the visibility from the locallyFAIRRoleAssignments.
+     * Unlike findDatasetUserCanSeeOrDie in AbstractApiBean, this returns null if not found or not visible,
+     * allowing callers to handle it as a standard "not found" case without a 403.
+     *
+     * @param persistentId - the dataset persistent identifier
+     * @param req - the DataverseRequest
+     * @return the dataset if found and visible, otherwise null
+     */
+    public Dataset findDatasetUserCanSeeByGlobalId(String persistentId, DataverseRequest req) {
+        Dataset dataset = findByGlobalId(persistentId);
+        if (dataset != null) {
+            if (dataset.isLocallyFAIR() && !permissionService.hasLocallyFAIRAccess(req, dataset)) {
+                return null;
+            }
+        }
+        return dataset;
+    }
+
+    /**
      * Instantiate dataset, and its components (DatasetVersions and FileMetadatas)
      * this method is used for object validation; if there are any invalid values
      * in the dataset components, a ConstraintViolationException will be thrown,

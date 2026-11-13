@@ -84,7 +84,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
             logger.fine("looking up dataset with globalId " + globalId);
-            Dataset dataset = datasetService.findByGlobalId(globalId);
+            Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(globalId, dvReq);
             if (dataset != null) {
                 /**
                  * @todo: support downloading of files (SWORD 2.0 Profile 6.4. -
@@ -166,6 +166,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
+                            if (fileToDelete.isLocallyFAIR() && !permissionService.hasLocallyFAIRAccess(dvReq, fileToDelete)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + fileToDelete.getOwner().getOwner().getAlias());
+                            }
                             boolean deleteCommandSuccess = false; 
                             Dataset dataset = fileToDelete.getOwner();
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
@@ -240,7 +243,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
             logger.fine("looking up dataset with globalId " + globalId);
-            Dataset dataset = datasetService.findByGlobalId(globalId);
+            Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(globalId, dvReq);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);
             }
