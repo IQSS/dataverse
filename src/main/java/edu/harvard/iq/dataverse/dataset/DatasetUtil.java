@@ -90,20 +90,27 @@ public class DatasetUtil {
             }
 	    IOUtils.closeQuietly(in);
         }
-        for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
+        // Use database-level filtering to get only thumbnail-candidate files (images, PDFs)
+        // instead of iterating through all files in the dataset.
+        // Fall back to iterating all files if CDI is not available (e.g., unit tests).
+        List<FileMetadata> candidateFileMetadatas;
+        try {
+            DataFileServiceBean dataFileService = CDI.current().select(DataFileServiceBean.class).get();
+            candidateFileMetadatas = dataFileService.findThumbnailCandidateFileMetadatasByDatasetVersionId(dataset.getLatestVersion().getId());
+        } catch (IllegalStateException ex) {
+            // CDI not available (e.g., unit tests) - fall back to iterating all files
+            candidateFileMetadatas = dataset.getLatestVersion().getFileMetadatas();
+        }
+        for (FileMetadata fileMetadata : candidateFileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
 
             if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
-                    && ImageThumbConverter.isThumbnailAvailable(dataFile)
                     && !dataFile.isRestricted()
-                    && !FileUtil.isActivelyEmbargoed(dataFile)) {
-                String imageSourceBase64 = null;
-                imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, size);
-
-                if (imageSourceBase64 != null) {
-                    DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
-                    thumbnails.add(datasetThumbnail);
-                }
+                    && !FileUtil.isActivelyEmbargoed(dataFile)
+                    ) {
+                // Create lazy thumbnail with the requested size — base64 will be generated on first access
+                DatasetThumbnail datasetThumbnail = new DatasetThumbnail(dataFile, size);
+                thumbnails.add(datasetThumbnail);
             }
         }
         return thumbnails;
@@ -119,7 +126,7 @@ public class DatasetUtil {
      * @return DatasetThumbnail object, or null if not available
      */
     public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, int size) {
-        if (dataset == null) {
+        if (dataset == null || dataset.getStorageIdentifier()==null) {
             return null;
         }
 
@@ -127,14 +134,14 @@ public class DatasetUtil {
             // Size 0 will fail (and set the failure flag) and should never be sent
             logger.warning("getThumbnail called with size 0");
             return null;
-        }        
+        }
         StorageIO<Dataset> dataAccess = null;
                 
         try{
             dataAccess = DataAccess.getStorageIO(dataset);
         }
-        catch(IOException ioex){
-            logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        catch(IOException | RuntimeException ex){
+            logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ex.getMessage() + ")");
         }
         
         InputStream in = null;
@@ -226,18 +233,6 @@ public class DatasetUtil {
             return false;
         }
         return true;
-                
-        //TODO: Is this required? 
-//        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
-//        boolean originalFileDeleted = originalFile.delete();
-//        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-//        boolean thumb48Deleted = thumb48.delete();
-//        if (originalFileDeleted && thumb48Deleted) {
-//            return true;
-//        } else {
-//            logger.info("One of the files wasn't deleted. Original deleted: " + originalFileDeleted + ". thumb48 deleted: " + thumb48Deleted + ".");
-//            return false;
-//        }
     }
 
     /**
@@ -269,14 +264,25 @@ public class DatasetUtil {
             return null; 
         }
 
-        for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
+        // Use database-level filtering to get only thumbnail-candidate files (images, PDFs)
+        // instead of iterating through all files in the dataset.
+        // Fall back to iterating all files if CDI is not available (e.g., unit tests).
+        List<FileMetadata> candidateFileMetadatas;
+        try {
+            DataFileServiceBean dataFileService = CDI.current().select(DataFileServiceBean.class).get();
+            candidateFileMetadatas = dataFileService.findThumbnailCandidateFileMetadatasByDatasetVersionId(datasetVersion.getId());
+        } catch (IllegalStateException ex) {
+            // CDI not available (e.g., unit tests) - fall back to iterating all files
+            candidateFileMetadatas = datasetVersion.getFileMetadatas();
+        }
+        for (FileMetadata fmd : candidateFileMetadatas) {
             DataFile testFile = fmd.getDataFile();
             // We don't want to use a restricted image file as the dedicated thumbnail:
             if (!testFile.isRestricted() && !FileUtil.isActivelyEmbargoed(testFile) && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE)) {
                 return testFile;
             }
         }
-        logger.fine("In attemptToAutomaticallySelectThumbnailFromDataFiles and interated through all the files but couldn't find a thumbnail.");
+        logger.fine("In attemptToAutomaticallySelectThumbnailFromDataFiles and iterated through all candidate files but couldn't find a thumbnail.");
         return null;
     }
 
@@ -331,7 +337,7 @@ public class DatasetUtil {
             dest = fos.getChannel();
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-        	IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(inputStream);
             logger.severe("Error occurred during transfer using FileChannels: " + ex.getMessage());
             return null;
         }

@@ -1,0 +1,2 @@
+## Dataset thumbnail selection improvements
+The Edit Dataset/Thumbnails and Widgets page was extremely slow to load for datasets with many files. This release adds several improvements that make opening that dialog and uploading or selecting thumbnail files much faster. It also fixes a bug introduced in 6.11 that stopped uploaded thumbs from displaying on the dataset page.
