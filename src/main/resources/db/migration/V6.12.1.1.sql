@@ -134,6 +134,28 @@ END
 $$;
 
 -- ============================================================================
+-- Seed data from migrations prior to V5.10.1.3.
+-- These are skipped on fresh installations where EclipseLink creates tables
+-- from the current entity model and Flyway baselines at V5.10.1.3.
+-- ============================================================================
+
+-- Default CC0 license (V5.9.0.1).
+-- The application calls LicenseServiceBean.getDefault() in multiple places
+-- (DatasetPage, TemplatePage, JSONLDUtil, SwordServiceBean, etc.) and will
+-- crash with NoResultException if no default license exists.
+DO $$
+BEGIN
+  BEGIN
+    INSERT INTO license (uri, name, shortdescription, active, isDefault, iconurl)
+    VALUES ('http://creativecommons.org/publicdomain/zero/1.0', 'CC0 1.0',
+            'Creative Commons CC0 1.0 Universal Public Domain Dedication.',
+            true, true, 'https://licensebuttons.net/p/zero/1.0/88x31.png');
+  EXCEPTION
+    WHEN unique_violation THEN RAISE NOTICE 'CC0 license has already been added to the license table';
+  END;
+END $$;
+
+-- ============================================================================
 -- PostgreSQL-specific indexes and constraints from migrations prior to V6.3.0.1.
 -- These are skipped on fresh installations where EclipseLink creates tables
 -- from the current entity model and Flyway baselines at V5.10.1.3.
