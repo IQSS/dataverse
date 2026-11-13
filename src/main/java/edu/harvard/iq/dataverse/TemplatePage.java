@@ -135,10 +135,16 @@ public class TemplatePage implements java.io.Serializable {
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks(settingsWrapper.getSystemMetadataBlocks());
 
-            if (template.getTermsOfUseAndAccess() != null) {
-                TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+            if (template.getTermsOfAccess() != null) {
+                TermsOfAccess terms = template.getTermsOfAccess().copyTermsOfAccess();
                 terms.setTemplate(template);
-                template.setTermsOfUseAndAccess(terms);
+                template.setTermsOfAccess(terms);
+            }
+
+            if (template.getDefaultTermsOfUseOrLicense() != null) {
+                TermsOfUseOrLicense terms = template.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+                terms.setTemplate(template);
+                template.setDefaultTermsOfUseOrLicense(terms);
             }
 
             updateDatasetFieldInputLevels();
@@ -147,11 +153,16 @@ public class TemplatePage implements java.io.Serializable {
 
             editMode = TemplatePage.EditMode.CREATE;
             template = new Template(this.dataverse, settingsWrapper.getSystemMetadataBlocks());
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setFileAccessRequest(true);
-            terms.setTemplate(template);
-            terms.setLicense(licenseServiceBean.getDefault());
-            template.setTermsOfUseAndAccess(terms);
+
+            TermsOfAccess toa = new TermsOfAccess();
+            toa.setTemplate(template);
+            template.setTermsOfAccess(toa);
+
+            TermsOfUseOrLicense touol = new TermsOfUseOrLicense();
+            touol.setTemplate(template);
+            touol.setLicense(licenseServiceBean.getDefault());
+            template.setDefaultTermsOfUseOrLicense(touol);
+
             updateDatasetFieldInputLevels();
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling

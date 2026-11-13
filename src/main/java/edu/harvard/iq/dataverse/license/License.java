@@ -1,17 +1,17 @@
 package edu.harvard.iq.dataverse.license;
 
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,6 +50,9 @@ import java.util.Objects;
 @Table(uniqueConstraints = {
       @UniqueConstraint(columnNames = "name"),
       @UniqueConstraint(columnNames = "uri")}
+    , indexes = {
+      @Index(columnList = "sortorder, id", name = "license_sortorder_id")
+    }
 )
 public class License {
     public static String CC0 = "http://creativecommons.org/publicdomain/zero/1.0";
@@ -87,12 +90,12 @@ public class License {
 
     @Column(name = "scheme_uri")
     private String schemeUri;
-    
+
     @Column(name = "language_code")
     private String languageCode;
 
-    @OneToMany(mappedBy = "license")
-    private List<TermsOfUseAndAccess> termsOfUseAndAccess;
+    @OneToMany(mappedBy="license")
+    private List<TermsOfUseOrLicense> termsOfUseOrLicenses;
 
     public License() {
     }
@@ -182,12 +185,12 @@ public class License {
         this.isDefault = isDefault;
     }
 
-    public List<TermsOfUseAndAccess> getTermsOfUseAndAccess() {
-        return termsOfUseAndAccess;
+    public List<TermsOfUseOrLicense> getTermsOfUseOrLicenses() {
+        return termsOfUseOrLicenses;
     }
 
-    public void setTermsOfUseAndAccess(List<TermsOfUseAndAccess> termsOfUseAndAccess) {
-        this.termsOfUseAndAccess = termsOfUseAndAccess;
+    public void setTermsOfUseOrLicenses(List<TermsOfUseOrLicense> termsOfUseOrLicenses) {
+        this.termsOfUseOrLicenses = termsOfUseOrLicenses;
     }
 
     public Long getSortOrder() {

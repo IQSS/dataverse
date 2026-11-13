@@ -124,7 +124,8 @@ public class XmlMetadataTemplateTest {
         version.setDataset(dataset);
         version.setVersionState(VersionState.DRAFT);
         version.setDatasetFields(new ArrayList<>());
-        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
+        version.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        version.setTermsOfAccess(new TermsOfAccess());
         dataset.setVersions(new ArrayList<>(List.of(version)));
         return dataset;
     }
@@ -142,8 +143,9 @@ public class XmlMetadataTemplateTest {
         dataset.setVersions(new ArrayList<>(List.of(version)));
         version.setVersionNumber(1L);
         version.setMinorVersionNumber(0L);
-        version.setTermsOfUseAndAccess(new TermsOfUseAndAccess());
-        
+        version.setDefaultTermsOfUseOrLicense(new TermsOfUseOrLicense());
+        version.setTermsOfAccess(new TermsOfAccess());
+
         version=dataset.getLatestVersionForCopy();
         
         DataFile versionFile = new DataFile();
@@ -227,9 +229,12 @@ public class XmlMetadataTemplateTest {
         GlobalId doi = new GlobalId("doi", "10.5072", "FK2/ABCDEF", null, null, null);
         d.setGlobalId(doi);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        dv.setDefaultTermsOfUseOrLicense(toa);
+        var termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setFileAccessRequest(true);
+        dv.setTermsOfAccess(termsOfAccess);
         dv.setDataset(d);
         DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
                 DatasetFieldType.FieldType.TEXT, false);
@@ -386,9 +391,12 @@ public class XmlMetadataTemplateTest {
         Dataset d = new Dataset();
         d.setOwner(collection);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        dv.setDefaultTermsOfUseOrLicense(toa);
+        var termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setFileAccessRequest(true);
+        dv.setTermsOfAccess(termsOfAccess);
         dv.setDataset(d);
         DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
                 DatasetFieldType.FieldType.TEXT, false);
@@ -443,9 +451,12 @@ public class XmlMetadataTemplateTest {
         Dataset d = new Dataset();
         d.setOwner(collection);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense toa = new TermsOfUseOrLicense();
         toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        dv.setDefaultTermsOfUseOrLicense(toa);
+        var termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setFileAccessRequest(true);
+        dv.setTermsOfAccess(termsOfAccess);
         dv.setDataset(d);
         DatasetFieldType primitiveDSFType = new DatasetFieldType(DatasetFieldConstant.title,
                 DatasetFieldType.FieldType.TEXT, false);
@@ -503,9 +514,12 @@ public class XmlMetadataTemplateTest {
         Dataset d = new Dataset();
         d.setOwner(collection);
         DatasetVersion dv = new DatasetVersion();
-        TermsOfUseAndAccess toa = new TermsOfUseAndAccess();
-        toa.setTermsOfUse("Some terms");
-        dv.setTermsOfUseAndAccess(toa);
+        TermsOfAccess toa = new TermsOfAccess();
+        toa.setTermsOfAccess("Some terms of access");
+        dv.setTermsOfAccess(toa);
+        TermsOfUseOrLicense tou = new TermsOfUseOrLicense();
+        tou.setTermsOfUse("Some more terms of use");
+        dv.setDefaultTermsOfUseOrLicense(tou);
         dv.setDataset(d);
         dv.setVersionState(VersionState.DRAFT);
 

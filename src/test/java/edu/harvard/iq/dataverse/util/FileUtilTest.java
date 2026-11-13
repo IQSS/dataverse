@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.TermsOfUseOrLicense;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 import org.junit.jupiter.api.Test;
@@ -87,11 +88,11 @@ public class FileUtilTest {
         public void testIsDownloadPopupRequiredLicenseCC0() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-            TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
+            TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
             License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 1l);
             license.setDefault(true);
-            termsOfUseAndAccess.setLicense(license);
-            dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
+            termsOfUseOrLicense.setLicense(license);
+            dsv1.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
             assertFalse(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
@@ -99,10 +100,10 @@ public class FileUtilTest {
         public void testIsDownloadPopupRequiredHasTermsOfUseAndNoneLicense() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-            TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(null);
-            termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
-            dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
+            TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+            termsOfUseOrLicense.setLicense(null);
+            termsOfUseOrLicense.setTermsOfUse("be excellent to each other");
+            dsv1.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
             assertTrue(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
@@ -110,9 +111,9 @@ public class FileUtilTest {
         public void testIsDownloadPopupRequiredHasTermsOfAccess() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-            TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setTermsOfAccess("Terms of *Access* is different than Terms of Use");
-            dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
+            TermsOfAccess termsOfAccess = new TermsOfAccess();
+            termsOfAccess.setTermsOfAccess("Terms of *Access* is different than Terms of Use");
+            dsv1.setTermsOfAccess(termsOfAccess);
             assertTrue(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
@@ -156,9 +157,9 @@ public class FileUtilTest {
             FileMetadata nonRestrictedFileMetadata = new FileMetadata();
             nonRestrictedFileMetadata.setDataFile(new DataFile());
             DatasetVersion dsv = new DatasetVersion();
-            TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
-            dsv.setTermsOfUseAndAccess(termsOfUseAndAccess);
+            TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+            termsOfUseOrLicense.setTermsOfUse("be excellent to each other");
+            dsv.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
             dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
             nonRestrictedFileMetadata.setDatasetVersion(dsv);
             Dataset dataset = new Dataset();
