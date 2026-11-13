@@ -68,9 +68,9 @@ Once a standardized version of you Custom Terms are registered as a license, an 
 
 ::
 
-    UPDATE termsofuseandaccess
+    UPDATE termsofuseorlicense
         SET license_id = (SELECT license.id FROM license WHERE license.name = '<Your License Name>'), termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null 
-        WHERE termsofuseandaccess.termsofuse LIKE '%<Unique phrase in your Terms of Use>%';
+        WHERE termsofuseorlicense.termsofuse LIKE '%<Unique phrase in your Terms of Use>%';
 
 Optional Components
 -------------------

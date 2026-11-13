@@ -67,6 +67,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+import static java.lang.Integer.*;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -105,7 +106,6 @@ import jakarta.faces.event.ValueChangeEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.OptimisticLockException;
@@ -474,7 +474,7 @@ public class DatasetPage implements java.io.Serializable {
                hasValidTermsOfAccess = true;
                return hasValidTermsOfAccess;
             } else {
-                hasValidTermsOfAccess = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
+                hasValidTermsOfAccess = TermsOfAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfAccess(), null);
                 return hasValidTermsOfAccess;
             }
         }    
@@ -1949,9 +1949,9 @@ public class DatasetPage implements java.io.Serializable {
         /*
         Issue 8646: necessary for the access popup which is shared by the dataset page and the file page
         */
-        setFileAccessRequest(workingVersion.getTermsOfUseAndAccess().isFileAccessRequest());
-        setTermsOfAccess(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess());
-        
+        setFileAccessRequest(workingVersion.getTermsOfAccess().isFileAccessRequest());
+        setTermsOfAccess(workingVersion.getTermsOfAccess().getTermsOfAccess());
+
         resetVersionUI();
     }
 
@@ -2246,13 +2246,6 @@ public class DatasetPage implements java.io.Serializable {
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized();
             }
-            //Wait until the create command before actually getting an identifier, except if we're using directUpload
-        	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
-            if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
-                CommandContext ctxt = commandEngine.getContext();
-                PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
-                pidProvider.generatePid(dataset);
-            }
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 for (Template templateTest: dataverseService.find(ownerId).getParentTemplates()){
@@ -2265,27 +2258,26 @@ public class DatasetPage implements java.io.Serializable {
 
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
             if (defaultTemplate != null) {
-                selectedTemplate = defaultTemplate;
-                for (Template testT : dataverseTemplates) {
-                    if (defaultTemplate.getId().equals(testT.getId())) {
-                        selectedTemplate = testT;
-                    }
-                }
+                selectedTemplate = getLastLoadedTemplate(defaultTemplate);
                 //Initalize with the default if there is one 
                 dataset.setTemplate(selectedTemplate);
-                workingVersion = dataset.getOrCreateEditVersion(selectedTemplate, null);
-                updateDatasetFieldInputLevels();
-            } else {
-                workingVersion = dataset.getCreateVersion(licenseServiceBean.getDefault());
-                updateDatasetFieldInputLevels();
             }
 
+            generatePidEarlyIfNeeded(); // note that this requires the template to be set first.
+            
+            if(selectedTemplate != null) {
+                workingVersion = dataset.getOrCreateEditVersion(selectedTemplate, null);
+            } else {
+                workingVersion = dataset.getCreateVersion(licenseServiceBean.getDefault());
+            }
+            updateDatasetFieldInputLevels();
+            
             if (isHasPublicStore()){
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.label.fileAccess"),
                         BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
             }
-            setFileAccessRequest(workingVersion.getTermsOfUseAndAccess().isFileAccessRequest());
-            setTermsOfAccess(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess());
+            setFileAccessRequest(workingVersion.getTermsOfAccess().isFileAccessRequest());
+            setTermsOfAccess(workingVersion.getTermsOfAccess().getTermsOfAccess());
             resetVersionUI();
 
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
@@ -2361,7 +2353,39 @@ public class DatasetPage implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    private void generatePidEarlyIfNeeded() {
+        // The create command will generate the identifier, but we need it earlier if
+        // - requestDirectUploadUrl might get called (s3 storage needs the identifier to generate a direct upload URL)
+        // - a template is used with custom terms of use (the dataset globalId is used in generating a licenseUrl that is used in headers)
+
+        var directUploadEnabled = systemConfig.directUploadEnabled(dataset);
+
+        var template = dataset.getTemplate();
+        var hasTermsOfUse = template != null && (template.getDefaultTermsOfUseOrLicense().getLicense() == null);
+
+        if (isEmpty(dataset.getIdentifier()) && (directUploadEnabled || hasTermsOfUse)) {
+            CommandContext ctxt = commandEngine.getContext();
+            PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
+            pidProvider.generatePid(dataset);
+        }
+    }
+
+    private Template getLastLoadedTemplate(Template template) {
+        // Two object references may come from different loads.
+        // For example, one is detached and the other is managed,
+        // or a UI component expects the selected object to come from its options list.
+        if(template == null) {
+            return null;
+        }
+        for (Template testT : dataverseTemplates) {
+            if (template.getId().equals(testT.getId())) {
+                template = testT;
+            }
+        }
+        return template;
+    }
+
     public void viewActionInitBreadcrumbs(){
         if(!isAnonymizedAccess()){
             dataverseHeaderFragment.initBreadcrumbs(dataset);
@@ -2708,11 +2732,11 @@ public class DatasetPage implements java.io.Serializable {
         if (readOnly) {
             dataset = datasetService.find(dataset.getId());
         }
-        String termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
-        boolean requestAccess = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
+        String termsOfAccess = workingVersion.getTermsOfAccess().getTermsOfAccess();
+        boolean requestAccess = workingVersion.getTermsOfAccess().isFileAccessRequest();
         workingVersion = dataset.getOrCreateEditVersion();
-        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(requestAccess);
+        workingVersion.getTermsOfAccess().setTermsOfAccess(termsOfAccess);
+        workingVersion.getTermsOfAccess().setFileAccessRequest(requestAccess);
         List <FileMetadata> newSelectedFiles = new ArrayList<>();
         for (FileMetadata fmd : filesToRefresh){
             for (FileMetadata fmdn: workingVersion.getFileMetadatas()){
@@ -2782,7 +2806,7 @@ public class DatasetPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
             if(!isHasValidTermsOfAccess()){
-                workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(true);
+                workingVersion.getTermsOfAccess().setFileAccessRequest(true);
             }
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
@@ -3797,8 +3821,8 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (restricted) { // get values from access popup
-            workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-            workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
+            workingVersion.getTermsOfAccess().setTermsOfAccess(termsOfAccess);
+            workingVersion.getTermsOfAccess().setFileAccessRequest(fileAccessRequest);
         }
 
 
@@ -3979,8 +4003,8 @@ public class DatasetPage implements java.io.Serializable {
 
 
      public String saveWithTermsOfUse() {
-        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(enteredTermsOfAccess);
-        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(enteredFileAccessRequest);
+        workingVersion.getTermsOfAccess().setTermsOfAccess(enteredTermsOfAccess);
+         workingVersion.getTermsOfAccess().setFileAccessRequest(enteredFileAccessRequest);
         return save();
     }
 
@@ -3988,7 +4012,7 @@ public class DatasetPage implements java.io.Serializable {
 
         UIInput reasonRadio = (UIInput) toValidate.getAttributes().get("reasonRadio");
         Object reasonRadioValue = reasonRadio.getValue();
-        Integer radioVal = new Integer(reasonRadioValue.toString());
+        Integer radioVal = parseInt(reasonRadioValue.toString());
 
         if (radioVal == 7 && (value == null || value.toString().isEmpty())) {
             ((UIInput) toValidate).setValid(false);
@@ -5538,7 +5562,7 @@ public class DatasetPage implements java.io.Serializable {
         if (workingVersion == null) {
             return false;
         }
-        if (!workingVersion.getTermsOfUseAndAccess().isFileAccessRequest()){
+        if (!workingVersion.getTermsOfAccess().isFileAccessRequest()){
            // return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){

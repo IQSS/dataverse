@@ -36,6 +36,7 @@ public class StartupFlywayMigrator {
                 // Java-based callbacks are not auto-discovered (unlike migrations)
                 .callbacks(new SettingsCleanupCallback())
                 .baselineOnMigrate(true)
+                .baselineVersion("0")
                 .load();
 
         flyway.migrate();
