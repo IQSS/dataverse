@@ -54,7 +54,7 @@ public class SiteMapUtil {
 
         final File directory = new File(sitemapPathString);
         if (!directory.exists()) {
-            directory.mkdir();
+            directory.mkdirs();
         }
 
         // Use DAY pattern (YYYY-MM-DD), local machine timezone

@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * For docs see {@link SchemaDotOrgExporter}.
  */
 @LocalJvmSettings
+@JvmSetting(key = JvmSettings.SITE_URL, value = "http://localhost:8080")
 public class SchemaDotOrgExporterTest {
 
     private static final Logger logger = Logger.getLogger(SchemaDotOrgExporterTest.class.getCanonicalName());

@@ -6,8 +6,11 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -33,6 +36,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 
+@LocalJvmSettings
+@JvmSetting(key = JvmSettings.SITE_URL, value = "http://localhost:8080")
 class SiteMapUtilTest {
 
     // see https://www.sitemaps.org/protocol.html#validating
@@ -45,16 +50,14 @@ class SiteMapUtilTest {
     
     @BeforeEach
     void setup() throws IOException {
-        // NOTE: This might be unsafe for parallel tests, but our @SystemProperty helper does not yet support
-        //       lookups from vars or methods.
-        System.setProperty("test.filesDir", tempDir.toString());
         this.tempDocroot = tempDir.resolve("docroot");
-        Files.createDirectory(tempDocroot);
+        Files.createDirectories(tempDocroot);
+        System.setProperty(JvmSettings.DOCROOT_DIRECTORY.getScopedKey(), tempDocroot.toString());
     }
     
     @AfterEach
     void teardown() {
-        System.clearProperty("test.filesDir");
+        System.clearProperty(JvmSettings.DOCROOT_DIRECTORY.getScopedKey());
     }
     
     @Test
