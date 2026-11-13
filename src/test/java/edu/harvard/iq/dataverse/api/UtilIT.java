@@ -2684,6 +2684,9 @@ public class UtilIT {
         if (version != null) {
             optionalVersion = "&version=" + version;
         }
+        System.out.print("@@@@@@@@@@@@@@@@@");
+        System.out.print("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter + optionalVersion);
+        System.out.print("@@@@@@@@@@@@@@@@@");
         return requestSpecification
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter + optionalVersion);
     }
