@@ -64,3 +64,7 @@ src/main/webapp/resources/images/dataverseproject.png.thumb140
 /conf/keycloak/docker-dev-volumes
 /docker-dev-volumes
 /.vs
+
+# Personal Docker Compose overrides for local development
+# (use with: docker compose -f docker-compose-dev.yml -f docker-compose.override.yml ...)
+/docker-compose.override.yml
