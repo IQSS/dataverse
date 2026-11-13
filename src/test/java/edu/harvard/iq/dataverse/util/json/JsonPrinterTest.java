@@ -401,9 +401,11 @@ public class JsonPrinterTest {
 
         assertNotNull(actualJsonObject);
         JsonObject actualAuthorJsonObject = actualJsonObject.getJsonArray("fields").getJsonObject(0);
-        assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), actualAuthorJsonObject.getString("value"));
-        assertEquals("primitive", actualAuthorJsonObject.getString("typeClass"));
-        assertFalse(actualAuthorJsonObject.getBoolean("multiple"));
+        String withheld = BundleUtil.getStringFromBundle("dataset.anonymized.withheld");
+        assertEquals(withheld, actualAuthorJsonObject.getJsonArray("value").getJsonObject(0).getJsonObject("authorName").getString("value"));
+        assertEquals(withheld, actualAuthorJsonObject.getJsonArray("value").getJsonObject(1).getJsonObject("authorAffiliation").getString("value"));
+        assertEquals("compound", actualAuthorJsonObject.getString("typeClass"));
+        assertTrue(actualAuthorJsonObject.getBoolean("multiple"));
     }
 
     @Test
