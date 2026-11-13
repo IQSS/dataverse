@@ -999,13 +999,21 @@ public class Files extends AbstractApiBean {
                     ") does not match file content type (" + fileContentType + ").");
             }
 
-            // Get the latest file metadata
-            // @todo This filemetadata is used later on as a paremeter in a call to 
-            // /toolParams and in instantiating ExternalToolHandler. Using the
-            // _latest_ filemetadata can be potentially problematic then, since 
-            // this may be an unpriveleged user looking at a published file that
-            // happens to be in a draft version as well (for ex.) - L.A.
-            FileMetadata fileMetadata = dataFile.getLatestFileMetadata();
+            // Get the best available file metadata
+            // We will use the latest published, if it is a published file. 
+            // Otherwise we'll try to look up a draft. If this is an 
+            // unpublished draft file, the permission logic below will check 
+            // whether this user is allowed to see it.
+            // @todo if we determine that it is important, for the author or 
+            // privileged user to be able to run previewers with draft filemetadata
+            // info, this can be addressed by either additional logic here or by 
+            // adding an explicit filemetadata_id parameter to this API.
+            FileMetadata fileMetadata;
+            try {
+                fileMetadata = dataFile.getLatestPublishedFileMetadata();
+            } catch (UnsupportedOperationException uoex) {
+                fileMetadata = dataFile.getDraftFileMetadata();
+            }
             if (fileMetadata == null) {
                 return error(BAD_REQUEST, "File metadata not found.");
             }
