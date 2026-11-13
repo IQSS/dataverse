@@ -30,6 +30,7 @@
     </ui:remove>
     
     <ui:param name="isFilePg" value="#{of:isInstance('edu.harvard.iq.dataverse.FilePage', bean)}"/>
+    <ui:param name="fileErased" value="#{!(empty fileMetadata.dataFile.fileErasure)}"/>
 
 
     <!-- Edit Options -->
@@ -43,7 +44,7 @@
     </li>
 
     <ui:fragment rendered="#{!bean.hasPublicStore}">
-        <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
+        <ui:fragment rendered="#{fileMetadata == null or (!fileMetadata.restricted and !fileErased)}">
             <li>
                 <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
@@ -52,11 +53,11 @@
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <f:setPropertyActionListener target="#{bean.termsOfAccess}" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" />
                     <f:setPropertyActionListener target="#{bean.fileAccessRequest}" value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" />                     
-                    <h:outputText value="#{bundle['file.restrict']}"/>                                                                
+                    <h:outputText value="#{bundle['file.restrict']}"/>
                 </p:commandLink>
             </li>
         </ui:fragment>
-        <ui:fragment rendered="#{fileMetadata == null or fileMetadata.restricted}">
+        <ui:fragment rendered="#{fileMetadata == null or (fileMetadata.restricted and !fileErased)}">
             <li>
                 <p:commandLink  
                     onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
@@ -106,7 +107,7 @@
         </li>  
     </ui:fragment> 
     
-    <ui:fragment rendered="#{settingsWrapper.embargoAllowed}">
+    <ui:fragment rendered="#{settingsWrapper.embargoAllowed and (fileMetadata == null or !fileErased)}">
         <li>
             <p:commandLink      update="@([id$=fileEmbargoPopup])" 
                                 onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
@@ -118,7 +119,7 @@
         </li>
     </ui:fragment>
 
-    <ui:fragment rendered="#{settingsWrapper.retentionAllowed}">
+    <ui:fragment rendered="#{settingsWrapper.retentionAllowed and (fileMetadata == null or !fileErased)}">
         <li>
             <p:commandLink      update="@([id$=fileRetentionPopup])"
                                 onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))

@@ -365,6 +365,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             long datasetSize = DatasetUtil.getDownloadSizeNumeric(dataset.getLatestVersion(), false);
             if (maxDatasetSize == -1 || datasetSize < maxDatasetSize) {
                 for (DataFile dataFile : dataset.getFiles()) {
+                    // Skip erased files — their physical content no longer exists, so checksum validation is not applicable
+                    if (FileUtil.isErased(dataFile)) {
+                        logger.fine("Checksum Validation skipped for erased datafile: " + dataFile.getId());
+                        continue;
+                    }
                     // TODO: Should we validate all the files in the dataset, or only
                     // the files that haven't been published previously?
                     // (the decision was made to validate all the files on every

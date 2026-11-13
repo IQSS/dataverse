@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -19,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.*;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
@@ -28,11 +31,6 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
@@ -45,6 +43,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -214,7 +213,7 @@ public class Files extends AbstractApiBean {
     /**
      * Replace an Existing File 
      * 
-     * @param datasetId
+     * @param fileIdOrPersistentId
      * @param testFileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
@@ -350,8 +349,8 @@ public class Files extends AbstractApiBean {
 
             try {
                 msgt("as String: " + addFileHelper.getSuccessResult());
-                /**
-                 * @todo We need a consistent, sane way to communicate a human
+                /*
+                  @todo We need a consistent, sane way to communicate a human
                  * readable message to an API client suitable for human
                  * consumption. Imagine if the UI were built in Angular or React
                  * and we want to return a message from the API as-is to the
@@ -374,7 +373,7 @@ public class Files extends AbstractApiBean {
     /**
      * Delete an Existing File 
      * 
-     * @param id file ID or peristent ID
+     * @param fileIdOrPersistentId file ID or peristent ID
      */
     @DELETE
     @AuthRequired
@@ -421,6 +420,187 @@ public class Files extends AbstractApiBean {
         }
 
         return ok(deletePhysicalFile);
+    }
+
+    /**
+     * Erase a published file's physical content from storage while retaining
+     * the DataFile database record with audit metadata.
+     * 
+     * Uses a two-token confirmation flow to prevent accidental erasure:
+     * 1. First request without token returns 202 with a confirmation token
+     * 2. Second request with the token performs the actual erasure
+     * 
+     * For files on stores not accessible by Dataverse (RemoteOverlay, non-S3 Globus),
+     * the initial response indicates that manual deletion is required. The admin must
+     * delete the file manually and then call back with both the confirmationToken and
+     * manuallyErased=true to complete the erasure. The erasure does not proceed until
+     * the admin confirms the main file is deleted.
+     * 
+     * @param fileIdOrPersistentId file ID or persistent ID
+     * @param jsonBody JSON body with reason and optional confirmationToken and manuallyErased
+     */
+    @DELETE
+    @AuthRequired
+    @Path("{id}/erase")
+    @Operation(summary = "Erase a published file",
+            description = "Erases a published data file's physical content from storage while retaining the DataFile database record with audit metadata. Requires superuser. Uses two-token confirmation flow.")
+    public Response eraseFileInDataset(@Context ContainerRequestContext crc,
+                                        @Parameter(description = "Data file fileIdOrPersistentId or persistent identifier.", required = true)
+                                        @PathParam("id") String fileIdOrPersistentId,
+                                        String jsonBody) {
+        // (1) Get the user from the API key and create request
+        User authUser = getRequestUser(crc);
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+
+        // (2) Check superuser early — before any other validation or token generation
+        if (!(authUser instanceof AuthenticatedUser) || !((AuthenticatedUser) authUser).isSuperuser()) {
+            return error(Status.FORBIDDEN, "Erase can only be called by superusers.");
+        }
+
+        // (3) Parse JSON body
+        String reason = null;
+        String confirmationToken = null;
+        boolean manuallyErased = false;
+        if (jsonBody != null && !jsonBody.isEmpty()) {
+            try {
+                jakarta.json.JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
+                if (jsonObj.containsKey("reason") && jsonObj.get("reason").getValueType() != jakarta.json.JsonValue.ValueType.NULL) {
+                    reason = jsonObj.getString("reason");
+                }
+                if (jsonObj.containsKey("confirmationToken") && jsonObj.get("confirmationToken").getValueType() != jakarta.json.JsonValue.ValueType.NULL) {
+                    confirmationToken = jsonObj.getString("confirmationToken");
+                }
+                if (jsonObj.containsKey("manuallyErased") && jsonObj.get("manuallyErased").getValueType() != jakarta.json.JsonValue.ValueType.NULL) {
+                    manuallyErased = jsonObj.getBoolean("manuallyErased");
+                }
+            } catch (jakarta.json.JsonException e) {
+                return error(BAD_REQUEST, "Invalid JSON body.");
+            }
+        }
+
+        // (4) Find the data file
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(fileIdOrPersistentId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        // (5) Check if already erased
+        if (dataFile.getFileErasure() != null) {
+            return error(Status.GONE, "File has already been erased.");
+        }
+
+        // (6) Validate reason is provided
+        if (reason == null || reason.trim().isEmpty()) {
+            return error(BAD_REQUEST, "A reason is required for erasure. Provide it in the JSON body as {\"reason\": \"...\"}");
+        }
+
+        // (7) If token provided, perform the erasure
+        if (confirmationToken != null && !confirmationToken.isEmpty()) {
+            return performFileErasure(dvRequest, dataFile, reason, confirmationToken, manuallyErased);
+        }
+
+        // (8) No token - return 202 with confirmation token
+        String token = java.util.UUID.randomUUID().toString();
+        // Store token in a simple cache (5-minute TTL)
+        erasureTokenCache.put(token, System.currentTimeMillis() + 5 * 60 * 1000);
+
+        // Determine if manual deletion is required for this file
+        boolean manualDeletionRequired = !StorageIO.isDataverseWritable(
+                DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()));
+
+        JsonObjectBuilder responseBuilder = JsonUtil.createObjectBuilder()
+                .add("status", "confirmation_required")
+                .add("confirmationToken", token)
+                .add("tokenExpiresInSeconds", 300)
+                .add("fileId", dataFile.getId());
+        if (dataFile.getGlobalId() != null) {
+            responseBuilder.add("persistentId", dataFile.getGlobalId().asString());
+        }
+        if (manualDeletionRequired) {
+            responseBuilder.add("message", "This file is stored on a location not directly accessible by Dataverse. Please delete the main file manually, then send another DELETE request with both the confirmationToken and manuallyErased=true to complete the erasure.");
+        } else {
+            responseBuilder.add("message", "To complete the erasure, send another DELETE request with the confirmationToken included.");
+        }
+
+        return ok(responseBuilder.build());
+    }
+
+    // Simple cache for erasure confirmation tokens (token -> expiry timestamp)
+    private static final java.util.Map<String, Long> erasureTokenCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Perform the actual file erasure after token confirmation.
+     * 
+     * For files on stores accessible by Dataverse, the erasure proceeds immediately.
+     * For files on inaccessible stores, the admin must have manually deleted the file
+     * and set manuallyErased=true in the request; otherwise the request is rejected.
+     */
+    private Response performFileErasure(DataverseRequest dvRequest, DataFile dataFile, String reason,
+                                        String confirmationToken, boolean manuallyErased) {
+        // Validate token
+        Long expiry = erasureTokenCache.get(confirmationToken);
+        if (expiry == null) {
+            return error(BAD_REQUEST, "Invalid or expired confirmation token.");
+        }
+        if (System.currentTimeMillis() > expiry) {
+            erasureTokenCache.remove(confirmationToken);
+            return error(BAD_REQUEST, "Confirmation token has expired. Please request a new one.");
+        }
+
+        // Check if file is published using isReleased()
+        if (!dataFile.isReleased()) {
+            return error(BAD_REQUEST, "Cannot erase file: the DataFile has not been published. Use delete for draft-only files.");
+        }
+
+        // Check if harvested
+        if (dataFile.isHarvested()) {
+            return error(BAD_REQUEST, "Cannot erase harvested files. Erasure is not supported on harvested datasets.");
+        }
+
+        // Check if manual deletion is required for this file
+        boolean manualDeletionRequired = !StorageIO.isDataverseWritable(
+                DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()));
+
+        // If manual deletion is required, the admin must confirm they've deleted the file
+        if (manualDeletionRequired && !manuallyErased) {
+            return error(BAD_REQUEST, "This file is stored on a location not directly accessible by Dataverse. Please delete the main file manually, then send another DELETE request with both the confirmationToken and manuallyErased=true.");
+        }
+
+        // Execute the erasure command
+        try {
+            EraseDataFileCommand cmd = new EraseDataFileCommand(dataFile, dvRequest, reason, manualDeletionRequired);
+            commandEngine.submit(cmd);
+
+            // Clear the token
+            erasureTokenCache.remove(confirmationToken);
+
+            // Build response
+            JsonObjectBuilder responseBuilder = JsonUtil.createObjectBuilder()
+                    .add("status", "erased")
+                    .add("fileId", dataFile.getId());
+            if (dataFile.getGlobalId() != null) {
+                responseBuilder.add("persistentId", dataFile.getGlobalId().asString());
+            }
+            if (manualDeletionRequired) {
+                responseBuilder.add("note", "File erased. The main file was deleted manually by the admin. Auxiliary files have been removed.");
+            }
+
+            return ok(responseBuilder.build());
+
+        } catch (CommandException ex) {
+            // Clear the token on failure
+            erasureTokenCache.remove(confirmationToken);
+            logger.log(Level.SEVERE, "Erasure command failed for file " + dataFile.getId(), ex);
+            // Messages are explicitly meant for the end user
+            return error(BAD_REQUEST, "Erasure failed: " + ex.getMessage());
+        } catch (Exception ex) {
+            // Clear the token on failure
+            erasureTokenCache.remove(confirmationToken);
+            logger.log(Level.SEVERE, "Erasure failed for file " + dataFile.getId(), ex);
+            return error(Status.INTERNAL_SERVER_ERROR, "Erasure failed.");
+        }
     }
     
     //Much of this code is taken from the replace command, 
@@ -1294,5 +1474,63 @@ public class Files extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/erasedFiles")
+    @Produces({ MediaType.APPLICATION_JSON, "text/csv" })
+    @Operation(summary = "List all erased files",
+            description = "Returns all erased files with their FileErasure details, optionally filtered by a date range. Superusers only. Returns CSV by default; use Accept: application/json for JSON.")
+    public Response listErasedFiles(@Context ContainerRequestContext crc,
+                                    @Parameter(description = "Start date filter (inclusive). Format: yyyy-MM-dd, yyyy-MM, or yyyy.")
+                                    @QueryParam("startDate") String startDate,
+                                    @Parameter(description = "End date filter (inclusive). Format: yyyy-MM-dd, yyyy-MM, or yyyy.")
+                                    @QueryParam("endDate") String endDate,
+                                    @Context HttpHeaders headers) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        Date start = null;
+        Date end = null;
+        if (startDate != null && !startDate.isEmpty()) {
+            start = DateUtil.parseDate(startDate);
+            if (start == null) {
+                return error(Response.Status.BAD_REQUEST, "Invalid startDate format. Use yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss.");
+            }
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            end = DateUtil.parseDate(endDate);
+            if (end == null) {
+                return error(Response.Status.BAD_REQUEST, "Invalid endDate format. Use yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss.");
+            }
+        }
+
+        String jpql = buildErasedFilesJpql(null, start, end);
+        jakarta.persistence.Query query = em.createQuery(jpql);
+        setErasedFilesQueryParams(query, start, end);
+
+        List<FileErasure> erasedFiles = query.getResultList();
+
+        List<MediaType> acceptedTypes = headers.getAcceptableMediaTypes();
+        boolean wantJson = acceptedTypes.stream()
+                .anyMatch(mt -> mt.toString().equals(MediaType.APPLICATION_JSON) || mt.toString().equals("*/*"));
+
+        // Default to CSV when no specific type is requested or only CSV is requested
+        if (wantJson && !acceptedTypes.stream().anyMatch(mt -> mt.toString().equals("text/csv"))) {
+            return ok(toErasedFilesJsonArray(erasedFiles));
+        }
+        String filename = buildErasedFilesCsvFilename(start, end, null);
+        return Response.ok()
+                .entity(toErasedFilesCsvString(erasedFiles, start, end, null))
+                .type("text/csv")
+                .header("Content-Disposition", "attachment; filename=" + filename)
+                .build();
     }
 }

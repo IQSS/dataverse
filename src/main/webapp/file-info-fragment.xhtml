@@ -33,6 +33,7 @@
     <ui:param name="isReleased" value="#{dataFile.released}" />
     <ui:param name="hasEmbargo" value="#{!(empty dataFile.embargo)}" />
     <ui:param name="hasRetention" value="#{!(empty dataFile.retention)}" />
+    <ui:param name="hasErasure" value="#{!(empty dataFile.fileErasure)}" />
     <ui:param name="canDownloadFile" value="#{fileDownloadHelper.canDownloadFile(fileMetadata)}" />
     <ui:param name="hasThumbnail" value="#{thumbnailServiceWrapper.isThumbnailAvailable(dataFile)}" />
     <ui:param name="showThumbnail" value="#{canDownloadFile and hasThumbnail}" />
@@ -84,6 +85,7 @@
                     <h:outputText id="fileCreatePublishDate" value="#{isReleased ? ((dataFile.embargo!=null) ? bundle['metadatareleased'] : bundle['published']) : bundle['deposited']} #{fileMetadata.getFileDateToDisplay()}" rendered="#{hasFileId}"/>
                     <h:outputText id="embargoDate" class="embargoright" value="#{isReleased ? ((dataFileServiceBean.isActivelyEmbargoed(fileMetadata)) ? bundle['embargoed.until'] : bundle['embargoed.wasthrough']):bundle['embargoed.willbeuntil']} #{dataFile.embargo.formattedDateAvailable}" rendered="#{hasEmbargo}"/>
                     <h:outputText id="retentionDate" class="retentionright" value="#{isReleased ? ((dataFileServiceBean.isRetentionExpired(fileMetadata)) ? bundle['retention.after'] : bundle['retention.isfrom']):bundle['retention.willbeafter']} #{dataFile.retention.formattedDateUnavailable}, #{bundle['retention.enddateinfo']}" rendered="#{hasRetention}"/>
+                    <h:outputText id="erasureDate" class="text-danger" value=" #{bundle['file.erased.on']} #{dataFile.fileErasure.formattedErasedOn}" rendered="#{hasErasure}"/>
                 </div>
                 <div class="downloads-block" jsf:rendered="#{!editDatafilesPage and !(settingsWrapper.rsyncOnly) and isReleased}">
                     <h:outputFormat styleClass="visible-xs-block visible-sm-block visible-md-inline visible-lg-inline" id="fileDownloadCount" value="{0} #{bundle['metrics.downloads']}">

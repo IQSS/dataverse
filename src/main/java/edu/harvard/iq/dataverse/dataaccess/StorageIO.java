@@ -624,9 +624,18 @@ public abstract class StorageIO<T extends DvObject> {
 
     //True by default, Stores (e.g. RemoteOverlay, Globus) can set this false to stop attempts to read bytes
     public static boolean isDataverseAccessible(String driverId) {
-        return (true && !Boolean.parseBoolean(StorageIO.getConfigParamForDriver(driverId, AbstractRemoteOverlayAccessIO.FILES_NOT_ACCESSIBLE_BY_DATAVERSE)));
+        return (!Boolean.parseBoolean(StorageIO.getConfigParamForDriver(driverId, AbstractRemoteOverlayAccessIO.FILES_NOT_ACCESSIBLE_BY_DATAVERSE)));
     }
-    
+
+    //True by default, Stores (e.g. RemoteOverlay, Globus) return false to indicate Dataverse cannot write/delete files
+    public static boolean isDataverseWritable(String driverId) {
+        String driverType = DataAccess.getDriverType(driverId);
+        if (DataAccess.REMOTE.equals(driverType) || (DataAccess.GLOBUS.equals(driverType) && !StorageIO.isDataverseAccessible(driverId))) {
+            return false;
+        }
+        return true;
+    }
+
     // Check that storageIdentifier is consistent with store's config
     // False will prevent direct uploads
     static boolean isValidIdentifier(String driverId, String storageId) {

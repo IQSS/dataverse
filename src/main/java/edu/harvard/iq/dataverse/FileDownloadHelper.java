@@ -237,6 +237,9 @@ public class FileDownloadHelper implements java.io.Serializable {
         // Retention expired files are always made unavailable, because they might be destroyed
         if (FileUtil.isRetentionExpired(fileMetadata)) return false;
 
+        // Erased files are not downloadable
+        if (FileUtil.isErased(fileMetadata.getDataFile())) return false;
+
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
         // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.

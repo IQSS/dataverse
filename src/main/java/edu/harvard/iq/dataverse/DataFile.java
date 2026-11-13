@@ -327,6 +327,18 @@ public class DataFile extends DvObject implements Comparable {
         this.retention = retention;
     }
 
+    @OneToOne(mappedBy = "dataFile")
+    @BatchFetch(BatchFetchType.IN)
+    private FileErasure fileErasure;
+
+    public FileErasure getFileErasure() {
+        return fileErasure;
+    }
+
+    public void setFileErasure(FileErasure fileErasure) {
+        this.fileErasure = fileErasure;
+    }
+
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
         initFileReplaceAttributes();
