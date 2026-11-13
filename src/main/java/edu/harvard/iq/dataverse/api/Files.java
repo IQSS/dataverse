@@ -1000,6 +1000,11 @@ public class Files extends AbstractApiBean {
             }
 
             // Get the latest file metadata
+            // @todo This filemetadata is used later on as a paremeter in a call to 
+            // /toolParams and in instantiating ExternalToolHandler. Using the
+            // _latest_ filemetadata can be potentially problematic then, since 
+            // this may be an unpriveleged user looking at a published file that
+            // happens to be in a draft version as well (for ex.) - L.A.
             FileMetadata fileMetadata = dataFile.getLatestFileMetadata();
             if (fileMetadata == null) {
                 return error(BAD_REQUEST, "File metadata not found.");
@@ -1007,8 +1012,8 @@ public class Files extends AbstractApiBean {
 
             // Check if the file is restricted or embargoed
             boolean isRestricted = dataFile.isRestricted() || dataFile.isUnpublishedDraftFile()
-                    || FileUtil.isActivelyEmbargoed(fileMetadata) || dataFile.isDeaccessioned()
-                    || FileUtil.isRetentionExpired(fileMetadata);
+                    || FileUtil.isActivelyEmbargoed(dataFile) || dataFile.isDeaccessioned()
+                    || FileUtil.isRetentionExpired(dataFile);
             boolean hasPermission = true;
             if (isRestricted) {
                 hasPermission = permissionSvc.requestOn(req, dataFile).has(Permission.DownloadFile);
