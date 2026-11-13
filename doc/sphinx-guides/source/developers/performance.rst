@@ -143,10 +143,8 @@ Implement the Frontend Plan for Performance
 
 The `Dataverse - SPA MVP Definition doc <https://docs.google.com/document/d/1WnJzLeVK5eVP4_10eX6BwPAnmiamO1n2uGzcwrAsucQ/edit?usp%3Dsharing>`_  has some ideas around how to achieve good performance for the new front end in the areas of rendering, monitoring,file upload/download, pagination, and caching. We should create as many issues as necessary in the frontend repo and work on them in time. The doc recommends the use of `React Profiler <https://legacy.reactjs.org/blog/2018/09/10/introducing-the-react-profiler.html>`_ and other tools. Not mentioned is https://pagespeed.web.dev but we can investigate it as well. See also `#183 <https://github.com/IQSS/dataverse-frontend/issues/183>`_, a parent issue about performance. In `#184 <https://github.com/IQSS/dataverse-frontend/issues/184>`_  we plan to compare the performance of the old JSF UI vs. the new React UI. Cypress plugins for load testing could be investigated.
 
-Set up Query Counter in Jenkins
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-See countquery script above. See also https://jenkins.dataverse.org/job/IQSS-dataverse-develop/ws/target/query_count.out
+Perform Query Count
+~~~~~~~~~~~~~~~~~~~
 
 Show the plot over time. Make spikes easily apparent. 320,035 queries as of this writing.
 
@@ -163,7 +161,7 @@ Do developers know how to use a profiler? Should they use `JMeter <https://githu
 Automate Performance Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We are already using two excellent continuous integration (CI) tools, Jenkins and GitHub Actions, to test our code. We should add performance testing into the mix (`#4201 <https://github.com/IQSS/dataverse/issues/4201>`_ is an old issue for this but we can open a fresh one). Currently we test every commit on every PR and we should consider if this model makes sense since performance testing will likely take longer to run than regular tests. Once developers are comfortable with their favorite tools, we can pick which ones to automate.
+We use GitHub Actions to test our code. We should add performance testing into the mix (`#4201 <https://github.com/IQSS/dataverse/issues/4201>`_ is an old issue for this but we can open a fresh one). Currently we test every commit on every PR and we should consider if this model makes sense since performance testing will likely take longer to run than regular tests. Once developers are comfortable with their favorite tools, we can pick which ones to automate.
 
 Make Production Data or Equivalent Available to Developers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

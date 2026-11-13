@@ -1,0 +1,24 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "about": {
+        "@id": "./"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Playwright Test RO-Crate",
+      "description": "Sample RO-Crate metadata for automated testing.",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    }
+  ]
+}

@@ -6,16 +6,13 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
@@ -484,8 +481,7 @@ public class ExternalToolsIT {
         getTools.then().assertThat()
                 .statusCode(OK.getStatusCode());
         String body = getTools.getBody().asString();
-        JsonReader bodyObject = Json.createReader(new StringReader(body));
-        JsonArray tools = bodyObject.readObject().getJsonArray("data");
+        JsonArray tools = JsonUtil.getJsonObject(body).getJsonArray("data");
         /*
         for (int i = 0; i < tools.size(); i++) {
             JsonObject tool = tools.getJsonObject(i);

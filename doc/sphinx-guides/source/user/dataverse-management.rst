@@ -22,7 +22,7 @@ Creating a Dataverse collection is easy but first you must be a registered user 
     * **Dataverse Name**: Enter the name of your Dataverse collection.
     * **Affiliation**: Add any affiliation that can be associated with this particular Dataverse collection (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
     * **Identifier**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new Dataverse collection. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change this field in the future, the URL for your Dataverse collection will change (http//.../'identifier'), which will break older links to the page.
-    * **Category**: Select a category that best describes the type of Dataverse collection this will be. For example, if this is a Dataverse collection for an individual researcher's datasets, select *Researcher*. If this is a Dataverse collection for an institution, select *Organization or Institution*.
+    * **Category**: Select a category that best describes the type of Dataverse collection this will be. For example, if this is a Dataverse collection for an individual researcher's datasets, select *Researcher*. If this is a Dataverse collection for an institution, select *Organization or Institution*. If this is a Dataverse collection for a department or division within an institution, select *Department* or *Division*.
     * **Email**: This is the email address that will be used as the contact for this particular Dataverse collection. You can have more than one contact email address for your Dataverse collection.
     * **Description**: Provide a description of this Dataverse collection. This will display on the landing page of your Dataverse collection and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <u>, <ul>).
     * **Dataset Metadata Langauge**: (If enabled) Select which language should be used when entering dataset metadata, or leave that choice to dataset creators. 
@@ -221,18 +221,18 @@ In order to link a dataset, you will need your account to have the "Link Dataset
 
 To link a dataset to your Dataverse collection, you must navigate to that dataset and click the white "Link" button in the upper-right corner of the dataset page. This will open up a window where you can type in the name of the Dataverse collection that you would like to link the dataset to. Select your Dataverse collection and click the save button. This will establish the link, and the dataset will now appear under your Dataverse collection.
 
-To remove an established link, navigate to the linked dataset's page and click the white "Unlink" button in the upper-right corner of the page.
-
 A draft dataset can be linked to other Dataverse collections. It will only become publicly visible in the linked collection(s) after it has been published. To publish the dataset, your account must have the "Publish Dataset" permission for the Dataverse collection in which the dataset was originally created. Permissions in the linked Dataverse collections do not apply.
+
+There is currently no way to remove established links in the UI. If you need to remove a link between a Dataverse collection and a dataset, please contact the support team for the Dataverse installation you are using (see the :ref:`unlink-a-dataset` section of the Admin Guide for more information).
 
 .. _dataverse-linking:
 
 Dataverse Collection Linking
 ============================
 
-Similarly to dataset linking, Dataverse collection linking allows a Dataverse collection owner to "link" their Dataverse collection to another Dataverse collection, so the Dataverse collection being linked will appear in the linking Dataverse collection's list of contents without actually *being* in that Dataverse collection.
+Similarly to dataset linking, Dataverse collection linking allows a Dataverse collection owner to "link" their Dataverse collection to another Dataverse collection, so the Dataverse collection being linked will appear in the linking Dataverse collection's list of contents without actually *being* in that Dataverse collection. Currently, the ability to link a Dataverse collection to another Dataverse collection is a superuser only feature. 
 
-In order to link a collection, you will need your account to have the "Link Dataverse" permission on the linking Dataverse collection.
+If you need to have a Dataverse collection linked to your Dataverse collection, please contact the support team for the Dataverse installation you are using.
 
 Publish Your Dataverse Collection
 =================================

@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse.datavariable;
 
 import java.io.Serializable;
 import java.util.Collection;
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -137,6 +139,7 @@ public class DataVariable implements Serializable {
      * Note that VariableRange is itself an entity.
      */
     @OneToMany (mappedBy="dataVariable", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private Collection<VariableRange> invalidRanges;
     
     /*
@@ -152,6 +155,7 @@ public class DataVariable implements Serializable {
      * Note that SummaryStatistic is itself an entity.
      */
     @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private Collection<SummaryStatistic> summaryStatistics;
     
     /*
@@ -166,6 +170,7 @@ public class DataVariable implements Serializable {
      */
     @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     @OrderBy("catOrder")
+    @BatchFetch(BatchFetchType.IN)
     private Collection<VariableCategory> categories;
 
     /*
@@ -203,6 +208,7 @@ public class DataVariable implements Serializable {
     private Long numberOfDecimalPoints;
 
     @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private Collection<VariableMetadata> variableMetadatas;
     
     public DataVariable() {

@@ -10,6 +10,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 import jakarta.persistence.*;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -194,6 +196,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private boolean previewImageAvailable;
     
     @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    @BatchFetch(BatchFetchType.IN)
     private StorageQuota storageQuota;
     
     public boolean isPreviewImageAvailable() {

@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.util;
 
+import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class MarkupCheckerTest {
 
@@ -28,7 +30,12 @@ public class MarkupCheckerTest {
         "NULL, NULL"
     }, nullValues = {"NULL"})
     public void testSanitizeBasicHTML(String unsafe, String safe) {
-        assertEquals(safe, MarkupChecker.sanitizeBasicHTML(unsafe));
+        String actual = MarkupChecker.sanitizeBasicHTML(unsafe);
+        MarkupCheckerUtil.assertHtmlEqual(safe, actual);
+        // Sanity check that the key tag we strip is truly gone
+        if(actual != null) {
+            assertFalse(actual.toLowerCase().contains("script"));
+        }
     }
 
     /**
@@ -51,21 +58,12 @@ public class MarkupCheckerTest {
         "NULL, NULL"
     }, nullValues = {"NULL"})
     public void testSanitizeAdvancedHTML(String unsafe, String safe) {
-        String sanitizedOutput = MarkupChecker.sanitizeAdvancedHTML(unsafe);
-
-        // Normalize both the expected and actual content by removing whitespaces
-
-        String normalizedSafe = null;
-        if (safe != null) {
-            normalizedSafe = safe.replaceAll("\\s+", "").trim();
+        String actual = MarkupChecker.sanitizeAdvancedHTML(unsafe);
+        MarkupCheckerUtil.assertHtmlEqual(safe, actual);
+        // Sanity check that the key tag we strip is truly gone
+        if(actual != null) {
+            assertFalse(actual.toLowerCase().contains("script"));
         }
-
-        String normalizedOutput = null;
-        if (sanitizedOutput != null) {
-            normalizedOutput = sanitizedOutput.replaceAll("\\s+", "").trim();
-        }
-
-        assertEquals(normalizedSafe, normalizedOutput);
     }
 
     /**
@@ -90,5 +88,4 @@ public class MarkupCheckerTest {
     public void testEscapeHtml() {
         assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));
     }
-
 }

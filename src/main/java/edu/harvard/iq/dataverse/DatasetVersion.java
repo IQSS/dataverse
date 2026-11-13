@@ -38,8 +38,6 @@ import java.util.stream.Collectors;
     @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
                query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
     ), 
-    @NamedQuery(name = "DatasetVersion.findById", 
-                query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id"), 
     @NamedQuery(name = "DatasetVersion.findByDataset",
                 query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"),
     @NamedQuery(name = "DatasetVersion.findByDesiredStatesAndDataset",
@@ -136,7 +134,7 @@ public class DatasetVersion implements Serializable {
     private Dataset dataset;
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
+    @OrderBy("label, id") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category; adding id, to avoid ambiguity when there are duplicate filenames. (L.A., 05-2026)
     private List<FileMetadata> fileMetadatas = new ArrayList();
     
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)

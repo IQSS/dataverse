@@ -331,19 +331,17 @@ public class RoleTagRetriever {
         // -------------------------------------
         // (3) Process the results -- the parent ID is the Dataverse that we're interested in
         // -------------------------------------
-        Integer dvIdAsInteger;
         Long dvId;
         String dtype;
         Long parentId;
-        
+
         // -------------------------------------
         // Iterate through object list
         // -------------------------------------
         for (Object[] ra : results) {
-            dvIdAsInteger = (Integer)ra[0];     // ?? Why, should be a Long
-            dvId = new Long(dvIdAsInteger);
+            dvId = ((Number)ra[0]).longValue();
             dtype = (String)ra[1];
-            parentId = (Long)ra[2];
+            parentId = ((Number)ra[2]).longValue();
                        
             //msg("result: dvId: " + dvId + " |dtype: " + dtype + " |parentId: " + parentId);
             // Should ALWAYS be a Dataset!

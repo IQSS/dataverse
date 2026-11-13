@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -125,7 +129,7 @@ public class UserServiceBean {
     private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
         AuthenticatedUser user = new AuthenticatedUser();
 
-        user.setId(new Long((int)dbRowValues[0]));
+        user.setId(((Number)dbRowValues[0]).longValue());
         user.setUserIdentifier((String)dbRowValues[1]);
         user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));
         user.setFirstName(UserUtil.getStringOrNull(dbRowValues[3]));
@@ -157,7 +161,7 @@ public class UserServiceBean {
      * Attempt to retrieve all the user roles in 1 query
      * Consider putting limits on this -- e.g. no more than 1,000 user identifiers or something similar
      * 
-     * @param userIdentifierList
+     * @param userObjectList
      * @return
      */
     private HashMap<String, List<String>> retrieveRolesForUsers(List<Object[]> userObjectList){
@@ -170,7 +174,7 @@ public class UserServiceBean {
                                        ;
 
         List<Integer> databaseIds = userObjectList.stream()
-                                        .map(userInfo -> (Integer)userInfo[0])
+                                        .map(userInfo -> ((Number)userInfo[0]).intValue())
                                         .collect(Collectors.toList());
 
         if ((userIdentifierList==null)||(userIdentifierList.isEmpty())){
@@ -531,10 +535,39 @@ public class UserServiceBean {
         return save(user);
     }
 
+    /**
+     * Default for {@link JvmSettings#API_LAST_API_USE_INTERVAL}, in seconds.
+     */
+    static final long DEFAULT_LAST_API_USE_INTERVAL_SECONDS = 3600L;
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public AuthenticatedUser updateLastApiUseTime(AuthenticatedUser user) {
         //assumes that AuthenticatedUser user already exists
-        user.setLastApiUseTime(new Timestamp(new Date().getTime()));
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        if (!isLastApiUseTimeUpdateNeeded(user.getLastApiUseTime(), now.toInstant())) {
+            return user;
+        }
+        user.setLastApiUseTime(now);
         return save(user);
+    }
+
+    /**
+     * Decides whether the lastApiUseTime of a user should be updated in the database.
+     * Without the {@link FeatureFlags#DELAY_LASTAPIUSE_UPDATE} flag, it always should
+     * (the original behavior). With the flag enabled, only when no timestamp has been
+     * recorded yet, or the recorded one is at least
+     * {@link JvmSettings#API_LAST_API_USE_INTERVAL} seconds old.
+     *
+     * @param lastApiUseTime the currently recorded timestamp (may be null)
+     * @param now the current time
+     * @return true if the timestamp should be updated
+     */
+    static boolean isLastApiUseTimeUpdateNeeded(Timestamp lastApiUseTime, Instant now) {
+        if (lastApiUseTime == null || !FeatureFlags.DELAY_LASTAPIUSE_UPDATE.enabled()) {
+            return true;
+        }
+        long intervalSeconds = JvmSettings.API_LAST_API_USE_INTERVAL.lookupOptional(Long.class)
+                .orElse(DEFAULT_LAST_API_USE_INTERVAL_SECONDS);
+        return Duration.between(lastApiUseTime.toInstant(), now).toSeconds() >= intervalSeconds;
     }
 }
