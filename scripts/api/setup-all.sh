@@ -43,8 +43,9 @@ command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, 
 # - (optional) Setup optional users and dataverses
 
 
+METADATA_FAILED=0
 echo "Setup the metadata blocks"
-"$SCRIPT_PATH"/setup-datasetfields.sh
+"$SCRIPT_PATH"/setup-datasetfields.sh || METADATA_FAILED=1
 
 echo "Setup the builtin roles"
 "$SCRIPT_PATH"/setup-builtin-roles.sh
@@ -107,4 +108,9 @@ else
 fi
 
 echo
-echo "Setup done."
+if [ "$METADATA_FAILED" -eq 0 ]; then
+    echo "Setup done."
+else
+    echo "Setup finished with metadata errors; see the diagnostics above." >&2
+fi
+exit "$METADATA_FAILED"
