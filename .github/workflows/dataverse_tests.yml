@@ -254,7 +254,7 @@ jobs:
           retention-days: 14
 
       - name: Publish Test Results Dashboard
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@da5b7be67623cd59bbbd1a0ce4f022050a55605f  # v2.26.0
         if: always()
         with:
           check_name: API Test Results
@@ -481,7 +481,7 @@ jobs:
       # report_individual_runs reports a failure in one browser on its own, pointing at that
       # browser's report (failsafe-reports/<browser>/).
       - name: Publish JSF Test Results Dashboard
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@da5b7be67623cd59bbbd1a0ce4f022050a55605f  # v2.26.0
         with:
           check_name: JSF Test Results
           report_individual_runs: true
