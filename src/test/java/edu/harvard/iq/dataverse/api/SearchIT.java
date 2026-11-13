@@ -358,6 +358,15 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
     }
+
+    @Test
+    public void testInvalidIndexFieldSelection() {
+        Response unsupportedField = UtilIT.search("*", null, "&index_fetch=unsupportedField");
+        unsupportedField.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", CoreMatchers.equalTo("ERROR"))
+                .body("message", CoreMatchers.containsString("Unsupported index_fetch field"));
+    }
     
     
     /*
@@ -1267,13 +1276,19 @@ public class SearchIT {
         String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
 
         // Plymouth rock (41.9580775,-70.6621063) is within 50 km of Cambridge. Hit.
-        Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&show_entity_ids=true&geo_point=41.9580775,-70.6621063&geo_radius=50");
+        Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken,
+                "&show_entity_ids=true&geo_point=41.9580775,-70.6621063&geo_radius=50"
+                + "&query_entities=false&index_fetch=geolocation&index_fetch=boundingBox&index_fetch=authorName");
         search1.prettyPrint();
         search1.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.is(1))
                 .body("data.count_in_response", CoreMatchers.is(1))
-                .body("data.items[0].entity_id", CoreMatchers.is(datasetId));
+                .body("data.items[0].entity_id", CoreMatchers.is(datasetId))
+                .body("data.items[0].index_fields.geolocation", Matchers.not(Matchers.empty()))
+                .body("data.items[0].index_fields.boundingBox", Matchers.not(Matchers.empty()))
+                .body("data.items[0].index_fields.authorName[0]", CoreMatchers.is("Simpson, Homer"))
+                .body("data.items[0].metadataBlocks", Matchers.nullValue());
 
         // Plymouth rock (41.9580775,-70.6621063) is not within 1 km of Cambridge. Miss.
         Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&geo_point=41.9580775,-70.6621063&geo_radius=1");
