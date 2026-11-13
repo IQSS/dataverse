@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import jakarta.json.bind.JsonbException;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
@@ -43,6 +44,10 @@ public abstract class JsonExceptionsHandler<T extends Exception> implements Exce
      */
     @Provider
     public static class DvUtilJsonParseExceptionMapper extends JsonExceptionsHandler<JsonParseException> {
+    }
+    
+    @Provider
+    public static class JsonBindingExceptionMapper extends JsonExceptionsHandler<JsonbException> {
     }
     
     // Add more handlers as needed (e.g., for Jackson, GSON, etc.)

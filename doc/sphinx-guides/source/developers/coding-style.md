@@ -101,6 +101,15 @@ Generally speaking you should use `fine` for everything that you don't want to s
 
 When adding logging, do not simply add `System.out.println()` lines because the logging level cannot be controlled.
 
+#### Log Level Escalation
+
+When ignoring or handling errors, often a debug-level error message is created.
+Low occurences of such errors may not warrant a sysadmin's attention.
+On the other hand, when such errors are more frequently encountered, log level escalation might be required.
+
+The `edu.harvard.iq.dataverse.util.logging.FailureEscalation` utility class helps you achieve such escalation patterns.
+An example on how to use the class is provided in its Javadocs.
+
 ### Avoid Hard-Coding Strings (Use Constants)
 
 Special strings should be defined as public constants. For example, `DatasetFieldConstant.java` contains a field for "title" and it's used in many places in the code (try "Find Usages" in Netbeans). This is better than writing the string "title" in all those places.
@@ -118,6 +127,26 @@ If you just downloaded Netbeans and are using the out-of-the-box settings, you s
 - "Raw Types" under "Standard Javac Warnings"
 
 If you know of a way to easily share Netbeans configuration across a team, please get in touch.
+
+### Temporary Files Security
+
+To avoid exposing potentially sensitive information in temporary files stored on the file system, use the
+`edu.harvard.iq.dataverse.util.SecureTempFiles` utility instead of Java mechanics as `Files.createTempFile` directly.
+
+### Tracking Streams Handed Out Beyond the Core's Control
+
+When handing out streams to dataverse-spi based plugins, do not rely on them closing the streams.
+The same is true for any library we use and hand streams to, as we cannot guarantee their diligence.
+Use the `edu.harvard.iq.dataverse.util.StreamRegistry` utility to avoid leaking stream.
+Hand out `registry.track(inputStream)` and close the registry in `try-with-resources` (or `finally`) when your operation is done.
+
+With a registry in place, the caller may close the stream, close it more than once, or not close it at all, without leaking file descriptors or storage connections.
+The registry closes whatever is left over when it closes, and logs a warning if more streams than the configured threshold are held open at once.
+The registry's bookkeeping is thread-safe, but the individual tracked streams are *not* made thread-safe by tracking, so they must not be shared between threads.
+
+The bulk metadata export pipeline (see `BulkExportPipeline`) is an example of this convention in action:
+it lends each dataset version's export stream to exporter plugins through a `StreamRegistry`, 
+so plugins are free to process items in whatever order they like across threads.
 
 ## Bash
 

@@ -1,63 +1,35 @@
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
+import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
+import edu.harvard.iq.dataverse.validation.ValidationUtil;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @Provider
 public class ConstraintViolationExceptionHandler implements ExceptionMapper<ConstraintViolationException> {
     
-    public class ValidationError {
-        private String path;
-        private String message;
-        
-        public String getPath() { return path; }
-        public void setPath(String path) { this.path = path; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
+    public record ValidationError(String path, String message) {}
     
     @Override
     public Response toResponse(ConstraintViolationException exception) {
-        
-        List<ValidationError> errors = exception.getConstraintViolations().stream()
-            .map(this::toValidationError)
-            .collect(Collectors.toList());
-        
-        return Response.status(Response.Status.BAD_REQUEST)
-                       .entity( JsonUtil.createObjectBuilder()
-                           .add("status", "ERROR")
-                           .add("code", Response.Status.BAD_REQUEST.getStatusCode())
-                           .add("message", "JPA validation constraints failed persistence. See list of violations for details.")
-                           .add("violations", toJsonArray(errors))
-                           .build())
-                       .type(MediaType.APPLICATION_JSON_TYPE).build();
+        return JsonResponseBuilder.error(Response.Status.BAD_REQUEST)
+            .message("Request validation failed. See list of violations for details.")
+            .violations(toViolations(exception.getConstraintViolations()))
+            .build();
     }
     
-    private ValidationError toValidationError(ConstraintViolation constraintViolation) {
-        ValidationError error = new ValidationError();
-        error.setPath(constraintViolation.getPropertyPath().toString());
-        error.setMessage(constraintViolation.getMessage());
-        return error;
-    }
-    
-    private JsonArray toJsonArray(List<ValidationError> list) {
-        JsonArrayBuilder builder = JsonUtil.createArrayBuilder();
-        list.stream()
-            .forEach(error -> builder.add(
-                JsonUtil.createObjectBuilder()
-                    .add("path", error.getPath())
-                    .add("message", error.getMessage())));
-        return builder.build();
+    private List<JsonResponseBuilder.Violation> toViolations(Set<ConstraintViolation<?>> violations) {
+        return violations.stream()
+            .map(cv -> new JsonResponseBuilder.Violation(
+                ValidationUtil.propertyPath(cv),
+                cv.getMessage())
+            )
+            .toList();
     }
 }
