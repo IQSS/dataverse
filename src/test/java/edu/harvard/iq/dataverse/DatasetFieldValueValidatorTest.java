@@ -174,12 +174,33 @@ public class DatasetFieldValueValidatorTest {
         assertTrue(DatasetFieldValueValidator.validateBoundingBox("0", "0", "0", "0"));
 
         // invalid tests
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("-180", null, "90", null));
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox(null, "180", null, "90"));
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("-180", "180", "90", "junk"));
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("45", "40", "90", "0"));
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("360", "0", "90", "-90"));
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("", "", "", ""));
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox(null, null, null, null));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-180", null, "90", null));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox(null, "180", null, "90"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-180", "180", "90", "junk"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("45", "40", "90", "0"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("360", "0", "90", "-90"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("", "", "", ""));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox(null, null, null, null));
+
+        // High-precision coordinates that reverse order must be rejected.
+        // Float comparison could treat nearly-equal 6+ decimal values as equal and
+        // incorrectly allow South>North / West>East boxes that later break Solr (#11559).
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-71.116431", "-71.116430", "42.377000", "42.377001"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-71.116430", "-71.116431", "42.377001", "42.377000"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("0.000001", "0.000000", "0.000001", "0.000000"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("0.000000", "0.000001", "0.000000", "0.000001"));
+
+        // High-precision out-of-range bounds
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-180.0000001", "180", "90", "-90"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-180", "180.0000001", "90", "-90"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-180", "180", "90.0000001", "-90"));
+        assertFalse(DatasetFieldValueValidator.validateBoundingBox("-180", "180", "90", "-90.0000001"));
+
+        // Still valid with many decimals when order is correct
+        assertTrue(DatasetFieldValueValidator.validateBoundingBox("-71.116431", "-71.116430", "42.377001", "42.377000"));
+        // High-precision point bounding box (min == max)
+        assertTrue(DatasetFieldValueValidator.validateBoundingBox("-71.116431", "-71.116431", "42.377000", "42.377000"));
+        // Leading/trailing whitespace should be trimmed and accepted
+        assertTrue(DatasetFieldValueValidator.validateBoundingBox(" -71.116431 ", " -71.116430 ", " 42.377001 ", " 42.377000 "));
     }
 }
