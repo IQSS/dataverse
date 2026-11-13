@@ -1051,7 +1051,7 @@ public class Files extends AbstractApiBean {
             // Write the Guestbook Response
             Long guestbookResponseId = null;
             if (guestbookResponse != null) {
-                guestbookResponse.setEventType(preview ? GuestbookResponse.EXPLORE : externalTool.getDisplayName()); // set tool name here as jsf does? i.e. 'View Image'
+                guestbookResponse.setEventType(externalTool.getDisplayName()); // unlike jsf, we will use the tool name - e.g. 'View Image' - in all cases
                 List<String> gbridList = fileDownloadService.writeGuestbookResponseRecords(guestbookResponse, List.of(dataFile));
                 if (gbridList != null && !gbridList.isEmpty()) {
                     //Get the last one / the one with the latest date
