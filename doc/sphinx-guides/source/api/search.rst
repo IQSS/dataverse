@@ -722,6 +722,29 @@ Below is an example of searching across a date range of Dataverse collections, d
 
 `https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z] <https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z]>`_
 
+.. _search-file-size:
+
+File Size Search Example
+------------------------
+
+Files are indexed with a ``fileSizeInBytes`` field containing the size of the file in bytes. You can use this field with the ``fq`` parameter to search for files above or below a certain size. Because only files have this field, you should (but don't strictly have to) also pass ``type=file``.
+
+Below is an example of searching for files that are 1 MB (1048576 bytes) or larger. The ``*`` means there is no upper bound.
+
+`https://demo.dataverse.org/api/search?q=*&type=file&fq=fileSizeInBytes:[1048576+TO+*] <https://demo.dataverse.org/api/search?q=*&type=file&fq=fileSizeInBytes:[1048576+TO+*]>`_
+
+To search for files smaller than a certain size, leave the lower bound open instead. Below is an example of searching for files up to 1 MB.
+
+`https://demo.dataverse.org/api/search?q=*&type=file&fq=fileSizeInBytes:[*+TO+1048576] <https://demo.dataverse.org/api/search?q=*&type=file&fq=fileSizeInBytes:[*+TO+1048576]>`_
+
+Square brackets (``[`` and ``]``) include the values at each end of the range. To exclude them, use curly braces (``{`` and ``}``) instead. Below is an example of searching for files between 1 MB and 10 MB (10485760 bytes), not including files that are exactly either size.
+
+`https://demo.dataverse.org/api/search?q=*&type=file&fq=fileSizeInBytes:{1048576+TO+10485760} <https://demo.dataverse.org/api/search?q=*&type=file&fq=fileSizeInBytes:{1048576+TO+10485760}>`_
+
+These range queries are not limited to the API. The search box in the web interface passes your query to the search index in the same way, so you can type ``fileSizeInBytes:[1048576 TO *]`` directly into it to find files of 1 MB or larger. See :ref:`file-size-search` in the User Guide.
+
+Note that in the search results themselves, the size of each file is returned as ``size_in_bytes`` rather than ``fileSizeInBytes``.
+
 .. _iteration-example:
 
 Iteration
