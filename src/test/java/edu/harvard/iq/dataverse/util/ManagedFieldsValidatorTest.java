@@ -85,6 +85,7 @@ public class ManagedFieldsValidatorTest {
     @Test
     public void testValidateManagedFields_Dataset() throws JsonParseException {
         Dataset existing = new Dataset();
+        existing.setId(1L);
         existing.setAuthority("10.5072");
         
         Dataset incoming = new Dataset();
@@ -99,6 +100,32 @@ public class ManagedFieldsValidatorTest {
         // Fail with mismatched
         incoming.setAuthority("10.1234");
         assertThrows(JsonParseException.class, () -> ManagedFieldsValidator.validateManagedFields(incoming, existing));
+    }
+
+    @Test
+    public void testValidateManagedFields_Dataset_DatasetType() throws JsonParseException {
+        Dataset existing = new Dataset();
+        // existing has no ID, so it's a new dataset
+        
+        Dataset incoming = new Dataset();
+        DatasetType type = new DatasetType();
+        type.setName("software");
+        incoming.setDatasetType(type);
+        
+        // Pass on create even with different type
+        ManagedFieldsValidator.validateManagedFields(incoming, existing);
+        
+        // Fail on update if type is different
+        existing.setId(1L);
+        DatasetType type2 = new DatasetType();
+        type2.setName("dataset");
+        existing.setDatasetType(type2);
+        
+        assertThrows(JsonParseException.class, () -> ManagedFieldsValidator.validateManagedFields(incoming, existing));
+        
+        // Pass on update if type is same
+        incoming.setDatasetType(type2);
+        ManagedFieldsValidator.validateManagedFields(incoming, existing);
     }
 
     @Test

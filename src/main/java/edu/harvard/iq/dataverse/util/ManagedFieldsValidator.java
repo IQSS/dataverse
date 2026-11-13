@@ -39,8 +39,9 @@ public class ManagedFieldsValidator {
             String incomingName = incoming.getDatasetType().getName();
             String existingName = existing.getDatasetType() != null ? existing.getDatasetType().getName() : null;
             if (!Objects.equals(incomingName, existingName)) {
-                // If it's the default and existing is null, it's NOT a diff because it's the default.
-                if (!(existingName == null && DatasetType.DEFAULT_DATASET_TYPE.equals(incomingName))) {
+                // If it's a new dataset (existing id is null), allow setting the type.
+                // The command will validate if the type is allowed for the dataverse.
+                if (existing.getId() != null) {
                     diffs.add("datasetType");
                 }
             }
