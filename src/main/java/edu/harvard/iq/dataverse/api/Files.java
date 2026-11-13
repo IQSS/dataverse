@@ -1006,8 +1006,8 @@ public class Files extends AbstractApiBean {
             }
 
             // Check if the file is restricted or embargoed
-            boolean isRestricted = dataFile.isRestricted() || fileMetadata.getDatasetVersion().isDraft()
-                    || FileUtil.isActivelyEmbargoed(fileMetadata) || fileMetadata.getDatasetVersion().isDeaccessioned()
+            boolean isRestricted = dataFile.isRestricted() || dataFile.isUnpublishedDraftFile()
+                    || FileUtil.isActivelyEmbargoed(fileMetadata) || dataFile.isDeaccessioned()
                     || FileUtil.isRetentionExpired(fileMetadata);
             boolean hasPermission = true;
             if (isRestricted) {
@@ -1032,7 +1032,7 @@ public class Files extends AbstractApiBean {
             // Check if Guestbook Response is required
             Dataset ds = dataFile.getOwner();
             // If file is in the draft, no guestbook response required
-            if (guestbookResponse == null && dataFile.getDraftFileMetadata() == null && ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest()) {
+            if (guestbookResponse == null && !dataFile.isUnpublishedDraftFile() && ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest()) {
                 return error(BAD_REQUEST, (BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(ds.getGuestbook().getId().toString()))));
             }
             // Write the Guestbook Response
