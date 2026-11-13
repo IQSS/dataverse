@@ -1012,62 +1012,6 @@ public class JsonParserTest {
     }
 
     @Test
-    public void testParseDatasetVersion_UserSupplied_RestrictedFields() throws JsonParseException {
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("id", "12345");
-        // Safe field
-        JsonObjectBuilder metadataBlocks = JsonUtil.createObjectBuilder();
-        JsonObjectBuilder citation = JsonUtil.createObjectBuilder();
-        citation.add("fields", JsonUtil.createArrayBuilder());
-        metadataBlocks.add("citation", citation);
-        builder.add("metadataBlocks", metadataBlocks);
-
-        JsonObject json = builder.build();
-        DatasetVersion dsv = new DatasetVersion();
-
-        // 1. Should fail when isUserSupplied=true and a restricted field (id) differs from current (null)
-        assertThrows(JsonParseException.class, () -> sut.parseDatasetVersion(json, dsv, true));
-
-        // 2. Should pass when restricted field matches current value
-        dsv.setId(12345L);
-        sut.parseDatasetVersion(json, dsv, true);
-
-        // 3. Should pass when isUserSupplied=false (internal use)
-        DatasetVersion dsvInternal = new DatasetVersion();
-        sut.parseDatasetVersion(json, dsvInternal, false);
-        assertEquals(12345L, dsvInternal.getId());
-    }
-
-    @Test
-    public void testParseDataset_UserSupplied_RestrictedFields() throws JsonParseException {
-        // Required datasetVersion part
-        JsonObjectBuilder dsvBuilder = JsonUtil.createObjectBuilder()
-                .add("metadataBlocks", JsonUtil.createObjectBuilder()
-                        .add("citation", JsonUtil.createObjectBuilder()
-                                .add("fields", JsonUtil.createArrayBuilder())));
-
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("authority", "10.5072");
-        builder.add("metadataLanguage", "en");
-        builder.add("datasetVersion", dsvBuilder);
-
-        JsonObject json = builder.build();
-
-        // 1. Should fail when isUserSupplied=true and restricted field (authority) differs from current (null)
-        assertThrows(JsonParseException.class, () -> sut.parseDataset(json, null, true));
-
-        // 2. Should pass when restricted field matches current value (which for fresh Dataset means it must be absent)
-        JsonObjectBuilder dsvBuilder2 = JsonUtil.createObjectBuilder()
-                .add("metadataBlocks", JsonUtil.createObjectBuilder()
-                        .add("citation", JsonUtil.createObjectBuilder()
-                                .add("fields", JsonUtil.createArrayBuilder())));
-        JsonObjectBuilder builder2 = JsonUtil.createObjectBuilder();
-        builder2.add("metadataLanguage", "en");
-        builder2.add("datasetVersion", dsvBuilder2);
-        sut.parseDataset(builder2.build(), null, true);
-    }
-
-    @Test
     public void testParseDatasetVersion_AllowFiles() throws JsonParseException {
         JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
         JsonObjectBuilder metadataBlocks = JsonUtil.createObjectBuilder();
@@ -1084,173 +1028,16 @@ public class JsonParserTest {
 
         JsonObject json = builder.build();
 
-        // 1. isUserSupplied = true, allowFiles = false (default for 3-arg parseDatasetVersion)
+        // 1. parseFiles = false
         DatasetVersion dsv1 = new DatasetVersion();
-        sut.parseDatasetVersion(json, dsv1, true);
+        sut.parseDatasetVersion(json, dsv1, false);
         assertTrue(dsv1.getFileMetadatas().isEmpty());
 
-        // 2. isUserSupplied = true, allowFiles = true
+        // 2. parseFiles = true
         DatasetVersion dsv2 = new DatasetVersion();
-        sut.parseDatasetVersion(json, dsv2, true, true);
+        sut.parseDatasetVersion(json, dsv2, true);
         assertFalse(dsv2.getFileMetadatas().isEmpty());
         assertEquals("test.txt", dsv2.getFileMetadatas().get(0).getLabel());
-
-        // 3. isUserSupplied = false
-        DatasetVersion dsv3 = new DatasetVersion();
-        sut.parseDatasetVersion(json, dsv3, false);
-        assertFalse(dsv3.getFileMetadatas().isEmpty());
-    }
-
-    @Test
-    public void testParseGuestbook_UserSupplied_RestrictedFields() throws JsonParseException {
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("id", 123);
-        builder.add("name", "Test Guestbook");
-        builder.add("enabled", true);
-        builder.add("emailRequired", false);
-        builder.add("nameRequired", true);
-        builder.add("institutionRequired", false);
-        builder.add("positionRequired", false);
-        builder.add("createTime", "2023-01-01T12:00:00Z");
-
-        JsonObject json = builder.build();
-        Guestbook gb = new Guestbook();
-
-        // 1. Should fail when isUserSupplied=true and restricted field (id) differs
-        assertThrows(JsonParseException.class, () -> sut.parseGuestbook(json, gb, true));
-
-        // 2. Should pass when restricted fields match
-        gb.setId(123L);
-        // Need to parse the date to match exactly
-        try {
-            gb.setCreateTime(sut.parseTime("2023-01-01T12:00:00Z"));
-        } catch (Exception e) {}
-        sut.parseGuestbook(json, gb, true);
-
-        // 3. Should pass when isUserSupplied=false
-        Guestbook gbInternal = new Guestbook();
-        sut.parseGuestbook(json, gbInternal, false);
-        assertEquals(123L, gbInternal.getId());
-        assertNotNull(gbInternal.getCreateTime());
-    }
-
-    @Test
-    public void testParseGuestbook_CustomQuestions_RestrictedFields() throws JsonParseException {
-        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
-        qBuilder.add("id", 456);
-        qBuilder.add("question", "How are you?");
-        qBuilder.add("required", true);
-        qBuilder.add("displayOrder", 1);
-        qBuilder.add("type", "text");
-        qBuilder.add("hidden", false);
-
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("name", "Test GB");
-        builder.add("enabled", true);
-        builder.add("emailRequired", false);
-        builder.add("nameRequired", false);
-        builder.add("institutionRequired", false);
-        builder.add("positionRequired", false);
-        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
-
-        JsonObject json = builder.build();
-        Guestbook gb = new Guestbook();
-        gb.setId(1L);
-
-        // 1. Should ignore ID when isUserSupplied=true and question id is unknown
-        sut.parseGuestbook(json, gb, true);
-        assertNotNull(gb.getCustomQuestions());
-        assertNull(gb.getCustomQuestions().get(0).getId());
-
-        // 2. Should pass when question id is known
-        CustomQuestion cq = new CustomQuestion();
-        cq.setId(456L);
-        cq.setGuestbook(gb);
-        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
-        sut.parseGuestbook(json, gb, true);
-        assertEquals(456L, gb.getCustomQuestions().get(0).getId());
-    }
-
-    @Test
-    public void testParseGuestbook_CustomQuestions_PreservesIdWhenMatching() throws JsonParseException {
-        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
-        qBuilder.add("id", 456);
-        qBuilder.add("question", "How are you?");
-        qBuilder.add("required", true);
-        qBuilder.add("displayOrder", 1);
-        qBuilder.add("type", "text");
-        qBuilder.add("hidden", false);
-
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("name", "Test GB");
-        builder.add("enabled", true);
-        builder.add("emailRequired", false);
-        builder.add("nameRequired", false);
-        builder.add("institutionRequired", false);
-        builder.add("positionRequired", false);
-        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
-
-        JsonObject json = builder.build();
-        Guestbook gb = new Guestbook();
-        gb.setId(1L);
-        CustomQuestion cq = new CustomQuestion();
-        cq.setId(456L);
-        cq.setGuestbook(gb);
-        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
-
-        // Parse with isUserSupplied=true
-        sut.parseGuestbook(json, gb, true);
-
-        // Verify that the question in the resulting guestbook has the correct ID
-        assertNotNull(gb.getCustomQuestions());
-        assertEquals(1, gb.getCustomQuestions().size());
-        assertEquals(456L, gb.getCustomQuestions().get(0).getId());
-    }
-
-    @Test
-    public void testParseGuestbook_CustomQuestionValues_PreservesIdWhenMatching() throws JsonParseException {
-        JsonObjectBuilder vBuilder = JsonUtil.createObjectBuilder();
-        vBuilder.add("id", 789);
-        vBuilder.add("value", "Good");
-        vBuilder.add("displayOrder", 1);
-
-        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
-        qBuilder.add("id", 1); // Added question ID to match existing
-        qBuilder.add("question", "How are you?");
-        qBuilder.add("required", true);
-        qBuilder.add("displayOrder", 1);
-        qBuilder.add("type", "text");
-        qBuilder.add("hidden", false);
-        qBuilder.add("optionValues", JsonUtil.createArrayBuilder().add(vBuilder));
-
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("name", "Test GB");
-        builder.add("enabled", true);
-        builder.add("emailRequired", false);
-        builder.add("nameRequired", false);
-        builder.add("institutionRequired", false);
-        builder.add("positionRequired", false);
-        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
-
-        JsonObject json = builder.build();
-        Guestbook gb = new Guestbook();
-        gb.setId(1L);
-        CustomQuestion cq = new CustomQuestion();
-        cq.setId(1L);
-        cq.setGuestbook(gb);
-        CustomQuestionValue cqv = new CustomQuestionValue();
-        cqv.setId(789L);
-        cqv.setCustomQuestion(cq);
-        cq.setCustomQuestionValues(new ArrayList<>(List.of(cqv)));
-        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
-
-        // Parse with isUserSupplied=true
-        sut.parseGuestbook(json, gb, true);
-
-        // Verify that the option value in the resulting guestbook has the correct ID
-        assertNotNull(gb.getCustomQuestions().get(0).getCustomQuestionValues());
-        assertEquals(1, gb.getCustomQuestions().get(0).getCustomQuestionValues().size());
-        assertEquals(789L, gb.getCustomQuestions().get(0).getCustomQuestionValues().get(0).getId());
     }
 
     @Test
@@ -1288,8 +1075,8 @@ public class JsonParserTest {
 
         gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
 
-        // Parse with isUserSupplied=true
-        sut.parseGuestbook(json, gb, true);
+        // Parse
+        sut.parseGuestbook(json, gb);
 
         // Verify that the question in the resulting guestbook still has the response
         assertNotNull(gb.getCustomQuestions());
@@ -1300,76 +1087,4 @@ public class JsonParserTest {
         assertEquals(1, updatedCq.getCustomQuestionResponses().size());
         assertEquals(777L, updatedCq.getCustomQuestionResponses().get(0).getId());
     }
-
-    @Test
-    public void testParseGuestbook_CustomQuestions_MismatchedIdCreatesNewQuestion() throws JsonParseException {
-        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
-        qBuilder.add("id", 999); // Mismatched ID
-        qBuilder.add("question", "How are you?");
-        qBuilder.add("required", true);
-        qBuilder.add("displayOrder", 1);
-        qBuilder.add("type", "text");
-        qBuilder.add("hidden", false);
-
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("name", "Test GB");
-        builder.add("enabled", true);
-        builder.add("emailRequired", false);
-        builder.add("nameRequired", false);
-        builder.add("institutionRequired", false);
-        builder.add("positionRequired", false);
-        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
-
-        JsonObject json = builder.build();
-        Guestbook gb = new Guestbook();
-        gb.setId(1L);
-        // No existing questions
-
-        // Parse with isUserSupplied=true
-        sut.parseGuestbook(json, gb, true);
-
-        // Verify that the question in the resulting guestbook is new and has no ID set
-        assertNotNull(gb.getCustomQuestions());
-        assertEquals(1, gb.getCustomQuestions().size());
-        assertNull(gb.getCustomQuestions().get(0).getId(), "ID should be ignored and remain null for new question");
-    }
-
-    @Test
-    public void testParseGuestbook_CustomQuestionValues_MismatchedIdCreatesNewValue() throws JsonParseException {
-        JsonObjectBuilder vBuilder = JsonUtil.createObjectBuilder();
-        vBuilder.add("id", 999); // Mismatched ID
-        vBuilder.add("value", "Bad");
-        vBuilder.add("displayOrder", 1);
-
-        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
-        qBuilder.add("question", "How are you?");
-        qBuilder.add("required", true);
-        qBuilder.add("displayOrder", 1);
-        qBuilder.add("type", "text");
-        qBuilder.add("hidden", false);
-        qBuilder.add("optionValues", JsonUtil.createArrayBuilder().add(vBuilder));
-
-        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
-        builder.add("name", "Test GB");
-        builder.add("enabled", true);
-        builder.add("emailRequired", false);
-        builder.add("nameRequired", false);
-        builder.add("institutionRequired", false);
-        builder.add("positionRequired", false);
-        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
-
-        JsonObject json = builder.build();
-        Guestbook gb = new Guestbook();
-        gb.setId(1L);
-        // No existing questions/values
-
-        // Parse with isUserSupplied=true
-        sut.parseGuestbook(json, gb, true);
-
-        // Verify that the option value in the resulting guestbook is new and has no ID set
-        assertNotNull(gb.getCustomQuestions().get(0).getCustomQuestionValues());
-        assertEquals(1, gb.getCustomQuestions().get(0).getCustomQuestionValues().size());
-        assertNull(gb.getCustomQuestions().get(0).getCustomQuestionValues().get(0).getId(), "ID should be ignored and remain null for new option value");
-    }
 }
-

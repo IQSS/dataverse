@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ManagedFieldsValidator;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -110,7 +111,10 @@ public class ImportGenericServiceBean {
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             logger.fine(json);
             JsonObject obj = JsonUtil.getJsonObject(json);
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService).parseDatasetVersion(obj, datasetVersion, true);
+            JsonParser jp = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService);
+            DatasetVersion incoming = jp.parseDatasetVersion(obj, null);
+            ManagedFieldsValidator.validateManagedFields(incoming, datasetVersion);
+            jp.parseDatasetVersion(obj, datasetVersion);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);

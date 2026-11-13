@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ManagedFieldsValidator;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
@@ -405,35 +406,24 @@ public class JsonParser {
 
 
     public Dataset parseDataset(JsonObject obj, Dataverse owner) throws JsonParseException {
-        return parseDataset(obj, owner, false);
+        return parseDataset(obj, owner, true);
     }
 
-    public Dataset parseDataset(JsonObject obj, Dataverse owner, boolean isUserSupplied) throws JsonParseException {
-        return parseDataset(obj, owner, isUserSupplied, false);
-    }
-
-    public Dataset parseDataset(JsonObject obj, Dataverse owner, boolean isUserSupplied, boolean allowFiles) throws JsonParseException {
+    public Dataset parseDataset(JsonObject obj, Dataverse owner, boolean parseFiles) throws JsonParseException {
         Dataset dataset = new Dataset();
         dataset.setOwner(owner);
-        if (isUserSupplied) {
-            Dataset incoming = parseDataset(obj, owner, false, allowFiles);
-            validateRestrictedFields(incoming, dataset);
-        }
-        if (!isUserSupplied) {
-            dataset.setAuthority(obj.getString("authority", null));
-            dataset.setProtocol(obj.getString("protocol", null));
-            dataset.setIdentifier(obj.getString("identifier", null));
-            dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", -1));
-            String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
-            logger.fine("datasetTypeIn: " + datasetTypeIn);
-            DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
-            if (datasetType != null) {
-                dataset.setDatasetType(datasetType);
-            } else {
-                throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
-            }
+
+        dataset.setAuthority(obj.getString("authority", null));
+        dataset.setProtocol(obj.getString("protocol", null));
+        dataset.setIdentifier(obj.getString("identifier", null));
+        dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", -1));
+        String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
+        logger.fine("datasetTypeIn: " + datasetTypeIn);
+        DatasetType datasetType = datasetTypeService.getByName(datasetTypeIn);
+        if (datasetType != null) {
+            dataset.setDatasetType(datasetType);
         } else {
-            dataset.setDatasetType(datasetTypeService.getByName(DatasetType.DEFAULT_DATASET_TYPE));
+            throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
         }
 
         String mdl = obj.getString("metadataLanguage", null);
@@ -455,7 +445,7 @@ public class JsonParser {
 
         DatasetVersion dsv = new DatasetVersion();
         dsv.setDataset(dataset);
-        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv, isUserSupplied, allowFiles);
+        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv, parseFiles);
         List<DatasetVersion> versions = new ArrayList<>(1);
         versions.add(dsv);
 
@@ -464,66 +454,55 @@ public class JsonParser {
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
-        return parseDatasetVersion(obj, new DatasetVersion(), false);
+        return parseDatasetVersion(obj, new DatasetVersion(), true);
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
-        return parseDatasetVersion(obj, dsv, false);
+        return parseDatasetVersion(obj, dsv, true);
     }
 
-    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean isUserSupplied) throws JsonParseException {
-        return parseDatasetVersion(obj, dsv, isUserSupplied, false);
-    }
-
-    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean isUserSupplied, boolean allowFiles) throws JsonParseException {
-        boolean skipValidation = (dsv == null);
+    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean parseFiles) throws JsonParseException {
         if (dsv == null) {
             dsv = new DatasetVersion();
         }
         try {
-            if (isUserSupplied && !skipValidation) {
-                DatasetVersion incoming = parseDatasetVersion(obj, null, false);
-                validateRestrictedFields(incoming, dsv);
+            dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
+            String deaccessionNote = obj.getString("deaccessionNote", null);
+            // ToDo - the treatment of null inputs is inconsistent across different fields (either the original value is kept or set to null).
+            // This is moot for most uses of this method, which start from an empty datasetversion, but use through https://github.com/IQSS/dataverse/blob/3e5a516670c42e019338063516a9d93a61833027/src/main/java/edu/harvard/iq/dataverse/api/datadeposit/ContainerManagerImpl.java#L112
+            // starts from an existing version where this inconsistency could be/is a problem.
+            if (deaccessionNote != null) {
+                dsv.setDeaccessionNote(deaccessionNote);
             }
-            if (!isUserSupplied) {
-                dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
-                String deaccessionNote = obj.getString("deaccessionNote", null);
-                // ToDo - the treatment of null inputs is inconsistent across different fields (either the original value is kept or set to null).
-                // This is moot for most uses of this method, which start from an empty datasetversion, but use through https://github.com/IQSS/dataverse/blob/3e5a516670c42e019338063516a9d93a61833027/src/main/java/edu/harvard/iq/dataverse/api/datadeposit/ContainerManagerImpl.java#L112
-                // starts from an existing version where this inconsistency could be/is a problem.
-                if (deaccessionNote != null) {
-                    dsv.setDeaccessionNote(deaccessionNote);
-                }
-                dsv.setVersionNote(obj.getString("versionNote", null));
-                int versionNumberInt = obj.getInt("versionNumber", -1);
-                Long versionNumber = null;
-                if (versionNumberInt != -1) {
-                    versionNumber = new Long(versionNumberInt);
-                }
-                dsv.setVersionNumber(versionNumber);
-                dsv.setMinorVersionNumber(parseLong(obj.getString("minorVersionNumber", null)));
-                // if the existing datasetversion doesn not have an id
-                // use the id from the json object.
-                if (dsv.getId() == null) {
-                    dsv.setId(parseLong(obj.getString("id", null)));
-                }
+            dsv.setVersionNote(obj.getString("versionNote", null));
+            int versionNumberInt = obj.getInt("versionNumber", -1);
+            Long versionNumber = null;
+            if (versionNumberInt != -1) {
+                versionNumber = new Long(versionNumberInt);
+            }
+            dsv.setVersionNumber(versionNumber);
+            dsv.setMinorVersionNumber(parseLong(obj.getString("minorVersionNumber", null)));
+            // if the existing datasetversion doesn not have an id
+            // use the id from the json object.
+            if (dsv.getId() == null) {
+                dsv.setId(parseLong(obj.getString("id", null)));
+            }
 
-                String versionStateStr = obj.getString("versionState", null);
-                if (versionStateStr != null) {
-                    dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
-                }
-                // Checking "releaseTime" to be consistent with JsonPrinter which outputs this field as 'releaseTime' with full timestamp
-                if (obj.containsKey("releaseTime")) {
-                    dsv.setReleaseTime(parseTime(obj.getString("releaseTime", null)));
-                } else {
-                    // Accept 'releaseDate' to remain backward compatible. This truncates to date only!
-                    dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
-                }
-                dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
-                dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
-                dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
-                dsv.setUNF(obj.getString("UNF", null));
+            String versionStateStr = obj.getString("versionState", null);
+            if (versionStateStr != null) {
+                dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
+            // Checking "releaseTime" to be consistent with JsonPrinter which outputs this field as 'releaseTime' with full timestamp
+            if (obj.containsKey("releaseTime")) {
+                dsv.setReleaseTime(parseTime(obj.getString("releaseTime", null)));
+            } else {
+                // Accept 'releaseDate' to remain backward compatible. This truncates to date only!
+                dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+            }
+            dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
+            dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
+            dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
+            dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
 
@@ -614,7 +593,7 @@ public class JsonParser {
             }
             dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
-            if (!isUserSupplied || allowFiles) {
+            if (parseFiles) {
                 JsonArray filesJson = obj.getJsonArray("files");
                 if (filesJson == null) {
                     filesJson = obj.getJsonArray("fileMetadatas");
@@ -632,26 +611,16 @@ public class JsonParser {
     }
 
     public Guestbook parseGuestbook(JsonObject obj, Guestbook gb) throws JsonParseException {
-        return parseGuestbook(obj, gb, false);
-    }
-
-    public Guestbook parseGuestbook(JsonObject obj, Guestbook gb, boolean isUserSupplied) throws JsonParseException {
         try {
-            if (isUserSupplied && gb != null) {
-                Guestbook incoming = parseGuestbook(obj, new Guestbook(), false);
-                validateRestrictedFields(incoming, gb);
-            }
             if (obj.containsKey("id")) {
                 gb.setId(Long.valueOf(obj.getInt("id")));
             }
-            if (!isUserSupplied) {
-                if (obj.containsKey("createTime")) {
-                    String ct = obj.getString("createTime", null);
-                    try {
-                        gb.setCreateTime(parseTime(ct));
-                    } catch (ParseException ex) {
-                        gb.setCreateTime(parseDate(ct));
-                    }
+            if (obj.containsKey("createTime")) {
+                String ct = obj.getString("createTime", null);
+                try {
+                    gb.setCreateTime(parseTime(ct));
+                } catch (ParseException ex) {
+                    gb.setCreateTime(parseDate(ct));
                 }
             }
             gb.setName(obj.getString("name", null));
@@ -660,7 +629,7 @@ public class JsonParser {
             gb.setNameRequired(obj.getBoolean("nameRequired"));
             gb.setInstitutionRequired(obj.getBoolean("institutionRequired"));
             gb.setPositionRequired(obj.getBoolean("positionRequired"));
-            gb.setCustomQuestions(parseCustomQuestions(obj.getJsonArray("customQuestions"), gb, isUserSupplied));
+            gb.setCustomQuestions(parseCustomQuestions(obj.getJsonArray("customQuestions"), gb));
 
         } catch (ParseException ex) {
             throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
@@ -668,7 +637,7 @@ public class JsonParser {
         return gb;
     }
 
-    private List<CustomQuestion> parseCustomQuestions(JsonArray customQuestions, Guestbook gb, boolean isUserSupplied) throws JsonParseException {
+    private List<CustomQuestion> parseCustomQuestions(JsonArray customQuestions, Guestbook gb) throws JsonParseException {
         final List<CustomQuestion> customQuestionList = (customQuestions != null && !customQuestions.isEmpty()) ? new ArrayList<>() : null;
         if (customQuestionList != null) {
             for (JsonValue q : customQuestions) {
@@ -684,7 +653,7 @@ public class JsonParser {
                 }
                 if (cq == null) {
                     cq = new CustomQuestion();
-                    if (obj.containsKey("id") && !isUserSupplied) {
+                    if (obj.containsKey("id")) {
                         cq.setId((long) obj.getInt("id"));
                     }
                 }
@@ -712,7 +681,7 @@ public class JsonParser {
                         }
                         if (cqv == null) {
                             cqv = new CustomQuestionValue();
-                            if (ov.containsKey("id") && !isUserSupplied) {
+                            if (ov.containsKey("id")) {
                                 cqv.setId((long) ov.getInt("id"));
                             }
                         }
@@ -732,10 +701,6 @@ public class JsonParser {
     }
 
     public GuestbookResponse parseGuestbookResponse(JsonObject obj, GuestbookResponse guestbookResponse) throws JsonParseException {
-        return parseGuestbookResponse(obj, guestbookResponse, false);
-    }
-
-    public GuestbookResponse parseGuestbookResponse(JsonObject obj, GuestbookResponse guestbookResponse, boolean isUserSupplied) throws JsonParseException {
 
         if (obj == null || guestbookResponse == null || guestbookResponse.getGuestbook() == null || guestbookResponse.getGuestbook().getCustomQuestions() == null) {
             return null;
@@ -1392,112 +1357,6 @@ public class JsonParser {
         return str == null ? defaultValue : Integer.parseInt(str);
     }
 
-    public void validateRestrictedFields(Dataset incoming, Dataset existing) throws JsonParseException {
-        List<String> diffs = new ArrayList<>();
-        if (incoming.getAuthority() != null && !Objects.equals(incoming.getAuthority(), existing.getAuthority())) {
-            diffs.add("authority");
-        }
-        if (incoming.getProtocol() != null && !Objects.equals(incoming.getProtocol(), existing.getProtocol())) {
-            diffs.add("protocol");
-        }
-        if (incoming.getIdentifier() != null && !Objects.equals(incoming.getIdentifier(), existing.getIdentifier())) {
-            diffs.add("identifier");
-        }
-        if (incoming.getDatasetFileCountLimit() != null && !Objects.equals(incoming.getDatasetFileCountLimit(), existing.getDatasetFileCountLimit())) {
-            diffs.add("datasetFileCountLimit");
-        }
-        if (incoming.getDatasetType() != null) {
-            String incomingName = incoming.getDatasetType().getName();
-            String existingName = existing.getDatasetType() != null ? existing.getDatasetType().getName() : null;
-            if (!Objects.equals(incomingName, existingName)) {
-                // If it's the default and existing is null, it's NOT a diff because it's the default.
-                if (!(existingName == null && DatasetType.DEFAULT_DATASET_TYPE.equals(incomingName))) {
-                    diffs.add("datasetType");
-                }
-            }
-        }
-        if (incoming.getStorageIdentifier() != null && !Objects.equals(incoming.getStorageIdentifier(), existing.getStorageIdentifier())) {
-            diffs.add("storageIdentifier");
-        }
-
-        if (!diffs.isEmpty()) {
-            String msg = "Restricted fields cannot be changed: " + String.join(", ", diffs);
-            logger.warning(msg);
-            throw new JsonParseException(msg);
-        }
-    }
-
-    public void validateRestrictedFields(DatasetVersion incoming, DatasetVersion existing) throws JsonParseException {
-        List<String> diffs = new ArrayList<>();
-
-        if (incoming.getId() != null && !Objects.equals(incoming.getId(), existing.getId())) {
-            diffs.add("id");
-        }
-        if (incoming.getVersionNumber() != null && !Objects.equals(incoming.getVersionNumber(), existing.getVersionNumber())) {
-            diffs.add("versionNumber");
-        }
-        if (incoming.getMinorVersionNumber() != null && !Objects.equals(incoming.getMinorVersionNumber(), existing.getMinorVersionNumber())) {
-            diffs.add("minorVersionNumber");
-        }
-        if (incoming.getVersionState() != null && !Objects.equals(incoming.getVersionState(), existing.getVersionState())) {
-            diffs.add("versionState");
-        }
-        if (incoming.getUNF() != null && !Objects.equals(incoming.getUNF(), existing.getUNF())) {
-            diffs.add("UNF");
-        }
-        if (incoming.getReleaseTime() != null && !timeMatch(incoming.getReleaseTime(), existing.getReleaseTime())) {
-            diffs.add("releaseTime");
-        }
-        if (incoming.getCreateTime() != null && !timeMatch(incoming.getCreateTime(), existing.getCreateTime())) {
-            diffs.add("createTime");
-        }
-        if (incoming.getLastUpdateTime() != null && !timeMatch(incoming.getLastUpdateTime(), existing.getLastUpdateTime())) {
-            diffs.add("lastUpdateTime");
-        }
-        if (incoming.getArchiveTime() != null && !timeMatch(incoming.getArchiveTime(), existing.getArchiveTime())) {
-            diffs.add("archiveTime");
-        }
-        if (incoming.getVersionNote() != null && !Objects.equals(incoming.getVersionNote(), existing.getVersionNote())) {
-            diffs.add("versionNote");
-        }
-        if (incoming.getDeaccessionNote() != null && !Objects.equals(incoming.getDeaccessionNote(), existing.getDeaccessionNote())) {
-            diffs.add("deaccessionNote");
-        }
-        if (incoming.getDeaccessionLink() != null && !Objects.equals(incoming.getDeaccessionLink(), existing.getDeaccessionLink())) {
-            diffs.add("deaccessionLink");
-        }
-
-        if (!diffs.isEmpty()) {
-            String msg = "Restricted fields cannot be changed: " + String.join(", ", diffs);
-            logger.warning(msg);
-            throw new JsonParseException(msg);
-        }
-    }
-
-    private boolean timeMatch(Date d1, Date d2) {
-        if (d1 == null) {
-            return d2 == null;
-        }
-        if (d2 == null) {
-            return false;
-        }
-        return d1.getTime() == d2.getTime();
-    }
-
-    public void validateRestrictedFields(Guestbook incoming, Guestbook existing) throws JsonParseException {
-        List<String> diffs = new ArrayList<>();
-        if (incoming.getId() != null && !Objects.equals(incoming.getId(), existing.getId())) {
-            diffs.add("id");
-        }
-        if (incoming.getCreateTime() != null && !timeMatch(incoming.getCreateTime(), existing.getCreateTime())) {
-            diffs.add("createTime");
-        }
-        if (!diffs.isEmpty()) {
-            String msg = "Restricted fields cannot be changed: " + String.join(", ", diffs);
-            logger.warning(msg);
-            throw new JsonParseException(msg);
-        }
-    }
 
 
 

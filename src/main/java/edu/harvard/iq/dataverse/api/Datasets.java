@@ -921,8 +921,8 @@ public class Datasets extends AbstractApiBean {
                 return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
             }
             
-            // To support "GET then PUT" workflows, we compare restricted fields against the latest version.
-            jsonParser().validateRestrictedFields(incomingVersion, ds.getLatestVersion());
+            // To support "GET then PUT" workflows, we compare managed fields against the latest version.
+            ManagedFieldsValidator.validateManagedFields(incomingVersion, ds.getLatestVersion());
 
             // Get existing draft version or create new one as needed
             final DatasetVersion editVersion = ds.getOrCreateEditVersion();

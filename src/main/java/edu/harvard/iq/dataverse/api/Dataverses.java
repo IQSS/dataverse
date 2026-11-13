@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ManagedFieldsValidator;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -419,7 +420,9 @@ public class Dataverses extends AbstractApiBean {
             logger.fine("Json is: " + jsonBody);
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            Dataset ds = parseDataset(jsonBody, owner, true, u.isSuperuser());
+            Dataset ds = parseDataset(jsonBody, owner, u.isSuperuser());
+            ManagedFieldsValidator.validateManagedFields(ds, new Dataset());
+            ManagedFieldsValidator.validateManagedFields(ds.getVersions().get(0), new DatasetVersion());
             // Will make validation happen always except for the (rare) occasion of all three conditions are true
             boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
                 JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
@@ -475,6 +478,8 @@ public class Dataverses extends AbstractApiBean {
                             .add("persistentId", managedDs.getGlobalId().asString())
             );
 
+        } catch (JsonParseException ex) {
+            return error(Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -765,13 +770,13 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-    private Dataset parseDataset(String datasetJson, Dataverse owner, boolean isUserSupplied) throws WrappedResponse {
-        return parseDataset(datasetJson, owner, isUserSupplied, false);
+    private Dataset parseDataset(String datasetJson, Dataverse owner) throws WrappedResponse {
+        return parseDataset(datasetJson, owner, false);
     }
 
-    private Dataset parseDataset(String datasetJson, Dataverse owner, boolean isUserSupplied, boolean allowFiles) throws WrappedResponse {
+    private Dataset parseDataset(String datasetJson, Dataverse owner, boolean allowFiles) throws WrappedResponse {
         try {
-            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson), owner, isUserSupplied, allowFiles);
+            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson), owner, allowFiles);
         } catch (JsonParsingException | JsonParseException jpe) {
             String message = jpe.getLocalizedMessage();
             logger.log(Level.SEVERE, "Error parsing dataset JSON. message: {0}", message);
