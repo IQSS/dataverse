@@ -134,6 +134,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -504,6 +505,9 @@ public class Admin extends AbstractApiBean {
     @Produces("application/json")
     @Operation(summary = "Switch authentication provider enabled state",
             description = "Enables or disables a registered authentication provider.")
+    @APIResponse(responseCode = "200", description = "Authentication provider state updated.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response enableAuthenticationProvider(@Parameter(description = "Authentication provider id.", required = true)
             @PathParam("id") String id,
             @RequestBody(description = "Boolean value indicating whether the provider should be enabled.")
@@ -730,6 +734,9 @@ public class Admin extends AbstractApiBean {
     @Produces({ "application/json" })
     @Operation(summary = "Search authenticated users",
             description = "Searches authenticated users for the dashboard user list and returns paged JSON results.")
+    @APIResponse(responseCode = "200", description = "Paged authenticated user results.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response filterAuthenticatedUsers(
             @Context ContainerRequestContext crc,
             @Parameter(description = "Search text matched against authenticated users.")
@@ -1327,6 +1334,10 @@ public class Admin extends AbstractApiBean {
     @Produces({"application/json"})
     @Operation(summary = "Validate all datasets",
             description = "Streams validation results for every local dataset.")
+    @APIResponse(responseCode = "200", description = "Streaming dataset validation results.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Validation results grouped under a datasets array.")))
     public Response validateAllDatasets(@Parameter(description = "Whether to include variable-level validation details.")
             @QueryParam("variables") boolean includeVariables) {
         
@@ -1473,6 +1484,10 @@ public class Admin extends AbstractApiBean {
     @Produces({"application/json"})
     @Operation(summary = "Validate files in one dataset",
             description = "Streams checksum validation results for all data files in a dataset.")
+    @APIResponse(responseCode = "200", description = "Streaming data-file validation results.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Checksum validation results grouped under a dataFiles array.")))
     public Response validateDatasetDatafiles(@Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String id) {
         

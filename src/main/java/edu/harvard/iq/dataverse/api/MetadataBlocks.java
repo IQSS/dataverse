@@ -4,7 +4,11 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
@@ -24,6 +28,9 @@ public class MetadataBlocks extends AbstractApiBean {
     @GET
     @Operation(summary = "Lists metadata blocks",
             description = "Returns metadata blocks as JSON, optionally limited to blocks displayed during dataset creation and optionally including dataset field types.")
+    @APIResponse(responseCode = "200", description = "Metadata blocks.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response listMetadataBlocks(
             @Parameter(description = "Limit results to metadata blocks displayed during dataset creation.")
             @QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
@@ -37,6 +44,9 @@ public class MetadataBlocks extends AbstractApiBean {
     @GET
     @Operation(summary = "Returns a metadata block",
             description = "Returns the metadata block identified by id, name, or display name.")
+    @APIResponse(responseCode = "200", description = "Metadata block.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getMetadataBlock(
             @Parameter(description = "Metadata block id, name, or display name.", required = true)
             @PathParam("identifier") String idtf) {

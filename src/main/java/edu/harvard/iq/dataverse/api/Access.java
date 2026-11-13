@@ -468,6 +468,9 @@ public class Access extends AbstractApiBean {
     @Produces({"application/json"})
     @Operation(summary = "Submit guestbook response for a data file",
             description = "Records the supplied guestbook response and returns access details for a data file download.")
+    @APIResponse(responseCode = "200", description = "Data-file access details.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response datafileWithGuestbookResponse(@Context ContainerRequestContext crc,
                                                   @Parameter(description = "Data file id, persistent identifier, or path-style file reference.", required = true)
                                                   @PathParam("fileId") String fileId,
@@ -1674,7 +1677,9 @@ public class Access extends AbstractApiBean {
                description = "Saves an auxiliary file")
     @APIResponses(value = {
         @APIResponse(responseCode = "200",
-                    description = "File saved response"),
+                    description = "File saved response",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(type = SchemaType.OBJECT))),
         @APIResponse(responseCode = "403",
                     description = "User not authorized to edit the dataset."),
         @APIResponse(responseCode = "400",

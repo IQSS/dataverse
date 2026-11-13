@@ -23,7 +23,11 @@ import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Stateless
@@ -46,6 +50,10 @@ public class FileRecordJobResource extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Starts a file-system import job",
             description = "Starts a background job that imports files from a server-side upload folder into the specified dataset and returns the job execution id.")
+    @APIResponse(responseCode = "200", description = "File-system import job accepted.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Contains the job message and executionId.")))
     public Response getFilesystemImport(@Context ContainerRequestContext crc,
                                         @Parameter(description = "Dataset id or persistent identifier that receives the imported files.", required = true)
                                         @PathParam("identifier") String identifier,
