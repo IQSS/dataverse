@@ -282,7 +282,11 @@ public class XLSXFileReader extends TabularDataFileReader {
         //private List<String> variableNames;
         private String[] variableNames;
         private int caseCount;
-        private int columnCount; 
+        private int columnCount;
+        // set when the first row has no spans attribute, the number of columns
+        // is then the highest cell position found in that row:
+        private boolean columnCountFromCells;
+        private int headerColumnCount;
         boolean[] isNumericVariable;
         String[] dataRow; 
         PrintWriter tempOut; 
@@ -317,26 +321,32 @@ public class XLSXFileReader extends TabularDataFileReader {
                 
                 String spansAttribute = attributes.getValue("spans");
                 if (spansAttribute == null) {
+                    // The spans attribute is optional; the column count will
+                    // be established from the cells of this row instead.
                     dbglog.warning("Null spans attribute in the first row element!");
-                } 
-                int colIndex = spansAttribute.indexOf(':');
-                if (colIndex < 1 || (colIndex == spansAttribute.length() - 1)) {
-                    dbglog.warning("Invalid spans attribute in the first row element: "+spansAttribute+"!");
+                    columnCountFromCells = true;
+                    headerColumnCount = 0;
+                    variableNames = new String[0];
+                } else {
+                    int colIndex = spansAttribute.indexOf(':');
+                    if (colIndex < 1 || (colIndex == spansAttribute.length() - 1)) {
+                        dbglog.warning("Invalid spans attribute in the first row element: "+spansAttribute+"!");
+                    }
+                    try {
+                        varCount = new Long(spansAttribute.substring(colIndex + 1, spansAttribute.length()));
+                    } catch (Exception ex) {
+                        varCount = null;
+                    }
+
+                    if (varCount == null || varCount.intValue() < 1) {
+                        throw new SAXException("Could not establish column count, or invalid column count encountered.");
+                    }
+
+                    dbglog.info("Established variable (column) count: "+varCount);
+
+                    dataTable.setVarQuantity(varCount);
+                    variableNames = new String[varCount.intValue()];
                 }
-                try {
-                    varCount = new Long(spansAttribute.substring(colIndex + 1, spansAttribute.length()));
-                } catch (Exception ex) {
-                    varCount = null; 
-                }
-                
-                if (varCount == null || varCount.intValue() < 1) {
-                    throw new SAXException("Could not establish column count, or invalid column count encountered.");
-                }
-                
-                dbglog.info("Established variable (column) count: "+varCount);
-                
-                dataTable.setVarQuantity(varCount);
-                variableNames = new String[varCount.intValue()];
             }
             
             // c => cell
@@ -357,7 +367,11 @@ public class XLSXFileReader extends TabularDataFileReader {
                 if (columnCount < 0) {
                     throw new SAXException("Could not establish position index of a cell element unambiguously!");
                 }
-                
+
+                if (variableHeader && columnCountFromCells) {
+                    headerColumnCount = Math.max(headerColumnCount, columnCount + 1);
+                }
+
                 String cellType = attributes.getValue("t");
                 if (cellType != null && cellType.equals("s")) {
                     nextIsString = true;
@@ -431,6 +445,9 @@ public class XLSXFileReader extends TabularDataFileReader {
                     dbglog.fine("variable header mode; cell "+columnCount+", cell contents: "+cellContents);
                     
                     //variableNames.add(cellContents);
+                    if (columnCountFromCells && columnCount >= variableNames.length) {
+                        variableNames =Arrays.copyOf(variableNames, columnCount + 1);
+                    }
                     variableNames[columnCount] = cellContents;
                 } else {
                     dataRow[columnCount] = cellContents;
@@ -442,6 +459,14 @@ public class XLSXFileReader extends TabularDataFileReader {
                 if (variableHeader) {
                     // Initialize variables:
                     dbglog.fine("variableHeader mode; ");
+                    if (columnCountFromCells) {
+                        if (headerColumnCount < 1) {
+                            throw new SAXException("Could not establish column count, or invalid column count encountered.");
+                        }
+                        dbglog.info("Established variable (column) count from the cells of the first row: "+headerColumnCount);
+                        dataTable.setVarQuantity(Long.valueOf(headerColumnCount));
+                        variableNames = Arrays.copyOf(variableNames, headerColumnCount);
+                    }
                     List<DataVariable> variableList = new ArrayList<DataVariable>();
                     //columnCount = variableNames.size();
                     columnCount = dataTable.getVarQuantity().intValue();
