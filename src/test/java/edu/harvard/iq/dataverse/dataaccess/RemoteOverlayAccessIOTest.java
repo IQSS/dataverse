@@ -6,6 +6,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
@@ -32,6 +33,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.List;
+import java.util.function.Predicate;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
@@ -148,6 +152,18 @@ public class RemoteOverlayAccessIOTest {
         assertTrue(DataAccess.isValidDirectStorageIdentifier(datafile.getStorageIdentifier()));
         assertFalse(DataAccess.isValidDirectStorageIdentifier(badDatafile.getStorageIdentifier()));
         assertFalse(DataAccess.isValidDirectStorageIdentifier(datafile.getStorageIdentifier().replace("test", "bad")));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testCleanUpPassesMinimumAgeToBaseStore() throws IOException {
+        RemoteOverlayAccessIO<DataFile> remoteIO = (RemoteOverlayAccessIO<DataFile>) DataAccess.getStorageIO(datafile);
+        StorageIO<DvObject> baseStore = Mockito.mock(StorageIO.class);
+        remoteIO.baseStore = baseStore;
+        Predicate<String> filter = name -> true;
+        Mockito.when(baseStore.cleanUp(filter, Duration.ofDays(7), true)).thenReturn(List.of("orphan-old"));
+
+        assertEquals(List.of("orphan-old"), remoteIO.cleanUp(filter, Duration.ofDays(7), true));
     }
 
 }

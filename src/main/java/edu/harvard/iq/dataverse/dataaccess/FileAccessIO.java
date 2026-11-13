@@ -32,10 +32,13 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
@@ -676,7 +679,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return true;
     }
 
-    private List<String> listAllFiles() throws IOException {
+    private Map<String, Instant> listAllFiles() throws IOException {
         Dataset dataset = this.getDataset();
         if (dataset == null) {
             throw new IOException("This FileAccessIO object hasn't been properly initialized.");
@@ -689,10 +692,17 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
         DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(this.getFilesRootDirectory(), datasetDirectoryPath.toString()));
         
-        List<String> res = new ArrayList<>();
+        Map<String, Instant> res = new HashMap<>();
         if (dirStream != null) {
             for (Path filePath : dirStream) {
-                res.add(filePath.getFileName().toString());
+                Instant lastModified;
+                try {
+                    lastModified = Files.getLastModifiedTime(filePath).toInstant();
+                } catch (IOException ex) {
+                    // Unknown age is treated as too recent to remove.
+                    lastModified = null;
+                }
+                res.put(filePath.getFileName().toString(), lastModified);
             }
             dirStream.close();
         }
@@ -716,8 +726,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
-        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+    public List<String> cleanUp(Predicate<String> filter, Duration minimumAge, boolean dryRun) throws IOException {
+        List<String> toDelete = selectForCleanUp(this.listAllFiles(), filter, minimumAge);
         if (dryRun) {
             return toDelete;
         }

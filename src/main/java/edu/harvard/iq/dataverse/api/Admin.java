@@ -68,6 +68,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
+import java.time.Duration;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -1789,7 +1790,7 @@ public class Admin extends AbstractApiBean {
     public Response reregisterHdlToPID(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier.", required = true)
             @PathParam("id") String id) {
-        logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
+        logger.info("Starting to reregister  " + id.replaceAll("[\r\n]", "_") + " Dataset Id. (from hdl to doi)" + new Date());
         try {
 
             
@@ -1832,7 +1833,7 @@ public class Admin extends AbstractApiBean {
     public Response registerDataFile(@Context ContainerRequestContext crc,
             @Parameter(description = "Data file id or persistent identifier.", required = true)
             @PathParam("id") String id) {
-        logger.info("Starting to register  " + id + " file id. " + new Date());
+        logger.info("Starting to register  " + id.replaceAll("[\r\n]", "_") + " file id. " + new Date());
 
         try {
             User u = getRequestUser(crc);
@@ -2037,8 +2038,8 @@ public class Admin extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "Unknown algorithm");
         }
         logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
-        logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
-                + alg);
+        logger.info("Hashes not created with " + cType + " will be verified, and, if valid, replaced with a hash using "
+                + cType);
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser())
@@ -2957,7 +2958,9 @@ public class Admin extends AbstractApiBean {
             try {
                 Predicate<String> filter = s -> true;
                 StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
-                final List<String> result = datasetIO.cleanUp(filter, true);
+                // Auditing lists everything, so no minimum age applies here. The
+                // listing is not used; the call is kept for its existence checks.
+                datasetIO.cleanUp(filter, Duration.ZERO, true);
                 // add files that are in dataset files but not in cleanup result or DataFiles with missing FileMetadata
                 dataset.getFiles().forEach(df -> {
                     try {
