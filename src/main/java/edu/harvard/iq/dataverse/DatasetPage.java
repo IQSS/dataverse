@@ -4887,7 +4887,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDatasetSubmitForReviewCustomText(){
-        String datasetSubmitForReviewCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+        String datasetSubmitForReviewCustomText = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText, session.getLocaleCode(), settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText));
         if (datasetSubmitForReviewCustomText != null && !datasetSubmitForReviewCustomText.isEmpty()) {
             return datasetSubmitForReviewCustomText;
         }
@@ -6450,7 +6450,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isSubmitForReviewDisclaimerAcknowledged() {
-        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText();
+        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText(session.getLocaleCode());
     }
 
     public void setSubmitForReviewDisclaimerAcknowledged(boolean submitForReviewDisclaimerAcknowledged) {
