@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.util.Pagination;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -323,7 +324,11 @@ public class Users extends AbstractApiBean {
             @Parameter(description = "Authenticated user identifier whose permitted collections are returned.", required = true)
             @PathParam("identifier") String identifier,
             @Parameter(description = "Permission name used to select permitted collections.", required = true)
-            @PathParam("permission") String permission) {
+            @PathParam("permission") String permission,
+            @Parameter(description = "Offset used to override the starting point of the list.")
+            @QueryParam("offset") Integer start,
+            @Parameter(description = "Page size to limit the number of items in the list.")
+            @QueryParam("limit") Integer pageSize) {
         AuthenticatedUser authenticatedUser = null;
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
@@ -335,8 +340,9 @@ public class Users extends AbstractApiBean {
         }
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission));
-            return ok(JsonPrinter.jsonArray(collections));
+            Pagination pagination = (start != null || pageSize != null) ? new Pagination(pageSize, start) : null;
+            List<Dataverse> collections = execCommand(new GetUserPermittedCollectionsCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, permission, null, pagination));
+            return ok(JsonPrinter.jsonArray(collections, pagination));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

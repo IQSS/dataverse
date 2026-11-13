@@ -46,7 +46,9 @@ public class GetUserPermittedCollectionsCommandTest {
         Mockito.when(permissionsServiceBean.findPermittedCollections(
                 Mockito.any(DataverseRequest.class),
                 Mockito.any(AuthenticatedUser.class),
-                Mockito.eq(Integer.MAX_VALUE)
+                Mockito.eq(Integer.MAX_VALUE),
+                Mockito.any(),
+                Mockito.any()
         )).thenReturn(expectedDataverses);
 
         GetUserPermittedCollectionsCommand sut = new GetUserPermittedCollectionsCommand(
@@ -64,7 +66,9 @@ public class GetUserPermittedCollectionsCommandTest {
         Mockito.verify(permissionsServiceBean).findPermittedCollections(
                 dataverseRequest,
                 authenticatedUser,
-                Integer.MAX_VALUE
+                Integer.MAX_VALUE,
+                null,
+                null
         );
     }
 
@@ -77,13 +81,17 @@ public class GetUserPermittedCollectionsCommandTest {
         Mockito.when(permissionsServiceBean.findPermittedCollections(
                 Mockito.any(DataverseRequest.class),
                 Mockito.any(AuthenticatedUser.class),
-                Mockito.eq(1 << Permission.AddDataset.ordinal())
+                Mockito.eq(1 << Permission.AddDataset.ordinal()),
+                Mockito.any(),
+                Mockito.any()
         )).thenReturn(expectedDataverses);
 
         GetUserPermittedCollectionsCommand sut = new GetUserPermittedCollectionsCommand(
                 dataverseRequest,
                 authenticatedUser,
-                Permission.AddDataset.name()
+                Permission.AddDataset.name(),
+                null,
+                null
         );
 
         // Act
@@ -95,7 +103,9 @@ public class GetUserPermittedCollectionsCommandTest {
         Mockito.verify(permissionsServiceBean).findPermittedCollections(
                 dataverseRequest,
                 authenticatedUser,
-                1 << Permission.AddDataset.ordinal()
+                1 << Permission.AddDataset.ordinal(),
+                null,
+                null
         );
     }
 
