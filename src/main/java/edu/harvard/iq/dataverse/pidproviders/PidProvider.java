@@ -42,7 +42,17 @@ public interface PidProvider {
     String modifyIdentifierTargetURL(DvObject dvo) throws Exception;
 
     void deleteIdentifier(DvObject dvo) throws Exception;
-    
+
+    /**
+     * Called after a dataset version has been deaccessioned. Providers that
+     * support it should update the PID state for the given Dataset or DataFile
+     * if it is no longer part of any released version (e.g. DataCite DOIs move
+     * from "findable" to "registered"). The PID itself continues to resolve (to
+     * the tombstone page). The default implementation does nothing.
+     */
+    default void deaccessionIdentifier(DvObject dvo) throws Exception {
+    }
+
     Map<String, String> getMetadataForCreateIndicator(DvObject dvObject);
     
     Map<String,String> getMetadataForTargetURL(DvObject dvObject);
