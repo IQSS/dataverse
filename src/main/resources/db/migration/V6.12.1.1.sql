@@ -138,3 +138,85 @@ BEGIN
     END IF;
 END
 $$;
+
+-- ============================================================================
+-- PostgreSQL-specific indexes and constraints from migrations prior to V6.3.0.1.
+-- These are skipped on fresh installations where EclipseLink creates tables
+-- from the current entity model and Flyway baselines at V5.10.1.3.
+-- Only PostgreSQL-specific features that cannot be defined in JPA are included here.
+-- Items already defined in JPA @Table annotations are handled by EclipseLink and
+-- are not duplicated here.
+-- ============================================================================
+
+-- Partial unique index preventing multiple draft versions per dataset (V5.2.0.1).
+-- Cannot be defined in JPA — PostgreSQL-specific partial index.
+CREATE UNIQUE INDEX IF NOT EXISTS one_draft_version_per_dataset ON datasetversion (dataset_id) WHERE versionstate='DRAFT';
+
+-- Partial unique index preventing duplicate file access requests (V6.0.0.1).
+-- Cannot be defined in JPA — PostgreSQL-specific partial index.
+CREATE UNIQUE INDEX IF NOT EXISTS created_requests ON fileaccessrequests (datafile_id, authenticated_user_id) WHERE request_state='CREATED';
+
+-- Fix typo in externalvocabularyvalue URI unique constraint name (V6.1.0.3).
+-- On existing databases, flyway may have auto-generated "externalvocabularvalue_uri_key" (missing "y").
+-- Drop the misspelled version and create the correctly spelled one.
+-- On fresh databases, EclipseLink creates "externalvocabularyvalue_uri_key" directly, so the DROP is a no-op
+-- and the ADD is caught by the duplicate_object exception handler.
+ALTER TABLE externalvocabularyvalue DROP CONSTRAINT IF EXISTS externalvocabularvalue_uri_key;
+DO $$
+BEGIN
+  BEGIN
+    ALTER TABLE externalvocabularyvalue ADD CONSTRAINT externalvocabularyvalue_uri_key UNIQUE(uri);
+  EXCEPTION
+    WHEN duplicate_object THEN RAISE NOTICE 'Table constraint externalvocabularyvalue_uri_key already exists';
+  END;
+END $$;
+
+-- CHECK constraint on dvobject storageidentifier (V5.11.1.6).
+-- Cannot be defined in JPA — PostgreSQL-specific CHECK constraint.
+DO $$
+BEGIN
+  BEGIN
+    ALTER TABLE dvobject ADD CONSTRAINT chk_dvobject_storageidentifier CHECK (strpos(storageidentifier,'..') = 0);
+  EXCEPTION
+    WHEN duplicate_object THEN RAISE NOTICE 'Table constraint chk_dvobject_storageidentifier already exists';
+  END;
+END $$;
+
+-- Named foreign key on dataset.template_id (V5.11.1.4).
+-- EclipseLink creates an unnamed FK via @ManyToOne; this ensures a named constraint
+-- for consistency with legacy databases.
+DO $$
+BEGIN
+  BEGIN
+    ALTER TABLE dataset ADD CONSTRAINT fx_dataset_template_id FOREIGN KEY (template_id) REFERENCES template(id);
+  EXCEPTION
+    WHEN duplicate_object THEN RAISE NOTICE 'Table constraint fx_dataset_template_id already exists';
+  END;
+END $$;
+
+-- estimateGuestBookResponseTableSize function (V6.0.0.3).
+-- Replaces the version from V5.8.0.3.
+CREATE OR REPLACE FUNCTION estimateGuestBookResponseTableSize()
+RETURNS bigint AS $$
+DECLARE
+  estimatedsize bigint;
+BEGIN
+  SELECT CASE WHEN relpages<10 THEN 0
+              ELSE ((reltuples / relpages)
+               * (pg_relation_size('public.guestbookresponse') / current_setting('block_size')::int))::bigint
+               * (SELECT CASE WHEN ((select count(*) from pg_stats where tablename='guestbookresponse') = 0 
+                   OR (select array_position(most_common_vals::text::text[], 'AccessRequest') 
+                       FROM pg_stats WHERE tablename='guestbookresponse' AND attname='eventtype') IS NULL) THEN 1
+                   ELSE 1 - (SELECT (most_common_freqs::text::text[])[array_position(most_common_vals::text::text[], 'AccessRequest')]::float
+                       FROM pg_stats WHERE tablename='guestbookresponse' and attname='eventtype') END)
+         END
+     FROM   pg_class
+     WHERE  oid = 'public.guestbookresponse'::regclass INTO estimatedsize;
+
+     if estimatedsize = 0 then
+     SELECT COUNT(id) FROM guestbookresponse WHERE eventtype!= 'AccessRequest' INTO estimatedsize;
+     END if;   
+
+  RETURN estimatedsize;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;

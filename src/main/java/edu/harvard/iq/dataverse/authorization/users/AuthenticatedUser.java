@@ -37,12 +37,14 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -80,6 +82,10 @@ import jakarta.validation.constraints.NotNull;
     
 })
 @Entity
+@Table(indexes = {
+    @Index(columnList = "lower(email)", unique = true, name = "index_authenticateduser_lower_email"),
+    @Index(columnList = "lower(useridentifier)", unique = true, name = "index_authenticateduser_lower_useridentifier")
+})
 public class AuthenticatedUser implements User, Serializable {
     
     public static final String IDENTIFIER_PREFIX = "@";

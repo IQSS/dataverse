@@ -49,7 +49,8 @@ import java.util.*;
 		, @Index(columnList="metadatablockroot")
 		, @Index(columnList="templateroot")
 		, @Index(columnList="permissionroot")
-		, @Index(columnList="themeroot")})
+		, @Index(columnList="themeroot")
+		, @Index(columnList="LOWER(alias)", unique = true, name = "dataverse_alias_unique_idx")})
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {

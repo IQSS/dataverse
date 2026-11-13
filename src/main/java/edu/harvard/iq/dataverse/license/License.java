@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -49,6 +50,9 @@ import java.util.Objects;
 @Table(uniqueConstraints = {
       @UniqueConstraint(columnNames = "name"),
       @UniqueConstraint(columnNames = "uri")}
+    , indexes = {
+      @Index(columnList = "sortorder, id", name = "license_sortorder_id")
+    }
 )
 public class License {
     public static String CC0 = "http://creativecommons.org/publicdomain/zero/1.0";
