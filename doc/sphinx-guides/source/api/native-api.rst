@@ -2416,6 +2416,50 @@ The standard has further evolved into a format called Croissant. For details, se
 
 The ``schema.org`` format changed after Dataverse 6.4 as well. Previously its content type was "application/json" but now it is "application/ld+json".
 
+.. _bulk-metadata-export-api:
+
+Export Metadata of Multiple Datasets in One Request
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|CORS| Export the metadata of several dataset versions in a single request, combined into a single output by the chosen format.
+This is a ``POST`` to the same path as the single-endpoint export described above, with a JSON body naming the format and the list of dataset versions to export:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export METADATA_FORMAT=dataverse_json
+  export BODY="{\"exporter\":\"$METADATA_FORMAT\",\"datasets\":[{\"persistentId\":\"doi:10.5072/FK2/J8SJZB\",\"version\":\"1.0\"},{\"persistentId\":\"doi:10.5072/FK2/XY79KQ\"},{\"persistentId\":\"doi:10.5072/FK2/ABCDEF\",\"version\":\":draft\"}]}"
+
+  curl -X POST -H "Content-Type: application/json" -H "X-Dataverse-key: $API_TOKEN" -d "$BODY" "$SERVER_URL/api/datasets/export"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X POST -H "Content-Type: application/json" -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -d "{\"exporter\":\"dataverse_json\",\"datasets\":[{\"persistentId\":\"doi:10.5072/FK2/J8SJZB\",\"version\":\"1.0\"},{\"persistentId\":\"doi:10.5072/FK2/XY79KQ\"},{\"persistentId\":\"doi:10.5072/FK2/ABCDEF\",\"version\":\":draft\"}]}" "https://demo.dataverse.org/api/datasets/export"
+
+Each entry in ``datasets`` couples a ``persistentId`` with an optional ``version``.
+The version syntax is the same as for the :ref:`export-dataset-metadata-api` above (see :ref:`dataset-version-specifiers`):
+``:latest``, ``:latest-published``, ``:draft``, or an explicit number such as ``1.0``.
+When omitted, it defaults to ``:latest-published``, and an API token is not needed unless a version requires access.
+
+Requests listing exactly one dataset is handled like :ref:`the single-endpoint export <export-dataset-metadata-api>`:
+it returns the usual single-dataset output of the requested format.
+
+A request listing two or more datasets combines all of the requested versions into a single output.
+The format must support this, and using a format that does not results in an HTTP 400 (Bad Request) error.
+What the combined output contains for a given format is decided by that format.
+
+All requested datasets are resolved and their access checked before any export is produced.
+If any requested dataset or version is not found or cannot be read by the requester, the *entire* request is rejected with an HTTP 400 response.
+Each problematic entry is listed, so you get feedback on all entries in one round trip.
+Similarly, a body that is missing or does not follow the schema above is rejected with a message naming the invalid field.
+
+The maximum number of dataset versions per request is limited by the :ref:`dataverse.api.export.bulk.max-request-size` setting.
+The successful response contains an ``X-Dataverse-Export-ID`` header carrying the identifier of the batch.
+In case an error occurs during data streaming, use its value to correlate with the server's log of events.
+
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
