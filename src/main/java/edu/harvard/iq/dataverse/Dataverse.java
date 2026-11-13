@@ -53,7 +53,7 @@ import java.util.*;
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {
-        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT
+        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT, DIVISION
     };
     
     private static final long serialVersionUID = 1L;
@@ -155,6 +155,8 @@ public class Dataverse extends DvObjectContainer {
                 return  ("dataverse.type.selectTab.researchGroup" );
             case DEPARTMENT:
                 return  ("dataverse.type.selectTab.department" );
+            case DIVISION:
+                return ("dataverse.type.selectTab.division");
             case UNCATEGORIZED:
                 return ("dataverse.type.selectTab.uncategorized");
             default:

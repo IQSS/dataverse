@@ -361,7 +361,9 @@ Above you already did the hard work of deploying a release candidate to <https:/
 
 We maintain SchemaSpy at URLs like <https://guides.dataverse.org/en/latest/schemaspy/index.html> and (for example) <https://guides.dataverse.org/en/6.6/schemaspy/index.html>
 
-Get the attention of the core team and ask someone to update it for the new release.
+To get it, download the `schemaspy-<version>` artifact from the latest [Dataverse Tests](https://github.com/IQSS/dataverse/actions/workflows/dataverse_tests.yml) run on the release branch.
+
+Then get the attention of the core team and ask someone to put it on the guides server for the new release.
 
 Consider updating [the thread](https://groups.google.com/g/dataverse-community/c/f95DQU-wlVM/m/cvUp3E9OBgAJ) on the mailing list once the update is in place.
 
