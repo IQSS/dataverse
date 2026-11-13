@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -172,14 +173,13 @@ public class Guestbooks extends AbstractApiBean {
     @AuthRequired
     @Path("/{id}/responses")
     @Operation(summary = "Lists guestbook responses",
-            description = "Returns guestbook metadata and response records, with pagination links when a limit is supplied.")
+            description = "Returns guestbook metadata and response records, with pagination when a limit is supplied.")
     public Response getResponses(@Context ContainerRequestContext crc,
-                                 @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true)
-                                 @PathParam("id") Long id,
-                                 @Parameter(description = "Maximum number of response records to return.")
-                                 @QueryParam("limit") Integer limit,
-                                 @Parameter(description = "Response record offset.")
-                                 @QueryParam("offset") Integer offset) {
+                                 @Parameter(description = "Numeric id of the guestbook whose responses are listed.", required = true) @PathParam("id") Long id,
+                                 @Parameter(description = "Sort Field. One of: 'dataset'; 'date'; 'type'; 'file'; 'name'") @QueryParam("sort") String sortField,
+                                 @Parameter(description = "Sort order. ('asc' or 'desc')") @QueryParam("order") String sortOrder,
+                                 @Parameter(description = "Maximum number of response records to return.") @QueryParam("limit") Integer limit,
+                                 @Parameter(description = "Response record offset.") @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Guestbook guestbook = guestbookService.find(id);
@@ -190,39 +190,20 @@ public class Guestbooks extends AbstractApiBean {
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
+
+            validateFindGuestbookResponsesParameters(sortField, sortOrder, offset, limit);
+
             Long totalUsageCount = guestbookService.findCountUsages(guestbook.getId(), null);
             Long totalResponseCount = guestbookResponseService.findCountByGuestbookId(guestbook.getId(), null);
             guestbook.setUsageCount(totalUsageCount);
             guestbook.setResponseCount(totalResponseCount);
 
-            List<GuestbookResponse> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), offset, limit);
+            List<GuestbookResponseListDTO> responses = guestbookResponseService.findAllByGuestbookId(guestbook.getId(), sortField, sortOrder, offset, limit);
 
             JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
             guestbookResponseObject.add("guestbook", JsonPrinter.json(guestbook));
+            guestbookResponseObject.add("responses", JsonPrinter.getGuestbookResponseList(responses));
 
-            JsonArrayBuilder responseObjects = JsonUtil.createArrayBuilder();
-            for (GuestbookResponse gr : responses) {
-                responseObjects.add(JsonPrinter.json(gr));
-            }
-            guestbookResponseObject.add("responses", responseObjects);
-
-            if (limit != null) {
-                JsonObjectBuilder guestbookPageObject = jsonObjectBuilder();
-                int thisOffset = offset != null ? offset : 0;
-                int next = thisOffset + limit;
-                int prev = thisOffset - limit;
-
-                String baseUrl = crc.getUriInfo().getAbsolutePath() + "?limit=" + limit + "&offset=" ;
-                if (prev >= 0) {
-                    guestbookPageObject.add("previous",baseUrl + prev);
-                }
-                if (next < totalResponseCount) {
-                    guestbookPageObject.add("next", baseUrl + next);
-                }
-                guestbookPageObject.add("totalResponses", totalResponseCount);
-
-                guestbookResponseObject.add("pagination", guestbookPageObject);
-            }
             return ok(guestbookResponseObject);
         }, getRequestUser(crc));
     }
@@ -268,6 +249,22 @@ public class Guestbooks extends AbstractApiBean {
             return notFound("Guestbook " + guestbookId + " not found.");
         }, getRequestUser(crc));
     }
+
+    private void validateFindGuestbookResponsesParameters(String sortField, String sortOrder, Integer offset, Integer limit) throws WrappedResponse {
+        if (sortField != null && !List.of("dataset","date","type","file","name").contains(sortField.toLowerCase())) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidSortField")));
+        }
+        if (sortOrder != null && !List.of("asc","desc").contains(sortOrder.toLowerCase())) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidSortOrder")));
+        }
+        if (offset != null && offset < 0) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidOffset")));
+        }
+        if (limit != null && limit < 1) {
+            throw new WrappedResponse(error( Response.Status.BAD_REQUEST,  BundleUtil.getStringFromBundle("guestbookResponses.invalidLimit")));
+        }
+    }
+
     private Response handleWrappedResponse(WrappedResponse ww) {
         String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
         if (!error.isEmpty()) {
