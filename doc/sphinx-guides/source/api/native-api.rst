@@ -1172,6 +1172,9 @@ The fully expanded example above (without the environment variables) looks like 
 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
+.. note::
+   The API validates that no system-managed fields (such as ``id``, ``persistentId``, or ``createTime``) are provided with non-null values in the request JSON, as these are assigned by the system. Providing such fields with values will result in a ``400 Bad Request`` error.
+
 .. note:: Only a Dataverse installation account with superuser permissions is allowed to include files when creating a dataset via this API. Adding files this way only adds their file metadata to the database, you will need to manually add the physical files to the file system.
 
 .. _api-create-dataset-with-type:
@@ -1418,6 +1421,8 @@ You must have "EditDataverse" permission on the Dataverse collection.
 
 .. note::
    The data sent to this endpoint represents the desired final state of the Guestbook. Any existing custom questions not included in the JSON will be removed from the database, and any associated responses to those questions will also be lost.
+   
+   The API also performs strict validation on system-managed fields like ``id`` and ``createTime``. If these fields are included in the JSON, their values must match the current state of the Guestbook being updated, or a ``400 Bad Request`` error will be returned.
 
 .. code-block:: bash
 
@@ -2863,6 +2868,9 @@ Now you can edit the JSON produced by the command above with a text editor of yo
 Note that you don't need to edit the top-level fields such as ``versionNumber``, ``minorVersonNumber``, ``versionState`` or any of the time stamps - these will be automatically updated as needed by the API::
 
     vi dataset-update-metadata.json
+
+.. note::
+   If you do include system-managed fields (like ``id``, ``releaseTime``, or ``UNF``) in your JSON, the API will validate them against the current state of the dataset version. If the provided values do not match the existing record, the API will return a ``400 Bad Request`` error. This allows you to safely send back a JSON object you previously downloaded, as long as the managed fields remain unchanged.
 
 Now that you've made edits to the metadata in your JSON file, you can send it to a Dataverse installation as described above.
 
