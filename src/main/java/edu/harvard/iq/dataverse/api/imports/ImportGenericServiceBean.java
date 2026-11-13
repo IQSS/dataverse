@@ -114,7 +114,11 @@ public class ImportGenericServiceBean {
             JsonParser jp = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService, datasetTypeService, templateService);
             DatasetVersion incoming = jp.parseDatasetVersion(obj, null);
             ManagedFieldsValidator.validateManagedFields(incoming, datasetVersion);
-            jp.parseDatasetVersion(obj, datasetVersion);
+            datasetVersion.setDatasetFields(incoming.getDatasetFields());
+            datasetVersion.setTermsOfUseAndAccess(incoming.getTermsOfUseAndAccess());
+            if (datasetVersion.getTermsOfUseAndAccess() != null) {
+                datasetVersion.getTermsOfUseAndAccess().setDatasetVersion(datasetVersion);
+            }
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
