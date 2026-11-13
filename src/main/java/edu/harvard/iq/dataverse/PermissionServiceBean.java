@@ -27,6 +27,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
@@ -85,6 +87,9 @@ public class PermissionServiceBean {
 
     @EJB
     GroupServiceBean groupService;
+    
+    @EJB
+    GlobusServiceBean globusService; 
 
     @Inject
     DataverseSession session;
@@ -779,8 +784,14 @@ public class PermissionServiceBean {
             else if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
+            /**
+             * prod. patch 6.8: as an experiment, not locking datasets for edits while Globus uploads in progress:
+             */
             else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                // ... but we'll keep it locked for edits unless the new, async task mgmt. is in use
+                if (!FeatureFlags.GLOBUS_USE_EXPERIMENTAL_ASYNC_FRAMEWORK.enabled()) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                }
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
@@ -806,7 +817,9 @@ public class PermissionServiceBean {
     }
     
     public void checkPublishDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
-        if (dataset.isLocked()) {
+        // prod. patch 6.8:
+        boolean globusUploadInProgress = globusService.isUploadTaskInProgressForDataset(dataset.getId());
+        if (dataset.isLocked() || globusUploadInProgress) {
             if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
             }
@@ -825,7 +838,8 @@ public class PermissionServiceBean {
             else if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
             }
-            else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
+            else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)
+                    || globusUploadInProgress) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
