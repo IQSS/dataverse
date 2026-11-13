@@ -784,8 +784,8 @@ public class AdminIT {
 
         computeDataFileHashResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
-                .body("message", equalTo("must be superuser"))
-                .statusCode(UNAUTHORIZED.getStatusCode());
+                .body("message", equalTo("Forbidden. You must be a superuser or have the actAsSuperuser permission for this item."))
+                .statusCode(FORBIDDEN.getStatusCode());
 
 
         computeDataFileHashResponse = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), superuserApiToken);
@@ -800,8 +800,8 @@ public class AdminIT {
 
         validationResponse.then().assertThat()
                 .body("status", equalTo("ERROR"))
-                .body("message", equalTo("must be superuser"))
-                .statusCode(UNAUTHORIZED.getStatusCode());
+                .body("message", equalTo("Forbidden. You must be a superuser or have the actAsSuperuser permission for this item."))
+                .statusCode(FORBIDDEN.getStatusCode());
         
         //Bad File Id
         validationResponse = UtilIT.validateDataFileHashValue("BadFileId", superuserApiToken);

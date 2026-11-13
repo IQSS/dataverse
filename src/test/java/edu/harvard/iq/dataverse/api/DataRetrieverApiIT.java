@@ -63,14 +63,16 @@ public class DataRetrieverApiIT {
         Response createNormalUserResponse = UtilIT.createRandomUser();
         String normalUserUsername = UtilIT.getUsernameFromResponse(createNormalUserResponse);
         String normalUserApiToken = UtilIT.getApiTokenFromResponse(createNormalUserResponse);
-        Response noResultwithOneRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
+        Long dsCreatorRoleId = UtilIT.getRoleIdByAlias(DataverseRole.DS_CONTRIBUTOR, superUserApiToken);
+        Long contributorRoleId = UtilIT.getRoleIdByAlias(DataverseRole.EDITOR, superUserApiToken);
+        Response noResultwithOneRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(dsCreatorRoleId)));
         resp = noResultwithOneRoleResponse.prettyPrint();
         assertTrue(resp.contains("\"success\": true"));
         assertTrue(resp.contains(prettyPrintMessage("myDataFinder.error.result.role.empty", Arrays.asList("Dataset Creator"))));
         assertEquals(OK.getStatusCode(), noResultwithOneRoleResponse.getStatusCode());
 
         // Call as normal user with multiple valid roles and no results
-        Response noResultWithMultipleRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L, 6L)));
+        Response noResultWithMultipleRoleResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(dsCreatorRoleId, contributorRoleId)));
         resp = noResultWithMultipleRoleResponse.prettyPrint();
         assertTrue(resp.contains("\"success\": true"));
         assertTrue(resp.contains(prettyPrintMessage("myDataFinder.error.result.roles.empty", Arrays.asList("Dataset Creator, Contributor"))));
@@ -85,7 +87,7 @@ public class DataRetrieverApiIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         UtilIT.sleepForDatasetIndex(datasetId.toString(), normalUserApiToken);
-        Response oneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        Response oneDatasetResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)));
         assertEquals(OK.getStatusCode(), oneDatasetResponse.getStatusCode());
         JsonPath jsonPathOneDataset = oneDatasetResponse.getBody().jsonPath();
         assertEquals(1, jsonPathOneDataset.getInt("data.total_count"));
@@ -95,7 +97,7 @@ public class DataRetrieverApiIT {
         UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(),
                 "@" + normalUserUsername, superUserApiToken);
         Thread.sleep(4000);
-        Response oneDataverseResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(5L)));
+        Response oneDataverseResponse = UtilIT.retrieveMyDataAsJsonString(normalUserApiToken, "", new ArrayList<>(Arrays.asList(dsCreatorRoleId)));
         oneDataverseResponse.prettyPrint();
 
         assertEquals(OK.getStatusCode(), oneDataverseResponse.getStatusCode());
@@ -265,8 +267,10 @@ public class DataRetrieverApiIT {
         String userApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String userIdentifier = UtilIT.getUsernameFromResponse(createUserResponse);
 
+        Long contributorRoleId = UtilIT.getRoleIdByAlias(DataverseRole.EDITOR, superUserApiToken);
+
         // Call as regular user with no result
-        Response myDataEmptyResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        Response myDataEmptyResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)));
         //assertEquals(prettyPrintError("myDataFinder.error.result.role.empty", Arrays.asList("Contributor")), myDataEmptyResponse.prettyPrint());
         String resp = myDataEmptyResponse.prettyPrint();
         assertTrue(resp.contains("\"success\": true"));
@@ -299,7 +303,7 @@ public class DataRetrieverApiIT {
         UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
-        Response twoDatasetsInReviewResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        Response twoDatasetsInReviewResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)));
         twoDatasetsInReviewResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), twoDatasetsInReviewResponse.getStatusCode());
         JsonPath jsonPathTwoDatasetsInReview = twoDatasetsInReviewResponse.getBody().jsonPath();
@@ -323,7 +327,7 @@ public class DataRetrieverApiIT {
         UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
-        Response twoPublishedDatasetsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        Response twoPublishedDatasetsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)));
         twoPublishedDatasetsResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), twoPublishedDatasetsResponse.getStatusCode());
         JsonPath jsonPathTwoPublishedDatasets = twoPublishedDatasetsResponse.getBody().jsonPath();
@@ -342,7 +346,7 @@ public class DataRetrieverApiIT {
         UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Request datasets belonging to user
-        Response twoPublishedDatasetsOneDraftResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        Response twoPublishedDatasetsOneDraftResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)));
         twoPublishedDatasetsOneDraftResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), twoPublishedDatasetsOneDraftResponse.getStatusCode());
         JsonPath jsonPathTwoPublishedDatasetsOneDraft = twoPublishedDatasetsOneDraftResponse.getBody().jsonPath();
@@ -366,7 +370,7 @@ public class DataRetrieverApiIT {
         UtilIT.sleepForDatasetIndex(datasetTwoId.toString(), userApiToken);
 
         // Request datasets belonging to user
-        Response twoPublishedDatasetsTwoDraftsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        Response twoPublishedDatasetsTwoDraftsResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)));
         twoPublishedDatasetsTwoDraftsResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), twoPublishedDatasetsTwoDraftsResponse.getStatusCode());
         JsonPath jsonPathTwoPublishedDatasetsTwoDrafts = twoPublishedDatasetsTwoDraftsResponse.getBody().jsonPath();
@@ -389,7 +393,7 @@ public class DataRetrieverApiIT {
         UtilIT.sleepForDatasetIndex(datasetOneId.toString(), userApiToken);
 
         // Request datasets belonging to user
-        Response oneMinorOneMajorOneDraftDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(6L)));
+        Response oneMinorOneMajorOneDraftDatasetResponse = UtilIT.retrieveMyDataAsJsonString(userApiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)));
         oneMinorOneMajorOneDraftDatasetResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), oneMinorOneMajorOneDraftDatasetResponse.getStatusCode());
         JsonPath jsonPathOneMinorOneMajorOneDraftDataset = oneMinorOneMajorOneDraftDatasetResponse.getBody().jsonPath();
@@ -444,7 +448,13 @@ public class DataRetrieverApiIT {
         
         UtilIT.sleepForDatasetIndex(datasetId, apiToken);
         
-        Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:author");
+        // Get a superuser token to look up role IDs
+        Response createSuperUser = UtilIT.createRandomUser();
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createSuperUser);
+        UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createSuperUser));
+        Long contributorRoleId = UtilIT.getRoleIdByAlias(DataverseRole.EDITOR, superUserApiToken);
+        
+        Response myDataWithAuthor = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)), "&metadata_fields=citation:author");
         myDataWithAuthor.prettyPrint();
         myDataWithAuthor.then().assertThat()
                 .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
@@ -453,7 +463,7 @@ public class DataRetrieverApiIT {
                 .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorAffiliation.value", CoreMatchers.equalTo("Birds Inc."))
                 .statusCode(OK.getStatusCode());
 
-        Response subFieldsNotSupported = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:authorAffiliation");
+        Response subFieldsNotSupported = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)), "&metadata_fields=citation:authorAffiliation");
         subFieldsNotSupported.prettyPrint();
         subFieldsNotSupported.then().assertThat()
                 .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
@@ -461,7 +471,7 @@ public class DataRetrieverApiIT {
                 .body("data.items[0].metadataBlocks.citation.fields", Matchers.empty())
                 .statusCode(OK.getStatusCode());
 
-        Response myDataWithAllFieldsFromCitation = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&metadata_fields=citation:*");
+        Response myDataWithAllFieldsFromCitation = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)), "&metadata_fields=citation:*");
         // Many more fields printed
         myDataWithAllFieldsFromCitation.prettyPrint();
         myDataWithAllFieldsFromCitation.then().assertThat()
@@ -497,8 +507,14 @@ public class DataRetrieverApiIT {
 
         UtilIT.sleepForDatasetIndex(datasetPid, apiToken);
         
+        // Get a superuser token to look up role IDs
+        Response createSuperUser = UtilIT.createRandomUser();
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createSuperUser);
+        UtilIT.makeSuperUser(UtilIT.getUsernameFromResponse(createSuperUser));
+        Long contributorRoleId = UtilIT.getRoleIdByAlias(DataverseRole.EDITOR, superUserApiToken);
+        
         // Test that the Dataverse collection that the dataset was created in is returned
-        Response myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
+        Response myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)), "&show_collections=true");
         myDataResponse.prettyPrint();
         myDataResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -522,7 +538,7 @@ public class DataRetrieverApiIT {
         UtilIT.sleepForDatasetIndex(String.valueOf(datasetId), apiToken);
 
         // Test that the Dataverse collection that the dataset was linked to is also returned
-        myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(6L)), "&show_collections=true");
+        myDataResponse = UtilIT.retrieveMyDataAsJsonString(apiToken, "", new ArrayList<>(Arrays.asList(contributorRoleId)), "&show_collections=true");
         myDataResponse.prettyPrint();
         myDataResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
