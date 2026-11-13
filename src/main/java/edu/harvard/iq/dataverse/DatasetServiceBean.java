@@ -24,7 +24,6 @@ import edu.harvard.iq.dataverse.pidproviders.FailedPIDResolutionLoggingServiceBe
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -1124,18 +1123,12 @@ public class DatasetServiceBean implements java.io.Serializable {
      * to DvObjectServiceBean. 
      */
     public void saveStorageQuota(Dataset target, Long allocation) {
-        StorageQuota storageQuota = target.getStorageQuota();
-        
-        if (storageQuota != null) {
-            storageQuota.setAllocation(allocation);
-            em.merge(storageQuota);
-        } else {
-            storageQuota = new StorageQuota(); 
-            storageQuota.setDefinitionPoint(target);
-            storageQuota.setAllocation(allocation);
-            target.setStorageQuota(storageQuota);
-            em.persist(storageQuota);
-        }
+        // Update the managed instance (the same object, if target is already
+        // managed) so that only the changed column is written; and keep the
+        // caller's copy in sync.
+        Dataset managed = em.find(Dataset.class, target.getId());
+        managed.setStorageQuota(allocation);
+        target.setStorageQuota(allocation);
         em.flush();
     }
     

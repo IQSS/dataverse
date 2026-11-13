@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
@@ -1481,15 +1480,12 @@ public class DataFileServiceBean implements java.io.Serializable {
      */
     public UploadSessionQuotaLimit getUploadSessionQuotaLimit(DvObjectContainer parent) {
         DvObjectContainer testDvContainer = parent; 
-        StorageQuota quota = testDvContainer.getStorageQuota();
+        Long quota = testDvContainer.getStorageQuota();
         while (quota == null && testDvContainer.getOwner() != null) {
             testDvContainer = testDvContainer.getOwner();
             quota = testDvContainer.getStorageQuota();
-            if (quota != null) {
-                break;
-            }
-        }    
-        if (quota == null || quota.getAllocation() == null) {
+        }
+        if (quota == null) {
             return null; 
         }
         
@@ -1498,7 +1494,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // DvObjectContainer on which the storage quota is defined:
         Long currentSize = currentStorageSizeInBytes(testDvContainer);
         
-        return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
+        return new UploadSessionQuotaLimit(quota, currentSize);
     }
 
     public Long currentStorageSizeInBytes(DvObjectContainer dvObjectContainer) {
