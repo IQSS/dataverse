@@ -4511,38 +4511,79 @@ public class FilesIT {
         JsonParser parser = new JsonParser();
         ExternalTool externalTool = parser.parseExternalTool(data.getJsonObject("data"));
 
+        // Call /toolUrl API with the guestbook response values supplied. This 
+        // will create a GBR with the eventtype = external tool name, i.e. 
+        // 'View Image' in our case. This GBR id will be embedded in all the  
+        // URLs in the followup workflow, the callback (/toolparams) URL, and the 
+        // access URLs that /toolparams will issue for the tool to use. 
         Response toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true," + guestbookResponse));
         toolUrlResponse.prettyPrint();
         assertEquals(200, toolUrlResponse.getStatusCode());
+        
+        // remember the guestbookresponse id in the output; we will later confirm 
+        // that this gbrid is embedded in the callback url to the /toolParams API;
         int guestbookResponseId = JsonPath.from(toolUrlResponse.body().asString()).getInt("data.gbrids");
-        externalTool.setGuestbookResponseId(Long.valueOf(guestbookResponseId));
-        JsonArray allowedApiCalls = JsonUtil.getJsonArray(externalTool.getAllowedApiCalls());
-        Map<String, String> resultMap = allowedApiCalls.stream()
+        
+        // Extract and decode the base64-encoded callback URL from the output of
+        // /toolUrl above:
+        String toolUrl = JsonPath.from(toolUrlResponse.body().asString()).getString("data.toolUrl");
+        String callbackBase64 = toolUrl.substring(toolUrl.indexOf("callback=") + 9);
+        callbackBase64 = callbackBase64.substring(0, callbackBase64.indexOf('&'));
+        msgt("callback URL, base64-encoded: " + callbackBase64);
+        
+        byte[] callbackDecoded = Base64.getDecoder().decode(callbackBase64.getBytes());
+        String callbackUrl = new String(callbackDecoded);
+        msgt("callback URL, decoded: " + callbackUrl); 
+        
+        // Call back the callback url; this will be a call to the /toolparams API: 
+        
+        Response callbackResponse = given().get(callbackUrl);
+        callbackResponse.prettyPrint();
+        data = JsonUtil.getJsonObject(callbackResponse.getBody().asString()).getJsonObject("data");
+        msgt(data.toString());
+        JsonArray toolParamsUrls = data.getJsonArray("signedUrls");
+        msgt(toolParamsUrls.toString());
+        
+        Map<String, String> resultMap = toolParamsUrls.stream()
                 .collect(Collectors.toMap(
                         item -> item.asJsonObject().getString("name"),     // Key mapper
-                        item -> item.asJsonObject().getString("urlTemplate")    // Value mapper
+                        item -> item.asJsonObject().getString("signedUrl") // Value mapper
                 ));
-
-        // Call Tool Preview (generates guestbook response with 'Explore' event type)
-        String toolUrl = resultMap.get("retrieveFileContents").replace("{fileId}", String.valueOf(datafileId));
-        Response resp = get(toolUrl);
+        
+        // Call the main retrieveFileContents URL (it should include the id of 
+        // the GBR created earlier; no new GBR created for this download)
+        String retrieveUrl = resultMap.get("retrieveFileContents");
+        msgt("RETRIEVE CONTENTS URL: "+retrieveUrl);
+        assertTrue(retrieveUrl.contains("gbrecs=true&gbrids="+guestbookResponseId), 
+                "retrieveFileContents URL must contain the GBR id issued by /toolUrl and gbrecs=true");
+        Response resp = get(retrieveUrl);
         assertEquals(200, resp.getStatusCode());
 
-        // Call Tool Download (generates guestbook response with 'View Image' event type)
-        toolUrl = resultMap.get("downloadFile").replace("{fileId}", String.valueOf(datafileId));
-        resp = get(toolUrl);
+        // Call the downloadFile URL (this one will have both the GBR id, AND the 
+        // gbrecs=false parameter; this will result in a new GBR of type "Download"
+        // created via a special hack in Access.java
+        String downloadUrl = resultMap.get("downloadFile");
+        msgt("DOWNLOAD URL: "+downloadUrl);
+        assertTrue(downloadUrl.contains("gbrecs=false&gbrids="+guestbookResponseId), 
+                "downloadFile URL must contain the GBR id issued by /toolUrl and gbrec=false");
+        resp = get(downloadUrl);
         assertEquals(200, resp.getStatusCode());
 
-        // Check GuestbookResponses
+        // Now check GuestbookResponses
         Response listResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), apiToken);
         listResponse.then().assertThat().statusCode(OK.getStatusCode());
-        int firstExplore = listResponse.prettyPrint().indexOf(",Explore,dataverseproject.png");
-        int lastExplore = listResponse.prettyPrint().indexOf(",Explore,dataverseproject.png");
-        assertTrue(firstExplore != -1 && firstExplore == lastExplore); // exactly once
-
-        int firstViewImage = listResponse.prettyPrint().indexOf(",View Image,dataverseproject.png");
-        int lastViewImage = listResponse.prettyPrint().indexOf(",View Image,dataverseproject.png");
-        assertTrue(firstViewImage != -1 && firstViewImage == lastViewImage); // exactly once
+        // There will be 2 GBRs: 
+        // One, issued when we called the /toolUrl API, of eventtype = View Image
+        // (the name of the previewer); and the other, of eventtype = Download,
+        // created when we called the downloadUrl above.
+        listResponse.prettyPrint();
+        int firstViewImage = listResponse.asPrettyString().indexOf(",View Image,dataverseproject.png");
+        int lastViewImage = listResponse.asPrettyString().lastIndexOf(",View Image,dataverseproject.png");
+        assertTrue(firstViewImage != -1 && firstViewImage == lastViewImage); // exactly one!
+        
+        int firstDownload = listResponse.asPrettyString().indexOf(",Download,dataverseproject.png");
+        int lastDownload = listResponse.asPrettyString().lastIndexOf(",Download,dataverseproject.png");
+        assertTrue(firstDownload != -1 && firstDownload == lastDownload); // same
 
         // Test without guestbook response
         toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true}"));

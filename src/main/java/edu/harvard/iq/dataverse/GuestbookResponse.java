@@ -178,6 +178,7 @@ public class GuestbookResponse implements Serializable {
         this.setPosition(source.getPosition());
         this.setResponseTime(source.getResponseTime());
         this.setDataset(source.getDataset());
+        this.setDataFile(source.getDataFile());
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
         this.setSessionId(source.getSessionId());
