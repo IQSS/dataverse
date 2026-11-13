@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ManagedFieldsValidator;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
@@ -403,22 +404,18 @@ public class JsonParser {
         return toaa;
     }
 
-    public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
-        return parseDatasetVersion(obj, new DatasetVersion());
-    }
 
     public Dataset parseDataset(JsonObject obj, Dataverse owner) throws JsonParseException {
+        return parseDataset(obj, owner, true);
+    }
+
+    public Dataset parseDataset(JsonObject obj, Dataverse owner, boolean parseFiles) throws JsonParseException {
         Dataset dataset = new Dataset();
         dataset.setOwner(owner);
+
         dataset.setAuthority(obj.getString("authority", null));
         dataset.setProtocol(obj.getString("protocol", null));
-        dataset.setIdentifier(obj.getString("identifier",null));
-        String mdl = obj.getString("metadataLanguage",null);
-        if(mdl==null || settingsService.getBaseMetadataLanguageMap(new HashMap<String,String>(), true).containsKey(mdl)) {
-          dataset.setMetadataLanguage(mdl);
-        }else {
-            throw new JsonParseException("Specified metadatalanguage not allowed.");
-        }
+        dataset.setIdentifier(obj.getString("identifier", null));
         dataset.setDatasetFileCountLimit(obj.getInt("datasetFileCountLimit", -1));
         String datasetTypeIn = obj.getString("datasetType", DatasetType.DEFAULT_DATASET_TYPE);
         logger.fine("datasetTypeIn: " + datasetTypeIn);
@@ -427,6 +424,13 @@ public class JsonParser {
             dataset.setDatasetType(datasetType);
         } else {
             throw new JsonParseException("Invalid dataset type: " + datasetTypeIn);
+        }
+
+        String mdl = obj.getString("metadataLanguage", null);
+        if (mdl == null || settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(mdl)) {
+            dataset.setMetadataLanguage(mdl);
+        } else {
+            throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
 
         if (obj.containsKey("templateId")) {
@@ -441,7 +445,7 @@ public class JsonParser {
 
         DatasetVersion dsv = new DatasetVersion();
         dsv.setDataset(dataset);
-        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
+        dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv, parseFiles);
         List<DatasetVersion> versions = new ArrayList<>(1);
         versions.add(dsv);
 
@@ -449,9 +453,19 @@ public class JsonParser {
         return dataset;
     }
 
-    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
-        try {
+    public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
+        return parseDatasetVersion(obj, new DatasetVersion(), true);
+    }
 
+    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
+        return parseDatasetVersion(obj, dsv, true);
+    }
+
+    public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv, boolean parseFiles) throws JsonParseException {
+        if (dsv == null) {
+            dsv = new DatasetVersion();
+        }
+        try {
             dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
             String deaccessionNote = obj.getString("deaccessionNote", null);
             // ToDo - the treatment of null inputs is inconsistent across different fields (either the original value is kept or set to null).
@@ -463,15 +477,15 @@ public class JsonParser {
             dsv.setVersionNote(obj.getString("versionNote", null));
             int versionNumberInt = obj.getInt("versionNumber", -1);
             Long versionNumber = null;
-            if (versionNumberInt !=-1) {
+            if (versionNumberInt != -1) {
                 versionNumber = new Long(versionNumberInt);
             }
             dsv.setVersionNumber(versionNumber);
             dsv.setMinorVersionNumber(parseLong(obj.getString("minorVersionNumber", null)));
             // if the existing datasetversion doesn not have an id
             // use the id from the json object.
-            if (dsv.getId()==null) {
-                 dsv.setId(parseLong(obj.getString("id", null)));
+            if (dsv.getId() == null) {
+                dsv.setId(parseLong(obj.getString("id", null)));
             }
 
             String versionStateStr = obj.getString("versionState", null);
@@ -579,12 +593,14 @@ public class JsonParser {
             }
             dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
-            JsonArray filesJson = obj.getJsonArray("files");
-            if (filesJson == null) {
-                filesJson = obj.getJsonArray("fileMetadatas");
-            }
-            if (filesJson != null) {
-                dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+            if (parseFiles) {
+                JsonArray filesJson = obj.getJsonArray("files");
+                if (filesJson == null) {
+                    filesJson = obj.getJsonArray("fileMetadatas");
+                }
+                if (filesJson != null) {
+                    dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+                }
             }
             return dsv;
         } catch (ParseException ex) {
@@ -599,6 +615,14 @@ public class JsonParser {
             if (obj.containsKey("id")) {
                 gb.setId(Long.valueOf(obj.getInt("id")));
             }
+            if (obj.containsKey("createTime")) {
+                String ct = obj.getString("createTime", null);
+                try {
+                    gb.setCreateTime(parseTime(ct));
+                } catch (ParseException ex) {
+                    gb.setCreateTime(parseDate(ct));
+                }
+            }
             gb.setName(obj.getString("name", null));
             gb.setEnabled(obj.getBoolean("enabled"));
             gb.setEmailRequired(obj.getBoolean("emailRequired"));
@@ -607,21 +631,33 @@ public class JsonParser {
             gb.setPositionRequired(obj.getBoolean("positionRequired"));
             gb.setCustomQuestions(parseCustomQuestions(obj.getJsonArray("customQuestions"), gb));
 
-            gb.setCreateTime(parseDate(obj.getString("createTime", null)));
         } catch (ParseException ex) {
             throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
         }
         return gb;
     }
-    private List<CustomQuestion> parseCustomQuestions(JsonArray customQuestions, Guestbook gb) {
+
+    private List<CustomQuestion> parseCustomQuestions(JsonArray customQuestions, Guestbook gb) throws JsonParseException {
         final List<CustomQuestion> customQuestionList = (customQuestions != null && !customQuestions.isEmpty()) ? new ArrayList<>() : null;
         if (customQuestionList != null) {
-            customQuestions.forEach(q -> {
+            for (JsonValue q : customQuestions) {
                 JsonObject obj = q.asJsonObject();
-                CustomQuestion cq = new CustomQuestion();
+                CustomQuestion cq = null;
                 if (obj.containsKey("id")) {
-                    cq.setId(Long.valueOf(obj.getInt("id")));
+                    Long id = (long) obj.getInt("id");
+                    if (gb.getCustomQuestions() != null) {
+                        cq = gb.getCustomQuestions().stream()
+                                .filter(existing -> Objects.equals(existing.getId(), id))
+                                .findFirst().orElse(null);
+                    }
                 }
+                if (cq == null) {
+                    cq = new CustomQuestion();
+                    if (obj.containsKey("id")) {
+                        cq.setId((long) obj.getInt("id"));
+                    }
+                }
+
                 cq.setQuestionString(obj.getString("question"));
                 cq.setRequired(obj.getBoolean("required"));
                 cq.setDisplayOrder(obj.getInt("displayOrder"));
@@ -630,24 +666,36 @@ public class JsonParser {
                 cq.setGuestbook(gb);
 
                 JsonArray optionValues = obj.getJsonArray("optionValues");
-                final  List<CustomQuestionValue> cqvList = (optionValues != null && !optionValues.isEmpty()) ? new ArrayList<>() : null;
+                final List<CustomQuestionValue> cqvList = (optionValues != null && !optionValues.isEmpty()) ? new ArrayList<>() : null;
                 if (cqvList != null) {
-                    optionValues.forEach(v -> {
+                    for (JsonValue v : optionValues) {
                         JsonObject ov = v.asJsonObject();
-                        CustomQuestionValue cqv = new CustomQuestionValue();
+                        CustomQuestionValue cqv = null;
                         if (ov.containsKey("id")) {
-                            cqv.setId(Long.valueOf(ov.getInt("id")));
+                            Long id = (long) ov.getInt("id");
+                            if (cq.getCustomQuestionValues() != null) {
+                                cqv = cq.getCustomQuestionValues().stream()
+                                        .filter(existing -> Objects.equals(existing.getId(), id))
+                                        .findFirst().orElse(null);
+                            }
                         }
+                        if (cqv == null) {
+                            cqv = new CustomQuestionValue();
+                            if (ov.containsKey("id")) {
+                                cqv.setId((long) ov.getInt("id"));
+                            }
+                        }
+
                         cqv.setValueString(ov.getString("value"));
                         cqv.setDisplayOrder(ov.getInt("displayOrder"));
                         cqv.setCustomQuestion(cq);
                         cqvList.add(cqv);
-                    });
+                    }
                     cq.setCustomQuestionValues(cqvList);
                 }
 
                 customQuestionList.add(cq);
-            });
+            }
         }
         return customQuestionList;
     }
@@ -1327,6 +1375,9 @@ public class JsonParser {
     int parsePrimitiveInt(String str, int defaultValue) {
         return str == null ? defaultValue : Integer.parseInt(str);
     }
+
+
+
 
     public String parseHarvestingClient(JsonObject obj, HarvestingClient harvestingClient) throws JsonParseException {
 

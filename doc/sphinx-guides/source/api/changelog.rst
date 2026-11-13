@@ -7,6 +7,14 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.13
+-----
+
+- Native and SWORD APIs now strictly validate system-managed fields (such as ``id``, ``releaseTime``, ``UNF``, and PID components) in ``Dataset``, ``DatasetVersion``, and ``Guestbook`` objects. 
+  Providing these fields with values that differ from the current state of the object will now result in a ``400 Bad Request`` error instead of being silently ignored or allowing unauthorized changes.
+  See `#12899 <https://github.com/IQSS/dataverse/issues/12899>`_.
+- The Guestbook API has been fixed to ensure that existing custom questions and their associated responses are preserved when updating a guestbook by correctly reassociating existing questions by ID.
+
 v6.12
 -----
 

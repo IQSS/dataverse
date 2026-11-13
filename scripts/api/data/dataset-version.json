@@ -1,10 +1,4 @@
 {
-  "id": 2,
-  "versionState": "DRAFT",
-  "distributionDate": "Distribution Date",
-  "productionDate": "Production Date",
-  "lastUpdateTime": "2015-01-14 05:58:27 +02",
-  "createTime": "2015-01-14 05:48:30 +02",
   "metadataBlocks": {
     "citation": {
       "displayName": "Citation Metadata",

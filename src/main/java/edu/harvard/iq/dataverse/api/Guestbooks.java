@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateGuestbookCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import edu.harvard.iq.dataverse.util.ManagedFieldsValidator;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -122,6 +123,8 @@ public class Guestbooks extends AbstractApiBean {
             guestbook.setDataverse(dataverse);
             try {
                 JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
+                Guestbook incoming = jsonParser().parseGuestbook(jsonObj, new Guestbook());
+                ManagedFieldsValidator.validateManagedFields(incoming, guestbook);
                 jsonParser().parseGuestbook(jsonObj, guestbook);
             } catch (JsonException | JsonParseException ex) {
                 logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);
@@ -155,6 +158,8 @@ public class Guestbooks extends AbstractApiBean {
             if (guestbook != null) {
                 try {
                     JsonObject jsonObj = JsonUtil.getJsonObject(jsonBody);
+                    Guestbook incoming = jsonParser().parseGuestbook(jsonObj, new Guestbook());
+                    ManagedFieldsValidator.validateManagedFields(incoming, guestbook);
                     jsonParser().parseGuestbook(jsonObj, guestbook);
                 } catch (JsonException | JsonParseException ex) {
                     logger.log(Level.WARNING, "Error parsing guestbook JSON", ex);

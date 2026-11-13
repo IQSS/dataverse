@@ -894,16 +894,24 @@ public class JsonParserTest {
         }
 
         @Override
-        public String getValueForKey( Key key /*, String defaultValue */) {
+        public String getValueForKey(Key key) {
             switch (key) {
                 case Authority:
                     return "10.5072";
                 case Protocol:
                     return "doi";
+                case MetadataLanguages:
+                    return "[{\"locale\":\"en\",\"title\":\"English\"}]";
                 default:
                     break;
             }
-             return null;
+            return null;
+        }
+
+        @Override
+        public String getValueForKey(Key key, String defaultValue) {
+            String val = getValueForKey(key);
+            return (val != null) ? val : defaultValue;
         }
 
         @Override
@@ -1098,5 +1106,81 @@ public class JsonParserTest {
 
         assertEquals(dsv1.getReleaseTime().toString(), dsv2.getReleaseTime().toString());
     }
-}
 
+    @Test
+    public void testParseDatasetVersion_AllowFiles() throws JsonParseException {
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        JsonObjectBuilder metadataBlocks = JsonUtil.createObjectBuilder();
+        JsonObjectBuilder citation = JsonUtil.createObjectBuilder();
+        citation.add("fields", JsonUtil.createArrayBuilder());
+        metadataBlocks.add("citation", citation);
+        builder.add("metadataBlocks", metadataBlocks);
+
+        JsonArrayBuilder files = JsonUtil.createArrayBuilder();
+        files.add(JsonUtil.createObjectBuilder()
+                .add("label", "test.txt")
+                .add("dataFile", JsonUtil.createObjectBuilder()));
+        builder.add("fileMetadatas", files);
+
+        JsonObject json = builder.build();
+
+        // 1. parseFiles = false
+        DatasetVersion dsv1 = new DatasetVersion();
+        sut.parseDatasetVersion(json, dsv1, false);
+        assertTrue(dsv1.getFileMetadatas().isEmpty());
+
+        // 2. parseFiles = true
+        DatasetVersion dsv2 = new DatasetVersion();
+        sut.parseDatasetVersion(json, dsv2, true);
+        assertFalse(dsv2.getFileMetadatas().isEmpty());
+        assertEquals("test.txt", dsv2.getFileMetadatas().get(0).getLabel());
+    }
+
+    @Test
+    public void testParseGuestbook_CustomQuestions_PreservesResponses() throws JsonParseException {
+        JsonObjectBuilder qBuilder = JsonUtil.createObjectBuilder();
+        qBuilder.add("id", 456);
+        qBuilder.add("question", "How are you?");
+        qBuilder.add("required", true);
+        qBuilder.add("displayOrder", 1);
+        qBuilder.add("type", "text");
+        qBuilder.add("hidden", false);
+
+        JsonObjectBuilder builder = JsonUtil.createObjectBuilder();
+        builder.add("name", "Test GB");
+        builder.add("enabled", true);
+        builder.add("emailRequired", false);
+        builder.add("nameRequired", false);
+        builder.add("institutionRequired", false);
+        builder.add("positionRequired", false);
+        builder.add("customQuestions", JsonUtil.createArrayBuilder().add(qBuilder));
+
+        JsonObject json = builder.build();
+        Guestbook gb = new Guestbook();
+        gb.setId(1L);
+        CustomQuestion cq = new CustomQuestion();
+        cq.setId(456L);
+        cq.setGuestbook(gb);
+
+        // Add a mock response
+        CustomQuestionResponse cqr = new CustomQuestionResponse();
+        cqr.setId(777L);
+        cqr.setCustomQuestion(cq);
+        cqr.setResponse("Fine");
+        cq.setCustomQuestionResponses(new ArrayList<>(List.of(cqr)));
+
+        gb.setCustomQuestions(new ArrayList<>(List.of(cq)));
+
+        // Parse
+        sut.parseGuestbook(json, gb);
+
+        // Verify that the question in the resulting guestbook still has the response
+        assertNotNull(gb.getCustomQuestions());
+        assertEquals(1, gb.getCustomQuestions().size());
+        CustomQuestion updatedCq = gb.getCustomQuestions().get(0);
+        assertEquals(456L, updatedCq.getId());
+        assertNotNull(updatedCq.getCustomQuestionResponses(), "Responses should be preserved");
+        assertEquals(1, updatedCq.getCustomQuestionResponses().size());
+        assertEquals(777L, updatedCq.getCustomQuestionResponses().get(0).getId());
+    }
+}

@@ -388,11 +388,15 @@ public class DatasetsIT {
                 .body("data.effectiveDatasetFileCountLimit", equalTo(500))
                 .body("data.datasetFileCountLimit", equalTo(null));
 
-        // create dataset with datasetFileCountLimit = 100
-        String pathToJsonFile = "scripts/search/tests/data/dataset-finch1-fileLimit.json";
+        // create dataset and then set datasetFileCountLimit = 100 via admin API
+        String pathToJsonFile = "scripts/search/tests/data/dataset-finch1.json";
         createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        Response setLimitResponse = UtilIT.updateDatasetFilesLimits(persistentId, 100, adminApiToken);
+        setLimitResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         datasetAsJson = UtilIT.nativeGet(datasetId2, apiToken);
         datasetAsJson.prettyPrint();
@@ -400,7 +404,6 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.effectiveDatasetFileCountLimit", equalTo(100))
                 .body("data.datasetFileCountLimit", equalTo(100));
-        String persistentId = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.latestVersion.datasetPersistentId");
 
         // Update dataset with datasetFileCountLimit = 1
         Response updateDatasetResponse = UtilIT.updateDatasetFilesLimits(persistentId, 1, adminApiToken);
