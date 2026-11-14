@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -1200,6 +1201,20 @@ public abstract class AbstractApiBean {
                         .add(ApiConstants.STATUS_FIELD, ApiConstants.STATUS_ERROR)
                         .add(ApiConstants.MESSAGE_FIELD, msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
+
+    protected GuestbookResponse getGuestbookResponseFromBody(DataFile dataFile, String type, String jsonBody, User requestor) throws JsonParseException {
+        GuestbookResponse guestbookResponse = null;
+
+        if (dataFile != null && jsonBody != null && jsonBody.startsWith("{")) {
+            JsonObject guestbookResponseObj = JsonUtil.getJsonObject(jsonBody).getJsonObject("guestbookResponse");
+            guestbookResponse = gbRespSvc.initAPIGuestbookResponse(dataFile.getOwner(), dataFile, null, requestor);
+            guestbookResponse.setEventType(type);
+            // Parse custom question answers and validate them
+            jsonParser().parseGuestbookResponse(guestbookResponseObj, guestbookResponse);
+        }
+
+        return guestbookResponse;
     }
 }
 

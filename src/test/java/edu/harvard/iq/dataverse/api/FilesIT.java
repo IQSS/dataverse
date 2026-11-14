@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -16,7 +17,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
@@ -41,10 +42,12 @@ import java.text.MessageFormat;
 import java.time.Year;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import static io.restassured.RestAssured.get;
+import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
@@ -4201,6 +4204,19 @@ public class FilesIT {
         // verify all counts are good and equal
         assertEquals(totalCount, pagedTotalCount);
         assertEquals(pagedTotalCount, totalCountFromJson);
+
+        // Test External Tool preview/download
+        String toolId = UtilIT.getToolId(ownerApiToken,"image/png");
+        JsonObject guestbookObject = JsonUtil.getJsonObject(guestbookResponse).getJsonObject("guestbookResponse");
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder()
+                .add("preview", true)
+                .add("guestbookResponse", JsonUtil.createObjectBuilder(guestbookObject));
+        Response toolResponse = UtilIT.getFileToolUrl(fileId1.toString(), toolId, apiToken, params.build());
+        toolResponse.prettyPrint();
+        jsonPath = JsonPath.from(toolResponse.body().asString());
+        signedUrl = jsonPath.getString("data.toolUrl");
+        Response callbackResponse = given().get(signedUrl);
+        assertTrue(callbackResponse.prettyPrint().contains("imagePreviewText"));
     }
 
     @Test
@@ -4442,5 +4458,129 @@ public class FilesIT {
         // Download using the signed URL
         Response signedUrlResponse = get(signedUrl);
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
+    }
+
+    @Test
+    public void testDownloadFileWithGuestbookResponseViaExternalTool() throws IOException, JsonParseException {
+        msgt("testDownloadFileWithGuestbookResponseViaExternalTool");
+
+        // Create an admin user
+        Response createUserResponse = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUserResponse);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        UtilIT.makeSuperUser(username);
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Response getDatasetMetadata = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetMetadata.then().assertThat().statusCode(200);
+
+        // Create a Guestbook
+        Guestbook guestbook = UtilIT.createRandomGuestbook(dataverseAlias, persistentId, apiToken);
+
+        // Upload files
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder().add("description", "my description1").add("directoryLabel", "data/subdir1").add("categories", JsonUtil.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), "src/main/webapp/resources/images/dataverseproject.png", json1.build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        uploadResponse.prettyPrint();
+        int datafileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish
+        Response publishResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+        publishResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Generate a Guestbook Response
+        String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
+        guestbookResponse = guestbookResponse.replace("{\"guestbookResponse\": {",
+                "\"guestbookResponse\": { \"name\":\"My Name\", \"email\":\"myemail@example.com\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
+
+        // Test External Tool
+        String toolId = UtilIT.getToolId(apiToken, "image/png");
+        Response externalToolResponse = UtilIT.getExternalTool(Long.valueOf(toolId));
+        externalToolResponse.prettyPrint();
+        assertEquals(200, externalToolResponse.getStatusCode());
+        JsonObject data = JsonUtil.getJsonObject(externalToolResponse.getBody().asString());
+        JsonParser parser = new JsonParser();
+        ExternalTool externalTool = parser.parseExternalTool(data.getJsonObject("data"));
+
+        // call /toolUrl API with the guestbook response values supplied. This 
+        // will create a GBR with the eventtype = external tool name, i.e. 
+        // 'View Image' in our case. This GBR id will be embedded 
+        Response toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true," + guestbookResponse));
+        toolUrlResponse.prettyPrint();
+        assertEquals(200, toolUrlResponse.getStatusCode());
+        
+        // remember the guestbookresponse id in the output; we will later confirm 
+        // that this gbrid is embedded in the callback url to the /toolParams API;
+        int guestbookResponseId = JsonPath.from(toolUrlResponse.body().asString()).getInt("data.gbrids");
+        
+        // Extract and decode the base64-encoded callback URL from the output of
+        // /toolUrl above:
+        String toolUrl = JsonPath.from(toolUrlResponse.body().asString()).getString("data.toolUrl");
+        String callbackBase64 = toolUrl.substring(toolUrl.indexOf("callback=") + 9);
+        callbackBase64 = callbackBase64.substring(0, callbackBase64.indexOf('&'));
+        msgt("callback URL, base64-encoded: " + callbackBase64);
+        
+        byte[] callbackDecoded = Base64.getDecoder().decode(callbackBase64.getBytes());
+        String callbackUrl = new String(callbackDecoded);
+        msgt("callback URL, decoded: " + callbackUrl); 
+        
+        // Call back the callback url now: 
+        
+        Response callbackResponse = given().get(callbackUrl);
+        callbackResponse.prettyPrint();
+        data = JsonUtil.getJsonObject(callbackResponse.getBody().asString()).getJsonObject("data");
+        msgt(data.toString());
+        JsonArray toolParamsUrls = data.getJsonArray("signedUrls");
+        msgt(toolParamsUrls.toString());
+        
+        Map<String, String> resultMap = toolParamsUrls.stream()
+                .collect(Collectors.toMap(
+                        item -> item.asJsonObject().getString("name"),     // Key mapper
+                        item -> item.asJsonObject().getString("signedUrl") // Value mapper
+                ));
+        
+        // Call the main retrieveFileContents URL (it should include the id of 
+        // the GBR created earlier; no new GBR created here)
+        String retrieveUrl = resultMap.get("retrieveFileContents");
+        msgt("RETRIEVE CONTENTS URL: "+retrieveUrl);
+        Response resp = get(retrieveUrl);
+        assertEquals(200, resp.getStatusCode());
+
+        // Call the downloadFile URL (this one will have both the GBR id, AND the 
+        // gbrecs=false parameter; this will result in a new GBR of type "Download"
+        // created via a special hack in Access.java
+        String downloadUrl = resultMap.get("downloadFile");
+        msgt("DOWNLOAD URL: "+downloadUrl);
+        resp = get(downloadUrl);
+        assertEquals(200, resp.getStatusCode());
+
+        // Now check GuestbookResponses
+        Response listResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), apiToken);
+        listResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // There will be 2 GBRs: 
+        // One, issued when we called the /toolUrl API, of eventtype = View Image 
+        // (the name of the previewer); and the other, of eventtype = Download, 
+        // created when we called the downloadUrl above. 
+        int firstViewImageResponse = listResponse.asPrettyString().indexOf(",View Image,dataverseproject.png");
+        int lastViewImageResponse = listResponse.asPrettyString().lastIndexOf(",View Image,dataverseproject.png");
+        assertTrue(firstViewImageResponse != -1 && firstViewImageResponse == lastViewImageResponse); // exactly once!
+        
+        //int firstDownloadResponse = listResponse.asPrettyString().indexOf(",Download,dataverseproject.png");
+        //int lastDownloadResponse = listResponse.asPrettyString().lastIndexOf(",Download,dataverseproject.png");
+        //assertTrue(firsDownloadResponse != -1 && firstDownloadResponse == lastDownloadResponse); // same
+
+        // Test without guestbook response
+        toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true}"));
+        toolUrlResponse.prettyPrint();
+        assertEquals(400, toolUrlResponse.getStatusCode());
     }
 }
