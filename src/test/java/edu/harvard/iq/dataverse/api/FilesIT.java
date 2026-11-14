@@ -4548,28 +4548,35 @@ public class FilesIT {
                         item -> item.asJsonObject().getString("signedUrl") // Value mapper
                 ));
         
-        // Call the main retrieveFileContents URL (it should include the id of the GBR created earlier; no new GBR created here)
+        // Call the main retrieveFileContents URL (it should include the id of 
+        // the GBR created earlier; no new GBR created here)
         String retrieveUrl = resultMap.get("retrieveFileContents");
         msgt("RETRIEVE CONTENTS URL: "+retrieveUrl);
         Response resp = get(retrieveUrl);
         assertEquals(200, resp.getStatusCode());
 
+        // Call the downloadFile URL (this one will have both the GBR id, AND the 
+        // gbrecs=false parameter; this will result in a new GBR of type "Download"
+        // created via a special hack in Access.java
         String downloadUrl = resultMap.get("downloadFile");
         msgt("DOWNLOAD URL: "+downloadUrl);
-        // There is no need to call the downloadFile URL, since in the context of 
-        // using an external tool with a file that requires a guestbook it should 
-        // be the exact same url as the retrieveFileContents url, recycling the 
-        // same gbrid and with the same gbrecs=true. Let's confirm that:
-        assertEquals(retrieveUrl, downloadUrl);
+        resp = get(downloadUrl);
+        assertEquals(200, resp.getStatusCode());
 
         // Now check GuestbookResponses
         Response listResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), apiToken);
         listResponse.then().assertThat().statusCode(OK.getStatusCode());
-        // There should be only one - GBR, issued when we called the /toolUrl API,
-        // and it should be of eventtype = View Image (the name of the previewer):
-        int firstViewImageResponse = listResponse.prettyPrint().indexOf(",View Image,dataverseproject.png");
-        int lastViewImageResponse = listResponse.prettyPrint().lastIndexOf(",View Image,dataverseproject.png");
+        // There will be 2 GBRs: 
+        // One, issued when we called the /toolUrl API, of eventtype = View Image 
+        // (the name of the previewer); and the other, of eventtype = Download, 
+        // created when we called the downloadUrl above. 
+        int firstViewImageResponse = listResponse.asPrettyString().indexOf(",View Image,dataverseproject.png");
+        int lastViewImageResponse = listResponse.asPrettyString().lastIndexOf(",View Image,dataverseproject.png");
         assertTrue(firstViewImageResponse != -1 && firstViewImageResponse == lastViewImageResponse); // exactly once!
+        
+        //int firstDownloadResponse = listResponse.asPrettyString().indexOf(",Download,dataverseproject.png");
+        //int lastDownloadResponse = listResponse.asPrettyString().lastIndexOf(",Download,dataverseproject.png");
+        //assertTrue(firsDownloadResponse != -1 && firstDownloadResponse == lastDownloadResponse); // same
 
         // Test without guestbook response
         toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true}"));

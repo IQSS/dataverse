@@ -1127,21 +1127,8 @@ public class Files extends AbstractApiBean {
         URLTokenUtil eth = null;
 
         eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale, guestbookResponseId);
-        String allowedApiCallsAsString = externalTool.getAllowedApiCalls();
-        // This is quite hacky, but I cannot think of a cleaner way to handle this 
-        // and I am in a bit of a rush to wrap up this PR. The issue at hand is 
-        // that when GBR ids are required in /api/access/datafile URLs, they
-        // cannot also contain gbrecs=false. Most known external tools/previewers
-        // have gbrecs=false in the URL template for the downloadFile url in the 
-        // allowedApiCalls section. In order for these downloadUrls to work when 
-        // previewers are opened on files that require guestbooks we will just strip 
-        // that parameter from the template(s) here, if a non-null gbrid parameter
-        // has been passed to this API:
-        if (guestbookResponseId != null) {
-            allowedApiCallsAsString = allowedApiCallsAsString.replace("gbrecs=false", "gbrecs=true");
+        return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
         }
-        return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(allowedApiCallsAsString)));
-    }
 
     @GET
     @Path("fixityAlgorithm")
