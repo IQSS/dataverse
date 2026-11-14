@@ -343,21 +343,33 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", getGuestbookIdFromDatafile(df)));
         }
         if(!gbrecs && StringUtil.nonEmpty(gbrids)) {
-            // To match JSF functionality of writing 2 responses, one with event type 'explore' and a second with tool name
-            // Check if response was "explore" and allow a download event from an external tool
-            boolean allowMultiple = false;
+            // This code below is a bit of a hacky way to record a download
+            // of a file with an explicit guestbook that is made from within
+            // a previewer/external tool opened in a new window. A download call 
+            // like that (via the "fileDownload" URL from the output of /toolparams 
+            // API) will come in with BOTH a gbrid, AND gbrecs=false. Normally we 
+            // would handle that as incompatible parameters and would reject the call. 
+            // However, we are making an exception here when there is a non-null
+            // externalToolId also present; and then we duplicate the GBR supplied 
+            // (this is the GBR created inside the /toolUrl API, or the JSF equivalent),
+            // change its type to "Download", and save it. It is a bit "convoluted"
+            // by the author's own admission, but it does the job. 
+            boolean allow = false;
             if (externalToolId != null) {
                 ExternalTool externalTool = externalToolService.findById(externalToolId);
-                gbr = guestbookResponseService.findById(Long.valueOf(gbrids.split(",")[0]));
-                if (externalTool != null && gbr != null && GuestbookResponse.EXPLORE.equalsIgnoreCase(gbr.getEventType())) {
-                    // TODO prevent multiple download records when first is 'explore'
-                    gbr.setEventType(externalTool.getDisplayName());
-                    gbr.setResponseTime(new Date());
-                    gbr.setId(null);
-                    allowMultiple = true;
+                GuestbookResponse initialGbr = guestbookResponseService.findById(Long.valueOf(gbrids.split(",")[0]));
+                if (externalTool != null && initialGbr != null && externalTool.getDisplayName().equalsIgnoreCase(initialGbr.getEventType())) {
+                    // TODO prevent multiple download records
+                    // - but do we want to? when there is no required guestbook, 
+                    // repeated downloads from within a previewer will all be 
+                    // recorded with separate GBRs (L.A.)
+                    logger.fine("attempting to duplicate the initial gbr");
+                    gbr = new GuestbookResponse(initialGbr);
+                    gbr.setEventType(GuestbookResponse.DOWNLOAD);
+                    allow = true;
                 }
             }
-            if (!allowMultiple) {
+            if (!allow) {
                 throw new BadRequestException(BundleUtil.getStringFromBundle("access.api.download.failure.submittingGuestbookResponseTwice"));
             }
         }
