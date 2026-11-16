@@ -57,10 +57,17 @@ public class StorageUseServiceBean  implements java.io.Serializable {
                         + "    UNION ALL\n"
                         + "    SELECT dvobject.id, dvobject.owner_id\n"
                         + "    FROM dvobject\n"
-                        + "    JOIN uptree ON dvobject.id = uptree.owner_id)\n"
+                        + "    JOIN uptree ON dvobject.id = uptree.owner_id),\n"
+                        // Concurrent updates share the rows of the parent collections and the root.
+                        // Locking the rows in one fixed order keeps them from deadlocking.
+                        + "locked AS MATERIALIZED (\n"
+                        + "    SELECT storageuse.id FROM storageuse\n"
+                        + "    JOIN uptree ON storageuse.dvobjectcontainer_id = uptree.id\n"
+                        + "    ORDER BY storageuse.id\n"
+                        + "    FOR UPDATE OF storageuse)\n"
                         + "UPDATE storageuse SET sizeinbytes=COALESCE(sizeinbytes,0)+" + increment + "\n"
-                        + "FROM uptree\n"
-                        + "WHERE dvobjectcontainer_id = uptree.id;";
+                        + "FROM locked\n"
+                        + "WHERE storageuse.id = locked.id;";
 
                 int parentsUpdated = em.createNativeQuery(queryString).executeUpdate();
             }
