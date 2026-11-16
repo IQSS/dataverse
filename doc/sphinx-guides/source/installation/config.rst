@@ -3396,6 +3396,20 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.api.last-api-use-interval:
+
+dataverse.api.last-api-use-interval
++++++++++++++++++++++++++++++++++++
+
+The minimum interval, in seconds, between updates of an authenticated user's "last API use time" in the database.
+Only takes effect when the :ref:`dataverse.feature.delay-lastapiuse-update` feature flag is enabled.
+With the flag enabled, the timestamp is only updated on an authenticated API call if the currently recorded value is at least this old.
+
+Defaults to ``3600`` (one hour).
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_LAST_API_USE_INTERVAL``.
+
 .. _dataverse.api.blocked.endpoints:
 
 dataverse.api.blocked.endpoints
@@ -3452,6 +3466,24 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 
 .. note::
    This setting will be ignored unless the :ref:`dataverse.api.blocked.policy` is set to ``unblock-key``.  Otherwise the deprecated :ref:`:BlockedApiKey` will be used
+
+.. _dataverse.api.guestbook-response-timeout-minutes:
+
+dataverse.api.guestbook-response-timeout-minutes
+++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting specifies the timeout between posting a Guestbook Response and downloading the file. The default, if not set, is 1 minute. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.api.guestbook-response-timeout-minutes=1'``
+
+. _dataverse.api.guestbook-response-timeout-minutes:
+
+dataverse.api.guestbook-response-external-tool-timeout-minutes
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting specifies the timeout between posting a Guestbook Response and downloading the file from an external tool. The default, if not set, is 60 minute. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.api.guestbook-response-external-tool-timeout-minutes=60'``
 
 
 .. _dataverse.legacy.api-response-message-style:
@@ -4215,6 +4247,15 @@ dataverse.feature.allow-locally-fair-data
 Allows support for Locally FAIR collections and datasets.
 When enabled, selected content can remain visible only to authorized users or groups within a Dataverse installation.
 See :ref:`locally-fair` for more information.
+
+.. _dataverse.feature.delay-lastapiuse-update:
+
+dataverse.feature.delay-lastapiuse-update
++++++++++++++++++++++++++++++++++++++++++
+
+By default, Dataverse updates an authenticated user's "last API use time" in the database after every authenticated API call.
+With this flag enabled, the timestamp is only updated if the currently recorded value is older than the interval set with :ref:`dataverse.api.last-api-use-interval` (one hour by default).
+This avoids a database update after every call from clients that make frequent API requests, at the cost of the recorded time being up to that interval out of date.
 
 .. _:ApplicationServerSettings:
 
