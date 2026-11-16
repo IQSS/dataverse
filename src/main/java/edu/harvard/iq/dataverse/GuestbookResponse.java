@@ -106,7 +106,7 @@ public class GuestbookResponse implements Serializable {
     public static final String ACCESS_REQUEST = "AccessRequest";
     public static final String DOWNLOAD = "Download";
     static final String SUBSET = "Subset";
-    static final String EXPLORE = "Explore";
+    public static final String EXPLORE = "Explore";
 
     /*
     Transient Values carry non-written information 
@@ -178,6 +178,7 @@ public class GuestbookResponse implements Serializable {
         this.setPosition(source.getPosition());
         this.setResponseTime(source.getResponseTime());
         this.setDataset(source.getDataset());
+        this.setDataFile(source.getDataFile());
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
         this.setSessionId(source.getSessionId());
