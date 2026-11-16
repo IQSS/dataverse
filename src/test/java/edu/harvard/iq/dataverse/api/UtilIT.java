@@ -35,6 +35,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +46,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -5540,14 +5544,28 @@ public class UtilIT {
      */
     public static Response getFileToolUrl(String fileId, String toolId, String apiToken, JsonObject params) {
         RequestSpecification request = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType(ContentType.JSON);
-        
+        if (apiToken != null) {
+            request.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (params != null) {
             request = request.body(params.toString());
         }
         
         return request.post("/api/files/" + fileId + "/externalTool/" + toolId + "/toolUrl");
+    }
+
+    public static String getToolId(String apiToken, String contentType) {
+        String toolId = null;
+        Response tools = getExternalTools(apiToken);
+        List<String> data = tools.body().path("data");
+        for (int i=0; i < data.size(); i++) {
+            if (contentType.equals(tools.body().path("data[" + i + "].contentType"))) {
+                toolId = tools.body().path("data[" + i + "].id").toString();
+                break;
+            }
+        }
+        return toolId;
     }
 
     /**

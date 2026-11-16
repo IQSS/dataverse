@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainG
 import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
@@ -1403,5 +1404,18 @@ public class JsonParser {
         }
 
         return userDTO;
+    }
+
+    // Used for testing
+    public ExternalTool parseExternalTool(JsonObject jobj) throws JsonParseException {
+        ExternalTool externalTool = new ExternalTool();
+        externalTool.setId(jobj.getJsonNumber("id").longValue());
+        externalTool.setDisplayName(jobj.getString("displayName", null));
+        externalTool.setDescription(jobj.getString("description", null));
+        externalTool.setToolUrl(jobj.getString("toolUrl", null));
+        externalTool.setToolParameters(jobj.getString("toolParameters", null));
+        externalTool.setAllowedApiCalls(jobj.getJsonArray("allowedApiCalls").toString());
+        externalTool.setContentType(jobj.getString("contentType", null));
+        return  externalTool;
     }
 }

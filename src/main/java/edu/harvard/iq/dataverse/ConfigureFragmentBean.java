@@ -96,7 +96,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         }
 
         
-        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken, datafileService.findFileMetadata(fileMetadataId), session.getLocaleCode());
+        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken, datafileService.findFileMetadata(fileMetadataId), session.getLocaleCode(), null);
 
         return toolHandler;
     }
