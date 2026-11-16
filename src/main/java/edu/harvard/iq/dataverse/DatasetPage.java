@@ -716,7 +716,27 @@ public class DatasetPage implements java.io.Serializable {
     public void updateFileSearch(){
         logger.fine("updating file search list");
         this.fileMetadatasSearch = selectFileMetadatasForDisplay();
+        adjustFilePaginatorPage();
+    }
 
+    private void adjustFilePaginatorPage() {
+        int totalItems = fileMetadatasSearch.size();
+        int rows = rowsPerPage > 0 ? rowsPerPage : 10;
+        int totalPages = (totalItems + rows - 1) / rows;
+
+        if (filePaginatorPage >= totalPages && totalPages > 0) {
+            filePaginatorPage = totalPages - 1;
+        } else if (totalItems == 0) {
+            filePaginatorPage = 0;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext != null && facesContext.getViewRoot() != null) {
+            org.primefaces.component.datatable.DataTable dt = (org.primefaces.component.datatable.DataTable) facesContext.getViewRoot().findComponent("datasetForm:tabView:filesTable");
+            if (dt != null) {
+                dt.setFirst(filePaginatorPage * rows);
+            }
+        }
     }
 
         private Long numberOfFilesToShow = (long) 25;
@@ -3109,6 +3129,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
+        adjustFilePaginatorPage();
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
@@ -6179,7 +6200,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void selectAllFiles() {
         logger.fine("selectAllFiles called");
-        selectedFiles = workingVersion.getFileMetadatas();
+        selectedFiles = fileMetadatasSearch;
     }
 
     public void clearSelection() {
