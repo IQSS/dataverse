@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.TermsOfAccess;
 import org.apache.commons.lang3.StringUtils;
 
@@ -251,6 +252,21 @@ public class JSONLDUtil {
                 }
             }
         }
+        // If no license and no terms of use are set, assign the default license
+        if (!FeatureFlags.DO_NOT_ASSUME_DEFAULT_LICENSE.enabled()) {
+            if (defaultTermsOfUseOrLicense.getLicense() == null
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getTermsOfUse())
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getConfidentialityDeclaration())
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getSpecialPermissions())
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getRestrictions())
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getCitationRequirements())
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getDepositorRequirements())
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getConditions())
+                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getDisclaimer())) {
+                defaultTermsOfUseOrLicense.setLicense(licenseSvc.getDefault());
+            }
+        }
+
         dsv.setTermsOfAccess(termsOfAccess);
         termsOfAccess.setDatasetVersion(dsv);
         dsv.setDefaultTermsOfUseOrLicense(defaultTermsOfUseOrLicense);
@@ -263,10 +279,8 @@ public class JSONLDUtil {
      * 
      * @param dsv
      * @param jsonLDBody
-     * @param metadataBlockService
-     * @param datasetFieldSvc
-     * @param b
-     * @param c
+     * @param metadataBlockSvc
+     * @param licenseSvc
      * @return
      */
     public static DatasetVersion deleteDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
@@ -334,6 +348,14 @@ public class JSONLDUtil {
                         if(!deleteIfSemTermMatches(termsOfAccess, defaultTermsOfUseOrLicense, key, jsonld.get(key))) {
                             throw new BadRequestException(
                                     "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                        }
+                        // When deleting termsOfUse, if no license is set, assign the default license
+                        // to prevent the dataset from ending up in an invalid state
+                        if (key.equals(JsonLDTerm.schemaOrg("termsOfUse").getUrl())) {
+                            if (defaultTermsOfUseOrLicense.getLicense() == null
+                                    && StringUtils.isBlank(defaultTermsOfUseOrLicense.getTermsOfUse())) {
+                                defaultTermsOfUseOrLicense.setLicense(licenseSvc.getDefault());
+                            }
                         }
                         found=true;
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
