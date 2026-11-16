@@ -1124,12 +1124,11 @@ public class JsonParserTest {
 
         JsonObject json = builder.build();
 
-        // 1. parseFiles = false
+        // 1. parseFiles = false -> Expect Exception
         DatasetVersion dsv1 = new DatasetVersion();
-        sut.parseDatasetVersion(json, dsv1, false);
-        assertTrue(dsv1.getFileMetadatas().isEmpty());
+        assertThrows(JsonParseException.class, () -> sut.parseDatasetVersion(json, dsv1, false));
 
-        // 2. parseFiles = true
+        // 2. parseFiles = true -> Should succeed
         DatasetVersion dsv2 = new DatasetVersion();
         sut.parseDatasetVersion(json, dsv2, true);
         assertFalse(dsv2.getFileMetadatas().isEmpty());
