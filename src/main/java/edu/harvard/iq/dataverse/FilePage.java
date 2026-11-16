@@ -1152,18 +1152,19 @@ public class FilePage implements java.io.Serializable {
         this.selectedTool = selectedTool;
     }
     
-    public String preview(ExternalTool externalTool) {
+    public String preview(ExternalTool externalTool, GuestbookResponse guestbookResponse) {
         ApiToken apiToken = null;
         User user = session.getUser();
+        Long guestbookResponseId = guestbookResponse != null ? guestbookResponse.getId() : null;
         if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted())
                 || fileMetadata.getDatasetVersion().isDeaccessioned() || (FileUtil.isActivelyEmbargoed(fileMetadata))
-                || (FileUtil.isRetentionExpired(fileMetadata))) {
+                || (FileUtil.isRetentionExpired(fileMetadata)) || guestbookResponseId != null) {
             apiToken = authService.getValidApiTokenForUser(user);
         }
         if(externalTool == null){
             return "";
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode());
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode(), guestbookResponseId);
         String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
         return toolUrl;
     }
