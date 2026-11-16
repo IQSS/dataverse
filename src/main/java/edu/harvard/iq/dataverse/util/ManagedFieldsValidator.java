@@ -167,6 +167,10 @@ public class ManagedFieldsValidator {
         if (d2 == null) {
             return false;
         }
-        return d1.getTime() == d2.getTime();
+        if (d1.getTime() == d2.getTime()) {
+            return true;
+        }
+        // Fallback to second precision comparison because API JSON often loses milliseconds
+        return d1.getTime() / 1000 == d2.getTime() / 1000;
     }
 }

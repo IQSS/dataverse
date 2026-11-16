@@ -593,13 +593,15 @@ public class JsonParser {
             }
             dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
-            if (parseFiles) {
-                JsonArray filesJson = obj.getJsonArray("files");
-                if (filesJson == null) {
-                    filesJson = obj.getJsonArray("fileMetadatas");
-                }
-                if (filesJson != null) {
+            JsonArray filesJson = obj.getJsonArray("files");
+            if (filesJson == null) {
+                filesJson = obj.getJsonArray("fileMetadatas");
+            }
+            if (filesJson != null) {
+                if (parseFiles) {
                     dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+                } else {
+                    throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.files"));
                 }
             }
             return dsv;

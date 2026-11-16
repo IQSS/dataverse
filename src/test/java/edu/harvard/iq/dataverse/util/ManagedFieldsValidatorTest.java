@@ -152,13 +152,20 @@ public class ManagedFieldsValidatorTest {
         DatasetVersion existing = new DatasetVersion();
         existing.setId(1L);
         Date now = new Date();
+        // Set to a specific time with milliseconds
+        now.setTime((now.getTime() / 1000) * 1000 + 500);
         existing.setReleaseTime(now);
         
         DatasetVersion incoming = new DatasetVersion();
+        // Matching exact time
         incoming.setReleaseTime(new Date(now.getTime()));
-        
         ManagedFieldsValidator.validateManagedFields(incoming, existing);
         
+        // Matching with truncated milliseconds (as if coming from API)
+        incoming.setReleaseTime(new Date((now.getTime() / 1000) * 1000));
+        ManagedFieldsValidator.validateManagedFields(incoming, existing);
+        
+        // Fail with mismatched seconds
         incoming.setReleaseTime(new Date(now.getTime() + 1000));
         assertThrows(JsonParseException.class, () -> ManagedFieldsValidator.validateManagedFields(incoming, existing));
     }
