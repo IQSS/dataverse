@@ -22,16 +22,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
@@ -43,6 +49,7 @@ public class DataCiteProviderTest {
     static SettingsServiceBean settingsSvc;
     static PidProviderFactoryBean pidService;
     static final String DEFAULT_NAME = "LibraScholar";
+    static final String DOI = "doi:10.5072/FK2/ABCDEF";
 
     @BeforeAll
     public static void setupMocks() {
@@ -58,6 +65,11 @@ public class DataCiteProviderTest {
         Mockito.when(pidService.isGlobalIdLocallyUnique(any(GlobalId.class))).thenReturn(true);
         Mockito.when(pidService.getProducer()).thenReturn("RootDataverse");
 
+    }
+
+    @AfterEach
+    public void clearPidProviders() {
+        PidUtil.clearPidProviders();
     }
 
     /**
@@ -182,6 +194,104 @@ public class DataCiteProviderTest {
         assertEquals(DataCiteDOIProvider.REGISTERED, provider.getPidStatus(d));
 
         // provider.registerWhenPublished()
+    }
+
+    @Test
+    public void testDeaccessionIdentifierDeactivatesWhenNoReleasedVersionIsLeft() throws IOException {
+        try (MockedConstruction<DOIDataCiteRegisterService> registerServices = Mockito.mockConstruction(DOIDataCiteRegisterService.class)) {
+            DataCiteDOIProvider provider = makeProvider();
+            DOIDataCiteRegisterService registerService = registerServices.constructed().get(0);
+            Dataset d = makeRegisteredDataset(VersionState.DEACCESSIONED, VersionState.DEACCESSIONED);
+
+            provider.deaccessionIdentifier(d);
+
+            verify(registerService).deactivateIdentifier(eq(DOI), any(), eq(d));
+        }
+    }
+
+    @Test
+    public void testDeaccessionIdentifierKeepsDoiFindableWhileAReleasedVersionIsLeft() throws IOException {
+        try (MockedConstruction<DOIDataCiteRegisterService> registerServices = Mockito.mockConstruction(DOIDataCiteRegisterService.class)) {
+            DataCiteDOIProvider provider = makeProvider();
+            DOIDataCiteRegisterService registerService = registerServices.constructed().get(0);
+            Dataset d = makeRegisteredDataset(VersionState.DEACCESSIONED, VersionState.RELEASED);
+
+            provider.deaccessionIdentifier(d);
+
+            verifyNoInteractions(registerService);
+        }
+    }
+
+    @Test
+    public void testDeleteIdentifierDeactivatesFindableDoi() throws IOException {
+        try (MockedConstruction<DOIDataCiteRegisterService> registerServices = Mockito.mockConstruction(DOIDataCiteRegisterService.class)) {
+            DataCiteDOIProvider provider = makeProvider();
+            DOIDataCiteRegisterService registerService = registerServices.constructed().get(0);
+            Dataset d = makeRegisteredDataset(VersionState.RELEASED);
+
+            provider.deleteIdentifier(d);
+
+            verify(registerService).deactivateIdentifier(eq(DOI), any(), eq(d));
+        }
+    }
+
+    @Test
+    public void testUpdateIdentifierKeepsDeaccessionedDoiHidden() throws IOException {
+        try (MockedConstruction<DOIDataCiteRegisterService> registerServices = Mockito.mockConstruction(DOIDataCiteRegisterService.class)) {
+            DataCiteDOIProvider provider = makeProvider();
+            DOIDataCiteRegisterService registerService = registerServices.constructed().get(0);
+            Dataset d = makeRegisteredDataset(VersionState.DEACCESSIONED);
+            Mockito.when(registerService.reRegisterIdentifier(eq(DOI), any(), eq(d))).thenReturn("metadata");
+
+            assertTrue(provider.updateIdentifier(d));
+
+            verify(registerService).hideIdentifier(DOI);
+        }
+    }
+
+    @Test
+    public void testUpdateIdentifierDoesNotHideReleasedDoi() throws IOException {
+        try (MockedConstruction<DOIDataCiteRegisterService> registerServices = Mockito.mockConstruction(DOIDataCiteRegisterService.class)) {
+            DataCiteDOIProvider provider = makeProvider();
+            DOIDataCiteRegisterService registerService = registerServices.constructed().get(0);
+            Dataset d = makeRegisteredDataset(VersionState.RELEASED);
+            Mockito.when(registerService.reRegisterIdentifier(eq(DOI), any(), eq(d))).thenReturn("");
+
+            assertFalse(provider.updateIdentifier(d));
+
+            verify(registerService, never()).hideIdentifier(any());
+        }
+    }
+
+    private DataCiteDOIProvider makeProvider() {
+        DataCiteDOIProvider provider = new DataCiteDOIProvider("test", "test", "10.5072", "FK2/", "randomString",
+                SystemConfig.DataFilePIDFormat.DEPENDENT.toString(), "", "", "https://mds.test.datacite.org",
+                "https://api.test.datacite.org", "username", "password");
+        provider.setPidProviderServiceBean(pidService);
+        PidUtil.addToProviderList(provider);
+        return provider;
+    }
+
+    private Dataset makeRegisteredDataset(VersionState... versionStates) {
+        Dataset d = new Dataset();
+        List<DatasetVersion> versions = new ArrayList<>();
+        for (VersionState versionState : versionStates) {
+            DatasetVersion dv = new DatasetVersion();
+            dv.setDataset(d);
+            dv.setVersionState(versionState);
+            DatasetField titleField = new DatasetField();
+            titleField.setDatasetVersion(dv);
+            titleField.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.title, DatasetFieldType.FieldType.TEXT, false));
+            titleField.setSingleValue("A Title");
+            dv.setDatasetFields(new ArrayList<>(List.of(titleField)));
+            versions.add(dv);
+        }
+        d.setVersions(versions);
+        d.setProtocol("doi");
+        d.setAuthority("10.5072");
+        d.setIdentifier("FK2/ABCDEF");
+        d.setIdentifierRegistered(true);
+        return d;
     }
 
 }
