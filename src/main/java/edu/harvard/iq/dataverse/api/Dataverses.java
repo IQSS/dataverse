@@ -2098,6 +2098,7 @@ public class Dataverses extends AbstractApiBean {
         jsonObjectBuilder.add("canManageDataversePermissions", permissionService.userOn(requestUser, dataverse).has(Permission.ManageDataversePermissions));
         jsonObjectBuilder.add("canPublishDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.PublishDataverse));
         jsonObjectBuilder.add("canDeleteDataverse", permissionService.userOn(requestUser, dataverse).has(Permission.DeleteDataverse));
+        jsonObjectBuilder.add("canActAsSuperuser", permissionService.userOn(requestUser, dataverse).has(Permission.ActAsSuperuser));
         return ok(jsonObjectBuilder);
     }
 

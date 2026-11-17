@@ -2286,6 +2286,7 @@ public class Access extends AbstractApiBean {
         jsonObjectBuilder.add("canDownloadFile", permissionService.userOn(requestUser, dataFile).has(Permission.DownloadFile));
         jsonObjectBuilder.add("canManageFilePermissions", permissionService.userOn(requestUser, dataFile).has(Permission.ManageFilePermissions));
         jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canActAsSuperuser", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.ActAsSuperuser));
         return ok(jsonObjectBuilder);
     }
     private boolean checkGuestbookRequiredResponse(UriInfo uriInfo, DataFile df, String gbrids, Long externalToolId) throws WebApplicationException {

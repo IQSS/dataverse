@@ -6003,6 +6003,7 @@ public Response getDatasetExternalToolUrl(@Context ContainerRequestContext crc, 
         jsonObjectBuilder.add("canPublishDataset", permissionService.userOn(requestUser, dataset).has(Permission.PublishDataset));
         jsonObjectBuilder.add("canManageDatasetPermissions", permissionService.userOn(requestUser, dataset).has(Permission.ManageDatasetPermissions));
         jsonObjectBuilder.add("canDeleteDatasetDraft", permissionService.userOn(requestUser, dataset).has(Permission.DeleteDatasetDraft));
+        jsonObjectBuilder.add("canActAsSuperuser", permissionService.userOn(requestUser, dataset).has(Permission.ActAsSuperuser));
         return ok(jsonObjectBuilder);
     }
 
