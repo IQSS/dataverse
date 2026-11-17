@@ -59,14 +59,14 @@ import java.util.Base64;
  * @author Leonid Andreev
  */
 public class ImageThumbConverter {
-    public static String THUMBNAIL_SUFFIX = "thumb";
-    public static String THUMBNAIL_MIME_TYPE = "image/png";
-    public static String THUMBNAIL_FILE_EXTENSION = ".png";
+    public static final String THUMBNAIL_SUFFIX = "thumb";
+    public static final String THUMBNAIL_MIME_TYPE = "image/png";
+    public static final String THUMBNAIL_FILE_EXTENSION = ".png";
 
-    public static int DEFAULT_CARDIMAGE_SIZE = 48;
-    public static int DEFAULT_THUMBNAIL_SIZE = 64;
-    public static int DEFAULT_DATASETLOGO_SIZE = 140;
-    public static int DEFAULT_PREVIEW_SIZE = 400;
+    public static final int DEFAULT_CARDIMAGE_SIZE = 48;
+    public static final int DEFAULT_THUMBNAIL_SIZE = 64;
+    public static final int DEFAULT_DATASETLOGO_SIZE = 140;
+    public static final int DEFAULT_PREVIEW_SIZE = 400;
 
     private static final Logger logger = Logger.getLogger(ImageThumbConverter.class.getCanonicalName());
 
@@ -74,6 +74,9 @@ public class ImageThumbConverter {
     }
 
     public static boolean isThumbnailAvailable(DataFile file) {
+        if(file.isPreviewImageAvailable()) {
+            return true;
+        }
         return isThumbnailAvailable(file, DEFAULT_THUMBNAIL_SIZE);
     }
 
@@ -118,6 +121,10 @@ public class ImageThumbConverter {
 
         if (isThumbnailCached(storageIO, size)) {
             logger.fine("Found cached thumbnail for " + file.getId());
+            // Thumbnail exists in storage but the database flag may not be set — persist it now
+            if (!file.isPreviewImageAvailable()) {
+                markThumbnailGenerationStatus(file, true);
+            }
             return true;
         }
         return generateThumbnail(file, storageIO, size);
@@ -134,16 +141,44 @@ public class ImageThumbConverter {
             } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
                 thumbnailGenerated = generatePDFThumbnail(storageIO, size);
             }
-            if (!thumbnailGenerated) {
-                file.setPreviewImageFail(true);
-                file.setPreviewImageAvailable(false);
-                logger.fine("No thumbnail generated for " + file.getId());
+            if (thumbnailGenerated) {
+                markThumbnailGenerationStatus(file, true);
+            } else {
+                markThumbnailGenerationStatus(file, false);
+                return false;
             }
         }
 
         return thumbnailGenerated;
     }
 
+    /**
+     * Marks a file's thumbnail generation status and persists the change.
+     * Used to avoid having file saves scattered throughout the thumbnail generation code.
+     *
+     * @param file the data file to update
+     * @param success true if thumbnail generation succeeded, false if it failed
+     */
+    private static void markThumbnailGenerationStatus(DataFile file, boolean success) {
+        if (file == null) {
+            return;
+        }
+        if (success) {
+            file.setPreviewImageAvailable(true);
+            file.setPreviewImageFail(false);
+            logger.fine("Marking thumbnail as available for file " + file.getId());
+        } else {
+            file.setPreviewImageFail(true);
+            file.setPreviewImageAvailable(false);
+            logger.fine("Marking thumbnail as failed for file " + file.getId());
+        }
+        try {
+            DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
+            datafileService.save(file);
+        } catch (Exception ex) {
+            logger.warning("Failed to persist thumbnail status for file " + file.getId() + ": " + ex.getMessage());
+        }
+    }
     // Note that this method works on ALL file types for which thumbnail 
     // generation is supported - image/*, pdf; 
     // not just on images! The type differentiation is handled inside 
@@ -187,10 +222,7 @@ public class ImageThumbConverter {
                     // We found an older 0 length thumbnail. Newer image uploads will not have this issue.
                     // Once cleaned up, this thumbnail will no longer have this issue
                     logger.warning("Cleaning up zero sized thumbnail ID: "+ storageIO.getDataFile().getId());
-                    storageIO.getDataFile().setPreviewImageFail(true);
-                    storageIO.getDataFile().setPreviewImageAvailable(false);
-                    DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
-                    datafileService.save(storageIO.getDataFile());
+                    markThumbnailGenerationStatus(storageIO.getDataFile(), false);
                     
                     // Now that we have marked this File as a thumbnail failure, 
                     // no reason not to try and delete this 0-size cache here: 
@@ -455,10 +487,12 @@ public class ImageThumbConverter {
             storageIO = file.getStorageIO();
         } catch (Exception ioEx) {
             logger.fine("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
+            markThumbnailGenerationStatus(file, false);
             return null;
         }
 
         if (storageIO == null) {
+            markThumbnailGenerationStatus(file, false);
             return null;
         }
 

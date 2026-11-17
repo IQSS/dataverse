@@ -1360,16 +1360,26 @@ public class FileUtil implements java.io.Serializable  {
 	}
     }
 
-    /* 
-     * This method tells you if thumbnail generation is *supported* 
-     * on this type of file. i.e., if true, it does not guarantee that a thumbnail 
-     * can/will be generated; but it means that we can try. 
+    /*
+     * This method tells you if thumbnail generation is *supported*
+     * on this type of file. i.e., if true, it does not guarantee that a thumbnail
+     * can/will be generated; but it means that we can try.
      */
     public static boolean isThumbnailSupported (DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
+        // If thumbnail generation previously failed, don't try again
+        if (file.isPreviewImageFail()) {
+            return false;
+        }
+
+        //If one has already been created, it's supported
+        if(file.isPreviewImageAvailable()) {
+            return true;
+        }
+
         if (file.isHarvested() || StringUtil.isEmpty(file.getStorageIdentifier())) {
             return false;
         }
