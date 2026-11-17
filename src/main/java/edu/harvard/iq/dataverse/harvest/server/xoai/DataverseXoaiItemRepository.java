@@ -262,7 +262,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     
     private String customDataverseJsonApiUri(String identifier) {
         String ret = serverUrl  
-                + "/api/datasets/export?exporter=dataverse_json&amp;persistentId="
+                + "/api/datasets/export?exporter=dataverse_json&persistentId="
                 + identifier;
         
         return ret;
