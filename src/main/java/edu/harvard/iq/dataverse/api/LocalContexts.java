@@ -30,7 +30,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("localcontexts")
@@ -54,6 +58,9 @@ public class LocalContexts extends AbstractApiBean {
     @AuthRequired
     @Operation(summary = "Finds Local Contexts projects for a dataset",
             description = "Queries the configured Local Contexts service by dataset DOI and returns matching project information when the requester is allowed to inspect the dataset.")
+    @APIResponse(responseCode = "200", description = "Local Contexts project information.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getDatasetLocalContexts(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier whose DOI is sent to Local Contexts.", required = true)
             @PathParam("id") String id) {
@@ -122,6 +129,9 @@ public class LocalContexts extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns a Local Contexts project",
             description = "Returns a Local Contexts project only when the project response includes a DOI matching the specified dataset.")
+    @APIResponse(responseCode = "200", description = "Local Contexts project.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response searchLocalContexts(
             @Parameter(description = "Dataset id or persistent identifier used to validate the Local Contexts project DOI.", required = true)
             @PathParam("id") String datasetId,

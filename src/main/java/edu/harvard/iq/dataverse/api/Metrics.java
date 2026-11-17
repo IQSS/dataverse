@@ -29,7 +29,11 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.core.Variant;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -64,6 +68,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly dataverse counts",
             description = "Calculates a monthly time series of released dataverse counts as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getDataversesTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -160,6 +167,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates dataverse counts by category",
             description = "Calculates released dataverse counts grouped by dataverse category as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getDataversesByCategory(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -191,6 +201,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates dataverse counts by subject",
             description = "Calculates released dataverse counts grouped by subject as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getDataversesBySubject(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -237,6 +250,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly dataset counts",
             description = "Calculates a monthly time series of released dataset counts as JSON or CSV, optionally filtered by storage location and parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getDatasetsTimeSeriest(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Storage location filter for the dataset metric.")
             @QueryParam("dataLocation") String dataLocation,
@@ -342,6 +358,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates dataset counts by subject",
             description = "Calculates released dataset counts grouped by subject through the current month as JSON or CSV, optionally filtered by storage location and parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getDatasetsBySubject(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Storage location filter for the dataset metric.")
             @QueryParam("dataLocation") String dataLocation,
@@ -355,6 +374,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates dataset counts by subject through a month",
             description = "Calculates released dataset counts grouped by subject through the specified month as JSON or CSV, optionally filtered by storage location and parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getDatasetsBySubjectToMonth(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Year and month cutoff for the metric, formatted as YYYYMM.", required = true)
             @PathParam("yyyymm") String yyyymm,
@@ -403,6 +425,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly file counts",
             description = "Calculates a monthly time series of released file counts as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getFilesTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -502,6 +527,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly file counts by type",
             description = "Calculates a monthly time series of released file counts and sizes grouped by content type as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getFilesByTypeTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -532,6 +560,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates file counts by type",
             description = "Calculates released file counts and sizes grouped by content type as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getFilesByType(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -575,6 +606,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly download counts",
             description = "Calculates a monthly time series of file download counts as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -748,6 +782,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly account counts",
             description = "Calculates a monthly time series of user account counts as JSON or CSV.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getAccountsTimeSeries(@Context Request req, @Context UriInfo uriInfo) {
 
         try {
@@ -793,6 +830,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly Make Data Count metrics",
             description = "Calculates a monthly time series for the requested Make Data Count metric as JSON or CSV, optionally filtered by country and parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getMakeDataCountMetricTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Make Data Count metric name to return.", required = true)
             @PathParam("metric") String metricSupplied,
@@ -889,6 +929,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates file download counts",
             description = "Calculates file download counts by file through the current month as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getFileDownloadsAllTime(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -900,6 +943,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates file download counts through a month",
             description = "Calculates file download counts by file through the specified month as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getFileDownloadsToMonth(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Year and month cutoff for the metric, formatted as YYYYMM.", required = true)
             @PathParam("yyyymm") String yyyymm,
@@ -934,6 +980,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly file download counts",
             description = "Calculates a monthly time series of file download counts by file as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getFileDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -964,6 +1013,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates unique dataset download counts",
             description = "Calculates unique dataset download counts through the current month as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getUniqueDownloadsAllTime(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -975,6 +1027,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly unique dataset download counts",
             description = "Calculates a monthly time series of unique dataset download counts as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getUniqueDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -1005,6 +1060,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates unique dataset download counts through a month",
             description = "Calculates unique dataset download counts through the specified month as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getUniqueDownloadsToMonth(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Year and month cutoff for the metric, formatted as YYYYMM.", required = true)
             @PathParam("yyyymm") String yyyymm,
@@ -1039,6 +1097,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates unique file download counts",
             description = "Calculates unique file download counts by file through the current month as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getUniqueFileDownloadsAllTime(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
@@ -1050,6 +1111,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates unique file download counts through a month",
             description = "Calculates unique file download counts by file through the specified month as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getUniqueFileDownloadsToMonth(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Year and month cutoff for the metric, formatted as YYYYMM.", required = true)
             @PathParam("yyyymm") String yyyymm,
@@ -1084,6 +1148,9 @@ public class Metrics extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Calculates monthly unique file download counts",
             description = "Calculates a monthly time series of unique file download counts by file as JSON or CSV, optionally scoped to a released parent dataverse.")
+    @APIResponse(responseCode = "200", description = "Metric results in JSON or CSV.",
+            content = { @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv", schema = @Schema(type = SchemaType.STRING)) })
     public Response getUniqueFileDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo,
             @Parameter(description = "Alias of a released parent dataverse used to scope the metric.")
             @QueryParam("parentAlias") String parentAlias) {
