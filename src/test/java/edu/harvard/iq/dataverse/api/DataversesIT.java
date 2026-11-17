@@ -3303,7 +3303,7 @@ public class DataversesIT {
         getTemplate.prettyPrint();
                 getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.defaultTermsOfAccess.termsOfAccess", equalTo("Here are the terms..."));
+                .body("data.termsOfAccess.termsOfAccess", equalTo("Here are the terms..."));
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);
