@@ -203,8 +203,8 @@ If this is a regular (non-hotfix) release, create a pull request to merge the "d
 After making the pull request, allow time for important tests pass:
 
 - Unit tests: Maven Tests
-- API tests: Container Integration Tests Workflow
-- JSF tests: Dataverse JSF Frontend Tests Workflow
+- API tests: "Dataverse API Tests" job of the Dataverse Tests workflow, which runs as part of Maven Tests
+- JSF tests: "Dataverse JSF Tests" jobs (one per browser) of the Dataverse Tests workflow, which runs as part of Maven Tests
 
 Don't worry about style and quality test failures such as these:
 
@@ -340,13 +340,9 @@ Create a new branch (any name is fine but `prepare-next-iteration` is suggested)
 
 Create a pull request.
 
-Wait for checks to complete. It's ok (even expected) for the following check to fail:
+Wait for checks to complete. The new base image hasn't been published yet, but the "Dataverse Tests" workflow builds the base image from the pull request itself, so its checks should pass.
 
-- main-integration-tests-workflow from container_integration_tests.yml
-
-  - If you see an error like `Error:  DOCKER> Unable to pull 'gdcc/base:6.12-noble-p7.2026.2-j21' : {"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404) [{"message":"manifest for gdcc/base:6.12-noble-p7.2026.2-j21 not found: manifest unknown: manifest unknown"} (Not Found: 404)]` it's telling you that the Docker image can't be spun up for API testing because it doesn't exist yet. (The error above was just after the 6.11 release.) The image will exist once the pull request is approved and merged.
-
-Put the pull request through code review, like usual, but make sure reviewers know it's ok to ignore the check above.
+Put the pull request through code review, like usual.
 
 Give it a milestone of the next release, the one **after** the one we're working on. Once the pull request has been approved, merge it. It should be the first PR merged of the next release.
 
@@ -365,7 +361,9 @@ Above you already did the hard work of deploying a release candidate to <https:/
 
 We maintain SchemaSpy at URLs like <https://guides.dataverse.org/en/latest/schemaspy/index.html> and (for example) <https://guides.dataverse.org/en/6.6/schemaspy/index.html>
 
-Get the attention of the core team and ask someone to update it for the new release.
+To get it, download the `schemaspy-<version>` artifact from the latest [Dataverse Tests](https://github.com/IQSS/dataverse/actions/workflows/dataverse_tests.yml) run on the release branch.
+
+Then get the attention of the core team and ask someone to put it on the guides server for the new release.
 
 Consider updating [the thread](https://groups.google.com/g/dataverse-community/c/f95DQU-wlVM/m/cvUp3E9OBgAJ) on the mailing list once the update is in place.
 

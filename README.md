@@ -78,8 +78,8 @@ Feel free to [reach out] with any questions or feedback. Happy researching!
 
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg "Dataverse Project")](http://dataverse.org)
 
-[![Unit Test Status](https://github.com/IQSS/dataverse/actions/workflows/maven_unit_test.yml/badge.svg?branch=develop)](https://github.com/IQSS/dataverse/actions/workflows/maven_unit_test.yml)
-[![Unit Test Coverage](https://img.shields.io/coveralls/github/IQSS/dataverse?label=Unit%20Test%20Coverage)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
+[![Maven Tests Status](https://github.com/IQSS/dataverse/actions/workflows/maven_unit_test.yml/badge.svg?branch=develop)](https://github.com/IQSS/dataverse/actions/workflows/maven_unit_test.yml)
+[![Test Coverage](https://img.shields.io/coveralls/github/IQSS/dataverse?label=Test%20Coverage)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
 [![Guides Build Status](https://github.com/IQSS/dataverse/actions/workflows/guides_build_sphinx.yml/badge.svg)](https://github.com/IQSS/dataverse/actions/workflows/guides_build_sphinx.yml)
 
 [dataverse.org]: https://dataverse.org
