@@ -37,13 +37,13 @@ public class GetCollectionQuotaCommand  extends AbstractCommand<Long> {
         if (dataverse != null) {
 
             if (dataverse.getStorageQuota() != null) {
-                return dataverse.getStorageQuota().getAllocation();
+                return dataverse.getStorageQuota();
             } else if (inherited) {
                 Dataverse uptree = dataverse; 
                 while (uptree.getStorageQuota() == null && uptree.getOwner() != null) {
                     uptree = uptree.getOwner(); 
                     if (uptree.getStorageQuota() != null) {
-                        return uptree.getStorageQuota().getAllocation();
+                        return uptree.getStorageQuota();
                     }
                 }
             }

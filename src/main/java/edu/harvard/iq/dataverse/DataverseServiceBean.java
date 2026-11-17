@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -1315,25 +1314,24 @@ public class DataverseServiceBean implements java.io.Serializable {
      * equivalent to DvObjectServiceBean. 
      */    
     public void saveStorageQuota(Dataverse target, Long allocation) {
-        StorageQuota storageQuota = target.getStorageQuota();
-        
-        if (storageQuota != null) {
-            storageQuota.setAllocation(allocation);
-            em.merge(storageQuota);
-        } else {
-            storageQuota = new StorageQuota(); 
-            storageQuota.setDefinitionPoint(target);
-            storageQuota.setAllocation(allocation);
-            target.setStorageQuota(storageQuota);
-            em.persist(storageQuota);
-        }
+        // Update the managed instance (the same object, if target is already
+        // managed) so that only the changed column is written; and keep the
+        // caller's copy in sync.
+        Dataverse managed = em.find(Dataverse.class, target.getId());
+        managed.setStorageQuota(allocation);
+        target.setStorageQuota(allocation);
         em.flush();
     }
     
-    public void disableStorageQuota(StorageQuota storageQuota) {
-        if (storageQuota != null && storageQuota.getAllocation() != null) {
-            storageQuota.setAllocation(null);
-            em.merge(storageQuota);
+    /**
+     * Removes the storage quota defined directly on a collection or a dataset
+     * (a quota defined on an ancestor collection will apply from then on, if present).
+     */
+    public void disableStorageQuota(DvObjectContainer target) {
+        if (target != null && target.getStorageQuota() != null) {
+            DvObjectContainer managed = em.find(target.getClass(), target.getId());
+            managed.setStorageQuota(null);
+            target.setStorageQuota(null);
             em.flush();
         }
     }
