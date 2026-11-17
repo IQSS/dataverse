@@ -6,8 +6,6 @@
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>java:app/jdbc/dataverse</jta-data-source>
         <properties>
-	    <!-- disabling weaving, as an experiment: - L.A. -->
-	    <property name="eclipselink.weaving" value="false"/>
 	    <!-- comment out the line below to make the app NOT build 
 		 persistence tables on startup; will make deployment
 		 faster. - L.A. -->
