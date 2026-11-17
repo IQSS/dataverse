@@ -39,6 +39,13 @@ enter search terms for Dataverse collections, dataset metadata (citation and dom
 metadata. If you are searching for tabular data files you can also search at the variable level for name and label. To find 
 out more about what each field searches, hover over the field name for a detailed description of the field.
 
+.. _file-size-search:
+
+File Size Search
+----------------
+
+You can search for files above or below a certain size by entering a range query for the ``fileSizeInBytes`` field in the search box. For example, ``fileSizeInBytes:[1048576 TO *]`` finds files that are 1 MB (1048576 bytes) or larger, and ``fileSizeInBytes:[* TO 1048576]`` finds files up to that size. See :ref:`search-file-size` in the API Guide for more examples.
+
 .. _geospatial-search:
 
 Geospatial Search
