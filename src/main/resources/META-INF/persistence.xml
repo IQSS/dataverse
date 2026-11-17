@@ -8,10 +8,14 @@
         <properties>
 	    <!-- disabling weaving, as an experiment: - L.A. -->
 	    <property name="eclipselink.weaving" value="false"/>
-	    <!-- comment out the line below to make the app NOT build 
-		 persistence tables on startup; will make deployment
-		 faster. - L.A. -->
-            <property name="eclipselink.ddl-generation" value="create-tables"/>
+            <!-- DDL generation is disabled to keep (re)deployments fast: with "create-tables",
+                 EclipseLink issues CREATE statements for every entity on every single deployment.
+                 Instead, the session event listener below creates missing tables after login,
+                 but only when it detects entity tables that do not exist yet (first boot on an
+                 empty database or a newly added entity). Incremental schema changes are handled
+                 by Flyway (see StartupFlywayMigrator and src/main/resources/db/migration). -->
+            <property name="eclipselink.ddl-generation" value="none"/>
+            <property name="eclipselink.session-event-listener" value="edu.harvard.iq.dataverse.persistence.ConditionalSchemaCreator"/>
             <property name="eclipselink.cache.shared.default" value="false"/>
             <!-- The following property allows primary keys of 0 -->
             <property name="eclipselink.id-validation" value="NULL"/>
