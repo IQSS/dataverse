@@ -36,10 +36,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
+import jakarta.json.*;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -1440,7 +1437,7 @@ public class JsonPrinter {
             if (!jsonValues.isEmpty()) {
                 String datasetFieldName = f.getDatasetFieldType().getName();
                 if (anonymizedFieldTypeNamesList != null && anonymizedFieldTypeNamesList.contains(datasetFieldName)) {
-                    anonymizeField(jsonField);
+                    anonymizeField(jsonField, jsonValues);
                 } else {
                     jsonField.add("value",
                             f.getDatasetFieldType().isAllowMultiples() ? jsonValues
@@ -1496,10 +1493,51 @@ public class JsonPrinter {
             }
         }
 
-        private void anonymizeField(JsonObjectBuilder jsonField) {
-            jsonField.add("typeClass", "primitive");
-            jsonField.add("value", BundleUtil.getStringFromBundle("dataset.anonymized.withheld"));
-            jsonField.add("multiple", false);
+        private void anonymizeField(JsonObjectBuilder jsonField, JsonArray jsonValues) {
+            /*
+            This method will replace, for an OBJECT type, each "value" element with "withheld" in the values array or
+            for a non OBJECT type it will replace the value with "withheld"
+            Examples of what the jsonValues can look like
+            For OBJECT: "author"
+               jsonValues [{"authorName":{"typeName":"authorName","multiple":false,"typeClass":"primitive","value":"Last1, First1"}},
+                           {"authorName":{"typeName":"authorName","multiple":false,"typeClass":"primitive","value":"Last2, First2"}}]
+            For OBJECT: "datasetContact"
+               jsonValues [{"datasetContactName":{"typeName":"datasetContactName","multiple":false,"typeClass":"primitive","value":"Last, First"},
+                           "datasetContactEmail":{"typeName":"datasetContactEmail","multiple":false,"typeClass":"primitive","value":"me@example.com"}}]
+            For default: depositor
+               jsonValues ["Last, First"]
+           */
+            final String anonymized = BundleUtil.getStringFromBundle("dataset.anonymized.withheld");
+            jsonValues.forEach(val -> {
+                switch (val.getValueType()) {
+                    case OBJECT -> {
+                        JsonObject jsonObject = val.asJsonObject();
+                        JsonArrayBuilder values = JsonUtil.createArrayBuilder();
+                        for (Map.Entry<String, JsonValue> entry : jsonObject.entrySet()) {
+                            JsonObjectBuilder jsonObjectBuilder = JsonUtil.createObjectBuilder();
+                            JsonObjectBuilder value = JsonUtil.createObjectBuilder();
+                            String typeName = entry.getKey();
+                            boolean isArray = entry.getValue().asJsonObject().getBoolean("multiple");
+                            value.add("typeName", typeName);
+                            value.add("typeClass", "primitive");
+                            value.add("multiple", isArray);
+                            if (isArray) {
+                                value.add("value", JsonUtil.createArrayBuilder().add(anonymized));
+                            } else {
+                                value.add("value", anonymized);
+                            }
+                            jsonObjectBuilder.add(typeName, value);
+                            values.add(jsonObjectBuilder);
+                        }
+                        jsonField.add("value", values);
+                    }
+                    default -> {
+                        jsonField.add("typeClass", "primitive");
+                        jsonField.add("multiple", false);
+                        jsonField.add("value", anonymized);
+                    }
+                }
+            });
         }
     }
 

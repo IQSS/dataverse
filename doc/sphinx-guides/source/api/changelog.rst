@@ -7,6 +7,13 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.13
+-----
+
+- Anonymized Compound fields will no longer display as a single primitive value: {"typeName":"author","multiple":false,"typeClass":"primitive","value":"withheld"}
+  The new format will retain it's original object structure with each individual value set to 'withheld' :{"typeName":"author","multiple":true,"typeClass":"compound","value":[{"authorName":{"typeName":"authorName","typeClass":"primitive","multiple":false,"value":"withheld"}},{"authorAffiliation":{"typeName":"authorAffiliation","typeClass":"primitive","multiple":false,"value":"withheld"}}]}
+  This was done to fix issues with external tools parsing via javascript.
+
 v6.12
 -----
 
