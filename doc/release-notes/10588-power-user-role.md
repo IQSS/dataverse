@@ -8,3 +8,10 @@ Users with the Scoped Superuser role (or any role containing the ActAsSuperuser 
 - Configuring storage quotas and drivers.
 - Accessing administrative dashboard tools for their scoped objects.
 - Bypassing certain upload limits and managing curation labels.
+
+Existing installations must add the new role manually, e.g. by using curl:
+
+```
+wget https://github.com/IQSS/dataverse/raw/refs/heads/develop/scripts/api/data/role-scopedSuperuser.json
+curl -H "Content-type:application/json" -d ./role-scopedSuperuser.json "${DATAVERSE_URL}/api/admin/roles/"
+```

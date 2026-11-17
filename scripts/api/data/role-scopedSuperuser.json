@@ -1,0 +1,8 @@
+{
+    "alias":"scopedSuperuser",
+    "name":"Scoped Superuser",
+    "description":"A person who can take any action that a superuser can on a collection, dataset, or datafile for which they're assigned this role.",
+    "permissions":[
+        "ActAsSuperuser"
+    ]
+}

@@ -9,9 +9,14 @@ This API changelog is experimental and we would love feedback on its usefulness.
 
 v6.13
 -----
-- The introduction of the new ActAsSuperuser permission and the change to allow endpoints that were previously restricted to superuser only to also allow users who have the ActAsSuperuser permission on the relevant collection, dataset, or data file, results in changes to error codes and messages on the affected endpoints. Success responses are not changed.
+- The introduction of the new ActAsSuperuser permission, and the change to allow endpoints that were previously restricted to superuser only to also allow users who have the ActAsSuperuser permission on the relevant collection, dataset, or data file, results in changes to error codes and messages on the affected endpoints.
+
+  - The /api/dataverses/{identifier}/userPermissions, /api/datasets/{id}/userpermissions, and /api/access/datafile/{id}/userPermissions endpoints now include a "canActAsSuperuser": boolean key:value indicating whether the user has this permission on the relevant object.
+
   - Error messages which used to report that superuser was required now note that people with the ActAsSuperuser permission are also allowed.
+
   - Many endpoints that previously checked superuser status before looking up the target object now look up the object first and then check for the ActAsSuperuser permission. This means that a request that previously returned 401/Unauthenticated or 403/Forbidden (when the user was not a superuser) may now return 400/Bad Request or 404/Not Found (when the object does not exist), with 403/Forbidden only returned when the object exists but the user lacks the required permission.
+
   - Specific endpoints with error code changes:
 
       - The /api/admin/registerDataFiles/{alias} and /api/admin/{id}/registerDataFile endpoints now require authenticating as a superuser or someone with the ActAsSuperuser permission and will respond with a 401/Unauthenticated if the user doesn't authenticate or 403/Forbidden if the user doesn't meet the requirement.
