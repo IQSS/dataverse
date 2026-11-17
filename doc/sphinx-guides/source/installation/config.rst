@@ -2322,8 +2322,8 @@ Two settings that can be used with all current Archivers are:
 
 These must be included in the \:ArchiverSettings for the Archiver to work
  
-Archival Bags are created per dataset version. By default, if a version is republished (via the superuser-only 'Update Current Version' publication option in the UI/API), a new archival bag is not created for the version.
-If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) superusers can trigger a manual update of the archival bag, and, if the :ref:`dataverse.bagit.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
+Archival Bags are created per dataset version. By default, if a version is republished (via the 'Update Current Version' publication option in the UI/API, available to a superuser account or a user with the ActAsSuperuser permission on the relevant dvobject), a new archival bag is not created for the version.
+If the archiver used is capable of deleting existing bags (Google, S3, and File Archivers) a superuser account or a user with the ActAsSuperuser permission on the relevant dvobject can trigger a manual update of the archival bag, and, if the :ref:`dataverse.bagit.archive-on-version-update` flag is set to true, this will be done automatically when 'Update Current Version' is used.
 
 .. _Duracloud Configuration:
 
@@ -4623,7 +4623,7 @@ If you are using DataCite as your PID provider, resourceTypeGeneral will be "Oth
 :AllowEnablingFilePIDsPerCollection
 +++++++++++++++++++++++++++++++++++
 
-Toggles whether superusers can change the File PIDs policy per collection. By default this setting is absent and Dataverse Software assumes it to be false.
+Toggles whether a superuser account or a user with the ActAsSuperuser permission on the relevant dvobject can change the File PIDs policy per collection. By default this setting is absent and Dataverse Software assumes it to be false.
 
 For example, if this setting is true, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
 
@@ -5868,7 +5868,7 @@ For example:
 :ExternalValidationAdminOverride
 ++++++++++++++++++++++++++++++++
 
-When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
+When set to ``true``, this setting allows a superuser account or a user with the ActAsSuperuser permission on the relevant dvobject to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user.
 
 .. _:FileCategories:
 
