@@ -92,7 +92,7 @@ public class UtilIT {
     }
     
     static String getRestAssuredBaseUri() {
-        String saneDefaultInDev = "http://localhost:8080";
+        String saneDefaultInDev = "https://dev.dataverse.nl/";
         String restAssuredBaseUri = saneDefaultInDev;
         String specifiedUri = System.getProperty("dataverse.test.baseurl");
         if (specifiedUri != null) {
