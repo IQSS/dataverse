@@ -348,10 +348,24 @@ These are common ways to use the displayFormat to control how values are display
 |                                 | these fields.                                          |
 +---------------------------------+--------------------------------------------------------+
 | #VALUE                          | The value of the field (instance level).               |
+|                                 | For multi-valued fields, multiple                      |
+|                                 | values are joined with ", " (comma and                 |
+|                                 | space).                                                |
 +---------------------------------+--------------------------------------------------------+
-| #NAME                           | The name of the field (class level).                   |
+| #NAME                           | The name of the field (class level). For multi-valued  |
+|                                 | fields, the name is only shown once.                   |
 +---------------------------------+--------------------------------------------------------+
-| #EMAIL                          | For displaying emails.                                 |
+| #EMAIL                          | For displaying emails. When used                       |
+|                                 | alone (e.g. ``#EMAIL``), the field is                  |
+|                                 | hidden and, for the citation conact field,             |
+|                                 | replaced with a message                                |
+|                                 | directing users to the contact form.                   |
+|                                 | When combined with other text (e.g.                    |
+|                                 | ``#NAME: #EMAIL``), the email is                       |
+|                                 | displayed with ``@`` replaced by ``:[at]``             |
+|                                 | and ``.`` replaced by ``[dot]`` to                     |
+|                                 | obfuscate the address (e.g.                            |
+|                                 | ``support:[at]dataverse[dot]org``).                    |
 +---------------------------------+--------------------------------------------------------+
 | <a href="#VALUE">#VALUE</a>     | For displaying the value as a                          |
 |                                 | link (if the value entered is a                        |
@@ -368,6 +382,21 @@ These are common ways to use the displayFormat to control how values are display
 |                                 | u/atlas/1001_summary.html>`__                          |
 |                                 | (hyperlinked to                                        |
 |                                 | http://emsearch.rutgers.edu/atlas/1001_summary.html)). |
++---------------------------------+--------------------------------------------------------+
+| <b>#NAME:</b> #VALUE            | For bolding the field name when                        |
+|                                 | displaying child fields of any type                    |
+|                                 | (text, string, int, float, email, etc.).               |
+|                                 | Example: ``<b>#NAME:</b> #VALUE<br/>``                 |
+|                                 | displays the field name in bold followed               |
+|                                 | by the value and a line break.                         |
++---------------------------------+--------------------------------------------------------+
+| <br/>                           | For displaying child fields on separate                |
+|                                 | lines. Can be combined with other                      |
+|                                 | formatting (e.g. ``<b>#NAME:</b> #VALUE<br/>``).       |
+|                                 | Also used for separating multiple                      |
+|                                 | TEXTBOX field values onto separate                     |
+|                                 | lines (e.g. the citation Related Materials             |
+|                                 | field).                                                |
 +---------------------------------+--------------------------------------------------------+
 | <img src="#VALUE" alt="#NAME"   | For displaying the image of an                         |
 | class="metadata-logo"/><br/>    | entered image URL (used to                             |
@@ -401,6 +430,8 @@ These are common ways to use the displayFormat to control how values are display
 |                                 | the UI as IMPs: A                                      |
 |                                 | collection of NMR data.                                |
 +---------------------------------+--------------------------------------------------------+
+
+HTML tags like ``<a>``, ``<b>``, and ``<br/>`` can be used in displayFormat to control the display of content in the web UI. Note that if any of these tags are used in the displayFormat of a metadata block, other HTML tags can also be used — this is a security consideration limited to users who can create or install metadata blocks.
 
 Metadata Block Setup
 --------------------
