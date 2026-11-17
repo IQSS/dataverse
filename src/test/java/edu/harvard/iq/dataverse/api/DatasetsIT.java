@@ -2999,7 +2999,7 @@ public class DatasetsIT {
         This test excerises the issue where the update apis fail when the dataset is out of compliance with
         the requirement that datasets containing restricted files must allow reuest access or have terms of access.
         It's impossible to get a dataset into this state via the version 5.11.1 or later so if you needc to
-        run this test you must set it up manually by setting requestAccess on TermsOfUseAccess to false 
+        run this test you must set it up manually by setting requestAccess on TermsOfAccess to false
         with an update query.
         Update the decalarations below with values from your test environment
          */

@@ -1828,7 +1828,7 @@ public class JsonPrinter {
                 .add("createTime", template.getCreateTime().toString())
                 .add("createDate", template.getCreateDate())
                 .add("termsOfAccess", jsonTermsOfAccess(template.getTermsOfAccess()))
-                .add("termsOfUseOrLicense", jsonTermsOfUseOrLicense(template.getDefaultTermsOfUseOrLicense()))
+                .add("defaultTermsOfUseOrLicense", jsonTermsOfUseOrLicense(template.getDefaultTermsOfUseOrLicense()))
                 .add("datasetFields", jsonByBlocks(template.getDatasetFields()))
                 .add("instructions", jsonTemplateInstructions(template.getInstructionsMap()))
                 .add("dataverseAlias", template.getDataverse().getAlias());
