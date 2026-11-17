@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
@@ -214,12 +213,6 @@ public class ContainerManagerImpl implements ContainerManager {
                     Dataset dataset = dataset = datasetService.findByGlobalId(globalId);
                     if (dataset != null) {
                         Dataverse dvThatOwnsDataset = dataset.getOwner();
-                        /**
-                         * We are checking if DeleteDatasetVersionCommand can be
-                         * called even though DeleteDatasetCommand can be called
-                         * when a dataset hasn't been published. They should be
-                         * equivalent in terms of a permission check.
-                         */
                         DeleteDatasetVersionCommand deleteDatasetVersionCommand = new DeleteDatasetVersionCommand(dvRequest, dataset);
                         if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
@@ -253,7 +246,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             // dataset has never been published, this is just a sanity check (should always be draft)
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 try {
-                                    engineSvc.submit(new DeleteDatasetCommand(dvRequest, dataset));
+                                    engineSvc.submit(new DeleteDatasetVersionCommand(dvRequest, dataset));
                                     logger.fine("dataset deleted");
                                 } catch (CommandExecutionException ex) {
                                     // internal error

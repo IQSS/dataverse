@@ -28,6 +28,7 @@ v6.12
 
 - Dataset creation API calls may now behave differently when neither a license nor terms are provided, depending on the new :ref:`dataverse.feature.do-not-assume-default-license` feature flag.
 - Whether file extensions are included in the "Content-disposition" header returned when downloading auxiliary files depends on whether the relevant format is one of the content types supported in Tika. A recent update to the version of Tika has added new content types, including "text/markdown", and auxiliary files with these types now have a a file extension included (e.g. ".md" in this case) in the header.
+- Change to DELETE "/api/datasets/$ID". The API now returns a 400 (BAD REQUEST) error if the dataset already has a published version and will no longer allow superusers to delete a published dataset. The error message for superusers instead refers them to the /destroy endpoint to delete the published dataset.
 
 v6.11
 -----
