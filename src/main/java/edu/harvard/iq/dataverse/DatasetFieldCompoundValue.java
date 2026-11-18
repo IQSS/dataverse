@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -269,7 +270,8 @@ public class DatasetFieldCompoundValue implements Serializable {
     /**
      * Compares this DatasetFieldCompoundValue with another for equality based on
      * their child fields. Two compound values are considered equal if they have the
-     * same child fields with the same values in the same order.
+     * same child fields with the same values, independently of their order.
+     * Empty child fields are ignored.
      * 
      * @param other The DatasetFieldCompoundValue to compare with
      * @return true if both compound values have equal child fields, false otherwise
@@ -281,66 +283,39 @@ public class DatasetFieldCompoundValue implements Serializable {
         if (other == null) {
             return false;
         }
-
-        List<DatasetField> children1 = this.getChildDatasetFields();
-        List<DatasetField> children2 = other.getChildDatasetFields();
-
-        if (children1.size() != children2.size()) {
+        List<DatasetField> children = getChildDatasetFields().stream().filter(field -> !field.isEmpty()).toList();
+        List<DatasetField> otherChildren = other.getChildDatasetFields().stream().filter(field -> !field.isEmpty()).toList();
+        if (children.size() != otherChildren.size()) {
             return false;
         }
-        
-        // Compare each child field
-        for (DatasetField child1 : children1) {
-
-            DatasetField child2 = children2.stream()
-                    .filter(c -> c.getDatasetFieldType().equals(child1.getDatasetFieldType())).findFirst().orElse(null);
-            
-            if (child2 == null) {
+        for (DatasetField child : children) {
+            DatasetField otherChild = otherChildren.stream()
+                    .filter(field -> field.getDatasetFieldType().getName().equals(child.getDatasetFieldType().getName()))
+                    .findFirst().orElse(null);
+            if (otherChild == null) {
                 return false;
             }
-
-            // Compare values based on field type
-            if (child1.getDatasetFieldType().isControlledVocabulary()) {
-
-                List<ControlledVocabularyValue> cvs1 = child1.getControlledVocabularyValues();
-                List<ControlledVocabularyValue> cvs2 = child2.getControlledVocabularyValues();
-                
-                if (cvs1.size() != cvs2.size()) {
-                    
-                    return false;
-                }
-
-                for (ControlledVocabularyValue cv1Val : cvs1) {
-                    boolean found = cvs2.stream().anyMatch(cv2Val -> cv1Val.getStrValue().equals(cv2Val.getStrValue()));
-                    if (!found) {
-                        return false;
-                    }
-                }
+            boolean equal;
+            if (child.getDatasetFieldType().isCompound()) {
+                equal = valuesEqualIgnoringOrder(child.getDatasetFieldCompoundValues(), otherChild.getDatasetFieldCompoundValues(),
+                        DatasetFieldCompoundValue::valuesEqual);
+            } else if (child.getDatasetFieldType().isControlledVocabulary()) {
+                equal = valuesEqualIgnoringOrder(child.getControlledVocabularyValues(), otherChild.getControlledVocabularyValues(),
+                        (first, second) -> Strings.CS.equals(first.getStrValue(), second.getStrValue()));
             } else {
-                // Handle regular field values (including multiple values)
-                List<DatasetFieldValue> dfvs1 = child1.getDatasetFieldValues();
-                List<DatasetFieldValue> dfvs2 = child2.getDatasetFieldValues();
-
-                if (dfvs1.size() != dfvs2.size()) {
-                    return false;
-                }
-
-                for (DatasetFieldValue dfv1 : dfvs1) {
-                    String value1 = dfv1.getValue();
-                    boolean found = dfvs2.stream()
-                            .anyMatch(dfv2 -> {
-                                String value2 = dfv2.getValue();
-                                if (value1 == null && value2 == null) {
-                                    return true;
-                                }
-                                return value1 != null && value1.equals(value2);
-                            });
-                    if (!found) {
-                        return false;
-                    }
-                }
+                equal = valuesEqualIgnoringOrder(child.getDatasetFieldValues(), otherChild.getDatasetFieldValues(),
+                        DatasetFieldValue::valuesEqual);
+            }
+            if (!equal) {
+                return false;
             }
         }
         return true;
+    }
+
+    private static <T> boolean valuesEqualIgnoringOrder(List<T> first, List<T> second, BiPredicate<T, T> equal) {
+        return first.size() == second.size()
+                && first.stream().allMatch(value -> first.stream().filter(other -> equal.test(value, other)).count()
+                        == second.stream().filter(other -> equal.test(value, other)).count());
     }
 }
