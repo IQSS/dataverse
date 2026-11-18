@@ -110,8 +110,8 @@ public class UpdateDatasetFieldsCommandTest {
     @Test
     public void execute_withMultipleDatasetField_replaceDataFalse_updatesField() throws CommandException {
         DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, true);
-        DatasetVersion datasetVersion = prepareDatasetVersionWithSingleValueField(fieldType, "original");
-        List<DatasetField> updatedFields = createUpdatedSingleValueFieldList(fieldType, "updated");
+        DatasetVersion datasetVersion = prepareDatasetVersionWithSingleValueField(fieldType, "original value");
+        List<DatasetField> updatedFields = createUpdatedSingleValueFieldList(fieldType, "updated value");
 
         sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields, false, dataverseRequestStub, updateDatasetVersionCommandStub);
         when(datasetFieldsValidatorMock.validateFields(updatedFields, datasetVersion)).thenReturn("");
@@ -119,9 +119,22 @@ public class UpdateDatasetFieldsCommandTest {
         Dataset result = sut.execute(commandContextMock);
         verify(commandContextMock).engine();
 
-        assertEquals("original", result.getLatestVersion().getDatasetField(fieldType).getDatasetFieldValues().get(0).getValue());
-        assertEquals("updated", result.getLatestVersion().getDatasetField(fieldType).getDatasetFieldValues().get(1).getValue());
-        assertEquals(2, result.getLatestVersion().getDatasetField(fieldType).getDatasetFieldValues().size());
+        DatasetField field = result.getLatestVersion().getDatasetField(fieldType);
+        assertEquals(List.of("original value", "updated value"),
+                field.getDatasetFieldValues().stream().map(DatasetFieldValue::getValue).toList());
+
+        // Update field again, this time with a string that is substring of one of the already present values
+        List<DatasetField> updatedFields2 = createUpdatedSingleValueFieldList(fieldType, "value");
+
+        sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields2, false, dataverseRequestStub, updateDatasetVersionCommandStub);
+        when(datasetFieldsValidatorMock.validateFields(updatedFields2, datasetVersion)).thenReturn("");
+
+        Dataset result2 = sut.execute(commandContextMock);
+        verify(commandContextMock, times(2)).engine();
+
+        DatasetField field2 = result2.getLatestVersion().getDatasetField(fieldType);
+        assertEquals(List.of("original value", "updated value", "value"),
+                field2.getDatasetFieldValues().stream().map(DatasetFieldValue::getValue).toList());
     }
 
     @Test
@@ -168,7 +181,7 @@ public class UpdateDatasetFieldsCommandTest {
         Dataset result = sut.execute(commandContextMock);
         verify(commandContextMock).engine();
 
-        assertEquals("law", result.getLatestVersion().getDatasetField(fieldType).getSingleControlledVocabularyValue().getStrValue());
+        assertEquals("applied law", result.getLatestVersion().getDatasetField(fieldType).getSingleControlledVocabularyValue().getStrValue());
     }
 
     @Test
@@ -201,7 +214,7 @@ public class UpdateDatasetFieldsCommandTest {
         verify(commandContextMock).engine();
 
         assertEquals(1, result.getLatestVersion().getDatasetField(fieldType).getControlledVocabularyValues().size());
-        assertEquals("law", result.getLatestVersion().getDatasetField(fieldType).getSingleControlledVocabularyValue().getStrValue());
+        assertEquals("applied law", result.getLatestVersion().getDatasetField(fieldType).getSingleControlledVocabularyValue().getStrValue());
     }
 
     @Test
@@ -217,13 +230,26 @@ public class UpdateDatasetFieldsCommandTest {
         Dataset result = sut.execute(commandContextMock);
         verify(commandContextMock).engine();
 
-        assertEquals(2, result.getLatestVersion().getDatasetField(fieldType).getControlledVocabularyValues().size());
-        assertEquals("mgmt", result.getLatestVersion().getDatasetField(fieldType).getControlledVocabularyValues().get(0).getStrValue());
-        assertEquals("law", result.getLatestVersion().getDatasetField(fieldType).getControlledVocabularyValues().get(1).getStrValue());
+        DatasetField field = result.getLatestVersion().getDatasetField(fieldType);
+        assertEquals(List.of("mgmt", "applied law"),
+                field.getControlledVocabularyValues().stream().map(ControlledVocabularyValue::getStrValue).toList());
+
+        // Update field again, this time with a CVV that is substring of one of the already present CVVs
+        List<DatasetField> updatedFields2 = createUpdatedSingleControlledVocabularyValueFieldList(fieldType, controlledVocabularyValueList.get(2));
+
+        sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields2, false, dataverseRequestStub, updateDatasetVersionCommandStub);
+        when(datasetFieldsValidatorMock.validateFields(updatedFields2, datasetVersion)).thenReturn("");
+
+        Dataset result2 = sut.execute(commandContextMock);
+        verify(commandContextMock, times(2)).engine();
+
+        DatasetField field2 = result2.getLatestVersion().getDatasetField(fieldType);
+        assertEquals(List.of("mgmt", "applied law", "law"),
+                field2.getControlledVocabularyValues().stream().map(ControlledVocabularyValue::getStrValue).toList());
     }
 
     @Test
-    public void execute_withCompoundField_replaceDataFalse_doesNotUpdateField() throws CommandException {
+    public void execute_withCompoundField_replaceDataFalse_appendsDistinctValues() throws CommandException {
         DatasetFieldType fieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, true);
         Set<DatasetFieldType> childTypes = new HashSet<>();
         DatasetFieldType childFieldType1 = new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false);
@@ -234,6 +260,7 @@ public class UpdateDatasetFieldsCommandTest {
 
         List<DatasetField> originalFields = createChildCompoundFields(childFieldType1, "originalAuthor", childFieldType2, "originalAffiliation");
         DatasetVersion datasetVersion = prepareDatasetVersionWithCompoundField(fieldType, originalFields);
+
         List<DatasetField> updatedFields = createUpdatedCompoundFieldList(fieldType, childFieldType1, childFieldType2, "updatedAuthor", "updatedAffiliation");
 
         sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields, false, dataverseRequestStub, updateDatasetVersionCommandStub);
@@ -243,6 +270,17 @@ public class UpdateDatasetFieldsCommandTest {
         verify(commandContextMock).engine();
 
         assertEquals("originalAuthor; originalAffiliation; updatedAuthor; updatedAffiliation", result.getLatestVersion().getDatasetField(fieldType).getCompoundRawValue());
+
+        // Update field again, this time with a string that is substring of one of the already present values
+        List<DatasetField> updatedFields2 = createUpdatedCompoundFieldList(fieldType, childFieldType1, childFieldType2, "Author", "updatedAffiliation");
+
+        sut = new UpdateDatasetFieldsCommand(datasetMock, updatedFields2, false, dataverseRequestStub, updateDatasetVersionCommandStub);
+        when(datasetFieldsValidatorMock.validateFields(updatedFields2, datasetVersion)).thenReturn("");
+
+        Dataset result2 = sut.execute(commandContextMock);
+        verify(commandContextMock, times(2)).engine();
+
+        assertEquals("originalAuthor; originalAffiliation; updatedAuthor; updatedAffiliation; Author; updatedAffiliation", result2.getLatestVersion().getDatasetField(fieldType).getCompoundRawValue());
     }
 
     @Test
@@ -398,10 +436,13 @@ public class UpdateDatasetFieldsCommandTest {
 
     private List<ControlledVocabularyValue> setupControlledVocabularyValueList(DatasetFieldType fieldType) {
         ControlledVocabularyValue controlledVocabularyValue1 = new ControlledVocabularyValue(1L, "mgmt", fieldType);
-        ControlledVocabularyValue controlledVocabularyValue2 = new ControlledVocabularyValue(2L, "law", fieldType);
+        ControlledVocabularyValue controlledVocabularyValue2 = new ControlledVocabularyValue(2L, "applied law", fieldType);
+        // This value intentionally is substring of the previous value
+        ControlledVocabularyValue controlledVocabularyValue3 = new ControlledVocabularyValue(3L, "law", fieldType);
         List<ControlledVocabularyValue> controlledVocabularyValueList = Arrays.asList(
                 controlledVocabularyValue1,
-                controlledVocabularyValue2
+                controlledVocabularyValue2,
+                controlledVocabularyValue3
         );
         fieldType.setControlledVocabularyValues(controlledVocabularyValueList);
         return controlledVocabularyValueList;

@@ -28,7 +28,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -301,7 +300,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                         DatasetFieldCompoundValue::valuesEqual);
             } else if (child.getDatasetFieldType().isControlledVocabulary()) {
                 equal = valuesEqualIgnoringOrder(child.getControlledVocabularyValues(), otherChild.getControlledVocabularyValues(),
-                        (first, second) -> Strings.CS.equals(first.getStrValue(), second.getStrValue()));
+                        ControlledVocabularyValue::valuesEqual);
             } else {
                 equal = valuesEqualIgnoringOrder(child.getDatasetFieldValues(), otherChild.getDatasetFieldValues(),
                         DatasetFieldValue::valuesEqual);
