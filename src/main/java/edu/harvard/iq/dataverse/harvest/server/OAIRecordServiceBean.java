@@ -94,7 +94,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 Dataset dataset = datasetService.find(datasetId);
                 if (dataset == null) {
                     setUpdateLogger.fine("failed to find dataset!");
-                } else if (dataset.isReleased() && !dataset.isDeaccessioned() && !dataset.isLocallyFAIR()) {
+                } else if (dataset.isReleased() && !dataset.isDeaccessioned()) {
                     // This means this is a published dataset
                     setUpdateLogger.fine("found published dataset.");
 
@@ -312,29 +312,29 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
     public List<OAIRecord> findOaiRecordsBySetName(String setName) {
         return findOaiRecordsBySetName(setName, null, null);
-    }    
-    
+    }
+
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, false);
     }
-    
+
     public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, true);
     }
-    
+
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until, boolean excludeSet) {
-                
+
         if (setName == null) {
             setName = "";
         }
-        
+
         String queryString = "SELECT object(h) from OAIRecord h where h.id is not null";
         if (excludeSet) {
             queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
         } else {
             queryString += " and h.setName = :setName";
         }
-        
+
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
         queryString += " order by h.globalId";

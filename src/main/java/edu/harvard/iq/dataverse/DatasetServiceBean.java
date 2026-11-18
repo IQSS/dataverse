@@ -213,6 +213,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
 
+    /**
+     * Returns the IDs of all local (non-harvested) datasets that are NOT inside
+     * a Locally FAIR dataverse.  Used by the default OAI harvesting set so that
+     * Locally FAIR content is never exported via OAI-PMH.
+     */
+    public List<Long> findAllLocalDatasetIdsExcludingLocallyFAIR() {
+        return em.createQuery(
+                "SELECT o.id FROM Dataset o JOIN o.owner dv " +
+                "WHERE o.harvestedFrom IS null " +
+                "  AND dv.locallyFAIRRoleAssigneeIdentifiers IS EMPTY " +
+                "ORDER BY o.id", Long.class).getResultList();
+    }
+
     public List<Long> findAllUnindexed() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
     }
