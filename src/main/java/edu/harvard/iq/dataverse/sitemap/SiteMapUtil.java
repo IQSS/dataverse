@@ -73,7 +73,7 @@ public class SiteMapUtil {
         }
 
         for (Dataverse dataverse : dataverses) {
-            if (!dataverse.isReleased()) {
+            if (!dataverse.isReleased() || dataverse.isLocallyFAIR()) {
                 continue;
             }
             final String dvAlias = dataverse.getAlias();
@@ -91,7 +91,7 @@ public class SiteMapUtil {
 
         for (Dataset dataset : datasets) {
             // The deaccessioned check is last because it has to iterate through dataset versions.
-            if (!dataset.isReleased() || dataset.isHarvested() || dataset.isDeaccessioned()) {
+            if (!dataset.isReleased() || dataset.isHarvested() || dataset.isDeaccessioned() || dataset.isLocallyFAIR()) {
                 continue;
             }
             final String datasetPid = dataset.getGlobalId().asString();
