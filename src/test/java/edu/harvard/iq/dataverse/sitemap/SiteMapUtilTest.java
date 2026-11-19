@@ -126,6 +126,55 @@ class SiteMapUtilTest {
     }
 
     @Test
+    void testUpdateSiteMapLocallyFair() throws IOException, ParseException, SAXException {
+        // given
+        List<Dataverse> dataverses = new ArrayList<>();
+        
+        Dataverse publishedDataverse = new Dataverse();
+        publishedDataverse.setAlias("publishedDv");
+        Timestamp now = new Timestamp(new Date().getTime());
+        publishedDataverse.setPublicationDate(now);
+        publishedDataverse.setModificationTime(now);
+        dataverses.add(publishedDataverse);
+
+        Dataverse locallyFairDataverse = new Dataverse();
+        locallyFairDataverse.setAlias("locallyFairDv");
+        locallyFairDataverse.setPublicationDate(now);
+        locallyFairDataverse.setModificationTime(now);
+        locallyFairDataverse.addLocallyFAIRRoleAssignee("@alice");
+        dataverses.add(locallyFairDataverse);
+
+        List<Dataset> datasets = new ArrayList<>();
+
+        Dataset published = new Dataset();
+        published.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FAKE/published1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        published.setPublicationDate(now);
+        published.setModificationTime(now);
+        published.setOwner(publishedDataverse);
+        datasets.add(published);
+
+        Dataset locallyFairDataset = new Dataset();
+        locallyFairDataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FAKE/locallyFair1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        locallyFairDataset.setPublicationDate(now);
+        locallyFairDataset.setModificationTime(now);
+        locallyFairDataset.setOwner(locallyFairDataverse); // Inherits Locally FAIR from owner
+        datasets.add(locallyFairDataset);
+
+        // when
+        SiteMapUtil.updateSiteMap(dataverses, datasets);
+
+        // then
+        String pathToSiteMap = tempDocroot.resolve("sitemap").resolve("sitemap.xml").toString();
+        File sitemapFile = new File(pathToSiteMap);
+        String sitemapString = new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath())));
+
+        assertTrue(sitemapString.contains("publishedDv"));
+        assertTrue(sitemapString.contains("FAKE/published1"));
+        assertFalse(sitemapString.contains("locallyFairDv"));
+        assertFalse(sitemapString.contains("FAKE/locallyFair1"));
+    }
+
+    @Test
     void testHugeSiteMap() throws IOException, ParseException, SAXException {
         // given
         final int nbDataverse = 50;

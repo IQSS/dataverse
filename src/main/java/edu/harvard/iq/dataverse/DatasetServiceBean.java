@@ -217,6 +217,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
 
+    /**
+     * Returns the IDs of all local (non-harvested) datasets that are NOT inside
+     * a Locally FAIR dataverse.  Used by the default OAI harvesting set so that
+     * Locally FAIR content is never exported via OAI-PMH.
+     */
+    public List<Long> findAllLocalDatasetIdsExcludingLocallyFAIR() {
+        return em.createQuery(
+                "SELECT o.id FROM Dataset o JOIN o.owner dv " +
+                "WHERE o.harvestedFrom IS null " +
+                "  AND dv.locallyFAIRRoleAssigneeIdentifiers IS EMPTY " +
+                "ORDER BY o.id", Long.class).getResultList();
+    }
+
     public List<Long> findAllUnindexed() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
     }
@@ -300,6 +313,25 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
             return retVal;
         }
+    }
+
+    /**
+     * Find a dataset but filter according to the visibility from the locallyFAIRRoleAssignments.
+     * Unlike findDatasetUserCanSeeOrDie in AbstractApiBean, this returns null if not found or not visible,
+     * allowing callers to handle it as a standard "not found" case without a 403.
+     *
+     * @param persistentId - the dataset persistent identifier
+     * @param req - the DataverseRequest
+     * @return the dataset if found and visible, otherwise null
+     */
+    public Dataset findDatasetUserCanSeeByGlobalId(String persistentId, DataverseRequest req) {
+        Dataset dataset = findByGlobalId(persistentId);
+        if (dataset != null) {
+            if (dataset.isLocallyFAIR() && !permissionService.hasLocallyFAIRAccess(req, dataset)) {
+                return null;
+            }
+        }
+        return dataset;
     }
 
     /**
