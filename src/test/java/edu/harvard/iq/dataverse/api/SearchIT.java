@@ -11,9 +11,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.json.Json;
+
 import jakarta.json.JsonObject;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
@@ -34,6 +35,7 @@ import org.hamcrest.Matchers;
 
 import jakarta.json.JsonObjectBuilder;
 
+import static edu.harvard.iq.dataverse.api.UtilIT.isSourceAvailable;
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
@@ -51,9 +53,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class SearchIT {
 
     private static final Logger logger = Logger.getLogger(SearchIT.class.getCanonicalName());
+    private static String DEMO_URL = "https://demo.dataverse.org";
 
     @BeforeAll
     public static void setUpClass() {
+        Assumptions.assumeTrue(isSourceAvailable(DEMO_URL), "Skipping search tests because " + DEMO_URL + " is unavailable.");
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
@@ -1810,7 +1814,7 @@ public class SearchIT {
                         + "\"set\":\"%s\","
                         + "\"allowHarvestingMissingCVV\":%s,"
                         + "\"metadataFormat\":\"%s\"}",
-                dataverseAlias3, sourceName, "https://demo.dataverse.org/oai", "https://demo.dataverse.org",
+                dataverseAlias3, sourceName, DEMO_URL +"/oai", DEMO_URL,
                 "controlTestSet2", true, "oai_dc");
 
         Response createResponse = given()
