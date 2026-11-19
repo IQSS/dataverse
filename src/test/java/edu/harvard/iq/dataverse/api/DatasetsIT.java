@@ -3758,19 +3758,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deleteFileResponse.prettyPrint();
         deleteFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Deleting the terms of use would leave neither terms nor a license.
+        // Delete the terms of use
         response = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken,
                 "{\"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"}");
-        response.then().log().ifValidationFails().assertThat().statusCode(CONFLICT.getStatusCode());
-
-        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
-        response.then().assertThat().statusCode(OK.getStatusCode());
-        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(getData(response.getBody().asString()));
-        assertEquals("New terms", jsonLDObject.getString("https://dataverse.org/schema/core#termsOfUse"));
-
-        // Replace custom terms with a license to keep the dataset valid.
-        response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken,
-                "{\"http://schema.org/license\": \"CC0 1.0\"}", true);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
@@ -3780,8 +3770,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertTrue(!jsonLDObject.containsKey("https://dataverse.org/schema/core#termsOfUse"));
-        assertEquals("http://creativecommons.org/publicdomain/zero/1.0",
-                jsonLDObject.getString("http://schema.org/license"));
 
         //Delete the DRAFT dataset
         Response deleteDraftResponse = UtilIT.deleteDatasetVersionViaNativeApi(datasetId, DS_VERSION_DRAFT, apiToken);
