@@ -564,9 +564,12 @@ if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
    sys.exit("Can't find the api setup scripts; aborting. (are you running the installer in the right directory?)")
 
 try:
-   subprocess.call("./setup-all.sh > setup-all.$$.log 2>&1", shell=True)
+   setupReturnCode = subprocess.call("./setup-all.sh > setup-all.$$.log 2>&1", shell=True)
 except:
-   sys.exit("Failure to execute setup-all.sh! aborting.")
+   sys.exit("Post-deployment setup failed; see setup-all.*.log for details. Aborting.")
+
+if setupReturnCode != 0:
+   print("\nWARNING: Post-deployment setup returned %s; continuing remaining configuration. See setup-all.*.log for details." % setupReturnCode)
 
 # 8c. configure remote Solr location, if specified
 if solrLocation != "LOCAL":
@@ -577,10 +580,13 @@ if solrLocation != "LOCAL":
    else:
       print("\ndone.")
 
-# 9. DECLARE VICTORY
+# 9. SHOW INSTANCE INFORMATION
 # ... and give some additional information to the user
 
-print("\n\nYou should now have a running Dataverse instance at")
+if setupReturnCode == 0:
+   print("\n\nYou should now have a running Dataverse instance at")
+else:
+   print("\n\nDataverse setup finished with errors. Instance URL:")
 print("  http://" + hostName + ":8080\n\n")
 
 # PID instructions: 
@@ -606,7 +612,7 @@ if warfileVersion is not None:
    print("\t" + gfDir + '/bin/asadmin undeploy dataverse-' + warfileVersion + "\n")
    print("before attempting to deploy from your development environment in NetBeans.\n")
 
-sys.exit()
+sys.exit(1 if setupReturnCode != 0 else 0)
 
 # 10. (OPTIONALLY?) CHECK THE RSERVE SETUP
 # @todo
