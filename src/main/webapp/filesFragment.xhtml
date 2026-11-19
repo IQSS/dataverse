@@ -648,8 +648,39 @@
     </p:dataTable>
 
     <!-- Files Tree -->
+    <ui:param name="useReactTreeView" value="#{systemConfig.reactTreeViewEnabled and DatasetPage.fileDisplayTree}"/>
+
+    <ui:fragment rendered="#{useReactTreeView}">
+        <!-- React file tree replacing the PrimeFaces p:tree below. Authenticates with the session cookie; needs api-session-auth. -->
+        <div id="dv-tree-view"></div>
+        <script>
+            //<![CDATA[
+            // Values are JSON-encoded by systemConfig.jsString.
+            window.dvTreeViewConfig = {
+                siteUrl: #{systemConfig.jsString(systemConfig.dataverseSiteUrl)},
+                datasetPid: #{systemConfig.jsString(DatasetPage.dataset.globalId.asString())},
+                datasetVersionId: #{systemConfig.jsString(DatasetPage.workingVersion.friendlyVersionNumber)},
+                includeDeaccessioned: #{DatasetPage.workingVersion.deaccessioned},
+                downloadsDisabled: #{DatasetPage.downloadPopupRequired},
+                locale: #{systemConfig.jsString(dataverseSession.localeCode)},
+                rootElementId: 'dv-tree-view',
+                fileMetadataPath: '/file.xhtml'
+            };
+            function dvReactTreeViewLoadFailed() {
+                var mount = document.getElementById('dv-tree-view');
+                if (mount) {
+                    mount.innerHTML = '<div class="alert alert-danger" role="alert">'
+                        + #{systemConfig.jsString(bundle['file.reactTreeView.loadFailed'])}
+                        + '</div>';
+                }
+            }
+            //]]>
+        </script>
+        <script type="module" src="#{systemConfig.reusableComponentsBaseUrl}/dv-tree-view.js" onerror="dvReactTreeViewLoadFailed()"></script>
+    </ui:fragment>
+
     <p:tree id="filesTree" style="width:100%;"
-            rendered="#{DatasetPage.fileDisplayTree}"
+            rendered="#{!useReactTreeView and DatasetPage.fileDisplayTree}"
             widgetVar="filesTree"
             value="#{DatasetPage.filesTreeRoot}"
             var="node">
@@ -666,5 +697,5 @@
             </a>
             <span class="text-muted">(#{node.dataFile.friendlySize})</span>
         </p:treeNode>
-    </p:tree>      
+    </p:tree>
 </ui:composition>

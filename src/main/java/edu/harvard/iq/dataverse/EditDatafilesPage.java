@@ -1386,6 +1386,18 @@ public class EditDatafilesPage implements java.io.Serializable {
         return mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.REPLACE;
     }
 
+    /**
+     * Shared uploader gate for the mount point and Done button.
+     */
+    public boolean isReactUploaderActive() {
+        return showFileUploadFragment()
+                && mode != FileEditMode.REPLACE
+                && workingVersion != null
+                && !workingVersion.isHasPackageFile()
+                && !isFileReplaceOperation()
+                && systemConfig.isReactUploaderAvailable(dataset);
+    }
+
     public boolean showFileUploadComponent() {
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
             return true;
