@@ -88,6 +88,7 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     API_ALLOW_INCOMPLETE_METADATA(SCOPE_API, "allow-incomplete-metadata"),
+    API_LAST_API_USE_INTERVAL(SCOPE_API, "last-api-use-interval"),
     // API: BLOCKED_API SETTINGS
     SCOPE_API_BLOCKED(SCOPE_API, "blocked"),
     API_BLOCKED_ENDPOINTS(SCOPE_API_BLOCKED, "endpoints"),
@@ -96,6 +97,8 @@ public enum JvmSettings {
     // API: MDC Citation updates
     SCOPE_API_MDC(SCOPE_API, "mdc"),
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
+    GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES(SCOPE_API, "guestbook-response-timeout-minutes"),
+    GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES(SCOPE_API, "guestbook-response-external-tool-timeout-minutes"),
     // API: Builtin user sign-up
     SCOPE_API_SIGNUP(SCOPE_API, "signup"),
     API_SIGNUP_RATE_LIMIT_PER_HOUR(SCOPE_API_SIGNUP, "rate-limit-per-hour"),

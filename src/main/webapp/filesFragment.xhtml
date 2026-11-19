@@ -115,7 +115,7 @@
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"  ariaLabel="#{bundle['dataverse.search.btn.find']}">
+                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true" ariaLabel="#{bundle['dataverse.search.btn.find']}" >
                                 <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
                         </span>
@@ -360,10 +360,10 @@
                         <h:outputFormat value="#{bundle['file.numFilesSelected']}">
                             <f:param value="#{DatasetPage.selectedFiles.size()}"/>
                         </h:outputFormat>
-                        <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt fileMetadataCount}">
+                        <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt DatasetPage.fileMetadatasSearch.size()}">
                             &#160;
                             <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form">
-                                <h:outputFormat value="#{bundle['file.selectAllFiles']}">
+                                <h:outputFormat value="#{DatasetPage.fileMetadatasSearch.size() lt fileMetadataCount ? bundle['file.selectAllMatchingFiles'] : bundle['file.selectAllFiles']}">
                                     <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                                 </h:outputFormat>
                             </p:commandLink>

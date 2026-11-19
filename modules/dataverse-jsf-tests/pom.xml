@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Build for the JSF frontend tests. It inherits versions and plugin setup
+        from dataverse-parent, but is not one of its <modules>, so the main
+        Dataverse build doesn't run it. Run it with
+        "mvn -f modules/dataverse-jsf-tests verify" from the repository root.
+    -->
+    <parent>
+        <groupId>edu.harvard.iq</groupId>
+        <artifactId>dataverse-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../dataverse-parent</relativePath>
+    </parent>
+
+    <artifactId>dataverse-jsf-tests</artifactId>
+    <packaging>jar</packaging>
+    <name>dataverse-jsf-tests</name>
+    <description>Playwright end-to-end tests for the Dataverse JSF frontend.</description>
+
+    <properties>
+        <!-- Not managed by dataverse-parent -->
+        <playwright.version>1.61.0</playwright.version>
+        <hamcrest.version>2.2</hamcrest.version>
+        <!-- Set by the browser-* profiles below to run a single browser. -->
+        <skip.chromium>false</skip.chromium>
+        <skip.firefox>false</skip.firefox>
+        <skip.webkit>false</skip.webkit>
+        <jsf.reports>${project.build.directory}/failsafe-reports</jsf.reports>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>${hamcrest.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${target.java.version}</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- No unit tests here: skip the empty Surefire step ("Tests run: 0"). -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Nothing to package: don't build an empty jar. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <skipIfEmpty>true</skipIfEmpty>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!--
+                    `mvn verify` runs the whole suite once per browser, back to
+                    back: chromium, then firefox, then webkit. Each run is its own
+                    JVM that installs and logs in to its browser before its first
+                    test. A failing browser doesn't stop the next one; the final
+                    `verify` step fails the build if any of them had failures.
+                    -Ddataverse.test.jsf.browser=firefox runs only that browser.
+                -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <!-- JSF tests are *JT ("JSF test"); Failsafe only looks for *IT by default. -->
+                    <includes>
+                        <include>**/*JT.java</include>
+                    </includes>
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>chromium</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.chromium}</skipITs>
+                            <systemPropertyVariables>
+                                <dataverse.test.jsf.browser>chromium</dataverse.test.jsf.browser>
+                            </systemPropertyVariables>
+                            <reportsDirectory>${jsf.reports}/chromium</reportsDirectory>
+                            <summaryFile>${jsf.reports}/chromium/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>firefox</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.firefox}</skipITs>
+                            <systemPropertyVariables>
+                                <dataverse.test.jsf.browser>firefox</dataverse.test.jsf.browser>
+                            </systemPropertyVariables>
+                            <reportsDirectory>${jsf.reports}/firefox</reportsDirectory>
+                            <summaryFile>${jsf.reports}/firefox/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>webkit</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.webkit}</skipITs>
+                            <systemPropertyVariables>
+                                <dataverse.test.jsf.browser>webkit</dataverse.test.jsf.browser>
+                            </systemPropertyVariables>
+                            <reportsDirectory>${jsf.reports}/webkit</reportsDirectory>
+                            <summaryFile>${jsf.reports}/webkit/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <!--
+                        One verify per browser, skipped together with that browser's run, so
+                        -Ddataverse.test.jsf.browser=<name> only checks the summary it wrote.
+                        All integration-test executions finish before the verify phase, so a
+                        full run still tests every browser before failing on any of them.
+                    -->
+                    <execution>
+                        <id>verify-chromium</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.chromium}</skipITs>
+                            <summaryFile>${jsf.reports}/chromium/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify-firefox</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.firefox}</skipITs>
+                            <summaryFile>${jsf.reports}/firefox/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify-webkit</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skipITs>${skip.webkit}</skipITs>
+                            <summaryFile>${jsf.reports}/webkit/failsafe-summary.xml</summaryFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!--
+                    Necessary to run the Playwright CLI (install-deps, show-trace, codegen)
+                    through Maven: exec:java with -Dexec.mainClass=com.microsoft.playwright.CLI.
+                    CI invocation: "install-deps <browser>", which installs that browser's
+                    system libraries before its test run. See .github/actions/run-jsf-tests.
+                -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--
+            One profile per browser, each running only that browser by skipping the
+            other two. Activate one with -Pbrowser-<name> (chromium, firefox or
+            webkit), or with -Ddataverse.test.jsf.browser=<name>, which CI uses.
+        -->
+        <profile>
+            <id>browser-chromium</id>
+            <activation>
+                <property>
+                    <name>dataverse.test.jsf.browser</name>
+                    <value>chromium</value>
+                </property>
+            </activation>
+            <properties>
+                <skip.firefox>true</skip.firefox>
+                <skip.webkit>true</skip.webkit>
+            </properties>
+        </profile>
+        <profile>
+            <id>browser-firefox</id>
+            <activation>
+                <property>
+                    <name>dataverse.test.jsf.browser</name>
+                    <value>firefox</value>
+                </property>
+            </activation>
+            <properties>
+                <skip.chromium>true</skip.chromium>
+                <skip.webkit>true</skip.webkit>
+            </properties>
+        </profile>
+        <profile>
+            <id>browser-webkit</id>
+            <activation>
+                <property>
+                    <name>dataverse.test.jsf.browser</name>
+                    <value>webkit</value>
+                </property>
+            </activation>
+            <properties>
+                <skip.chromium>true</skip.chromium>
+                <skip.firefox>true</skip.firefox>
+            </properties>
+        </profile>
+    </profiles>
+</project>

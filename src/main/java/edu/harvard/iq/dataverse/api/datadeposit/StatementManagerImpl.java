@@ -59,7 +59,7 @@ public class StatementManagerImpl implements StatementManager {
         if (urlManager.getTargetType().equals("study") && globalId != null) {
 
             logger.fine("request for sword statement by user " + user.getDisplayInfo().getTitle());
-            Dataset dataset = datasetService.findByGlobalId(globalId);
+            Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(globalId, dvReq);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find dataset with global ID of " + globalId);
             }
