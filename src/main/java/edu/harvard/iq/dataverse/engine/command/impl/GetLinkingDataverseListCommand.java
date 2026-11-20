@@ -96,7 +96,6 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
                     if (ctxt.permissions().hasPermissionsFor(getRequest(), dv, EnumSet.of(Permission.LinkDataset))) {
                         dataversesAlreadyLinkedCanUnlink.add(dv);
                     }
-                    return dataversesAlreadyLinkedCanUnlink;
                 }
             } else {
                 dataversesAlreadyLinked = ctxt.dvLinking().findLinkingDataverses(dvObject.getId(), searchParam);
@@ -105,9 +104,8 @@ public class GetLinkingDataverseListCommand extends AbstractCommand<List<Dataver
                         dataversesAlreadyLinkedCanUnlink.add(dv);
                     }
                 }
-                return dataversesAlreadyLinkedCanUnlink;
             }
-            return null;
+            return dataversesAlreadyLinkedCanUnlink;
         }
     }
 }
