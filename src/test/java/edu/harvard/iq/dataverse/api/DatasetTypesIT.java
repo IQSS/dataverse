@@ -12,6 +12,7 @@ import io.restassured.response.Response;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CONFLICT;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
@@ -737,13 +738,24 @@ public class DatasetTypesIT {
 
         setAllowedDatasetTypes(dataverseAlias, "testDatasetType");
 
+        // First, try creating a dataset with a license (CC BY 4.0) that is NOT in the
+        // dataset type's available licenses (only CC0 1.0 is allowed).
+        // This should fail with 409 Conflict because the license is invalid for this type
+        // and leaving it null would violate the "license or termsOfUse must be set" constraint.
         String pathToJsonFile = "scripts/api/data/dataset-create-new-with-type.json";
-        
-        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
-        
-        createDatasetResponse.prettyPrint();
-        
 
+        Response createDatasetResponseFail = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponseFail.prettyPrint();
+        createDatasetResponseFail.then().assertThat().statusCode(CONFLICT.getStatusCode());
+
+        // Now create a dataset with the allowed license (CC0 1.0)
+        String jsonWithAllowedLicense = UtilIT.getDatasetJson("scripts/api/data/dataset-create-new-with-type.json");
+        jsonWithAllowedLicense = jsonWithAllowedLicense
+                .replace("\"CC BY 4.0\"", "\"CC0 1.0\"")
+                .replace("\"https://creativecommons.org/licenses/by/4.0/\"", "\"https://creativecommons.org/publicdomain/zero/1.0/\"");
+
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, jsonWithAllowedLicense, apiToken);
+        createDatasetResponse.prettyPrint();
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
 
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
@@ -758,9 +770,7 @@ public class DatasetTypesIT {
         String datasetVerstionState = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.latestVersion.versionState");
         assertEquals("DRAFT", datasetVerstionState);
         String datasetLicense = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.latestVersion.license");
-        //License is null because the one in the dataset json does not correspond to the 
-        // available licenses in the dataset type.
-        assertNull(datasetLicense);
+        assertEquals("CC0 1.0", datasetLicense);
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());

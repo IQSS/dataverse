@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import jakarta.persistence.EntityManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -81,7 +80,7 @@ public class CreateTemplateCommandTest {
         verify(templateServiceBeanStub).save(templateSpy);
         verify(templateSpy, never()).setDataverse(any(Dataverse.class));
         verify(templateSpy, never()).setMetadataValueBlocks(any());
-        verify(templateSpy, never()).setTermsOfUseAndAccess(any());
+        verify(templateSpy, never()).setTermsOfAccess(any());
     }
 
     @Test
@@ -137,12 +136,17 @@ public class CreateTemplateCommandTest {
         assertEquals(1, mdbCaptor.getValue().size());
         assertEquals("citation", mdbCaptor.getValue().get(0).getName());
 
-        // 3. Verify TermsOfUseAndAccess were created and set correctly
-        ArgumentCaptor<TermsOfUseAndAccess> termsCaptor = ArgumentCaptor.forClass(TermsOfUseAndAccess.class);
-        verify(templateSpy).setTermsOfUseAndAccess(termsCaptor.capture());
-        TermsOfUseAndAccess capturedTerms = termsCaptor.getValue();
-        assertTrue(capturedTerms.isFileAccessRequest());
-        assertEquals("CC0", capturedTerms.getLicense().getName());
+        // 3a. Verify TermsOfUseOrLicense were created and set correctly
+        ArgumentCaptor<TermsOfUseOrLicense> toualtCaptor = ArgumentCaptor.forClass(TermsOfUseOrLicense.class);
+        verify(templateSpy).setDefaultTermsOfUseOrLicense(toualtCaptor.capture());
+        TermsOfUseOrLicense capturedToual = toualtCaptor.getValue();
+        assertEquals("CC0", capturedToual.getLicense().getName());
+
+        // 3b. Verify TermsOfAccess were created and set correctly
+        ArgumentCaptor<TermsOfAccess> toaCaptor = ArgumentCaptor.forClass(TermsOfAccess.class);
+        verify(templateSpy).setTermsOfAccess(toaCaptor.capture());
+        TermsOfAccess capturedToa = toaCaptor.getValue();
+        assertTrue(capturedToa.isFileAccessRequest());
 
         // 4. Verify DatasetFieldInputLevels were checked
         verify(fieldTypeInputLevelServiceBeanMock).findByDataverseIdDatasetFieldTypeId(42L, 101L);

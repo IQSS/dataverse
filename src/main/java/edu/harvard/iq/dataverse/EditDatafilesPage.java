@@ -778,8 +778,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException {
 
         if (restricted) { // get values from access popup
-            workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-            workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
+            workingVersion.getTermsOfAccess().setTermsOfAccess(termsOfAccess);
+            workingVersion.getTermsOfAccess().setFileAccessRequest(fileAccessRequest);
         }
 
         String fileNames = null;
@@ -852,7 +852,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 hasValidTermsOfAccess = true;
                 return hasValidTermsOfAccess;
             } else {
-                hasValidTermsOfAccess = TermsOfUseAndAccessValidator.isTOUAValid(workingVersion.getTermsOfUseAndAccess(), null);
+                hasValidTermsOfAccess = TermsOfAccessValidator.isTOUAValid(workingVersion.getTermsOfAccess(), null);
                 return hasValidTermsOfAccess;
             }
         }
