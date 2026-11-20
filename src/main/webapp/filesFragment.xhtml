@@ -635,7 +635,7 @@
                             <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="isDraftReplacementFile" value="#{false}"/>
-                            <ui:param name="hasPackageFile" value="#{fileMetadata.dataFile.filePackage}"/>                                
+                            <ui:param name="hasPackageFile" value="#{fileMetadata.dataFile.filePackage}"/>
                             <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile)}"/>
                             <ui:param name="bean" value="#{DatasetPage}"/>
                             <ui:param name="unrestrictFileAction" value="restrictFiles"/>
@@ -662,9 +662,9 @@
             <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(node.dataFile)} text-muted"/>
             <!-- conditional render in file page links, if file has global id, use that; if not, we use database id -->
             <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty node.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty node.dataFile.globalId ? node.dataFile.globalId.asString() : node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
-                #{node.label}
+                #{node.labelForOriginal}
             </a>
-            <span class="text-muted">(#{node.dataFile.friendlySize})</span>
+            <span class="text-muted">(#{node.dataFile.friendlyOriginalFileSize})</span>
         </p:treeNode>
     </p:tree>      
 </ui:composition>
