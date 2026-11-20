@@ -118,6 +118,17 @@ public class SolrSearchServiceBean implements SearchService {
             boolean addHighlights,
             boolean addCollections
     ) throws SearchException {
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder,
+                paginationStart, onlyDatatRelatedToMe, numResultsPerPage, retrieveEntities,
+                geoPoint, geoRadius, addFacets, addHighlights, addCollections, List.of());
+    }
+
+    @Override
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses,
+            String query, List<String> filterQueries, String sortField, String sortOrder,
+            int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage,
+            boolean retrieveEntities, String geoPoint, String geoRadius, boolean addFacets,
+            boolean addHighlights, boolean addCollections, List<String> requestedFields) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -218,6 +229,8 @@ public class SolrSearchServiceBean implements SearchService {
         }
 
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
+        List<String> selectedFields = SolrFieldSelection.validate(requestedFields, datasetFields);
+
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
         if (addHighlights) {
             solrQuery.setHighlight(true).setHighlightSnippets(1).setHighlightRequireFieldMatch(true);
@@ -454,7 +467,9 @@ public class SolrSearchServiceBean implements SearchService {
             List<String> matchedFields = new ArrayList<>();
             
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
-            
+            if (!selectedFields.isEmpty()) {
+                solrSearchResult.setSelectedSolrFields(SolrFieldSelection.json(solrDocument, selectedFields));
+            }
             if (addHighlights) {
                 List<Highlight> highlights = new ArrayList<>();
                 Map<SolrField, Highlight> highlightsMap = new HashMap<>();
