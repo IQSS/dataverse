@@ -3189,8 +3189,6 @@ public class DataversesIT {
                 .body("data.name", equalTo("Dataverse template"))
                 .body("data.isDefault", equalTo(true))
                 .body("data.usageCount", equalTo(0))
-                .body("data.defaultTermsOfUseOrLicense", notNullValue())
-                .body("data.defaultTermsOfUseOrLicense.license", notNullValue())
                 .body("data.defaultTermsOfUseOrLicense.license.name", equalTo("CC0 1.0"))
                 .body("data.datasetFields.citation.fields.size()", equalTo(1))
                 .body("data.instructions.size()", equalTo(1))
@@ -3305,7 +3303,7 @@ public class DataversesIT {
         getTemplate.prettyPrint();
                 getTemplate.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.defaultTermsOfUseOrLicense.termsOfAccess", equalTo("Here are the terms..."));
+                .body("data.termsOfAccess.termsOfAccess", equalTo("Here are the terms..."));
         // back to super for cleanup
         
         UtilIT.setSuperuserStatus(username, true);

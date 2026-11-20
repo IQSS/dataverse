@@ -1,3 +1,20 @@
+-- Delete OAI records for datasets that are inside Locally FAIR dataverses.
+-- A dataset is Locally FAIR when its owner dataverse has at least one entry
+-- in the dataverse_locallyfairassignees table.
+-- The OAIRecord.globalid column stores the full persistent identifier string
+-- (e.g. "doi:10.5072/FK2/..."), which corresponds to
+-- CONCAT(dvobject.protocol, ':', dvobject.authority, dvobject.separator, dvobject.identifier).
+DELETE FROM oairecord
+WHERE globalid IN (
+    SELECT CONCAT(dvobject.protocol, ':', dvobject.authority, dvobject.separator, dvobject.identifier)
+    FROM dvobject
+    INNER JOIN dataset ON dvobject.id = dataset.id
+    INNER JOIN dataverse_locallyfairassignees ON dvobject.owner_id = dataverse_locallyfairassignees.dataverse_id
+);
+
+-- split table TermsOfUseAndAccess into two tables TermsOfAccess and TermsOfUseOrLicense
+-- this prepares for file specific terms of use or license, which will be implemented in a future release
+
 CREATE TABLE IF NOT EXISTS termsofaccess (
                        id  BIGSERIAL NOT NULL,
                        availabilitystatus TEXT,
@@ -220,8 +237,8 @@ BEGIN
   SELECT CASE WHEN relpages<10 THEN 0
               ELSE ((reltuples / relpages)
                * (pg_relation_size('public.guestbookresponse') / current_setting('block_size')::int))::bigint
-               * (SELECT CASE WHEN ((select count(*) from pg_stats where tablename='guestbookresponse') = 0 
-                   OR (select array_position(most_common_vals::text::text[], 'AccessRequest') 
+               * (SELECT CASE WHEN ((select count(*) from pg_stats where tablename='guestbookresponse') = 0
+                   OR (select array_position(most_common_vals::text::text[], 'AccessRequest')
                        FROM pg_stats WHERE tablename='guestbookresponse' AND attname='eventtype') IS NULL) THEN 1
                    ELSE 1 - (SELECT (most_common_freqs::text::text[])[array_position(most_common_vals::text::text[], 'AccessRequest')]::float
                        FROM pg_stats WHERE tablename='guestbookresponse' and attname='eventtype') END)
@@ -231,7 +248,7 @@ BEGIN
 
      if estimatedsize = 0 then
      SELECT COUNT(id) FROM guestbookresponse WHERE eventtype!= 'AccessRequest' INTO estimatedsize;
-     END if;   
+     END if;
 
   RETURN estimatedsize;
 END;

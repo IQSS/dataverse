@@ -688,7 +688,7 @@ public class JsonPrinterTest {
         assertEquals(template.getDataverse().getAlias(), jsonObject.getString("dataverseAlias"));
 
         // Verify termsOfUseOrLicense field by checking a sub-field
-        JsonObject termsOUALJson = jsonObject.getJsonObject("termsOfUseOrLicense");
+        JsonObject termsOUALJson = jsonObject.getJsonObject("defaultTermsOfUseOrLicense");
         assertNotNull(termsOUALJson);
         assertEquals(template.getDefaultTermsOfUseOrLicense().getTermsOfUse(), termsOUALJson.getString("termsOfUse"));
 

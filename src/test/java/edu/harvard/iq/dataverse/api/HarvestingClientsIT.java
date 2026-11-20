@@ -1,15 +1,21 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import io.restassured.RestAssured;
+
+import static edu.harvard.iq.dataverse.api.UtilIT.isSourceAvailable;
 import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -51,6 +57,8 @@ public class HarvestingClientsIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Assumptions.assumeTrue(isSourceAvailable(HARVEST_URL), "Skipping harvesting client tests because " + ARCHIVE_URL + " is unavailable.");
         
         // Create the users, an admin and a non-admin:
         setupUsers(); 
@@ -59,6 +67,7 @@ public class HarvestingClientsIT {
         setupCollection();
         
     }
+
     @AfterEach
     public void cleanup() throws InterruptedException {
         if (clientApiPath != null) {
