@@ -80,6 +80,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         logger.info("Finalizing publication of the dataset "+theDataset.getGlobalId().asString());
         
+        try {
         // validate the physical files before we do anything else: 
         // (unless specifically disabled; or a minor version)
         if (theDataset.getLatestVersion().getVersionState() != RELEASED
@@ -111,7 +112,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // Send failure notification to the user:
                 notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 // Remove the dataset lock:
-                ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
+                //ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
                 // re-throw the exception:
                 throw comEx;
             }
@@ -254,14 +255,27 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         setDataset(readyDataset);
         
-        // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
-        ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
-        if (readyDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.InReview);
+        } catch (CommandException comEx) {
+            // this is just for the sake of making sure the dataset is properly 
+            // unlocked, in terms of finalizePublication and Workflow locks, 
+            // regardless of the outcome, via finally {} below
+            throw comEx;
+        } finally {
+            ctxt.datasets().removeDatasetLocks(getDataset(), DatasetLock.Reason.finalizePublication);
+            if (getDataset().isLockedFor(DatasetLock.Reason.Workflow)) {
+                ctxt.datasets().removeDatasetLocks(getDataset(), DatasetLock.Reason.Workflow);
+            }
         }
         
-        logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
-        readyDataset = ctxt.em().merge(readyDataset);
+        // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
+        //ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
+        if (getDataset().isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(getDataset(), DatasetLock.Reason.InReview);
+        }
+        
+        logger.info("Successfully published the dataset "+getDataset().getGlobalId().asString());
+        // why do we keep ctxt.em().merging it repeatedly anyway?
+        Dataset readyDataset = ctxt.em().merge(getDataset());
 
         // Delete any Featured Items that are invalidated by publishing this version
         ctxt.dataverseFeaturedItems().deleteInvalidatedFeaturedItemsByDataset(readyDataset);
@@ -385,18 +399,18 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 logger.info(message);
             }
         } catch (Throwable e) {
-            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+            /*if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
                 DatasetLock lock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
                 lock.setReason(DatasetLock.Reason.FileValidationFailed);
                 lock.setInfo(FILE_VALIDATION_ERROR);
                 ctxt.datasets().updateDatasetLock(lock);
-            } else {            
+            } else {*/          
                 // Lock the dataset with a new FileValidationFailed lock: 
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.FileValidationFailed, getRequest().getAuthenticatedUser()); //(AuthenticatedUser)getUser());
                 lock.setDataset(dataset);
                 lock.setInfo(FILE_VALIDATION_ERROR);
                 ctxt.datasets().addDatasetLock(dataset, lock);
-            }
+            /*}*/
             
             // Throw a new CommandException; if the command is being called 
             // synchronously, it will be intercepted and the page will display 
@@ -447,7 +461,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             // Send failure notification to the user:
             notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
 
-            ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
+            //ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
             throw new CommandException(
                     BundleUtil.getStringFromBundle("dataset.publish.error", pidProvider.getProviderInformation()),
                     this);
