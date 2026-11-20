@@ -1,0 +1,14 @@
+{
+  "dismissibleByUser": "false",
+  "collapsed": "true",
+  "messageTexts": [
+  {
+    "lang": "en",
+    "message": "Globus-accessible tape and disk storage will be unavailable between June 15 3PM EDT and June 18 3PM EDT, due to the scheduled yearly maintenance at MGHPCC (Holyoke Data Center)."
+  },
+  {
+    "lang": "fr",
+    "message": "Message de bannière réduit ajouté via l'API"
+  }
+  ]
+}

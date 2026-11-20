@@ -19,7 +19,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
  * @author skraffmi
  */
 @Entity
-@Schema(description = "Site banner message configuration, including active state, dismissibility, and localized message text.")
+@Schema(description = "Site banner message configuration, including active state, dismissibility, whether it is collapsed behind an icon, and localized message text.")
 public class BannerMessage implements Serializable {
 
     @Id
@@ -31,6 +31,13 @@ public class BannerMessage implements Serializable {
     
     @Column
     private boolean active;
+
+    /**
+     * When true, the banner message is hidden behind an icon and only
+     * revealed when the user clicks the icon.
+     */
+    @Column(nullable = false)
+    private boolean collapsed;
 
     @OneToMany(mappedBy = "bannerMessage", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<BannerMessageText> bannerMessageTexts;
@@ -63,6 +70,14 @@ public class BannerMessage implements Serializable {
 
     public void setDismissibleByUser(boolean dismissibleByUser) {
         this.dismissibleByUser = dismissibleByUser;
+    }
+
+    public boolean isCollapsed() {
+        return collapsed;
+    }
+
+    public void setCollapsed(boolean collapsed) {
+        this.collapsed = collapsed;
     }
 
     public Long getId() {

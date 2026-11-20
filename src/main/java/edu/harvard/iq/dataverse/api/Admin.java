@@ -78,6 +78,7 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.Produces;
@@ -2643,7 +2644,7 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     @Operation(summary = "Publish a banner message",
             description = "Creates an active banner message with localized message text.")
-    public Response addBannerMessage(@RequestBody(description = "Banner message JSON containing dismissibleByUser and messageTexts entries.")
+    public Response addBannerMessage(@RequestBody(description = "Banner message JSON containing dismissibleByUser, optional collapsed, and messageTexts entries.")
             JsonObject jsonObject) throws WrappedResponse {
 
         BannerMessage toAdd = new BannerMessage();
@@ -2656,6 +2657,7 @@ public class Admin extends AbstractApiBean {
                 dismissibleByUser = true;
             }
             toAdd.setDismissibleByUser(dismissibleByUser);
+            toAdd.setCollapsed(parseOptionalBoolean(jsonObject, "collapsed"));
             toAdd.setBannerMessageTexts(new ArrayList());
             toAdd.setActive(true);
             JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
@@ -2684,6 +2686,28 @@ public class Admin extends AbstractApiBean {
 
     }
     
+    /**
+     * Reads an optional boolean that may be sent either as a JSON boolean or,
+     * for consistency with "dismissibleByUser", as the string "true"/"false".
+     * A missing or null value is treated as false.
+     */
+    private static boolean parseOptionalBoolean(JsonObject jsonObject, String key) {
+        if (!jsonObject.containsKey(key) || jsonObject.isNull(key)) {
+            return false;
+        }
+        JsonValue value = jsonObject.get(key);
+        switch (value.getValueType()) {
+            case TRUE:
+                return true;
+            case FALSE:
+                return false;
+            case STRING:
+                return "true".equalsIgnoreCase(jsonObject.getString(key));
+            default:
+                throw new IllegalArgumentException("Invalid value for " + key);
+        }
+    }
+
     @DELETE
     @Path("/bannerMessage/{id}")
     @Operation(summary = "Remove a banner message",
@@ -2720,7 +2744,7 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("/bannerMessage")
     @Operation(summary = "Enumerate banner messages",
-            description = "Lists banner message ids and display values.")
+            description = "Lists banner message ids, display values, dismissibleByUser, and collapsed.")
     public Response getBannerMessages(@Parameter(description = "Unused banner message id parameter.")
             @PathParam("id") Long id) throws WrappedResponse {
 
@@ -2733,7 +2757,8 @@ public class Admin extends AbstractApiBean {
         }
 
         JsonArrayBuilder messages = messagesList.stream()
-        .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+        .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue())
+                .add("dismissibleByUser", m.isDismissibleByUser()).add("collapsed", m.isCollapsed()))
         .collect(toJsonArray());
         
         return ok(messages);

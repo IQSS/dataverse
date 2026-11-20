@@ -36,6 +36,14 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
+                        <!-- Toggles the collapsed banner messages (shown in yellow below the navbar when expanded). -->
+                        <li id="bannerToggleItem" jsf:rendered="#{dataverseHeaderFragment.collapsedBannerMessagePresent}">
+                            <a href="#" id="bannerToggleLink" class="collapsed" role="button"
+                               data-toggle="collapse" data-target=".status-alert-collapsed"
+                               aria-expanded="false" title="#{bundle['header.banner.toggle']}">
+                                #{bundle['header.banner.news']} <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
+                            </a>
+                        </li>
                         <li class="dropdown" jsf:rendered="#{showAddDataGroup}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
@@ -201,9 +209,11 @@
         <o:form class="form-inline">
             <ui:fragment rendered="#{!empty dataverseHeaderFragment.bannerMessages}">
                 <ui:repeat value="#{dataverseHeaderFragment.bannerMessages}" var="message" varStatus="status">                
-                    <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.displayValue }">
+                    <!-- Collapsed banners are hidden until the bullhorn icon in the navbar (#bannerToggleLink) is clicked. -->
+                    <div id="status-alert-#{status.index}" class="status-alert bg-warning #{message.collapsed ? 'status-alert-collapsed collapse' : ''}" jsf:rendered="#{!empty message.displayValue }">
                         <div class="alert alert-dismissible container text-warning">
-                            <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="&#215;" process="@this"/>
+                            <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="&#215;" process="@this"
+                                             oncomplete="if ($('.status-alert-collapsed').length) { $('#bannerToggleLink').addClass('collapsed').attr('aria-expanded', 'false'); } else { $('#bannerToggleItem').remove(); }"/>
                             <h:outputText rendered="#{!empty message.displayValue }" value=" #{message.displayValue }" escape="false"/>
                         </div>
                     </div>

@@ -311,6 +311,20 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return bannerMessages;
     }
 
+    /**
+     * @return true if at least one banner message that will be displayed is
+     * collapsed (hidden until the user clicks the icon in the navbar).
+     */
+    public boolean isCollapsedBannerMessagePresent() {
+        for (BannerMessage message : getBannerMessages()) {
+            String displayValue = message.getDisplayValue();
+            if (message.isCollapsed() && displayValue != null && !displayValue.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void setBannerMessages(List<BannerMessage> bannerMessages) {
         this.bannerMessages = bannerMessages;
     }

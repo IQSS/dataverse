@@ -49,8 +49,10 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
-#status-alert {margin-top:0; margin-bottom:0;}
-#status-alert div.alert {border:0; box-shadow:none;}
+.status-alert {margin-top:0; margin-bottom:0;}
+.status-alert div.alert {border:0; box-shadow:none;}
+#navbarFixed #bannerToggleLink .glyphicon {margin-left:4px;}
+#navbarFixed #bannerToggleLink:not(.collapsed) {background-color:#fcf8e3; color:#8a6d3b;}
 
 footer {height:0px; color:#767676;}
 #dvfooter {padding-top:60px;}

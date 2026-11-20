@@ -8130,6 +8130,8 @@ Communications to users can be handled via banner messages that are displayed at
 
 Note that HTML can be included in banner messages.
 
+Either type of banner message can also be collapsed (hidden behind an icon) by setting ``collapsed`` to true. A "News" link with a bullhorn icon is shown in the navbar (to the left of "Add Data") and clicking it reveals all collapsed messages below the navbar. Clicking it again hides them. This is useful for longer messages that would otherwise take up a lot of space. ``collapsed`` is optional and defaults to false, in which case the full text of the message is shown. Like ``dismissibleByUser``, it can be sent as ``"true"``/``"false"`` or as a JSON boolean.
+
 Add a Banner Message::
 
   curl -H "Content-type:application/json" -X POST "http://$SERVER/api/admin/bannerMessage" --upload-file messages.json
@@ -8138,6 +8140,7 @@ Where ``messages.json`` looks like this::
 
   {
     "dismissibleByUser": "true",
+    "collapsed": "false",
     "messageTexts": [
     {
       "lang": "en",
@@ -8153,6 +8156,8 @@ Where ``messages.json`` looks like this::
 Get a list of active Banner Messages::
 
   curl  -X GET "http://$SERVER/api/admin/bannerMessage"
+
+Each banner message in the list includes its ``id``, ``displayValue``, ``dismissibleByUser``, and ``collapsed``.
   
 Delete a Banner Message by its id::
 

@@ -1,0 +1,14 @@
+{
+  "dismissibleByUser": "false",
+  "collapsed": "true",
+  "messageTexts": [
+  {
+    "lang": "en",
+    "message": "Collapsed Banner Message added via API"
+  },
+  {
+    "lang": "fr",
+    "message": "Message de bannière réduit ajouté via l'API"
+  }
+  ]
+}

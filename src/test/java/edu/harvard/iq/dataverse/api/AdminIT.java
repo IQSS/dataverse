@@ -1028,7 +1028,27 @@ public class AdminIT {
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"));
-        
+
+        //We add a collapsed banner message (hidden behind an icon)
+        pathToJsonFile = "scripts/api/data/bannerMessageCollapsed.json";
+        Response addCollapsedResponse = UtilIT.addBannerMessage(pathToJsonFile);
+        addCollapsedResponse.prettyPrint();
+        addCollapsedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Banner Message added successfully."));
+        Long collapsedBanner = JsonPath.from(addCollapsedResponse.getBody().asString()).getLong("data.id");
+
+        //We check that the collapsed flag is returned
+        getBannerMessageResponse = UtilIT.getBannerMessages();
+        getBannerMessageResponse.prettyPrint();
+        getBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.find { it.id == " + collapsedBanner + " }.collapsed", equalTo(true))
+                .body("data.find { it.id == " + collapsedBanner + " }.dismissibleByUser", equalTo(false));
+
+        deleteBannerMessageResponse = UtilIT.deleteBannerMessage(collapsedBanner);
+        deleteBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
     /**
