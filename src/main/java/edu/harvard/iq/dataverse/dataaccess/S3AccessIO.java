@@ -169,6 +169,28 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private String endpoint = null;
     private String proxy = null;
 
+    /**
+     * Centralized helper to rewrite a presigned S3 URL to route through a proxy.
+     * Replaces the URL's host with the proxy's host and uses the proxy's port
+     * (if specified), while preserving the path and query parameters (which contain the signature).
+     *
+     * @param urlString the presigned URL string to rewrite
+     * @param endpoint  the configured S3 endpoint (may include scheme and port, e.g. "https://s3.example.com:9000" or "s3.example.com")
+     * @param proxy     the proxy URL to route through (e.g. "https://proxy.example.com")
+     * @return the rewritten URL string, or the original if no rewrite is needed
+     */
+    static String rewriteUrlForProxy(String urlString, String endpoint, String proxy) {
+        if (StringUtil.isEmpty(proxy) || StringUtil.isEmpty(endpoint)) {
+            return urlString;
+        }
+        int endpointEnd = urlString.indexOf(endpoint);
+        if (endpointEnd != -1) {
+            return proxy + urlString.substring(endpointEnd + endpoint.length());
+        } else {
+            return urlString;
+        }
+    }
+
     @Override
     public void open(DataAccessOption... options) throws IOException {
         if (s3ReadClient == null || s3WriteClient == null) {
@@ -1082,20 +1104,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             if (presignedRequest != null) {
                 String urlString = presignedRequest.url().toString();
-                if (!StringUtil.isEmpty(proxy)) {
-                    String endpointServer = endpoint;
-                    int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
-                    if (protocolEnd >= 0) {
-                        endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
-                    }
-                    logger.fine("Endpoint: " + endpointServer);
-                    logger.fine("Original Url: " + urlString);
-                    String finalUrl = urlString.replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)" + endpointServer, proxy);
-                    logger.fine("ProxiedURL: " + finalUrl);
-                    return finalUrl;
-                } else {
-                    return urlString;
-                }
+                return rewriteUrlForProxy(urlString, endpoint, proxy);
             }
 
             return null;
@@ -1137,21 +1146,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         String urlString = presignedRequest.url().toString();
-
-        if (!StringUtil.isEmpty(proxy)) {
-            String endpointServer = endpoint;
-            int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
-            if (protocolEnd >= 0) {
-                endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
-            }
-            logger.fine("Endpoint: " + endpointServer);
-            // We're then replacing
-            // http or https followed by :// and an optional <bucketname>. before the
-            // normalized endpoint url
-            // with the proxy info (which is protocol + machine name and optional port)
-            urlString = urlString.replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)" + endpointServer, proxy);
-            logger.fine("ProxiedURL: " + urlString);
-        }
+        urlString = rewriteUrlForProxy(urlString, endpoint, proxy);
 
         return urlString;
     }
@@ -1183,9 +1178,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                         .build());
 
                 String urlString = presignedRequest.url().toString();
-                if (!StringUtil.isEmpty(proxy)) {
-                    urlString = urlString.replace(endpoint, proxy);
-                }
+                urlString = rewriteUrlForProxy(urlString, endpoint, proxy);
                 urls.add(Integer.toString(i), urlString);
             }
 
