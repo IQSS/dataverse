@@ -919,12 +919,6 @@
                             <bundledSignature>commons-io-unsafe-${commons.io.version}</bundledSignature>
                         -->
                     </bundledSignatures>
-                    <signaturesFiles>
-                        <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
-                    </signaturesFiles>
-                    <excludes>
-                        <exclude>edu/harvard/iq/dataverse/util/xml/XmlUtil.class</exclude>
-                    </excludes>
                     <targetVersion>${target.java.version}</targetVersion>
                 </configuration>
                 <executions>
@@ -934,6 +928,17 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                        <configuration>
+                            <signaturesFiles>
+                                <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
+                            </signaturesFiles>
+                            <!-- This execution is strict and will fail the build if violations are found -->
+                            <failOnViolation>true</failOnViolation>
+                            <excludes>
+                                <exclude>edu/harvard/iq/dataverse/util/xml/XmlUtil.class</exclude>
+                            </excludes>
+                        </configuration>
+
                     </execution>
                     <execution>
                         <id>for-test-classes</id>
@@ -941,6 +946,30 @@
                         <goals>
                             <goal>testCheck</goal>
                         </goals>
+                        <configuration>
+                            <signaturesFiles>
+                                <signaturesFile>${project.basedir}/src/maven/forbiddenapis.txt</signaturesFile>
+                            </signaturesFiles>
+                            <failOnViolation>true</failOnViolation>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>superuser-nudge</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <signaturesFiles>
+                                <signaturesFile>${project.basedir}/src/maven/superuser-nudge.txt</signaturesFile>
+                            </signaturesFiles>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/api/Datasets.class</include>
+                                <include>edu/harvard/iq/dataverse/api/Dataverses.class</include>
+                                <include>edu/harvard/iq/dataverse/api/Files.class</include>
+                            </includes>
+                            <failOnViolation>false</failOnViolation>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -35,3 +35,7 @@ echo
 echo "Setting up member role"
 curl -H "Content-type:application/json" -d @"$SCRIPT_PATH"/data/role-member.json "${DATAVERSE_URL}/api/admin/roles/"
 echo
+
+echo "Setting up Scoped Superuser role"
+curl -H "Content-type:application/json" -d @"$SCRIPT_PATH"/data/role-scopedSuperuser.json "${DATAVERSE_URL}/api/admin/roles/"
+echo

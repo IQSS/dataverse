@@ -16,7 +16,7 @@ This experimental migration API offers an additional option with some potential 
 * Adding files can be done via the standard APIs, including using direct-upload to S3.
 
 This API consists of 2 calls: one to create an initial Dataset version, and one to 'republish' the dataset through Dataverse with a specified publication date.
-Both calls require super-admin privileges.
+Both calls require a superuser account or a user with the ActAsSuperuser permission on the relevant dvobject.
 
 These calls can be used in concert with other API calls to add files, update metadata, etc. before the 'republish' step is done.
 
@@ -24,7 +24,7 @@ These calls can be used in concert with other API calls to add files, update met
 Start Migrating a Dataset into a Dataverse Collection
 -----------------------------------------------------
 
-.. note:: This action requires a Dataverse installation account with superuser permissions.
+.. note:: This action requires a superuser account or a user with the ActAsSuperuser permission on the relevant dvobject.
 
 To import a dataset with an existing persistent identifier (PID), the provided json-ld metadata should include it.
 
@@ -49,7 +49,7 @@ Publish a Migrated Dataset
 
 The call above creates a Dataset. Once it is created, other APIs can be used to add files, add additional metadata, etc. When a version is complete, the following call can be used to publish it with its original publication date.
 
-.. note:: This action requires a Dataverse installation account with superuser permissions.
+.. note:: This action requires a superuser account or a user with the ActAsSuperuser permission on the relevant dvobject.
 
 .. code-block:: bash
 

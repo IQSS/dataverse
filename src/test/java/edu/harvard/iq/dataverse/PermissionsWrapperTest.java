@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.AfterEach;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -24,11 +27,36 @@ public class PermissionsWrapperTest {
         this.permissionWrapper = new PermissionsWrapper();
         this.permissionWrapper.permissionService = mock(PermissionServiceBean.class);
         this.permissionWrapper.dvRequestService = mock(DataverseRequestServiceBean.class);
+        this.permissionWrapper.session = mock(DataverseSession.class);
     }
 
     @AfterEach
     public void tearDown() {
         this.permissionWrapper = null;
+    }
+
+    @Test
+    public void testIsSuperuserOn() {
+        Dataverse dv = new Dataverse();
+        dv.setId(1L);
+        AuthenticatedUser user = mock(AuthenticatedUser.class);
+        
+        Mockito.when(this.permissionWrapper.session.getUser()).thenReturn(user);
+        Mockito.when(this.permissionWrapper.permissionService.isSuperuserOn(any(User.class), eq(dv))).thenReturn(true);
+        
+        assertTrue(this.permissionWrapper.isSuperuserOn(dv));
+    }
+
+    @Test
+    public void testIsSuperuserOnSomeDvObject() {
+        AuthenticatedUser user = mock(AuthenticatedUser.class);
+        Mockito.when(user.isSuperuser()).thenReturn(false);
+        Mockito.when(user.isAuthenticated()).thenReturn(true);
+        
+        Mockito.when(this.permissionWrapper.session.getUser()).thenReturn(user);
+        Mockito.when(this.permissionWrapper.permissionService.isSuperuserOnSomeDvObject(user)).thenReturn(true);
+        
+        assertTrue(this.permissionWrapper.isSuperuserOnSomeDvObject());
     }
 
     @Test
