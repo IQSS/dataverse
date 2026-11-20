@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.ContainerCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -1368,6 +1369,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             if (allowInstanceCredentials) {
                 providers.add(InstanceProfileCredentialsProvider.create());
+                providers.add(ContainerCredentialsProvider.create());
             }
 
             Collections.reverse(providers);
