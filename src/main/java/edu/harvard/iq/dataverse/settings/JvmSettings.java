@@ -99,6 +99,10 @@ public enum JvmSettings {
     API_MDC_UPDATE_MIN_DELAY_MS(SCOPE_API_MDC, "min-delay-ms"),
     GUESTBOOK_RESPONSE_SIGNEDURL_TIMEOUT_MINUTES(SCOPE_API, "guestbook-response-timeout-minutes"),
     GUESTBOOK_RESPONSE_EXTERNAL_TOOL_TIMEOUT_MINUTES(SCOPE_API, "guestbook-response-external-tool-timeout-minutes"),
+    // API: Builtin user sign-up
+    SCOPE_API_SIGNUP(SCOPE_API, "signup"),
+    API_SIGNUP_RATE_LIMIT_PER_HOUR(SCOPE_API_SIGNUP, "rate-limit-per-hour"),
+    API_SIGNUP_ORCID_REDIRECT_URIS(SCOPE_API_SIGNUP, "orcid-redirect-uris"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),

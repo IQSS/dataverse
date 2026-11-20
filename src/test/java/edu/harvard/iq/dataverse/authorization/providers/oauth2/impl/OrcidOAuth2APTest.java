@@ -22,7 +22,9 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	private static final String ACTIVITIES_FILE="src/test/resources/xml/oauth2/orcid/v20_activities.xml";
 	private static final String PERSON;
 	private static final String ACTIVITIES;
-    
+    private static final String V3_EMPLOYMENTS_FILE = "src/test/resources/xml/oauth2/orcid/v30_employments.xml";
+    private static final String V3_EMPLOYMENTS;
+
     public OrcidOAuth2APTest() {
         super("", "", "");
     }
@@ -30,6 +32,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     static {
 	    PERSON = loadResponseXML( PERSON_FILE );
         ACTIVITIES = loadResponseXML( ACTIVITIES_FILE );
+        V3_EMPLOYMENTS = loadResponseXML( V3_EMPLOYMENTS_FILE );
     }
     /**
      * load XML responses from filesystem (resources).
@@ -139,5 +142,59 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 
         assertEquals("My Organization Name", actual.getAffiliation());
         assertEquals("department", actual.getPosition());
+    }
+
+    @Test
+    public void testParseActivitiesResponseV2HasNoRor() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(ACTIVITIES);
+
+        assertNull(actual.getAffiliationRor());
+    }
+
+    @Test
+    public void testParseActivitiesResponseV3UsesLatestCurrentEmploymentAndRor() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+        assertNotNull( V3_EMPLOYMENTS );
+
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(V3_EMPLOYMENTS);
+
+        assertEquals("Harvard University", actual.getAffiliation());
+        assertEquals("Research Data Manager, Institute for Quantitative Social Science", actual.getPosition());
+        assertEquals("https://ror.org/03vek6s52", actual.getAffiliationRor());
+    }
+
+    @Test
+    public void testParseActivitiesResponseV3NormalizesBareRorId() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(
+                V3_EMPLOYMENTS.replace(">https://ror.org/03vek6s52<", ">03vek6s52<"));
+
+        assertEquals("https://ror.org/03vek6s52", actual.getAffiliationRor());
+    }
+
+    @Test
+    public void testParseActivitiesResponseV3IgnoresOtherIdentifierSources() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(
+                V3_EMPLOYMENTS.replace("<common:disambiguation-source>ROR<", "<common:disambiguation-source>GRID<"));
+
+        assertEquals("Harvard University", actual.getAffiliation());
+        assertNull(actual.getAffiliationRor());
+    }
+
+    @Test
+    public void testParseActivitiesResponseV3WithoutCurrentEmploymentUsesFirst() {
+        OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
+        String noCurrentEmployment = V3_EMPLOYMENTS.replace("</common:start-date>",
+                "</common:start-date><common:end-date><common:year>2023</common:year></common:end-date>");
+
+        final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(noCurrentEmployment);
+
+        assertEquals("Past University", actual.getAffiliation());
+        assertEquals("https://ror.org/05gq02987", actual.getAffiliationRor());
     }
 }

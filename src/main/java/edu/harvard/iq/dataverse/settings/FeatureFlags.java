@@ -303,6 +303,18 @@ public enum FeatureFlags {
      * @since Dataverse 6.10
      */
     ALLOW_LOCALLY_FAIR_DATA("allow-locally-fair-data"),
+
+    /**
+     * Enables the unauthenticated sign-up API endpoint (POST /api/users/signup)
+     * that lets new users create a builtin account, e.g. from the SPA sign-up form.
+     * Like the JSF sign-up page, the endpoint also honors the :AllowSignUp setting.
+     *
+     * @apiNote Raise flag by setting
+     *          "dataverse.feature.api-builtin-user-signup"
+     * @since Dataverse 6.13
+     */
+    API_BUILTIN_USER_SIGNUP("api-builtin-user-signup"),
+
     /**
      * By default, the lastApiUseTime timestamp of an authenticated user is updated
      * in the database on every authenticated API call. With this flag enabled, the
