@@ -361,7 +361,6 @@ public class UtilIT {
     static Integer getDatasetIdFromResponse(Response createDatasetResponse) {
         JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
         int datasetId = createdDataset.getInt("data.id");
-        logger.info("Id found in create dataset response: " + datasetId);
         return datasetId;
     }
 
