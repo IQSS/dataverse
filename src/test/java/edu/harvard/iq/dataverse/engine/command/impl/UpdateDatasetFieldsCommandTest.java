@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.InvalidCommandArgumentsException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import jakarta.json.JsonObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -181,7 +183,10 @@ public class UpdateDatasetFieldsCommandTest {
         Dataset result = sut.execute(commandContextMock);
         verify(commandContextMock).engine();
 
-        assertEquals("applied law", result.getLatestVersion().getDatasetField(fieldType).getSingleControlledVocabularyValue().getStrValue());
+        DatasetField field = result.getLatestVersion().getDatasetField(fieldType);
+        assertEquals("applied law", field.getSingleControlledVocabularyValue().getStrValue());
+        assertEquals(List.of("applied law"), field.getValues_nondisplay());
+        assertFalse(field.isEmpty());
     }
 
     @Test
