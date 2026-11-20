@@ -19,9 +19,9 @@ import jakarta.validation.Payload;
  */
 @Target({TYPE})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {TermsOfUseAndAccessValidator.class})
+@Constraint(validatedBy = {TermsOfAccessValidator.class})
 @Documented
-public @interface ValidateTermsOfUseAndAccess {
+public @interface ValidateTermsOfAccess {
 
     String message() default "Failed Validation Terms Of Use and Access";
 

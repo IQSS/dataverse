@@ -46,7 +46,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -1523,8 +1522,8 @@ public class AddReplaceFileHelper{
             for 8859 return conflict response status if the validation fails
             due to terms of use/access out of compliance
             */
-            if (workingVersion.getTermsOfUseAndAccess().getValidationMessage() != null) {
-                addError(Response.Status.CONFLICT,workingVersion.getTermsOfUseAndAccess().getValidationMessage());
+            if (workingVersion.getTermsOfAccess().getValidationMessage() != null) {
+                addError(Response.Status.CONFLICT,workingVersion.getTermsOfAccess().getValidationMessage());
             } else {
                 this.addError(violation.getMessage());
             }
