@@ -442,46 +442,6 @@ public class JsonPrinter {
         return responsesArray;
     }
 
-    public static JsonObjectBuilder json(GuestbookResponse gbResponse) {
-        JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
-        if (gbResponse != null) {
-            guestbookResponseObject.add("id", gbResponse.getId());
-            guestbookResponseObject.add("dataset", gbResponse.getDataset().getDisplayName());
-            guestbookResponseObject.add("datasetPid", gbResponse.getDataset().getIdentifier());
-            guestbookResponseObject.add("date", format(gbResponse.getResponseTime()));
-            guestbookResponseObject.add("type", gbResponse.getEventType());
-            guestbookResponseObject.add("fileName", gbResponse.getDataFile().getDisplayName());
-            guestbookResponseObject.add("fileId", gbResponse.getDataFile().getId());
-            if (gbResponse.getDataFile().getGlobalId() != null) {
-                guestbookResponseObject.add("filePid", gbResponse.getDataFile().getGlobalId().asString());
-            }
-            if (!StringUtil.isEmpty(gbResponse.getName())) {
-                guestbookResponseObject.add("name", gbResponse.getName());
-            }
-            if (gbResponse.getEmail() != null) {
-                guestbookResponseObject.add("email", gbResponse.getEmail());
-            }
-            if (gbResponse.getInstitution() != null) {
-                guestbookResponseObject.add("institution", gbResponse.getInstitution());
-            }
-            if (gbResponse.getPosition() != null) {
-                guestbookResponseObject.add("position", gbResponse.getPosition());
-            }
-            final List<CustomQuestionResponse> cqResponses = gbResponse.getCustomQuestionResponses();
-            if (cqResponses != null && !cqResponses.isEmpty()) {
-                JsonArrayBuilder customQuestions = JsonUtil.createArrayBuilder();
-                for (CustomQuestionResponse cqResponse : cqResponses) {
-                    JsonObjectBuilder cqObj = jsonObjectBuilder();
-                    cqObj.add("question", cqResponse.getCustomQuestion().getQuestionString());
-                    cqObj.add("response", cqResponse.getResponse());
-                    customQuestions.add(cqObj);
-                }
-                guestbookResponseObject.add("customQuestions", customQuestions);
-            }
-        }
-        return guestbookResponseObject;
-    }
-
     public static JsonObjectBuilder json(Guestbook guestbook) {
         JsonObjectBuilder guestbookObject = jsonObjectBuilder();
         if (guestbook != null) {
