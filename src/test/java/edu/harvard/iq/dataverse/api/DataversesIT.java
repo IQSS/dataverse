@@ -923,6 +923,20 @@ public class DataversesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(0)); 
                        
+        // Link to a second collection on which the user also has LinkDataset permission
+        Response linkDatasetToChild = UtilIT.linkDataset(datasetPersistentId, childLinking, apiToken);
+        linkDatasetToChild.prettyPrint();
+        linkDatasetToChild.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // With no search filter, both collections should be available for unlinking
+        getLinkableDataverses = UtilIT.getLinkableDataverses("dataset", datasetPersistentId, apiToken, null, true);
+        getLinkableDataverses.prettyPrint();
+        getLinkableDataverses.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(2))
+                .body("data.alias", containsInAnyOrder(dataverseAliasForLinking, childLinking));
+
         //set user api back to super user for cleanup
         UtilIT.setSuperuserStatus(username, Boolean.TRUE);
         
