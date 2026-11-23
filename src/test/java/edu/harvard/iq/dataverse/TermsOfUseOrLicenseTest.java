@@ -4,14 +4,30 @@ import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.license.License;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TermsOfUseAndAccessTest {
+public class TermsOfUseOrLicenseTest {
+
+    @Test
+    public void testRemovingTermsRequiresLicense() {
+        TermsOfUseOrLicense terms = new TermsOfUseOrLicense();
+        terms.setTermsOfUse("New terms");
+        assertTrue(TermsOfUseOrLicenseValidator.isTOUOLValid(terms, null));
+
+        terms.setTermsOfUse(null);
+        assertFalse(TermsOfUseOrLicenseValidator.isTOUOLValid(terms, null));
+
+        License license = new License();
+        license.setName("CC0 1.0");
+        terms.setLicense(license);
+        assertTrue(TermsOfUseOrLicenseValidator.isTOUOLValid(terms, null));
+        assertNull(terms.getTermsOfUse());
+    }
 
     @Test
     public void testLicenseAndTermsMutualExclusivity() {
         License license = new License();
         license.setName("CC0");
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense terms = new TermsOfUseOrLicense();
 
         // 1. Setting license should clear terms
         terms.setTermsOfUse("Some terms");
@@ -35,19 +51,19 @@ public class TermsOfUseAndAccessTest {
     }
 
     @Test
-    public void testCopyTermsOfUseAndAccess() {
+    public void testCopyTermsOfUseOrLicense() {
         License license = new License();
         license.setName("CC0");
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        TermsOfUseOrLicense terms = new TermsOfUseOrLicense();
         terms.setLicense(license);
 
-        TermsOfUseAndAccess copy = terms.copyTermsOfUseAndAccess();
+        TermsOfUseOrLicense copy = terms.copyTermsOfUseOrLicense();
         assertEquals(license, copy.getLicense());
         assertNull(copy.getTermsOfUse());
 
         terms.setTermsOfUse("Some terms");
-        TermsOfUseAndAccess copy2 = terms.copyTermsOfUseAndAccess();
+        TermsOfUseOrLicense copy2 = terms.copyTermsOfUseOrLicense();
         assertNull(copy2.getLicense());
         assertEquals("Some terms", copy2.getTermsOfUse());
     }

@@ -33,7 +33,6 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -336,9 +335,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         //SEK - belt and suspenders here, but this is where the bug 10719 first manifested
         if (datasetVersion != null && datasetVersion.getId() != null) {
             try {
-                TermsOfUseAndAccess toua = (TermsOfUseAndAccess) em.createNamedQuery("TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms")
-                        .setParameter("id", datasetVersion.getId()).setParameter("defaultTerms", TermsOfUseAndAccess.DEFAULT_NOTERMS).getSingleResult();
-                if (toua != null && datasetVersion.getTermsOfUseAndAccess().getLicense() == null) {
+                TermsOfUseOrLicense toua = (TermsOfUseOrLicense) em.createNamedQuery("TermsOfUseOrLicense.findByDatasetVersionIdAndDefaultTerms")
+                        .setParameter("id", datasetVersion.getId()).setParameter("defaultTerms", TermsOfUseOrLicense.DEFAULT_NOTERMS).getSingleResult();
+                if (toua != null && datasetVersion.getDefaultTermsOfUseOrLicense().getLicense() == null) {
                     return true;
                 }
 
