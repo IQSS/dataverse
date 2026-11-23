@@ -769,7 +769,7 @@ public class DatasetTypesIT {
         assertEquals("testDatasetType", datasetType);
         String datasetVerstionState = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.latestVersion.versionState");
         assertEquals("DRAFT", datasetVerstionState);
-        String datasetLicense = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.latestVersion.license");
+        String datasetLicense = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.latestVersion.license.name");
         assertEquals("CC0 1.0", datasetLicense);
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
