@@ -2880,6 +2880,8 @@ Edit Dataset Metadata
 
 Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following:
 
+Note that a child of a compound field, such as ``authorName``, must be sent inside its parent field (``author``) and is rejected if it is sent on its own as if it were a top level field.
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -6341,6 +6343,23 @@ with limit parameter:
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
+Repair Missing File Sizes
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following superuser-only API will scan the database for datafiles with missing filesizes (i.e. where the size is not yet recorded in the database) and will attempt to retrieve the sizes from the underlying storage media and update the database records:
+
+.. code-block:: bash
+
+  curl -X POST "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes"
+
+with limit parameter:
+
+.. code-block:: bash
+
+  curl -X POST "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes?limit=100"
+
+Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles.
+
 By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
 
 Get File External Tool URL
@@ -6349,6 +6368,7 @@ Get File External Tool URL
 This API call generates a URL for accessing an external tool (see :doc:`/installation/external-tools`) that operates at the file level. The URL includes necessary authentication tokens and parameters based on the user's permissions and the tool's configuration.
 
 Authentication is required for draft, restricted, embargoed, or expired (retention period) files; the user must have appropriate permissions.
+Where a Guestbook Response is required to access the file the "guestbookResponse" can be passed via the Json body to allow the user to download the file from the external tool.
 
 .. code-block:: bash
 
@@ -6373,6 +6393,7 @@ The JSON request body accepts the following optional parameters:
 
 - ``preview``: boolean flag to indicate if the tool should run in preview mode (default: false)
 - ``locale``: string specifying the locale for internationalization
+- ``guestbookResponse``: JsonObject containing the Guestbook Response
 
 The response includes:
 

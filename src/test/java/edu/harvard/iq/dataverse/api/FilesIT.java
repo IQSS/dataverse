@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -16,6 +17,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
@@ -42,10 +44,12 @@ import java.text.ParseException;
 import java.time.Year;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import static io.restassured.RestAssured.get;
+import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.with;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
@@ -4286,6 +4290,19 @@ public class FilesIT {
         // verify all counts are good and equal
         assertEquals(totalCount, pagedTotalCount);
         assertEquals(pagedTotalCount, totalCountFromJson);
+
+        // Test External Tool preview/download
+        String toolId = UtilIT.getToolId(ownerApiToken,"image/png");
+        JsonObject guestbookObject = JsonUtil.getJsonObject(guestbookResponse).getJsonObject("guestbookResponse");
+        JsonObjectBuilder params = JsonUtil.createObjectBuilder()
+                .add("preview", true)
+                .add("guestbookResponse", JsonUtil.createObjectBuilder(guestbookObject));
+        Response toolResponse = UtilIT.getFileToolUrl(fileId1.toString(), toolId, apiToken, params.build());
+        toolResponse.prettyPrint();
+        jsonPath = JsonPath.from(toolResponse.body().asString());
+        signedUrl = jsonPath.getString("data.toolUrl");
+        Response callbackResponse = given().get(signedUrl);
+        assertTrue(callbackResponse.prettyPrint().contains("imagePreviewText"));
     }
 
     private Response testSortByField(Long id, String sortField, String order, Integer offset, Integer limit, String errorMsg, String token) {

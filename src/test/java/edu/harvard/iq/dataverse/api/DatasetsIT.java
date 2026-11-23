@@ -800,6 +800,113 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
     }
     
+    /**
+     * A child of a compound field, such as authorName, may only be sent inside its parent. Sending
+     * it as a top level field used to create a field with no parent, which neither the UI nor the
+     * exporters can cope with. See #12752.
+     */
+    @Test
+    public void testChildFieldAsPrimitiveIsRejected() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        String childAsPrimitive = """
+        {
+          "fields": [
+            {
+              "typeName": "authorName",
+              "value": "Poe, Edgar Allen"
+            }
+          ]
+        }
+        """;
+
+        Response editMetadata = UtilIT.editVersionMetadataFromJsonStr(datasetPersistentId, childAsPrimitive, apiToken);
+        editMetadata.prettyPrint();
+        editMetadata.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString("authorName"));
+
+        Response deleteMetadata = UtilIT.deleteDatasetMetadataFromJsonStr(datasetPersistentId, childAsPrimitive, apiToken);
+        deleteMetadata.prettyPrint();
+        deleteMetadata.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // The same must hold for the JSON-LD/semantic metadata API.
+        String childAsPrimitiveJsonLd = """
+        {
+          "citation:authorName": "Poe, Edgar Allen",
+          "@context": {
+            "citation": "https://dataverse.org/schema/citation/"
+          }
+        }
+        """;
+
+        Response updateSemantic = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, childAsPrimitiveJsonLd, false);
+        updateSemantic.prettyPrint();
+        updateSemantic.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // The delete path has its own loop in JSONLDUtil, so cover it explicitly.
+        Response deleteSemantic = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken, childAsPrimitiveJsonLd);
+        deleteSemantic.prettyPrint();
+        deleteSemantic.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // The dataset should be untouched - in particular there should be no parentless authorName.
+        Response getDataset = UtilIT.nativeGet(datasetId, apiToken);
+        getDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.metadataBlocks.citation.fields.typeName", not(hasItem("authorName")));
+
+        // parseField() also runs on the create path. A dataset whose top-level citation fields
+        // include a child field must be rejected with a clean 400 rather than a persistence error.
+        String datasetWithChildAsPrimitive = """
+        {
+          "datasetVersion": {
+            "license": {"name": "CC0 1.0", "uri": "http://creativecommons.org/publicdomain/zero/1.0"},
+            "metadataBlocks": {
+              "citation": {
+                "fields": [
+                  {
+                    "typeName": "authorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Poe, Edgar Allan"
+                  }
+                ]
+              }
+            }
+          }
+        }
+        """;
+        Response createDatasetWithChild = UtilIT.createDataset(dataverseAlias, datasetWithChildAsPrimitive, apiToken);
+        createDatasetWithChild.prettyPrint();
+        createDatasetWithChild.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // The template metadata API also calls parseField(). A template with a child field at
+        // top level must be rejected.
+        String templateWithChildAsPrimitive = """
+        {
+          "name": "Bad Template",
+          "fields": [
+            {"typeName": "authorName", "value": "Poe, Edgar Allan"}
+          ]
+        }
+        """;
+        Response createTemplateWithChild = UtilIT.createTemplate(dataverseAlias, templateWithChildAsPrimitive, apiToken);
+        createTemplateWithChild.prettyPrint();
+        createTemplateWithChild.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
     @Test
     public void testAddEmptyDatasetViaNativeAPI() {
 
