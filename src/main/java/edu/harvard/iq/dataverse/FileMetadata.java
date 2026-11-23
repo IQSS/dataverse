@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.Column;
@@ -39,10 +41,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -137,8 +142,13 @@ public class FileMetadata implements Serializable {
     @JoinColumn(nullable=false)
     private DatasetVersion datasetVersion;
     
+    // Loaded with the file metadata (without weaving, EclipseLink loads this eagerly). Batch fetching
+    // loads the data files of a whole list of file metadatas in a few queries instead of one per file,
+    // which takes many seconds for large datasets (#12739). The same goes for the one-to-one relations
+    // of DataFile and DvObject marked with @BatchFetch.
     @ManyToOne
     @JoinColumn(nullable=false)
+    @BatchFetch(BatchFetchType.IN)
     private DataFile dataFile;
 
     /**
@@ -153,6 +163,18 @@ public class FileMetadata implements Serializable {
     @OneToMany (mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     private Collection<VariableMetadata> variableMetadatas;
         
+    // A transient field is needed for JSF UI - validation errors on label do not get routed directly to the input for labelNoExtension, causing rollback.
+    // With a separate transient field kept in sync with label, the validation can be done on the labelNoExtension field, which avoids the issue and allows proper validation.
+    @Transient
+    @ValidateDataFileLabel(message = "{filename.illegalCharacters}")
+    String labelNoExtension;
+    
+    // Initialize the labelNoExtension from label after loading the entity
+    @PostLoad
+    public void postLoad() {
+        getLabelNoExtension();
+    }
+
     /**
      * Creates a copy of {@code this}, with identical business logic fields, making the bi-drectional connections to the specified version.
      * 
@@ -173,13 +195,46 @@ public class FileMetadata implements Serializable {
     }
     
     public String getLabel() {
+        getLabelNoExtension();
         return label;
     }
     
     public void setLabel(String label) {
         this.label = label;
+        getLabelNoExtension();
     }
 
+
+    public String getLabelNoExtension() {
+        int last = label.lastIndexOf(".");
+        labelNoExtension = (last == -1) ? label : label.substring(0, last);
+        return labelNoExtension;
+    }
+
+    public String getOriginalExtension() {
+        String origFilename = getLabelForOriginal();
+        int last = origFilename.lastIndexOf(".");
+        return (last == -1) ? "" : origFilename.substring(last);
+    }
+
+    public void setLabelNoExtension(String name) {
+        labelNoExtension = name;
+        int last = this.label.lastIndexOf(".");
+        if (last == -1) {
+            this.label = name;
+        } else {
+            this.label = name + this.label.substring(last);
+        }
+    }
+    
+    public String getLabelForOriginal() {
+        if(dataFile.isTabularData()) {
+            return dataFile.getDerivedOriginalFileName();
+        } else {
+            return label;
+        }
+    }
+    
     public FileMetadata() {
         variableMetadatas = new ArrayList<VariableMetadata>();
         varGroups = new ArrayList<VarGroup>();
@@ -216,6 +271,7 @@ public class FileMetadata implements Serializable {
     }
 
     @OneToMany(mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private List<VarGroup> varGroups;
 
     public Collection<VariableMetadata> getVariableMetadatas() {
@@ -241,6 +297,7 @@ public class FileMetadata implements Serializable {
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     @OrderBy("name")
+    @BatchFetch(BatchFetchType.IN)
     private List<DataFileCategory> fileCategories;
     
     public List<DataFileCategory> getCategories() {
@@ -287,7 +344,7 @@ public class FileMetadata implements Serializable {
     
     public JsonArrayBuilder getCategoryNamesAsJsonArrayBuilder() {
 
-        JsonArrayBuilder builder = Json.createArrayBuilder();
+        JsonArrayBuilder builder = JsonUtil.createArrayBuilder();
 
         if (fileCategories == null) {
             return builder;

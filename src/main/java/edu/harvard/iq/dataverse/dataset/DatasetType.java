@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataset;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -144,11 +145,11 @@ public class DatasetType implements Serializable {
     }
 
     public JsonObjectBuilder toJson(Locale locale) {
-        JsonArrayBuilder linkedMetadataBlocks = Json.createArrayBuilder();
+        JsonArrayBuilder linkedMetadataBlocks = JsonUtil.createArrayBuilder();
         for (MetadataBlock metadataBlock : this.getMetadataBlocks()) {
             linkedMetadataBlocks.add(metadataBlock.getName());
         }
-        JsonArrayBuilder availableLicenses = Json.createArrayBuilder();
+        JsonArrayBuilder availableLicenses = JsonUtil.createArrayBuilder();
         for (License license : this.getLicenses()) {
             availableLicenses.add(license.getName());
         }

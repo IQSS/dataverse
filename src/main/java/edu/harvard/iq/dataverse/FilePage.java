@@ -31,6 +31,7 @@ import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.RequirementStatus;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
@@ -230,15 +231,21 @@ public class FilePage implements java.io.Serializable {
                 }
             }
             
-            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
-            //  > Go to the Login page
-            //
             // Check permissions
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
-                    || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
-
-            if (!authorized) {
-                return permissionsWrapper.notAuthorized();
+            DatasetVersion datasetVersion = fileMetadata.getDatasetVersion();
+            Dataset dataset = datasetVersion.getDataset();
+            
+            // Check Locally FAIR permissions for released datasets
+            boolean releasedAndCanView = datasetVersion.isReleased() && (!file.isLocallyFAIR() ||
+                    permissionsWrapper.hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), file));
+            
+            if (!releasedAndCanView && !canViewUnpublishedDataset()) {
+                // Return notFound for FAIR-restricted content, notAuthorized otherwise
+                if (file.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
             
             //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
@@ -381,10 +388,12 @@ public class FilePage implements java.io.Serializable {
 
     // findPreviewTools would be a better name
     private List<ExternalTool> sortExternalTools(){
+        boolean canDownload = fileDownloadHelper.canDownloadFile(fileMetadata);
         List<ExternalTool> retList = new ArrayList<>();
         List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         for (ExternalTool previewTool : previewTools) {
-            if (externalToolService.meetsRequirements(previewTool, file)) {
+            RequirementStatus status = externalToolService.meetsRequirements(previewTool, file, canDownload);
+            if (RequirementStatus.MET == status) {
                 retList.add(previewTool);
             }
         }
@@ -1152,18 +1161,19 @@ public class FilePage implements java.io.Serializable {
         this.selectedTool = selectedTool;
     }
     
-    public String preview(ExternalTool externalTool) {
+    public String preview(ExternalTool externalTool, GuestbookResponse guestbookResponse) {
         ApiToken apiToken = null;
         User user = session.getUser();
+        Long guestbookResponseId = guestbookResponse != null ? guestbookResponse.getId() : null;
         if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted())
                 || fileMetadata.getDatasetVersion().isDeaccessioned() || (FileUtil.isActivelyEmbargoed(fileMetadata))
-                || (FileUtil.isRetentionExpired(fileMetadata))) {
+                || (FileUtil.isRetentionExpired(fileMetadata)) || guestbookResponseId != null) {
             apiToken = authService.getValidApiTokenForUser(user);
         }
         if(externalTool == null){
             return "";
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode());
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode(), guestbookResponseId);
         String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
         return toolUrl;
     }

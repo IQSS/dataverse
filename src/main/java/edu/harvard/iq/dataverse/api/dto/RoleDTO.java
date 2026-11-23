@@ -3,11 +3,13 @@ package edu.harvard.iq.dataverse.api.dto;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import java.util.EnumSet;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
  * @author michael
  */
+@Schema(description = "Dataverse role definition payload with alias, display name, description, owner, and permissions.")
 public class RoleDTO {
 	String alias;
 	String name;

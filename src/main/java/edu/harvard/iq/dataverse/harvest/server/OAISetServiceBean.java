@@ -151,7 +151,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         //OAISet merged = em.merge(oaiSet);
         em.remove(oaiSet);
     }
-    
+
     public OAISet findById(Long id) {
        return em.find(OAISet.class,id);
     }   
@@ -178,11 +178,12 @@ public class OAISetServiceBean implements java.io.Serializable {
                 datasetIds = expandSetQuery(query);
                 exportLogger.info("set query expanded to " + datasetIds.size() + " datasets.");
             } else {
-                // The default set includes all the local, published datasets. 
-                // findAllLocalDatasetIds() finds the ids of all the local datasets - 
+                // The default set includes all the local, published datasets.
+                // findAllLocalDatasetIdsExcludingLocallyFAIR() finds the ids of all the
+                // local datasets that are not inside a Locally FAIR dataverse -
                 // including the unpublished drafts and deaccessioned ones.
-                // Those will be filtered out further down the line. 
-                datasetIds = datasetService.findAllLocalDatasetIds();
+                // Those will be filtered out further down the line.
+                datasetIds = datasetService.findAllLocalDatasetIdsExcludingLocallyFAIR();
                 databaseLookup = true; 
             }
         } catch (OaiSetException ose) {
@@ -264,7 +265,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         // append the search clauses that limit the search to a) datasets
         // b) published and c) local: 
         // SearchFields.TYPE
-        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
+        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING + " AND -" + SearchFields.LOCALLY_FAIR + ":" + true);
         
         return query;
     }

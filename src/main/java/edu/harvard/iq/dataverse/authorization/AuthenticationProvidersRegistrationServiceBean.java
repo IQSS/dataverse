@@ -395,7 +395,7 @@ public class AuthenticationProvidersRegistrationServiceBean {
         XMLStreamReader xmlr = null;
 
         try {
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
+            XMLInputFactory xmlFactory = edu.harvard.iq.dataverse.util.xml.XmlUtil.getSecureXMLInputFactory();
             xmlr =  xmlFactory.createXMLStreamReader(new InputStreamReader((InputStream) metadataRequest.getInputStream()));
             
             while ( xmlr.next() == XMLStreamConstants.COMMENT);

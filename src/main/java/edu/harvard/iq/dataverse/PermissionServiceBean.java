@@ -1064,5 +1064,39 @@ public class PermissionServiceBean {
         return Stream.concat(directAssignments, groupAssignments)
                 .collect(Collectors.toList());
     }
+    
+    /**
+     * Determines if a user can view a dataset version based on its release status
+     * and the supplied Locally FAIR role assignees.
+     * 
+     * @param req The request containing the user and Ip info (for IPgroups)
+     * @param dvObject the dvObject that may have locallyFairAssignees
+     * @return true if the user has locally FAIR access
+     */
+    public boolean hasLocallyFAIRAccess(DataverseRequest req, DvObject dvObject) {
+        Set<String> locallyFairAssignees = dvObject.getLocallyFAIRRoleAssigneeIdentifiers();
+        // If no locally FAIR restrictions, it's publicly viewable
+        if (locallyFairAssignees.isEmpty()) {
+            return false;
+        }
+        
+        // Check if user is in the locally FAIR assignee list
+        Set<RoleAssignee> userAndGroups = new HashSet<>(groupService.groupsFor(req));
+        User user = req.getUser();
+        if (user.isAuthenticated()) {
+            if(user.isSuperuser()) {
+                return true;
+            }
+            userAndGroups.add(user);
+        }
+        
+        for (RoleAssignee ra : userAndGroups) {
+            if (locallyFairAssignees.contains(ra.getIdentifier())) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }
 

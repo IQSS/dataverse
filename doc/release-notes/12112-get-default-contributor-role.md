@@ -1,1 +1,0 @@
-A new API endpoint for getting the default contributor role of a collection (`GET /api/dataverses/$ID/defaultContributorRole`) was added.

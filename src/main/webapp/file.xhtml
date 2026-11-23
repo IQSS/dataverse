@@ -15,7 +15,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
+            <ui:param name="pageTitle" value="#{FilePage.fileMetadata.labelForOriginal} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
             <ui:param name="showDataverseHeader" value="#{!FilePage.isAnonymizedAccess()}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
@@ -45,7 +45,7 @@
                         <div class="col-xs-12">
                             <div class="row">
                                 <div id="file-title-block" class="col-xs-12 margin-bottom-half">
-                                    <span class="file-title-label">#{FilePage.fileMetadata.label}</span>
+                                    <span class="file-title-label">#{FilePage.fileMetadata.labelForOriginal}</span>
 
                                     <!-- FILE LEVEL MSGs -->
                                     <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
@@ -80,6 +80,7 @@
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
+                                        <h:outputText value="#{bundle['dataset.versionUI.locallyFAIR']}"  title="#{bundle['dataset.versionUI.locallyFAIR.tip']}"  styleClass="label label-primary" rendered="#{FilePage.file.locallyFAIR}"/>
                                         <h:outputText value="#{DatasetUtil:getLocaleCurationStatusLabel(FilePage.fileMetadata.datasetVersion.currentCurationStatus)}" styleClass="label label-info curation-status" rendered="#{FilePage.canSeeCurationStatus()}"/>
                                         <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!FilePage.valid}"/>
                                         <!-- DATASET VERSION NUMBER -->
@@ -361,7 +362,7 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{FilePage.toolTabTitle}"
-                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.guestbookAndTermsPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
                                     <ui:include id="previewGB" src="guestbook-terms-popup-fragment.xhtml">
@@ -382,7 +383,7 @@
                                 <ui:fragment rendered="#{(!FilePage.guestbookAndTermsPopupRequired) or FilePage.termsMet}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1}">
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                              #{bundle['file.toolsTab.button.label']} <span class="caret"></span>
                                         </button>
@@ -400,7 +401,7 @@
                                         </ui:fragment>
                                     </div>
                                     <!-- END: Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0)}">
                                         <!-- Modular/Configured Explore Tool -->
                                         <ui:remove><!-- Not sure this div will ever be rendered when terms are required and FilePage.termsMet isn't true. Leaving this logic in in case that is incorrect or changes going forward --></ui:remove>
 
@@ -433,8 +434,8 @@
                                     </div>
                                 </div>
                                 <!-- FRAME EXTERNAL TOOL EMBED -->
-                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0  or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
-                                    <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
+                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0  or FilePage.queryTools.size() > 0)}">
+                                    <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool, FilePage.guestbookResponse)}"></iframe>
                                 </div>
                                 </ui:fragment>
                             </p:tab>
@@ -566,7 +567,7 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                         </th>
-                                                        <td>#{(empty FilePage.file.embargo) and !(empty FilePage.file.released) and !(empty FilePage.file.retention) ? ''.concat(FilePage.file.publicationDateFormattedYYYYMMDD).concat('; ') : ''}
+                                                        <td>#{(empty FilePage.file.embargo) and FilePage.file.released and !(empty FilePage.file.retention) ? ''.concat(FilePage.file.publicationDateFormattedYYYYMMDD).concat('; ') : ''}
                                                             #{!(empty FilePage.file.embargo) ? ''.concat(FilePage.embargoPhrase).concat(' ').concat(FilePage.file.embargo.dateAvailable) : ''}
                                                             #{!(empty FilePage.file.embargo) and !(empty FilePage.file.retention) ? '; ': ''}
                                                             #{!(empty FilePage.file.retention) ? ''.concat(FilePage.retentionPhrase)
@@ -590,11 +591,11 @@
                                                         <td>#{FilePage.file.retention.reason}
                                                         </td>
                                                     </tr>
-                                                    <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
+                                                    <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlyOriginalFileSize)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.size.label']}
                                                         </th>
-                                                        <td>#{FilePage.file.friendlySize}</td>
+                                                        <td>#{FilePage.file.friendlyOriginalFileSize}</td>
                                                     </tr>
                                                     <tr id="fileTypeBlock" jsf:rendered="#{!(empty FilePage.file.friendlyType)}">
                                                         <th scope="row">
@@ -624,7 +625,7 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.description.label']}
                                                         </th>
-                                                        <td>#{FilePage.fileMetadata.description}</td>
+                                                        <td><h:outputFormat value="#{MarkupChecker:sanitizeBasicHTML(FilePage.fileMetadata.description)}" escape="false"></h:outputFormat></td>
                                                     </tr>
                                                 </tbody>
                                             </table>

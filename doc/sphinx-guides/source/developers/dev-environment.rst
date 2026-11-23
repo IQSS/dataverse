@@ -20,11 +20,13 @@ After cloning the `dataverse repo <https://github.com/IQSS/dataverse>`_, run thi
 
 (Note that if you are Windows, you must run the command above in `WSL <https://learn.microsoft.com/windows/wsl>`_ rather than cmd.exe. See :doc:`windows`.)
 
-After some time you should be able to log in:
+After some time you should be able to log in to the classic, Java Server Faces (JSF) user interface:
 
 - url: http://localhost:8080
 - username: dataverseAdmin
 - password: admin1
+
+You are encouraged to also run, use, and hack on the modern, React-based, Single Page Application (SPA) web interface, which makes use of the backend services you just started in Docker. See https://github.com/IQSS/dataverse-frontend for details on building and starting the new UI.
 
 Detailed Steps
 --------------

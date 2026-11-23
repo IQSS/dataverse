@@ -1,0 +1,30 @@
+{
+    "name": "Dataverse template - edited",
+    "fields": [
+        {
+            "typeName": "author",
+            "value": [
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Brady, Tom"
+                    },
+                    "authorAffiliation": {
+                        "typeName": "authorIdentifierScheme",
+                        "value": "ORCID"
+                    }
+                }
+            ]
+        }
+    ],
+    "instructions": [
+        {
+            "instructionField": "author",
+            "instructionText": "The author data, edited"
+        },
+        {
+            "instructionField": "subtitle",
+            "instructionText": "Instructions for subtitle"
+        }
+    ]
+}

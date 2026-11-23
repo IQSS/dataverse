@@ -1,0 +1,3 @@
+## Updates for Developers
+
+The containerized development environment in the backend ("dataverse") repo can now be used for development of the modern, React-based, Single Page Application (SPA) user interface. (Previously, a separate containerized environment in the frontend repo was required.) See [the guides](https://guides.dataverse.org/en/6.13/developers/dev-environment.html#quickstart) and #12746.

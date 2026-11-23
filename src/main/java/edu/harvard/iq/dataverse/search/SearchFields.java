@@ -85,6 +85,9 @@ public class SearchFields {
      * Internal boolean used when creating OAI sets, for example.
      */
     public static final String IS_HARVESTED = "isHarvested";
+
+    public static final String IS_LINKED = "isLinked";
+
     /**
      * Such as https://doi.org/10.5072/FK2/HXI35W
      *
@@ -227,6 +230,11 @@ public class SearchFields {
      * search on it, avoiding an expensive join for those (common) users.
      */
     public static final String PUBLIC_OBJECT = "publicObject_b";
+
+    /** Whether the collection/dataset/file is locally FAIR (discoverable_by only certain groups/users when published)
+     *
+     */
+    public static final String LOCALLY_FAIR = "locallyFair_b";
 
     /**
      * i.e. "Unpublished", "Draft" (multivalued)

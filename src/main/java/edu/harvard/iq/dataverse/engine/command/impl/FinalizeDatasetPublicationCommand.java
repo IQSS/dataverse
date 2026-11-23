@@ -171,7 +171,16 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         //Use dataset pub date (which may not be the current date for migrated datasets)
         updateFiles(new Timestamp(version.getReleaseTime().getTime()), ctxt);
-        
+
+        // Populate thumbnail if needed and allowed
+        if (theDataset.getThumbnailFile() == null && !theDataset.isUseGenericThumbnail()) {
+            Long thumbnailFileId = ctxt.datasetVersion().getThumbnailByVersionId(version.getId());
+            if (thumbnailFileId != null) {
+                theDataset.setThumbnailFile(ctxt.datasetVersion().getDataFileById(thumbnailFileId));
+                logger.info("Setting default thumbnail " + theDataset.getThumbnailUrl());
+            }
+        }
+
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
         // I'm moving a bunch of code from PublishDatasetCommand here; and this .merge()

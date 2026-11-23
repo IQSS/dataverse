@@ -1,1 +1,0 @@
-Fixed a problem in the BagPack generator, which caused the export to fail for datasets with multiple Contact Points, of which some had no name while others did.

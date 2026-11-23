@@ -13,12 +13,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
  * @author skraffmi
  */
 @Entity
+@Schema(description = "Localized banner message text, including the language code and message content.")
 public class BannerMessageText implements Serializable {
 
     @Id

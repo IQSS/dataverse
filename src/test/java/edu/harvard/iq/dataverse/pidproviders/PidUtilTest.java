@@ -53,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
+@JvmSetting(key = JvmSettings.SITE_URL, value = "http://localhost:8080")
 //Perma 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma 1", varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
@@ -414,7 +415,7 @@ public class PidUtilTest {
         Dataset dataset1 = new Dataset();
         Dataverse dataverse1 = new Dataverse();
         dataset1.setOwner(dataverse1);
-        String pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
+        String pidGeneratorSpecs = JsonUtil.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
         //Set a PID generator on the parent
         dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
         assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());
@@ -440,7 +441,7 @@ public class PidUtilTest {
         //Now test failure case
         dataverse1.setPidGenerator(null);
         dataset1.setPidGenerator(null);
-        pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.9999").add("shoulder", "FK2").build().toString();
+        pidGeneratorSpecs = JsonUtil.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.9999").add("shoulder", "FK2").build().toString();
         //Set a PID generator on the parent
         dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
         assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());

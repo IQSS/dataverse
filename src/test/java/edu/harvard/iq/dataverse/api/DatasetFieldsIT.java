@@ -19,7 +19,7 @@ public class DatasetFieldsIT {
     void testListAllFacetableDatasetFields() {
         Response listAllFacetableDatasetFieldsResponse = UtilIT.listAllFacetableDatasetFields();
         listAllFacetableDatasetFieldsResponse.then().assertThat().statusCode(OK.getStatusCode());
-        int expectedNumberOfFacetableDatasetFields = 64;
+        int expectedNumberOfFacetableDatasetFields = 71;
         listAllFacetableDatasetFieldsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].name", equalTo("authorName"))

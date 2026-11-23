@@ -47,6 +47,8 @@ We include Croissant in the ``<head>`` because it's `recommended <https://github
 
 Before Croissant was invented, Google recommended a different format that Dataverse refers to as "Schema.org JSON-LD" in the user interface (and ``schema.org`` in the API). If you prefer to put that older format in the ``<head>``, which was the behavior in older versions of Dataverse, see :ref:`dataverse.legacy.schemaorg-in-html-head`.
 
+See also the :ref:`dataverse.feature.croissant-with-local-reviews` feature flag.
+
 .. _discovery-sign-posting:
 
 Signposting

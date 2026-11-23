@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -120,12 +121,12 @@ public class IpGroupsIT {
         Response downloadFileNoPrivs = UtilIT.downloadFile(fileId.intValue(), userWithNoRolesApiToken);
         assertEquals(FORBIDDEN.getStatusCode(), downloadFileNoPrivs.getStatusCode());
 
-        JsonObjectBuilder ipGroupAllJson = Json.createObjectBuilder();
+        JsonObjectBuilder ipGroupAllJson = JsonUtil.createObjectBuilder();
         String uniqueIdentifierForIpGroup = "ipGroup" + UtilIT.getRandomIdentifier();
         ipGroupAllJson.add("alias", uniqueIdentifierForIpGroup);
         ipGroupAllJson.add("name", "An IP Group that matches all IP addresses and has a unique identifier.");
-        ipGroupAllJson.add("ranges", Json.createArrayBuilder()
-                .add(Json.createArrayBuilder()
+        ipGroupAllJson.add("ranges", JsonUtil.createArrayBuilder()
+                .add(JsonUtil.createArrayBuilder()
                         .add("0.0.0.0")
                         .add("255.255.255.255")
                 ));

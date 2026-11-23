@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -239,9 +240,9 @@ public class SolrSearchResultTest {
         JsonObject actual = actual01.build();
         System.out.println("actual: " + actual);
 
-        JsonObjectBuilder expResult = Json.createObjectBuilder();
+        JsonObjectBuilder expResult = JsonUtil.createObjectBuilder();
         expResult.add("type", SearchConstants.DATAVERSE);
-        expResult.add("publicationStatuses", Json.createArrayBuilder().add("Unpublished").add("Draft").build());
+        expResult.add("publicationStatuses", JsonUtil.createArrayBuilder().add("Unpublished").add("Draft").build());
         JsonObject expected = expResult.build();
         System.out.println("expect: " + expected);
 
@@ -261,7 +262,7 @@ public class SolrSearchResultTest {
         JsonObject actual = actual01.build();
         System.out.println("actual: " + actual);
 
-        JsonObjectBuilder expResult = Json.createObjectBuilder();
+        JsonObjectBuilder expResult = JsonUtil.createObjectBuilder();
         expResult.add("type", SearchConstants.DATAVERSE);
         JsonObject expected = expResult.build();
         System.out.println("expect: " + expected);

@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  *
  * @author michael
  */
+@Schema(description = "Explicit group update payload with display name, description, and owner-local alias.")
 public class ExplicitGroupDTO  {
     
     private String description;

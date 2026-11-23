@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
@@ -35,7 +37,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -162,23 +163,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return em.find(DatasetVersion.class, pk);
     }
     
-    public DatasetVersion findDeep(Object pk) {
-        return (DatasetVersion) em.createNamedQuery("DatasetVersion.findById")
-            .setParameter("id", pk)
-            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestRequest")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.thumbnailForDataset")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.retention")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
-            .getSingleResult();
-    }
-
     /**
      * Performs the same database lookup as the one behind {@code Dataset.getVersions()}.
      * <p>
@@ -892,7 +876,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
                 if (thumbnailFileId != null) {
                     logger.fine("obtained file id: " + thumbnailFileId);
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -925,7 +909,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 }
 
                 if (thumbnailFileId != null) {
-                    DataFile thumbnailFile = datafileService.find(thumbnailFileId);
+                    DataFile thumbnailFile = getDataFileById(thumbnailFileId);
                     if (thumbnailFile != null) {
                         if (datafileService.isThumbnailAvailable(thumbnailFile)) {
                             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
@@ -937,7 +921,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    public DataFile getDataFileById(Long id) {
+        return datafileService.find(id);
+    }
+
     private void assignDatasetThumbnailByNativeQuery(Long versionId, Long dataFileId) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id in (SELECT dataset_id FROM datasetversion WHERE id=" + versionId + ")").executeUpdate();
@@ -1156,7 +1144,7 @@ w
     }
 
     public JsonObjectBuilder fixMissingUnf(String datasetVersionId, boolean forceRecalculate) {
-        JsonObjectBuilder info = Json.createObjectBuilder();
+        JsonObjectBuilder info = JsonUtil.createObjectBuilder();
         if (datasetVersionId == null || datasetVersionId.isEmpty()) {
             info.add("message", "datasetVersionId was null or empty!");
             return info;
@@ -1276,8 +1264,7 @@ w
     /**
      * Execute a query to return DatasetVersion
      * 
-     * @param queryString
-     * @return 
+     * @return
      */
     public List<DatasetVersion> getUnarchivedDatasetVersions(){
         
@@ -1337,6 +1324,15 @@ w
         return em.createQuery(cq).getSingleResult();
     }
 
+    public boolean hasFiles(Long datasetVersionId) {
+        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersionId+" LIMIT 1");
+        try {
+            query.getSingleResult();
+            return true;
+        } catch (NoResultException e) {
+            return false;
+        }
+    }
 
     /**
      * Update the archival copy location for a specific version of a dataset.
@@ -1356,4 +1352,5 @@ w
             logger.log(Level.SEVERE, "Could not find DatasetVersion with id={0} to retry persisting archival copy location after OptimisticLockException.", dv.getId());
         }
     }
+
 }

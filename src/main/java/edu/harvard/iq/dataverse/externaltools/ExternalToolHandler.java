@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
@@ -54,9 +53,10 @@ public class ExternalToolHandler extends URLTokenUtil {
      *                     used anonymously.
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken,
-            FileMetadata fileMetadata, String localeCode) {
+            FileMetadata fileMetadata, String localeCode, Long guestbookResponseId) {
         super(dataFile, apiToken, fileMetadata, localeCode);
         this.externalTool = externalTool;
+        this.externalTool.setGuestbookResponseId(guestbookResponseId);
     }
 
     /**
@@ -109,10 +109,14 @@ public class ExternalToolHandler extends URLTokenUtil {
                     callback= SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
                             + dataFile.getId() + "/metadata/" + fileMetadata.getId() + "/toolparams/"
                             + externalTool.getId();
+                    if (externalTool.getGuestbookResponseId() != null) {
+                        callback += "?guestbookResponseId="  + externalTool.getGuestbookResponseId();
+                    }
                 }
                 if (apiToken != null) {
-                    callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(), HttpMethod.GET,
-                        JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
+                    Integer timeout = params.containsKey("timeout") ? params.getInt("timeout") : 10;
+                    callback = UrlSignerUtil.signUrl(callback, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                            HttpMethod.GET, signingSecretService().getSigningKey(apiToken.getTokenString()));
                 }
                 paramsString= "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
                 if (getLocaleCode() != null) {

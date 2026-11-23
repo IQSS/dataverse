@@ -1,28 +1,22 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.Template;
-import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
-
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import java.util.List;
 import java.sql.Timestamp;
 import java.time.Instant;
+
+import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 /**
  * Creates a new {@link Dataset}, used to store unpublished data. This is as opposed to 
@@ -64,7 +58,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template, boolean validate) {
         super(theDataset, aRequest, false, validate);
-        this.template = template;
+        this.template = template != null ? template : theDataset.getTemplate();
     }
     
     /**

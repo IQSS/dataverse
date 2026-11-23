@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+@Schema(description = "Custom dataset terms of access payload, including use terms, restrictions, citation requirements, conditions, and disclaimer text.")
 public class CustomTermsDTO {
     private String termsOfUse;
     private String confidentialityDeclaration;

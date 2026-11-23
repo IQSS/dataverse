@@ -1,0 +1,36 @@
+diff --git a/.github/workflows/scripts/containers/maintain-configbaker.sh b/.github/workflows/scripts/containers/maintain-configbaker.sh
+index 2cd89efaeb..b12117c05d 100755
+--- a/.github/workflows/scripts/containers/maintain-configbaker.sh
++++ b/.github/workflows/scripts/containers/maintain-configbaker.sh
+@@ -145,7 +145,7 @@ for BRANCH in "$@"; do
+       # shellcheck disable=SC2046
+       mvn -Pct -f . deploy -Ddocker.noCache -Ddocker.platforms="${PLATFORMS}" \
+         -Dapp.skipBuild -Dconf.image.base="${BASE_IMAGE_REF}" \
+-        -Dmaven.main.skip -Dmaven.test.skip -Dmaven.war.skip $TAG_OPTIONS \
++        -Dmaven.main.skip -Dmaven.test.skip -Dmaven.war.skip -Dmaven.smallrye.skip $TAG_OPTIONS \
+         $( if (( DAMP_RUN )); then echo "-Ddocker.skip.push"; fi )
+     else
+       echo "Skipping Maven build as requested by DRY_RUN=1"
+diff --git a/pom.xml b/pom.xml
+index 036e7f0122..c4ea2a5d28 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -46,6 +46,7 @@
+         <openapi.infoDescription>Open source research data repository software.</openapi.infoDescription>
+         <!-- https://download.eclipse.org/microprofile/microprofile-open-api-3.1.1/microprofile-openapi-spec-3.1.1.html#_location_and_formats -->
+         <openapi.outputDirectory>${project.build.outputDirectory}/META-INF</openapi.outputDirectory>
++        <maven.smallrye.skip>false</maven.smallrye.skip>
+     </properties>
+     
+     <!-- Versions of dependencies used both directly and transitive are managed here.
+@@ -1179,6 +1180,7 @@
+                         <!-- Plugin scans class files, not sources. Execute after compile phase but before package -->
+                         <phase>process-classes</phase>
+                         <configuration>
++                            <skip>${maven.smallrye.skip}</skip>
+                             <outputDirectory>${openapi.outputDirectory}</outputDirectory>
+                             <schemaFilename>openapi</schemaFilename>
+                             <infoTitle>${openapi.infoTitle}</infoTitle>
+-- 
+2.55.0
+

@@ -7,9 +7,9 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import jakarta.json.Json;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonArray;
-import jakarta.json.JsonReader;
 
 public class Util {
 
@@ -30,9 +30,7 @@ public class Util {
     }
 
     static JsonArray asJsonArray( String str ) {
-        try ( JsonReader rdr = Json.createReader(new StringReader(str)) ) {
-            return rdr.readArray();
-        }
+        return JsonUtil.getJsonArray(str);
     }
 
     static boolean isBoolean( String s ) {

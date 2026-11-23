@@ -19,9 +19,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean.RequirementStatus;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
@@ -41,7 +43,6 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,7 +61,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -71,6 +71,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -79,6 +80,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("files")
+@Tag(name = "Files", description = "Manage data files, file metadata, file replacement, and file-specific utilities.")
 public class Files extends AbstractApiBean {
     
     @EJB
@@ -86,7 +88,9 @@ public class Files extends AbstractApiBean {
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
-    DataverseServiceBean dataverseService;    
+    DataverseServiceBean dataverseService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
     @EJB
     IngestServiceBean ingestService;
     @Inject
@@ -131,7 +135,13 @@ public class Files extends AbstractApiBean {
     @PUT
     @AuthRequired
     @Path("{id}/restrict")
-    public Response restrictFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileToRestrictId, String restrictStr) {
+    @Operation(summary = "Change file restriction status",
+            description = "Applies restricted or unrestricted status to a data file, with optional access-request and terms-of-access settings.")
+    public Response restrictFileInDataset(@Context ContainerRequestContext crc,
+                                          @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                          @PathParam("id") String fileToRestrictId,
+                                          @RequestBody(description = "Boolean value or JSON object containing restrict, enableAccessRequest, and termsOfAccess fields.")
+                                          String restrictStr) {
         //create request
         DataverseRequest dataverseRequest = null;
         //get the datafile
@@ -150,8 +160,8 @@ public class Files extends AbstractApiBean {
         if (restrictStr != null && restrictStr.trim().startsWith("{")) {
             // process as json
             jakarta.json.JsonObject jsonObject;
-            try (StringReader stringReader = new StringReader(restrictStr)) {
-                jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                jsonObject = JsonUtil.getJsonObject(restrictStr);
                 if (jsonObject.containsKey("restrict")) {
                     restrict = Boolean.valueOf(jsonObject.getBoolean("restrict"));
                     returnMessage += restrict ? "restricted." : "unrestricted.";
@@ -222,13 +232,19 @@ public class Files extends AbstractApiBean {
                description = "File replaced successfully on the dataset")
     @Tag(name = "replaceFilesInDataset", 
          description = "Replace a file to a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
+    @RequestBody(description = "Multipart request containing replacement file content and JSON replacement metadata.",
+            content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response replaceFileInDataset(
                     @Context ContainerRequestContext crc,
+                    @Parameter(description = "Data file id or persistent identifier for the file being replaced.", required = true)
                     @PathParam("id") String fileIdOrPersistentId,
+                    @Parameter(description = "JSON metadata and replacement options for the uploaded file.")
                     @FormDataParam("jsonData") String jsonData,
+                    @Parameter(description = "Replacement file content.")
                     @FormDataParam("file") InputStream testFileInputStream,
+                    @Parameter(description = "Uploaded replacement file metadata.")
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+                    @Parameter(description = "Multipart body part for the replacement file.")
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
 
@@ -364,7 +380,11 @@ public class Files extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}")
-    public Response deleteFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId){
+    @Operation(summary = "Remove a file from its dataset",
+            description = "Removes a data file from the dataset draft and deletes the physical file when the file has never been released.")
+    public Response deleteFileInDataset(@Context ContainerRequestContext crc,
+                                        @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                        @PathParam("id") String fileIdOrPersistentId){
         // (1) Get the user from the API key and create request
         User authUser = getRequestUser(crc);
         DataverseRequest dvRequest = createDataverseRequest(authUser);
@@ -409,8 +429,15 @@ public class Files extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/metadata")
-    public Response updateFileMetadata(@Context ContainerRequestContext crc, @FormDataParam("jsonData") String jsonData,
-                    @PathParam("id") String fileIdOrPersistentId, @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
+    @Operation(summary = "Revise file metadata",
+            description = "Updates metadata for an existing data file using multipart JSON metadata.")
+    public Response updateFileMetadata(@Context ContainerRequestContext crc,
+                    @Parameter(description = "JSON metadata update for the data file.")
+                    @FormDataParam("jsonData") String jsonData,
+                    @Parameter(description = "Data file id or persistent identifier.", required = true)
+                    @PathParam("id") String fileIdOrPersistentId,
+                    @Parameter(description = "Source last-update timestamp used by external integrations.")
+                    @QueryParam("sourceLastUpdateTime") String sourceLastUpdateTime) {
         
         FileMetadata upFmd = null;
         
@@ -541,11 +568,13 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}")
+    @Operation(summary = "Returns file metadata",
+            description = "Returns file metadata for the latest accessible dataset version, optionally including dataset version and owner details.")
     public Response getFileData(@Context ContainerRequestContext crc,
-                                @PathParam("id") String fileIdOrPersistentId,
-                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
-                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
-                                @QueryParam("returnOwners") boolean returnOwners,
+                                @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId,
+                                @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @Parameter(description = "Whether dataset version information is included in the response.") @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @Parameter(description = "Whether owner information is included in the response.") @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
         return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
@@ -554,12 +583,14 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{datasetVersionId}")
+    @Operation(summary = "Returns file metadata for a version",
+            description = "Returns file metadata for the requested dataset version, optionally including dataset version and owner details.")
     public Response getFileDataForVersion(@Context ContainerRequestContext crc,
-                                @PathParam("id") String fileIdOrPersistentId,
-                                @PathParam("datasetVersionId") String datasetVersionId,
-                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
-                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
-                                @QueryParam("returnOwners") boolean returnOwners,
+                                @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId,
+                                @Parameter(description = "Dataset version selector.") @PathParam("datasetVersionId") String datasetVersionId,
+                                @Parameter(description = "Whether deaccessioned dataset versions are included.") @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @Parameter(description = "Whether dataset version information is included in the response.") @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @Parameter(description = "Whether owner information is included in the response.") @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
         return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
@@ -573,7 +604,7 @@ public class Files extends AbstractApiBean {
                                          boolean returnOwners,
                                          UriInfo uriInfo,
                                          HttpHeaders headers) throws WrappedResponse {
-        final DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+        final DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileUserCanSeeOrDie(fileIdOrPersistentId, req)));
         FileMetadata fileMetadata = execCommand(handleVersion(datasetVersionId, new Datasets.DsVersionHandler<>() {
             @Override
             public Command<FileMetadata> handleLatest() {
@@ -605,7 +636,7 @@ public class Files extends AbstractApiBean {
             mdcLogService.logEntry(entry);
         } 
                     
-        return Response.ok(Json.createObjectBuilder()
+        return Response.ok(JsonUtil.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
                 .add("data", json(fileMetadata, returnOwners, returnDatasetVersion)).build())
                 .type(MediaType.APPLICATION_JSON)
@@ -616,7 +647,9 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/metadata")
-    public Response getFileMetadata(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+    @Operation(summary = "Returns published file metadata",
+            description = "Returns the latest published metadata for a data file as JSON text.")
+    public Response getFileMetadata(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         //ToDo - versionId is not used - can't get metadata for earlier versions
         DataverseRequest req;
             try {
@@ -626,7 +659,7 @@ public class Files extends AbstractApiBean {
             }
             final DataFile df;
             try {
-                df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                df = execCommand(new GetDataFileCommand(req, findDataFileUserCanSeeOrDie(fileIdOrPersistentId, req)));
             } catch (Exception e) {
                 return error(BAD_REQUEST, "Error attempting get the requested data file.");
             }
@@ -634,7 +667,7 @@ public class Files extends AbstractApiBean {
             
             if(null != getDraft && getDraft) { 
                 try {
-                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileUserCanSeeOrDie(fileIdOrPersistentId, req)));
                 } catch (WrappedResponse w) {
                     return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
                 }
@@ -659,14 +692,18 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/metadata/draft")
-    public Response getFileMetadataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+    @Operation(summary = "Returns draft file metadata",
+            description = "Returns draft metadata for a data file when the requester may access the draft.")
+    public Response getFileMetadataDraft(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileIdOrPersistentId, @Parameter(description = "Dataset version selector.") @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         return getFileMetadata(crc, fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
     }
 
     @POST
     @AuthRequired
     @Path("{id}/uningest")
-    public Response uningestDatafile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Uningests a data file",
+            description = "Converts an ingested tabular data file back to a regular file when the requester is a superuser.")
+    public Response uningestDatafile(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         DataFile dataFile;
         try {
@@ -724,7 +761,9 @@ public class Files extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/reingest")
-    public Response reingest(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Reingests a data file",
+            description = "Starts ingest processing for a data file when the requester is a superuser.")
+    public Response reingest(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
 
         AuthenticatedUser u;
         try {
@@ -754,37 +793,37 @@ public class Files extends AbstractApiBean {
         }
         
         boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
-        
+
         if (ingestLock) {
             return error(FORBIDDEN, "Dataset already locked with an Ingest lock");
         }
-        
+
         if (!FileUtil.canIngestAsTabular(dataFile)) {
             return error(BAD_REQUEST, "Tabular ingest is not supported for this file type (id: "+id+", type: "+dataFile.getContentType()+")");
         }
-        
+
         dataFile.SetIngestScheduled();
-                
+
         if (dataFile.getIngestRequest() == null) {
             dataFile.setIngestRequest(new IngestRequest(dataFile));
         }
 
         dataFile.getIngestRequest().setForceTypeCheck(true);
-        
+
         // update the datafile, to save the newIngest request in the database:
         dataFile = fileService.save(dataFile);
-        
-        // queue the data ingest job for asynchronous execution: 
+
+        // queue the data ingest job for asynchronous execution:
         String status = ingestService.startIngestJobs(dataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), u);
-        
+
         if (!StringUtil.isEmpty(status)) {
-            // This most likely indicates some sort of a problem (for example, 
+            // This most likely indicates some sort of a problem (for example,
             // the ingest job was not put on the JMS queue because of the size
             // of the file). But we are still returning the OK status - because
-            // from the point of view of the API, it's a success - we have 
-            // successfully gone through the process of trying to schedule the 
+            // from the point of view of the API, it's a success - we have
+            // successfully gone through the process of trying to schedule the
             // ingest job...
-            
+
             return ok(status);
         }
         return ok("Datafile " + id + " queued for ingest");
@@ -794,7 +833,13 @@ public class Files extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/redetect")
-    public Response redetectDatafile(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("dryRun") boolean dryRun) {
+    @Operation(summary = "Re-evaluate file content type",
+            description = "Runs content-type detection for a non-tabular data file and optionally reports the result without saving it.")
+    public Response redetectDatafile(@Context ContainerRequestContext crc,
+                                     @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                     @PathParam("id") String id,
+                                     @Parameter(description = "When true, report the detected type without saving the change.")
+                                     @QueryParam("dryRun") boolean dryRun) {
         try {
             DataFile dataFileIn = findDataFileOrDie(id);
             // Ingested Files have mimetype = text/tab-separated-values
@@ -817,7 +862,9 @@ public class Files extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/extractNcml")
-    public Response extractNcml(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+    @Operation(summary = "Extracts NcML metadata",
+            description = "Extracts NcML metadata from a data file when the requester is a superuser.")
+    public Response extractNcml(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String id) {
         try {
             AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             if (!au.isSuperuser()) {
@@ -854,28 +901,28 @@ public class Files extends AbstractApiBean {
             logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
         }
     }
-    
+
     /**
      * API endpoint to retrieve a URL for a file-level external tool.
-     * 
+     *
      * This endpoint allows clients to get a URL for accessing an external tool
      * that operates at the file level. The URL includes necessary authentication tokens and
      * parameters based on the user's permissions and the tool's configuration.
-     * 
+     *
      * The endpoint accepts JSON input with optional parameters:
      * - preview: boolean flag to indicate if the tool should run in preview mode (suppressing header metadata like name/PID that would already be on the file page)
      * - locale: string specifying the locale for internationalization
-     * 
+     *
      * The response includes:
      * - toolUrl: the URL to access the external tool
      * - toolName: the display name of the external tool
      * - fileId: the ID of the file
      * - preview: whether the URL is for preview mode
-     * 
+     *
      * Authentication is required, and appropriate permissions are checked before generating the URL.
      * For restricted files (including files in draft/deaccessioned datasets, embargoed files, or
      * files with expired retention periods), the user must have DownloadFile permission.
-     * 
+     *
      * @param crc The container request context for authentication
      * @param fileId The ID of the file
      * @param externalToolId The ID of the external tool
@@ -886,11 +933,29 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/externalTool/{tid}/toolUrl")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getExternalToolUrl(@Context ContainerRequestContext crc, @PathParam("id") String fileId,
-            @PathParam("tid") long externalToolId, String jsonBody) {
+    @Operation(summary = "Creates a file external tool URL",
+            description = "Returns launch URL details for a file-scoped external tool after checking tool configuration and file permissions.")
+    @RequestBody(description = "External tool launch options such as preview mode and locale.")
+    public Response getExternalToolUrl(@Context ContainerRequestContext crc, @Parameter(description = "Resource id or persistent identifier.") @PathParam("id") String fileId,
+            @Parameter(description = "External tool id.") @PathParam("tid") long externalToolId,
+            @RequestBody(description = "External tool launch options such as preview mode and locale.")
+            String jsonBody) {
 
         boolean preview = false;
         String locale = null;
+        GuestbookResponse guestbookResponse = null;
+
+        // Find the file
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            return notFound("File not found for given id: " + fileId);
+        }
+
+        // Get the current user and create a request object
+        User user = getRequestUser(crc);
+        DataverseRequest req = createDataverseRequest(user);
 
         // Parse request body for parameters
         if (StringUtils.isNotBlank(jsonBody)) {
@@ -902,22 +967,17 @@ public class Files extends AbstractApiBean {
                 if (jsonObject.containsKey("locale")) {
                     locale = jsonObject.getString("locale");
                 }
-            } catch (JsonParsingException | NullPointerException e) {
+                if (jsonObject.containsKey("guestbookResponse")) {
+                    guestbookResponse = getGuestbookResponseFromBody(dataFile, GuestbookResponse.DOWNLOAD, jsonBody, user);
+                }
+            } catch (JsonParsingException | NullPointerException | JsonParseException e) {
                 logger.warning("Error parsing JSON: " + e.getMessage());
                 // Return a proper error response for malformed JSON
                 return error(Response.Status.BAD_REQUEST, "Invalid JSON format in request body.");
             }
         }
-        
-        try {
-            // Find the file
-            DataFile dataFile;
-            try {
-                dataFile = findDataFileOrDie(fileId);
-            } catch (WrappedResponse ex) {
-                return notFound("File not found for given id: " + fileId);
-            }
 
+        try {
             // Find the external tool
             ExternalTool externalTool = externalToolService.findById(externalToolId);
             if (externalTool == null) {
@@ -932,50 +992,76 @@ public class Files extends AbstractApiBean {
             // Check if the tool's content type matches the file's content type
             String toolContentType = externalTool.getContentType();
             String fileContentType = dataFile.getContentType();
-            if (toolContentType != null && !toolContentType.isEmpty() && 
+            if (toolContentType != null && !toolContentType.isEmpty() &&
                 !toolContentType.equals(fileContentType)) {
-                return error(BAD_REQUEST, 
-                    "External tool content type (" + toolContentType + 
+                return error(BAD_REQUEST,
+                    "External tool content type (" + toolContentType +
                     ") does not match file content type (" + fileContentType + ").");
             }
-            
-            if (!externalToolService.meetsRequirements(externalTool, dataFile)) {
-                return error(BAD_REQUEST, "External tool requirements not met for this file.");
+
+            // Get the best available file metadata
+            // We will use the latest published, if it is a published file. 
+            // Otherwise we'll try to look up a draft. If this is an 
+            // unpublished draft file, the permission logic below will check 
+            // whether this user is allowed to see it.
+            // @todo if we determine that it is important, for the author or 
+            // privileged user to be able to run previewers with draft filemetadata
+            // info, this can be addressed by either additional logic here or by 
+            // adding an explicit filemetadata_id parameter to this API.
+            FileMetadata fileMetadata;
+            try {
+                fileMetadata = dataFile.getLatestPublishedFileMetadata();
+            } catch (UnsupportedOperationException uoex) {
+                fileMetadata = dataFile.getDraftFileMetadata();
             }
-
-            // Get the current user and create a request object
-            User user = getRequestUser(crc);
-            DataverseRequest req = createDataverseRequest(user);
-
-            // Get the latest file metadata
-            FileMetadata fileMetadata = dataFile.getLatestFileMetadata();
             if (fileMetadata == null) {
                 return error(BAD_REQUEST, "File metadata not found.");
             }
 
             // Check if the file is restricted or embargoed
-            boolean isRestricted = dataFile.isRestricted() || fileMetadata.getDatasetVersion().isDraft()
-                    || FileUtil.isActivelyEmbargoed(fileMetadata) || fileMetadata.getDatasetVersion().isDeaccessioned()
-                    || FileUtil.isRetentionExpired(fileMetadata);
-
-            // Check if user has permission to download the file if it's restricted
+            boolean isRestricted = dataFile.isRestricted() || dataFile.isUnpublishedDraftFile()
+                    || FileUtil.isActivelyEmbargoed(dataFile) || dataFile.isDeaccessioned()
+                    || FileUtil.isRetentionExpired(dataFile);
+            boolean hasPermission = true;
             if (isRestricted) {
-                boolean hasPermission = permissionSvc.requestOn(req, dataFile).has(Permission.DownloadFile);
-                if (!hasPermission) {
-                    return error(Response.Status.FORBIDDEN,
-                            "You do not have permission to access this file with the requested external tool.");
-                }
+                hasPermission = permissionSvc.requestOn(req, dataFile).has(Permission.DownloadFile);
+            }
+            RequirementStatus status = externalToolService.meetsRequirements(externalTool, dataFile, !isRestricted || hasPermission);
+            if (status == RequirementStatus.FILE_NOT_FOUND) {
+                return error(BAD_REQUEST, "External tool requirements not met for this file.");
+            }
+            if (status == RequirementStatus.INSUFFICIENT_PERMISSIONS) {
+                return error(Response.Status.FORBIDDEN,
+                        "You do not have permission to access this file with the requested external tool.");
+
             }
 
             // Determine if we need an API token for authentication
             ApiToken apiToken = null;
-            if (user.isAuthenticated() && isRestricted) {
+            if (user.isAuthenticated() && (isRestricted || guestbookResponse != null)) {
                 apiToken = authSvc.getValidApiTokenForUser(user);
+            }
+
+            // Check if Guestbook Response is required
+            Dataset ds = dataFile.getOwner();
+            // If file is in the draft, no guestbook response required
+            if (guestbookResponse == null && !dataFile.isUnpublishedDraftFile() && ds.hasEnabledGuestbook() && !ds.getEffectiveGuestbookEntryAtRequest()) {
+                return error(BAD_REQUEST, (BundleUtil.getStringFromBundle("access.api.download.failure.guestbookResponseMissing", List.of(ds.getGuestbook().getId().toString()))));
+            }
+            // Write the Guestbook Response
+            Long guestbookResponseId = null;
+            if (guestbookResponse != null) {
+                guestbookResponse.setEventType(externalTool.getDisplayName()); // unlike jsf, we will use the tool name - e.g. 'View Image' - in all cases
+                List<String> gbridList = fileDownloadService.writeGuestbookResponseRecords(guestbookResponse, List.of(dataFile));
+                if (gbridList != null && !gbridList.isEmpty()) {
+                    //Get the last one / the one with the latest date
+                    guestbookResponseId = Long.parseLong(gbridList.getLast());
+                }
             }
 
             // Create the external tool handler
             ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken,
-                    fileMetadata, locale);
+                    fileMetadata, locale, guestbookResponseId);
 
             // Get the tool URL
             String toolUrl;
@@ -986,8 +1072,12 @@ public class Files extends AbstractApiBean {
             }
 
             // Return the URL in a JSON response
-            return ok(Json.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
-                    .add("fileId", dataFile.getId()).add("preview", preview));
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder().add("toolUrl", toolUrl).add("displayName", externalTool.getDisplayName())
+                    .add("fileId", dataFile.getId()).add("preview", preview);
+            if (guestbookResponseId != null) {
+                job.add("gbrids", guestbookResponseId);
+            }
+            return ok(job);
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error getting external tool URL: " + ex.getMessage(), ex);
@@ -995,8 +1085,8 @@ public class Files extends AbstractApiBean {
                     "An error occurred while generating the external tool URL.");
         }
     }
-    
-    // This method provides a callback for an external tool to retrieve it's
+
+    // This method provides a callback for an external tool to retrieve its
     // parameters/api URLs. If the request is authenticated, e.g. by it being
     // signed, the api URLs will be signed. If a guest request is made, the URLs
     // will be plain/unsigned.
@@ -1005,8 +1095,20 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/metadata/{fmid}/toolparams/{tid}")
-    public Response getExternalToolFMParams(@Context ContainerRequestContext crc, @PathParam("tid") long externalToolId,
-            @PathParam("id") String fileId, @PathParam("fmid") long fmid, @QueryParam(value = "locale") String locale) {
+    @Operation(summary = "Resolve external tool parameters for file metadata",
+            description = "Reports the parameter payload and allowed API calls for an external tool working with a specific file metadata record.")
+    public Response getExternalToolFMParams(@Context ContainerRequestContext crc,
+            @Parameter(description = "External tool database id.", required = true)
+            @PathParam("tid") long externalToolId,
+            @Parameter(description = "Data file id or persistent identifier.", required = true)
+            @PathParam("id") String fileId,
+            @Parameter(description = "File metadata database id.", required = true)
+            @PathParam("fmid") long fmid,
+            @Parameter(description = "Locale used when creating the external tool parameter payload.")
+            @QueryParam(value = "locale") String locale,
+            @Parameter(description = "Numeric id of the Guestbook response.")
+            @QueryParam("guestbookResponseId") Long guestbookResponseId) {
+
         ExternalTool externalTool = externalToolService.findById(externalToolId);
         if(externalTool == null) {
             return error(BAD_REQUEST, "External tool not found.");
@@ -1024,12 +1126,14 @@ public class Files extends AbstractApiBean {
 
         URLTokenUtil eth = null;
 
-        eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
+        eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale, guestbookResponseId);
         return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
-    }
-    
+        }
+
     @GET
     @Path("fixityAlgorithm")
+    @Operation(summary = "Show the configured file fixity algorithm",
+            description = "Reports the checksum algorithm configured for file fixity checks.")
     public Response getFixityAlgorithm() {
         return ok(systemConfig.getFileFixityChecksumAlgorithm().toString());
     }
@@ -1037,9 +1141,13 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/downloadCount")
-    public Response getFileDownloadCount(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+    @Operation(summary = "Show file download count",
+            description = "Reports the recorded download count for a data file.")
+    public Response getFileDownloadCount(@Context ContainerRequestContext crc,
+                                         @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                         @PathParam("id") String dataFileId) {
         return response(req -> {
-            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileUserCanSeeOrDie(dataFileId, req)));
             return ok(guestbookResponseService.getDownloadCountByDataFileId(dataFile.getId()).toString());
         }, getRequestUser(crc));
     }
@@ -1047,15 +1155,19 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/dataTables")
-    public Response getFileDataTables(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+    @Operation(summary = "Show tabular data tables",
+            description = "Reports data table metadata associated with a tabular data file after checking file access when needed.")
+    public Response getFileDataTables(@Context ContainerRequestContext crc,
+                                      @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                      @PathParam("id") String dataFileId) {
         DataFile dataFile;
+        DataverseRequest dataverseRequest = createDataverseRequest(getRequestUser(crc));
         try {
-            dataFile = findDataFileOrDie(dataFileId);
+            dataFile = findDataFileUserCanSeeOrDie(dataFileId, dataverseRequest);
         } catch (WrappedResponse e) {
             return notFound("File not found for given id.");
         }
         if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
-            DataverseRequest dataverseRequest = createDataverseRequest(getRequestUser(crc));
             boolean hasPermissionToDownloadFile = permissionSvc.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
             if (!hasPermissionToDownloadFile) {
                 return forbidden("Insufficient permissions to access the requested information.");
@@ -1064,19 +1176,27 @@ public class Files extends AbstractApiBean {
         if (!dataFile.isTabularData()) {
             return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
         }
-        return ok(jsonDT(dataFile.getDataTables()));
+        return ok(jsonDT(dataFile.getDataTables(), true));
     }
 
     @POST
     @AuthRequired
     @Path("{id}/metadata/categories")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody, @QueryParam("replace") boolean replaceData) {
+    @Operation(summary = "Apply category labels to file metadata",
+            description = "Adds or replaces category labels on the selected file metadata record.")
+    public Response setFileCategories(@Context ContainerRequestContext crc,
+                                      @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                      @PathParam("id") String dataFileId,
+                                      @RequestBody(description = "JSON object containing a categories array.")
+                                      String jsonBody,
+                                      @Parameter(description = "When true, replace existing categories before adding the supplied values.")
+                                      @QueryParam("replace") boolean replaceData) {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             jakarta.json.JsonObject jsonObject;
-            try (StringReader stringReader = new StringReader(jsonBody)) {
-                jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                jsonObject = JsonUtil.getJsonObject(jsonBody);
                 JsonArray requestedCategoriesJson = jsonObject.getJsonArray("categories");
                 FileMetadata fileMetadata = dataFile.getFileMetadata();
                 if (replaceData) {
@@ -1098,15 +1218,23 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/metadata/tabularTags")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody, @QueryParam("replace") boolean replaceData) {
+    @Operation(summary = "Apply tabular tags to a file",
+            description = "Adds or replaces tabular data tags on a tabular data file.")
+    public Response setFileTabularTags(@Context ContainerRequestContext crc,
+                                       @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                       @PathParam("id") String dataFileId,
+                                       @RequestBody(description = "JSON object containing a tabularTags array.")
+                                       String jsonBody,
+                                       @Parameter(description = "When true, replace existing tabular tags before adding the supplied values.")
+                                       @QueryParam("replace") boolean replaceData) {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             if (!dataFile.isTabularData()) {
                 return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
             }
             jakarta.json.JsonObject jsonObject;
-            try (StringReader stringReader = new StringReader(jsonBody)) {
-                jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                jsonObject = JsonUtil.getJsonObject(jsonBody);
                 JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
                 if (replaceData) {
                     dataFile.setTags(Lists.newArrayList());
@@ -1130,9 +1258,13 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/hasBeenDeleted")
-    public Response getHasBeenDeleted(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+    @Operation(summary = "Check whether a file was deleted",
+            description = "Reports whether the selected data file has a deletion record.")
+    public Response getHasBeenDeleted(@Context ContainerRequestContext crc,
+                                      @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                      @PathParam("id") String dataFileId) {
         return response(req -> {
-            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileUserCanSeeOrDie(dataFileId, req)));
             return ok(dataFileServiceBean.hasBeenDeleted(dataFile));
         }, getRequestUser(crc));
     }
@@ -1146,10 +1278,18 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{dsVersionString}/citation")
-    public Response getFileCitationByVersion(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String versionNumber, @QueryParam("includeDeaccessioned") boolean includeDeaccessioned) {
+    @Operation(summary = "Format a citation for a file version",
+            description = "Reports the citation text for a data file in the requested dataset version.")
+    public Response getFileCitationByVersion(@Context ContainerRequestContext crc,
+                                             @Parameter(description = "Data file id or persistent identifier.", required = true)
+                                             @PathParam("id") String fileIdOrPersistentId,
+                                             @Parameter(description = "Dataset version label, such as 1.0, :draft, or :latest-published.", required = true)
+                                             @PathParam("dsVersionString") String versionNumber,
+                                             @Parameter(description = "Whether deaccessioned dataset versions may be used.")
+                                             @QueryParam("includeDeaccessioned") boolean includeDeaccessioned) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileUserCanSeeOrDie(fileIdOrPersistentId, req)));
             Dataset ds = df.getOwner();
             DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, true);
             if (dsv == null) {
@@ -1173,13 +1313,18 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versionDifferences")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Compare file versions",
+            description = "Reports metadata differences across versions for a data file.")
     public Response getFileVersionsList(@Context ContainerRequestContext crc,
+                                        @Parameter(description = "Data file id or persistent identifier.", required = true)
                                         @PathParam("id") String fileIdOrPersistentId,
+                                        @Parameter(description = "Maximum number of version-difference records to return.")
                                         @QueryParam("limit") Integer limit,
+                                        @Parameter(description = "Number of version-difference records to skip before returning results.")
                                         @QueryParam("offset") Integer offset) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileUserCanSeeOrDie(fileIdOrPersistentId, req)));
             FileMetadata fm = df.getFileMetadata();
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));

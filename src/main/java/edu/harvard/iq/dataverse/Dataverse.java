@@ -1,42 +1,16 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.dataverse.featured.DataverseFeaturedItem;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import java.util.*;
 
 /**
  *
@@ -79,7 +53,7 @@ import jakarta.validation.constraints.Size;
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {
-        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT
+        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT, DIVISION
     };
     
     private static final long serialVersionUID = 1L;
@@ -105,7 +79,40 @@ public class Dataverse extends DvObjectContainer {
     @NotNull(message = "{dataverse.category}")
     @Column( nullable = false )
     private DataverseType dataverseType;
-       
+      
+    
+    @ElementCollection
+    @CollectionTable(name = "dataverse_locallyfairassignees",
+        joinColumns = @JoinColumn(name = "dataverse_id"))
+    @Column(name = "assigneeidentifier")
+    private Set<String> locallyFAIRRoleAssigneeIdentifiers = new HashSet<>();
+
+    @Override
+    public Set<String> getLocallyFAIRRoleAssigneeIdentifiers() {
+        return locallyFAIRRoleAssigneeIdentifiers;
+    }
+
+    public void setLocallyFAIRRoleAssigneeIdentifiers(Set<String> roleAssigneeIdentifiers) {
+        this.locallyFAIRRoleAssigneeIdentifiers = roleAssigneeIdentifiers;
+    }
+
+    public void addLocallyFAIRRoleAssignee(String assigneeIdentifier) {
+        if (locallyFAIRRoleAssigneeIdentifiers == null) {
+            locallyFAIRRoleAssigneeIdentifiers = new HashSet<>();
+        }
+        locallyFAIRRoleAssigneeIdentifiers.add(assigneeIdentifier);
+    }
+
+    public void removeLocallyFAIRRoleAssignee(String assigneeIdentifier) {
+        if (locallyFAIRRoleAssigneeIdentifiers != null) {
+            locallyFAIRRoleAssigneeIdentifiers.remove(assigneeIdentifier);
+        }
+    }
+
+    public boolean LocallyFAIR(String assigneeIdentifier) {
+        return locallyFAIRRoleAssigneeIdentifiers != null && locallyFAIRRoleAssigneeIdentifiers.contains(assigneeIdentifier);
+    }
+    
     /**
      * When {@code true}, users are not granted permissions the got for parent
      * dataverses.
@@ -148,6 +155,8 @@ public class Dataverse extends DvObjectContainer {
                 return  ("dataverse.type.selectTab.researchGroup" );
             case DEPARTMENT:
                 return  ("dataverse.type.selectTab.department" );
+            case DIVISION:
+                return ("dataverse.type.selectTab.division");
             case UNCATEGORIZED:
                 return ("dataverse.type.selectTab.uncategorized");
             default:
@@ -292,7 +301,11 @@ public class Dataverse extends DvObjectContainer {
     public void setDatasetLinkingDataverses(List<DatasetLinkingDataverse> datasetLinkingDataverses) {
         this.datasetLinkingDataverses = datasetLinkingDataverses;
     }
-        
+
+    public boolean isLinked() {
+        return (dataverseLinkingDataverses != null && dataverseLinkingDataverses.size() > 0);
+    }
+
     public Set<ControlledVocabularyValue> getDataverseSubjects() {
         return dataverseSubjects;
     }
@@ -907,7 +920,7 @@ public class Dataverse extends DvObjectContainer {
         }
         return false;
     }
-    
+
     public String getLocalURL() {
         return  SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + this.getAlias();
     }
@@ -924,4 +937,10 @@ public class Dataverse extends DvObjectContainer {
     private boolean hasMetadataBlock(MetadataBlock metadataBlock) {
         return metadataBlocks.stream().anyMatch(block -> block.getId().equals(metadataBlock.getId()));
     }
+
+    @Override
+    public boolean isLocallyFAIR() {
+        return !locallyFAIRRoleAssigneeIdentifiers.isEmpty();
+    }
+
 }

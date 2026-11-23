@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -17,6 +15,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import jakarta.persistence.OptimisticLockException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -233,17 +232,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
 
-            if (getDataset().getFiles().isEmpty() && getEffectiveRequiresFilesToPublishDataset()) {
+            List<FileMetadata> files = getDataset().getLatestVersion().getFileMetadatas();
+            if ((files == null || files.isEmpty()) && getEffectiveRequiresFilesToPublishDataset()) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.mayNotPublish.FilesRequired"), this);
             }
-        }
-    }
-    private boolean getEffectiveRequiresFilesToPublishDataset() {
-        if (getUser().isSuperuser()) {
-            return false;
-        } else {
-            Dataverse dv = getDataset().getOwner();
-            return dv != null &&  dv.getEffectiveRequiresFilesToPublishDataset();
         }
     }
     

@@ -5,10 +5,10 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import org.junit.jupiter.api.AfterAll;
@@ -91,8 +91,7 @@ public class AdminIT {
                 .body("data.'"+harmlessSetting+"/lang/"+language+"'", equalTo(harmlessL10nValue));
             
             // Store original settings as JsonObject for later restoration
-            JsonObject originalSettings = Json.createReader(getResponse.body().asInputStream())
-                .readObject()
+            JsonObject originalSettings = JsonUtil.getJsonObjectFromInputStream(getResponse.body().asInputStream())
                 .getJsonObject("data");
             
             // Step 2: Set our harmless test setting using UtilIT
@@ -116,7 +115,7 @@ public class AdminIT {
                 .assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
-                .body("message.message", containsString("successfully updated"));
+                .body("message", containsString("successfully updated"));
             
             // Step 5: Verify the harmless setting is gone (restored to original state)
             Response verifyRestoredResponse = UtilIT.getSetting(harmlessSetting);
@@ -133,8 +132,7 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
             
             // Store original settings as JsonObject for later restoration
-            JsonObject finalSettings = Json.createReader(getResponse.body().asInputStream())
-                .readObject()
+            JsonObject finalSettings = JsonUtil.getJsonObjectFromInputStream(getResponse.body().asInputStream())
                 .getJsonObject("data");
             
             // Verify the settings are back to original state (our test setting should be absent)
@@ -1081,7 +1079,7 @@ public class AdminIT {
         // Audit files
         Response resp = UtilIT.auditFiles(apiToken, null, 100L, null);
         resp.prettyPrint();
-        JsonArray emptyArray = Json.createArrayBuilder().build();
+        JsonArray emptyArray = JsonUtil.createArrayBuilder().build();
         resp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.lastId", equalTo(100));
@@ -1134,7 +1132,7 @@ public class AdminIT {
         getAuthProviders.prettyPrint();
 
         String factoryData = String.format("type: oidc | issuer: http://keycloak.mydomain.com:8090/realms/test | clientId: %s | clientSecret: %s", clientId, clientSecret);
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = JsonUtil.createObjectBuilder()
                 .add("id", "oidc1")
                 .add("factoryAlias", "oidc")
                 .add("title", "Open ID Connect SPA")

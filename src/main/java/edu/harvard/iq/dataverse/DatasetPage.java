@@ -32,12 +32,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCom
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetReviewsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportException;
@@ -104,6 +106,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.OptimisticLockException;
 
@@ -111,7 +114,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import jakarta.validation.ConstraintViolation;
 import java.util.Arrays;
 import java.util.HashSet;
 import jakarta.faces.model.SelectItem;
@@ -134,6 +136,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.export.croissant.CroissantExportUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
@@ -161,7 +164,6 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -714,7 +716,27 @@ public class DatasetPage implements java.io.Serializable {
     public void updateFileSearch(){
         logger.fine("updating file search list");
         this.fileMetadatasSearch = selectFileMetadatasForDisplay();
+        adjustFilePaginatorPage();
+    }
 
+    private void adjustFilePaginatorPage() {
+        int totalItems = fileMetadatasSearch.size();
+        int rows = rowsPerPage > 0 ? rowsPerPage : 10;
+        int totalPages = (totalItems + rows - 1) / rows;
+
+        if (filePaginatorPage >= totalPages && totalPages > 0) {
+            filePaginatorPage = totalPages - 1;
+        } else if (totalItems == 0) {
+            filePaginatorPage = 0;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext != null && facesContext.getViewRoot() != null) {
+            org.primefaces.component.datatable.DataTable dt = (org.primefaces.component.datatable.DataTable) facesContext.getViewRoot().findComponent("datasetForm:tabView:filesTable");
+            if (dt != null) {
+                dt.setFirst(filePaginatorPage * rows);
+            }
+        }
     }
 
         private Long numberOfFilesToShow = (long) 25;
@@ -746,8 +768,8 @@ public class DatasetPage implements java.io.Serializable {
         if (isIndexedVersion() && StringUtil.isEmpty(fileLabelSearchTerm) && StringUtil.isEmpty(fileTypeFacet) && StringUtil.isEmpty(fileAccessFacet) && StringUtil.isEmpty(fileTagsFacet)) {
             // Indexed version: we need facets, they are set as a side effect of getFileIdsInVersionFromSolr method.
             // But, no search terms were specified, we will return the full
-            // list of the files in the version: we discard the result from getFileIdsInVersionFromSolr.
-            getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
+            // list of the files in the version: we only ask Solr for the facets, not for the file ids.
+            getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm, false);
             // Since the search results should include the full set of fmds if all the
             // terms/facets are empty, setting them to null should just be
             // an optimization to skip the loop below
@@ -951,6 +973,14 @@ public class DatasetPage implements java.io.Serializable {
      *
      */
     public Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern) {
+        return getFileIdsInVersionFromSolr(datasetVersionId, pattern, true);
+    }
+
+    /**
+     * @param idsNeeded false when only the facets are needed: Solr then returns no documents,
+     * which matters for versions with many files; the returned set is empty
+     */
+    private Set<Long> getFileIdsInVersionFromSolr(Long datasetVersionId, String pattern, boolean idsNeeded) {
         logger.fine("searching for file ids, in solr");
 
         SolrQuery solrQuery = new SolrQuery();
@@ -1035,9 +1065,10 @@ public class DatasetPage implements java.io.Serializable {
 
         }
 
-        // Unlimited number of search results:
+        // Unlimited number of search results, with only the file ids:
         // (but we are searching within one dataset(version), so it should be manageable)
-        solrQuery.setRows(Integer.MAX_VALUE);
+        solrQuery.setRows(idsNeeded ? Integer.MAX_VALUE : 0);
+        solrQuery.setFields(SearchFields.ENTITY_ID);
 
         logger.fine("Solr query (file search): " + solrQuery);
 
@@ -2055,7 +2086,7 @@ public class DatasetPage implements java.io.Serializable {
                 
                 // We are only performing these lookups to obtain the database id
                 // of the version that we are displaying, and then we will use it
-                // to perform a .findDeep(versionId); see below. 
+                // to perform a .find(versionId); see below. 
                 
                 // TODO: replace the code block below, the combination of 
                 // datasetService.find(id) and datasetVersionService.selectRequestedVersion()
@@ -2080,18 +2111,8 @@ public class DatasetPage implements java.io.Serializable {
                 
                 versionId = workingVersion.getId();
 
-                this.workingVersion = null;
-                this.dataset = null;
-
             } 
-            
-            // ... And now the "real" working version lookup: 
-            
-            if (versionId != null) {
-                this.workingVersion = datasetVersionService.findDeep(versionId);
-                dataset = workingVersion.getDataset();
-            }
-            
+            // No ids supplied - send 404
             if (workingVersion == null) {
                 logger.warning("Failed to retrieve version");
                 return permissionsWrapper.notFound();
@@ -2139,9 +2160,15 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
-            // Check permisisons
-            if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
-                return permissionsWrapper.notAuthorized();
+            // Check permissions
+            boolean releasedAndCanView = workingVersion.isReleased() && (!dataset.isLocallyFAIR() || permissionsWrapper
+                    .hasLocallyFAIRAccess(dvRequestService.getDataverseRequest(), dataset));
+            if (!(releasedAndCanView || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
+                if (dataset.isLocallyFAIR()) {
+                    return permissionsWrapper.notFound();
+                } else {
+                    return permissionsWrapper.notAuthorized();
+                }
             }
 
             if (retrieveDatasetVersionResponse != null && !retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
@@ -2302,11 +2329,6 @@ public class DatasetPage implements java.io.Serializable {
         displayLockInfo(dataset);
         displayPublishMessage();
 
-        // TODO: replace this loop, and the loop in the method that calculates 
-        // the total "originals" size of the dataset with direct custom queries; 
-        // then we'll be able to drop the lookup hint for DataTable from the 
-        // findDeep() method for the version and further speed up the lookup 
-        // a little bit.
         boolean globusDownloadEnabled = systemConfig.isGlobusDownload();
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             DataFile df = fmd.getDataFile();
@@ -3007,7 +3029,7 @@ public class DatasetPage implements java.io.Serializable {
                     String status = updateVersion.getArchivalCopyLocationStatus();
                     if((status==null) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE) || (JvmSettings.BAGIT_ARCHIVE_ON_VERSION_UPDATE.lookupOptional(Boolean.class).orElse(false) && archiveCommand.canDelete())){
                         // Delete the record of any existing copy since it is now out of date/incorrect
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                         updateVersion.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                         //Persist to db now
@@ -3093,7 +3115,7 @@ public class DatasetPage implements java.io.Serializable {
             // versionId must have been set by now (see null check above), in the init()
             // method, regardless of how the page was originally called - by the dataset
             // database id, by the persistent identifier, or by the db id of the version.
-            this.workingVersion = datasetVersionService.findDeep(versionId);
+            this.workingVersion = datasetVersionService.find(versionId);
             dataset = workingVersion.getDataset();
         } 
         
@@ -3107,6 +3129,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
+        adjustFilePaginatorPage();
 
         displayCitation = dataset.getCitation(true, workingVersion);
         stateChanged = false;
@@ -4039,8 +4062,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
         }
         // Validate
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
+        workingVersion.validate(); // add validation messages to dataset fields
+        if (!workingVersion.isValid()) {
             FacesContext.getCurrentInstance().validationFailed();
             return "";
         }
@@ -4870,11 +4893,16 @@ public class DatasetPage implements java.io.Serializable {
         return  settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomTextOnAllVersions, false);
     }
 
-    public String getVariableMetadataURL(Long fileid) {
-        String myHostURL = getDataverseSiteUrl();
-        String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
+    public boolean isDisplaySubmitForReviewPopupCustomText() {
+        return !getDatasetSubmitForReviewCustomText().isEmpty();
+    }
 
-        return metaURL;
+    public String getDatasetSubmitForReviewCustomText(){
+        String datasetSubmitForReviewCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetSubmitForReviewPopupCustomText);
+        if (datasetSubmitForReviewCustomText != null && !datasetSubmitForReviewCustomText.isEmpty()) {
+            return datasetSubmitForReviewCustomText;
+        }
+        return "";
     }
 
     public String getTabularDataFileURL(Long fileid) {
@@ -5782,6 +5810,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private boolean showLinkingPopup = false;
     private boolean showUnLinkingPopup = false;
+    private Boolean privateUrlAccess = null;
     private Boolean anonymizedAccess = null;
 
     //
@@ -5820,13 +5849,22 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isAnonymizedAccess() {
         if (anonymizedAccess == null) {
-            if (session.getUser() instanceof PrivateUrlUser && workingVersion.isDraft()) {
+            if (isPrivateUrlAccess()) {
                 anonymizedAccess = ((PrivateUrlUser) session.getUser()).hasAnonymizedAccess();
             } else {
                 anonymizedAccess = false;
             }
         }
         return anonymizedAccess;
+    }
+
+    public boolean isPrivateUrlAccess() {
+        if(privateUrlAccess == null) {
+            privateUrlAccess = session.getUser() instanceof PrivateUrlUser && workingVersion.isDraft();
+        } else {
+            privateUrlAccess = false;
+        }
+        return privateUrlAccess;
     }
 
     public boolean isAnonymizedPrivateUrl() {
@@ -5987,9 +6025,13 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
-    public boolean isShowPreviewButton(DataFile dataFile) {
-        List<ExternalTool> previewTools = getPreviewToolsForDataFile(dataFile);
-        return previewTools.size() > 0;
+    public boolean isShowPreviewButton(FileMetadata fmd) {
+        DataFile dataFile = fmd.getDataFile();
+        List<ExternalTool> previewTools = getPreviewToolsForDataFile(dataFile, fileDownloadHelper.canDownloadFile(fmd));
+        if (previewTools.isEmpty()) {
+            return false;
+        }
+        return true;
     }
     
     public boolean isShowQueryButton(DataFile dataFile) { 
@@ -6001,27 +6043,37 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
-        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(dataFile);
+        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(dataFile, true);
         return fileQueryTools.size() > 0;
     }
 
     public List<ExternalTool> getPreviewToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW, null);
+    }
+    
+    public List<ExternalTool> getPreviewToolsForDataFile(DataFile dataFile, Boolean canDownload) {
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.PREVIEW, canDownload);
     }
 
     public List<ExternalTool> getQueryToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY, null);
     }
     
+    public List<ExternalTool> getQueryToolsForDataFile(DataFile dataFile, Boolean canDownload) {
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.QUERY, canDownload);
+    }
+    
+    //ToDo: currently only shown if the user can Edit the dataset which means they can view files
     public List<ExternalTool> getConfigureToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.CONFIGURE);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.CONFIGURE, true);
     }
 
+    //ToDo: currently only shown if the user can Edit the dataset which means they can view files
     public List<ExternalTool> getExploreToolsForDataFile(DataFile dataFile) {
-        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.EXPLORE);
+        return getCachedToolsForDataFile(dataFile, ExternalTool.Type.EXPLORE, true);
     }
 
-    public List<ExternalTool> getCachedToolsForDataFile(DataFile dataFile, ExternalTool.Type type) {
+    public List<ExternalTool> getCachedToolsForDataFile(DataFile dataFile, ExternalTool.Type type, Boolean canDownload) {
         Long fileId = dataFile.getId();
         Map<Long, List<ExternalTool>> cachedToolsByFileId = new HashMap<>();
         List<ExternalTool> externalTools = new ArrayList<>();
@@ -6049,7 +6101,12 @@ public class DatasetPage implements java.io.Serializable {
         if (cachedTools != null) { //if already queried before and added to list
             return cachedTools;
         }
-        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
+        if(canDownload == null) {
+            logger.warning("Call to getCachedToolsForDataFile with null canDownload parameter and no cached results");
+            //Return the set available to non-downloader in this case (versus an empty list)
+            canDownload = false;
+        }
+        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile, canDownload);
         cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
         return cachedTools;
     }
@@ -6106,6 +6163,20 @@ public class DatasetPage implements java.io.Serializable {
             final String CROISSANT_SCHEMA_NAME = "croissantSlim";
             ExportService instance = ExportService.getInstance();
             String croissant = instance.getLatestPublishedAsString(dataset, CROISSANT_SCHEMA_NAME);
+            if (FeatureFlags.CROISSANT_WITH_LOCAL_REVIEWS.enabled()) {
+                // Rewrite the export on the fly and insert local reviews until we have a solution for https://github.com/gdcc/dataverse-spi/issues/5
+                JsonObjectBuilder reviewsJsonObj = null;
+                try {
+                    reviewsJsonObj = commandEngine.submit(new GetDatasetReviewsCommand(dvRequestService.getDataverseRequest(), dataset));
+                    JsonObjectBuilder reviews = CroissantExportUtil.getReviews(reviewsJsonObj);
+                    JsonObject croissantJson = JsonUtil.getJsonObject(croissant);
+                    String updatedContent = JsonUtil.createObjectBuilder(croissantJson)
+                        .add("reviews", reviews.build().getJsonArray("reviews")).build().toString();
+                    return updatedContent;
+                } catch (CommandException e) {
+                    logger.fine("Couldn't get reviews");
+                }
+            }
             if (croissant != null && !croissant.isEmpty()) {
                 logger.fine("Returning cached CROISSANT.");
                 return croissant;
@@ -6139,7 +6210,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void selectAllFiles() {
         logger.fine("selectAllFiles called");
-        selectedFiles = workingVersion.getFileMetadatas();
+        selectedFiles = fileMetadatasSearch;
     }
 
     public void clearSelection() {
@@ -6179,7 +6250,7 @@ public class DatasetPage implements java.io.Serializable {
                     if (status == null || (force && cmd.canDelete())) {
 
                         // Set initial pending status
-                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                         job.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_PENDING);
                         dv.setArchivalCopyLocation(JsonUtil.prettyPrint(job.build()));
                         //Persist now
@@ -6373,6 +6444,7 @@ public class DatasetPage implements java.io.Serializable {
     private String termsOfAccess;
     private boolean fileAccessRequest;
     private boolean publishDisclaimerAcknowledged;
+    private boolean submitForReviewDisclaimerAcknowledged;
 
     public String getTermsOfAccess() {
         return termsOfAccess;
@@ -6396,6 +6468,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setPublishDisclaimerAcknowledged(boolean publishDisclaimerAcknowledged) {
         this.publishDisclaimerAcknowledged = publishDisclaimerAcknowledged;
+    }
+
+    public boolean isSubmitForReviewDisclaimerAcknowledged() {
+        return submitForReviewDisclaimerAcknowledged || !settingsWrapper.isHasSubmitForReviewDatasetDisclaimerText();
+    }
+
+    public void setSubmitForReviewDisclaimerAcknowledged(boolean submitForReviewDisclaimerAcknowledged) {
+        this.submitForReviewDisclaimerAcknowledged = submitForReviewDisclaimerAcknowledged;
     }
 
     // wrapper method to see if the file has been deleted (or replaced) in the current version

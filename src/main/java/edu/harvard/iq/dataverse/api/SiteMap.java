@@ -9,9 +9,12 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Stateless
 @Path("admin/sitemap")
+@Tag(name = "Admin", description = "Administrative Dataverse operations.")
 public class SiteMap extends AbstractApiBean {
 
     @EJB
@@ -19,6 +22,8 @@ public class SiteMap extends AbstractApiBean {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Starts a sitemap update",
+            description = "Starts regeneration of the site map for all dataverses and datasets when no staged sitemap file is present.")
     public Response updateSiteMap() {
         boolean stageFileExists = SiteMapUtil.stageFileExists();
         if (stageFileExists) {

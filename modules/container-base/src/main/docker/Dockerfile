@@ -36,6 +36,7 @@ EXPOSE 4848 9009 8080 8686
 ENV HOME_DIR="/opt/payara"
 ENV PAYARA_DIR="${HOME_DIR}/appserver" \
     SCRIPT_DIR="${HOME_DIR}/scripts" \
+    AGENTS_DIR="${HOME_DIR}/agents" \
     CONFIG_DIR="${HOME_DIR}/config" \
     DEPLOY_DIR="${HOME_DIR}/deployments" \
     STORAGE_DIR="/dv" \
@@ -68,6 +69,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     # Make heap dumps on OOM appear in DUMPS_DIR
     ENABLE_DUMPS=0 \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
+    # Java agents to attach, e.g. "jacocoagent.jar=output=tcpserver,address=*,port=6300"
+    JAVA_AGENTS="" \
     ENABLE_JMX=0 \
     ENABLE_JDWP=0 \
     ENABLE_RELOAD=0 \
@@ -87,7 +90,7 @@ SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 VOLUME ${STORAGE_DIR} ${SECRETS_DIR} ${DUMPS_DIR}
 RUN <<EOF
     # Create pathes
-    mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}"
+    mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}" "${AGENTS_DIR}"
     mkdir -p "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
     # Remove the default user if present (do not fail build if not, introduced by Ubuntu 24.04)
     userdel --force --remove ubuntu || true
@@ -140,6 +143,9 @@ WORKDIR ${HOME_DIR}
 
 # Copy Payara from build context (cached by Maven)
 COPY --chown=${LINUX_USER}:${LINUX_GROUP} maven/appserver ${PAYARA_DIR}/
+
+# Copy the Java agents that can be attached at runtime with JAVA_AGENTS (e.g. JaCoCo)
+COPY --chown=${LINUX_USER}:${LINUX_GROUP} maven/agents ${AGENTS_DIR}/
 
 # Copy the system (appserver level) scripts like entrypoint, etc
 COPY --chown=${LINUX_USER}:${LINUX_USER} maven/scripts ${SCRIPT_DIR}/

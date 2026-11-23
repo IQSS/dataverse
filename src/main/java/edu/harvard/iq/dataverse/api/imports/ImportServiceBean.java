@@ -7,42 +7,32 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestedDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestedDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import edu.harvard.iq.dataverse.license.LicenseServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
+import jakarta.ejb.*;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.*;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,24 +46,8 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
+
 import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import javax.xml.stream.XMLStreamException;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -113,6 +87,9 @@ public class ImportServiceBean {
 
     @EJB
     DatasetTypeServiceBean datasetTypeService;
+
+    @EJB
+    TemplateServiceBean templateService;
 
     /**
      * This is just a convenience method, for testing migration.  It creates 
@@ -177,7 +154,7 @@ public class ImportServiceBean {
             if (validationLog!=null) {
                 validationLog.println(msg);
             }
-            return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+            return JsonUtil.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (IOException e) {
             Throwable causedBy =e.getCause();
             while (causedBy != null && causedBy.getCause()!=null) {
@@ -202,7 +179,7 @@ public class ImportServiceBean {
             validationLog.println(msg);
             e.printStackTrace();
 
-            return Json.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
+            return JsonUtil.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
 
         }
     }
@@ -325,13 +302,13 @@ public class ImportServiceBean {
         try {
             Dataset harvestedDataset;
 
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, harvestingClient, templateService);
             parser.setLenient(true);
 
             if (existingDataset == null) {
                 // Creating a new dataset from scratch:
                 
-                harvestedDataset = parser.parseDataset(obj);
+                harvestedDataset = parser.parseDataset(obj, owner);
 
                 harvestedDataset.setHarvestedFrom(harvestingClient);
                 harvestedDataset.setHarvestIdentifier(harvestIdentifier);
@@ -455,9 +432,9 @@ public class ImportServiceBean {
         JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, datasetTypeService, templateService);
             parser.setLenient(!importType.equals(ImportType.NEW));
-            Dataset ds = parser.parseDataset(obj);
+            Dataset ds = parser.parseDataset(obj, owner);
 
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
@@ -468,7 +445,6 @@ public class ImportServiceBean {
                 }
             }
 
-            ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
             // Check data against required constraints
@@ -573,7 +549,7 @@ public class ImportServiceBean {
             logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
-        return Json.createObjectBuilder().add("message", status);
+        return JsonUtil.createObjectBuilder().add("message", status);
     }
     
     private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
@@ -768,13 +744,22 @@ public class ImportServiceBean {
                 Object invalid = v.getRootBean();
                 String msg = "";
                 if (invalid instanceof DatasetField) {
-                    DatasetField f = (DatasetField) invalid; 
-                    
-                    msg += "Missing required field: " + f.getDatasetFieldType().getDisplayName() + ";";                  
+                    DatasetField f = (DatasetField) invalid;
+
+                    msg += "Missing required field: " + f.getDatasetFieldType().getDisplayName() + ";";
                     if (sanitize) {
-                        msg += " populated with '" + DatasetField.NA_VALUE + "'";
-                        f.setSingleValue(DatasetField.NA_VALUE);
-                        fixed = true;
+                        if (f.getDatasetFieldType().isControlledVocabulary()) {
+                            ControlledVocabularyValue naValue = datasetfieldService.findNAControlledVocabularyValue();
+                            if (naValue != null) {
+                                f.setControlledVocabularyValues(List.of(naValue));
+                                msg += " populated with '" + DatasetField.NA_VALUE + "'";
+                                fixed = true;
+                            }
+                        } else {
+                            f.setSingleValue(DatasetField.NA_VALUE);
+                            msg += " populated with '" + DatasetField.NA_VALUE + "'";
+                            fixed = true;
+                        }
                     }
                 } else if (invalid instanceof DatasetFieldValue) {
                     DatasetFieldValue fv = (DatasetFieldValue) invalid;

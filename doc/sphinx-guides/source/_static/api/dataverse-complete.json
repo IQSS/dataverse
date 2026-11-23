@@ -11,5 +11,7 @@
   ],
   "affiliation": "Scientific Research University",
   "description": "We do all the science.",
-  "dataverseType": "LABORATORY"
+  "dataverseType": "LABORATORY",
+  "datasetFileCountLimit": 10,
+  "guestbookRoot": false
 }
