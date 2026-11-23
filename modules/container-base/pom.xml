@@ -83,6 +83,28 @@
                                     </artifactItems>
                                 </configuration>
                             </execution>
+                            <!-- Java agents shipped in the image, to attach at runtime with JAVA_AGENTS.
+                                 The JaCoCo agent uses the same version as the JaCoCo Maven plugin. -->
+                            <execution>
+                                <id>copy-java-agents</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jacoco</groupId>
+                                            <artifactId>org.jacoco.agent</artifactId>
+                                            <version>${maven-jacoco-plugin.version}</version>
+                                            <classifier>runtime</classifier>
+                                            <type>jar</type>
+                                            <outputDirectory>${project.build.directory}/agents</outputDirectory>
+                                            <destFileName>jacocoagent.jar</destFileName>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
         

@@ -255,13 +255,13 @@ public class Datasets extends AbstractApiBean {
             @Parameter(description = "Dataset version selector.") @QueryParam("version") String versionId, @Parameter(description = "Exporter option.") @QueryParam("exporter") String exporter,
             @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         try {
-            Dataset dataset = datasetService.findByGlobalId(persistentId);
+            Dataset dataset = datasetService.findDatasetUserCanSeeByGlobalId(persistentId, req);
             if (dataset == null) {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
 
-            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion datasetVersion = null;
             try {
                 String versionToLookUp = DS_VERSION_LATEST_PUBLISHED;
