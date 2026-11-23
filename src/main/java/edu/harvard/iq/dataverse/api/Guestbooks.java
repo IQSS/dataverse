@@ -57,6 +57,10 @@ public class Guestbooks extends AbstractApiBean {
         return response( req -> {
             final Guestbook retrieved = guestbookService.find(id);
             if (retrieved != null) {
+                final Dataverse dataverse = retrieved.getDataverse();
+                if (dataverse.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataverse)) {
+                    return notFound(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.notFound"));
+                }
                 final JsonObjectBuilder jsonbuilder = json(retrieved);
                 return ok(jsonbuilder);
             } else {
@@ -189,12 +193,12 @@ public class Guestbooks extends AbstractApiBean {
         return response( req -> {
             Guestbook guestbook = guestbookService.find(id);
             if (guestbook == null) {
-                return notFound("Guestbook " + id + " not found.");
+                return notFound(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.notFound"));
             }
             Dataverse dataverse = guestbook.getDataverse();
             if(dataverse.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataverse)) {
                 // If you can't see the collection, we don't acknowledge the guestbook exists.
-                return notFound("Guestbook " + id + " not found.");
+                return notFound(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.notFound"));
             }
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
