@@ -351,7 +351,7 @@ public class JSONLDUtil {
                         }
                         // When deleting termsOfUse, if no license is set, assign the default license
                         // to prevent the dataset from ending up in an invalid state
-                        if (key.equals(JsonLDTerm.schemaOrg("termsOfUse").getUrl())) {
+                        if (key.equals(JsonLDTerm.termsOfUse.getUrl())) {
                             if (defaultTermsOfUseOrLicense.getLicense() == null
                                     && StringUtils.isBlank(defaultTermsOfUseOrLicense.getTermsOfUse())) {
                                 defaultTermsOfUseOrLicense.setLicense(licenseSvc.getDefault());
