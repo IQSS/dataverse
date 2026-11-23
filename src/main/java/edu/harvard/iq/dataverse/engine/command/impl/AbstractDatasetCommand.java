@@ -315,7 +315,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         for (DatasetField df : newVersion.getFlatDatasetFields()) {
             logger.fine("Found id: " + df.getDatasetFieldType().getId());
             if (ctxt.dsField().getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
-                ctxt.dsField().registerExternalVocabValues(df);
+                ctxt.dsField().registerExternalVocabValues(df, getDataset());
             }
         }
     }

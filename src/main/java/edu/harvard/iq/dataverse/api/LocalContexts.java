@@ -48,6 +48,9 @@ public class LocalContexts extends AbstractApiBean {
     @EJB
     PermissionServiceBean permissionService;
 
+    static final String LOCAL_CONTEXTS_INFO_NOT_FOUND = "LocalContexts information not found for this dataset identifier.";
+    static final String INVALID_LOCAL_CONTEXTS_RESPONSE = "Invalid response from Local Contexts API.";
+    
     @GET
     @Path("/datasets/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -117,6 +120,10 @@ public class LocalContexts extends AbstractApiBean {
         }
     }
 
+    /**
+     * Returns a Local Contexts project only when the project response includes a DOI matching the specified dataset.
+     * This call is used by the CVoc script in dataset pages and by the back end.
+     */
     @GET
     @Path("/datasets/{id}/{projectId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -169,15 +176,14 @@ public class LocalContexts extends AbstractApiBean {
                                 }
                             }
                             // DOI mismatch, return 404
-                            return error(Response.Status.NOT_FOUND,
-                                    "LocalContexts information not found for this dataset.");
+                            return error(Response.Status.NOT_FOUND, LOCAL_CONTEXTS_INFO_NOT_FOUND);
                         } else {
                             // "publication_doi" key not found in the response, return 404
-                            return error(Response.Status.NOT_FOUND, "Invalid response from Local Contexts API.");
+                            return error(Response.Status.NOT_FOUND, INVALID_LOCAL_CONTEXTS_RESPONSE);
                         }
                     } else {
                         // "external_ids" key not found in the response, return 404
-                        return error(Response.Status.NOT_FOUND, "Invalid response from Local Contexts API.");
+                        return error(Response.Status.NOT_FOUND, INVALID_LOCAL_CONTEXTS_RESPONSE);
                     }
 
                 } else {
@@ -193,7 +199,7 @@ public class LocalContexts extends AbstractApiBean {
                 return error(Response.Status.SERVICE_UNAVAILABLE, "Error contacting LocalContexts");
             }
         } catch (WrappedResponse ex) {
-            return ex.getResponse();
+            return error(Response.Status.NOT_FOUND, LOCAL_CONTEXTS_INFO_NOT_FOUND);
         }
     }
 }

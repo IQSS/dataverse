@@ -356,8 +356,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     /**
      * Adds information about the external vocabulary term being used in this DatasetField to the ExternalVocabularyValue table if it doesn't already exist.
      * @param df - the primitive/parent compound field containing a newly saved value
+     * @param dataset - the dataset containing this field, used for dataset-level parameter substitution in retrieval-uri
      */
-    public void registerExternalVocabValues(DatasetField df) {
+    public void registerExternalVocabValues(DatasetField df, Dataset dataset) {
         DatasetFieldType dft = df.getDatasetFieldType();
         logger.fine("Registering for field: " + dft.getName());
         JsonObject cvocEntry = getCVocConf(true).get(dft.getId());
@@ -367,7 +368,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 siblingsDatasetFields = df.getParentDatasetFieldCompoundValue().getChildDatasetFields();
             }
             for (DatasetFieldValue dfv : df.getDatasetFieldValues()) {
-                registerExternalTerm(cvocEntry, dfv.getValue(), siblingsDatasetFields);
+                registerExternalTerm(cvocEntry, dfv.getValue(), siblingsDatasetFields, dataset);
             }
         } else {
             if (df.getDatasetFieldType().isCompound()) {
@@ -376,7 +377,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     for (DatasetField cdf : cv.getChildDatasetFields()) {
                         logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
                         if (cdf.getDatasetFieldType().equals(termdft)) {
-                            registerExternalTerm(cvocEntry, cdf.getValue(), cv.getChildDatasetFields());
+                            registerExternalTerm(cvocEntry, cdf.getValue(), cv.getChildDatasetFields(), dataset);
                         }
                     }
                 }
@@ -514,8 +515,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @param cvocEntry             - the configuration for the DatasetFieldType associated with this term
      * @param term                  - the term uri as a string
      * @param relatedDatasetFields  - siblings or childs of the term
+     * @param dataset               - the dataset containing the term, used for dataset-level parameter substitution
      */
-    public void registerExternalTerm(JsonObject cvocEntry, String term, List<DatasetField> relatedDatasetFields) {
+    public void registerExternalTerm(JsonObject cvocEntry, String term, List<DatasetField> relatedDatasetFields, Dataset dataset) {
         String retrievalUri = cvocEntry.getString("retrieval-uri", null);
         String termUriFieldName = cvocEntry.getString("term-uri-field");
         String prefix = cvocEntry.getString("prefix", null);
@@ -570,6 +572,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, termUriFieldName, adjustedTerm);
                     for (DatasetField f : relatedDatasetFields) {
                         retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, f.getDatasetFieldType().getName(), f.getValue());
+                    }
+                    // Dataset-level parameter substitution
+                    if (dataset != null) {
+                        retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, "datasetId", String.valueOf(dataset.getId()));
+                        if (dataset.getGlobalId() != null) {
+                            retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, "datasetPID", dataset.getGlobalId().asString());
+                        }
                     }
                 } catch (InvalidParameterException e) {
                     logger.warning("InvalidParameterException in tryReplaceRetrievalUriParam : " + e.getMessage());
