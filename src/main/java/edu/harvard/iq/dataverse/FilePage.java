@@ -208,6 +208,9 @@ public class FilePage implements java.io.Serializable {
             Long getDatasetVersionID = null;
             if (datasetVersionId == null) {
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+                if(retrieveDatasetVersionResponse == null){
+                    return permissionsWrapper.notFound();
+                }
                 getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
             } else {
                 getDatasetVersionID = datasetVersionId;
