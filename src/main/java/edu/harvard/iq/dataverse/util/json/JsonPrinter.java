@@ -133,6 +133,7 @@ public class JsonPrinter {
             .add("deactivatedTime", authenticatedUser.getDeactivatedTime())
             .add("affiliation", authenticatedUser.getAffiliation())
             .add("position", authenticatedUser.getPosition())
+            .add("authenticatedOrcid", authenticatedUser.getAuthenticatedOrcid())
             .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
             .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
             .add("createdTime", authenticatedUser.getCreatedTime())

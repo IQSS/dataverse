@@ -18,7 +18,8 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     private String firstName;
     private String position;
     private String orcid;
-    
+    private String affiliationRor;
+
     /*
      * @todo Shouldn't we persist the displayName too? It still exists on the
      * authenticateduser table.
@@ -49,6 +50,7 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
      */
     public AuthenticatedUserDisplayInfo( AuthenticatedUserDisplayInfo src ) {
         this( src.getFirstName(), src.getLastName(), src.getEmailAddress(), src.getAffiliation(), src.getPosition(), src.getOrcid());
+        this.affiliationRor = src.getAffiliationRor();
     }
     
     public String getLastName() {
@@ -114,6 +116,14 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
 
     public String getOrcid() {
         return orcid;
+    }
+
+    public String getAffiliationRor() {
+        return affiliationRor;
+    }
+
+    public void setAffiliationRor(String affiliationRor) {
+        this.affiliationRor = affiliationRor;
     }
     
     public String getOrcidForDisplay() {
