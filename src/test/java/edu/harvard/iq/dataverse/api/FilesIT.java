@@ -21,6 +21,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -4553,21 +4554,25 @@ public class FilesIT {
         // Call the main retrieveFileContents URL (it should include the id of 
         // the GBR created earlier; no new GBR created for this download)
         String retrieveUrl = resultMap.get("retrieveFileContents");
-        msgt("RETRIEVE CONTENTS URL: "+retrieveUrl);
+        msgt("RETRIEVE CONTENTS URL: " + retrieveUrl);
         assertTrue(retrieveUrl.contains("gbrecs=true&gbrids="+guestbookResponseId), 
                 "retrieveFileContents URL must contain the GBR id issued by /toolUrl and gbrecs=true");
         Response resp = get(retrieveUrl);
         assertEquals(200, resp.getStatusCode());
+        String respStr = StringUtils.substring(resp.body().asString(), 0, 80);
+        msgt(respStr != null ? respStr : "empty");
 
         // Call the downloadFile URL (this one will have both the GBR id, AND the 
         // gbrecs=false parameter; this will result in a new GBR of type "Download"
         // created via a special hack in Access.java
         String downloadUrl = resultMap.get("downloadFile");
-        msgt("DOWNLOAD URL: "+downloadUrl);
+        msgt("DOWNLOAD URL: " + downloadUrl);
         assertTrue(downloadUrl.contains("gbrecs=false&gbrids="+guestbookResponseId), 
                 "downloadFile URL must contain the GBR id issued by /toolUrl and gbrec=false");
         resp = get(downloadUrl);
         assertEquals(200, resp.getStatusCode());
+        respStr = StringUtils.substring(resp.body().asString(), 0, 80);
+        msgt(respStr != null ? respStr : "empty");
 
         // Now check GuestbookResponses
         Response listResponse = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), apiToken);
@@ -4579,11 +4584,11 @@ public class FilesIT {
         listResponse.prettyPrint();
         int firstViewImage = listResponse.asPrettyString().indexOf(",View Image,dataverseproject.png");
         int lastViewImage = listResponse.asPrettyString().lastIndexOf(",View Image,dataverseproject.png");
-        assertTrue(firstViewImage != -1 && firstViewImage == lastViewImage); // exactly one!
+        assertTrue(firstViewImage != -1 && firstViewImage == lastViewImage, "firstViewImage,lastViewImage " + firstViewImage + "," + lastViewImage); // exactly one!
         
         int firstDownload = listResponse.asPrettyString().indexOf(",Download,dataverseproject.png");
         int lastDownload = listResponse.asPrettyString().lastIndexOf(",Download,dataverseproject.png");
-        assertTrue(firstDownload != -1 && firstDownload == lastDownload); // same
+        assertTrue(firstDownload != -1 && firstDownload == lastDownload, "firstDownload,lastDownload " + firstDownload + "," + lastDownload); // same
 
         // Test without guestbook response
         toolUrlResponse = UtilIT.getFileToolUrl(String.valueOf(datafileId), toolId, apiToken, JsonUtil.getJsonObject("{\"preview\":true}"));
