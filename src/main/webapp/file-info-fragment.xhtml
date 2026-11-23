@@ -78,7 +78,7 @@
             <div class="text-muted small">
                 <!-- id:#{fileMetadata.dataFile.id} -->
                 <h:outputText id="fileHierarchy" styleClass="show" value="#{fileMetadata.directoryLabel}/" rendered="#{hasDirectoryLabel}"/>
-                <h:outputText id="fileType" value="#{dataFile.friendlyType}"/>
+                <h:outputText id="fileType" value="#{dataFile.originalFormatLabel}"/>
                 <h:outputText id="fileSize" value=" - #{dataFile.friendlyOriginalFileSize}"/>
                 <div class="dateCreatePublish-block">
                     <h:outputText id="fileCreatePublishDate" value="#{isReleased ? ((dataFile.embargo!=null) ? bundle['metadatareleased'] : bundle['published']) : bundle['deposited']} #{fileMetadata.getFileDateToDisplay()}" rendered="#{hasFileId}"/>
@@ -91,7 +91,7 @@
                     </h:outputFormat>
                 </div>
                 <!-- CHECKSUM -->
-                <div class="checksum-block" jsf:rendered="#{!(empty dataFile.checksumValue)}">
+                <div class="checksum-block" jsf:rendered="#{!(empty checksumValue)}">
                     <span class="#{!editDatafilesPage ? 'checksum-truncate checksum-tooltip' : ''}" style="margin-right:3px;"
                                   data-toggle="tooltip" data-placement="top" data-html="true"
                                   data-clipboard-action="copy"
