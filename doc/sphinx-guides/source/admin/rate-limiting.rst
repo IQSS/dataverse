@@ -30,6 +30,16 @@ Note: If either of these settings exist in the database rate limiting will be en
 
   curl http://localhost:8080/api/admin/settings/:RateLimitingCapacityByTierAndAction -X PUT -d '[{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]}, {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}, {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]'
 
+The following 3 placeholder commands are provided in order to be able to rate-limit the 3 "workhorse" JSF pages - Collection ("Dataverse"), Dataset and File pages. They do not perform any useful functions, except for being used in the init methods of the 3 pages above for the purpose of checking the access rate.
+
+In the following example, calls to these pages by Guest users are limited to the stingy 60, 120 and 180 and calls per hour respectively:
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings/:RateLimitingCapacityByTierAndAction -X PUT -d '[{tier: 0,limitPerHour: 60, actions: [CheckRateLimitForCollectionPageCommand]}, {tier: 0, limitPerHour: 120,actions: [CheckRateLimitForDatasetPageCommand]}, {tier: 0, limitPerHour: 180,actions: [CheckRateLimitForFilePageCommand]}]'
+
+
+
 Statistics
 ----------
 
