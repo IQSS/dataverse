@@ -34,27 +34,7 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
         if (value.getTemplate() != null){
             return true;
         }
-        
-         //If there are no restricted files then terms are valid 
-        if (!value.getDatasetVersion().isHasRestrictedFile()) {
-            return true;
-        }
-        /*If there are restricted files then the version
-        must allow access requests or have terms of access filled in.
-         */
-        boolean valid = value.isFileAccessRequest() == true || (value.getTermsOfAccess() != null && !value.getTermsOfAccess().isEmpty());
-        if (!valid) {
-            try {
-                if (context != null) {
-                    context.buildConstraintViolationWithTemplate(BundleUtil.getStringFromBundle("dataset.message.toua.invalid")).addConstraintViolation();
-                }
 
-               value.setValidationMessage(BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
-            } catch (NullPointerException e) {
-                return false;
-            }
-            return false;
-        }
         if (value.getLicense() != null) {
             if (!StringUtils.isBlank(value.getTermsOfUse())) {
                 if (context != null) {
@@ -82,6 +62,27 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
                 return false;
             }
             // TODO get the file based terms of use of existing/other files
+        }
+
+        //If there are no restricted files then terms of access are valid
+        if (!value.getDatasetVersion().isHasRestrictedFile()) {
+            return true;
+        }
+        /*If there are restricted files then the version
+        must allow access requests or have terms of access filled in.
+         */
+        boolean valid = value.isFileAccessRequest() == true || (value.getTermsOfAccess() != null && !value.getTermsOfAccess().isEmpty());
+        if (!valid) {
+            try {
+                if (context != null) {
+                    context.buildConstraintViolationWithTemplate(BundleUtil.getStringFromBundle("dataset.message.toua.invalid")).addConstraintViolation();
+                }
+
+               value.setValidationMessage(BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            } catch (NullPointerException e) {
+                return false;
+            }
+            return false;
         }
         return valid;
     }
