@@ -506,18 +506,15 @@ public class Dataverses extends AbstractApiBean {
             
             ds.setOwner(owner);
 
+            // validate managed fields
+            ManagedFieldsValidator.validateManagedFields(ds, new Dataset());
+            ManagedFieldsValidator.validateManagedFields(ds.getVersions().get(0), new DatasetVersion());
+
             // clean possible dataset/version metadata
             DatasetVersion version = ds.getVersions().get(0);
-            version.setMinorVersionNumber(null);
-            version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
             version.getTermsOfUseAndAccess().setFileAccessRequest(true);
             version.getTermsOfUseAndAccess().setDatasetVersion(version);
-
-            ds.setAuthority(null);
-            ds.setIdentifier(null);
-            ds.setProtocol(null);
-            ds.setGlobalIdCreateTime(null);
             
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
