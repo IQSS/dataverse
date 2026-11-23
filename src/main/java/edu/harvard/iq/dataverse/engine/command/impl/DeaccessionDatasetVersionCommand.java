@@ -8,6 +8,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 
@@ -17,10 +20,11 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import io.gdcc.spi.export.ExportException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.util.concurrent.Future;
@@ -36,12 +40,10 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
    private static final Logger logger = Logger.getLogger(DeaccessionDatasetVersionCommand.class.getCanonicalName());
 
    final DatasetVersion theVersion;
-   final boolean deleteDOIIdentifier;
     
-    public DeaccessionDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
+    public DeaccessionDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion deaccessionVersion) {
         super(aRequest, deaccessionVersion.getDataset());
         theVersion = deaccessionVersion;
-        deleteDOIIdentifier = deleteDOIIdentifierIn;
     }
 
 
@@ -50,26 +52,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         Dataset ds = theVersion.getDataset();        
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
-        /* We do not want to delete the identifier if the dataset is completely deaccessioned
-        
-        logger.fine("deleteDOIIdentifier=" + deleteDOIIdentifier);
-        if (deleteDOIIdentifier) {
-            String nonNullDefaultIfKeyNotFound = "";
-            String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-            ArrayList<String> currentProtocol = new ArrayList<>();
-            currentProtocol.add(protocol);
-            IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
-
-            logger.fine("protocol=" + protocol);
-            try {
-                idServiceBean.deleteIdentifier(ds);
-            } catch (Exception e) {
-                if (e.toString().contains("Internal Server Error")) {
-                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
-                }
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.delete.error", currentProtocol),this); 
-            }
-        }*/
+        // PID changes, if any, are made in onSuccess()
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         boolean doNormalSolrDocCleanUp = true;
@@ -110,7 +93,33 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         Dataset dataset = version.getDataset();
 
         ctxt.index().asyncIndexDataset(dataset, true);
+
+        // Let the PID provider(s) know, e.g. so that DataCite DOIs of datasets/files
+        // no longer in any released version move from "findable" to "registered".
+        // Only files in this version can have changed state.
+        // Done after the transaction has committed and not treated as fatal.
+        if (!dataset.isHarvested()) {
+            deaccessionPid(dataset);
+            for (FileMetadata fmd : version.getFileMetadatas()) {
+                deaccessionPid(fmd.getDataFile());
+            }
+        }
         return retVal;
+    }
+
+    private void deaccessionPid(DvObject dvObject) {
+        GlobalId pid = dvObject.getGlobalId();
+        if (pid == null || !dvObject.isIdentifierRegistered()) {
+            return;
+        }
+        try {
+            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+            if (pidProvider != null) {
+                pidProvider.deaccessionIdentifier(dvObject);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to update PID status after deaccession for " + pid.asString(), e);
+        }
     }
 
 }

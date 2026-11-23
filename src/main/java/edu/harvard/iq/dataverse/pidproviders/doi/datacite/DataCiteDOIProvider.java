@@ -157,16 +157,34 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         case FINDABLE:
             // if public then it has been released set to REGISTERED/unavailable and reset
             // target to n2t url
-            Map<String, String> metadata = addDOIMetadataForDestroyedDataset(dvObject);
-            metadata.put("_status", "registered");
-            metadata.put("_target", getTargetUrl(dvObject));
-            doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
+            deactivateIdentifier(identifier, dvObject);
             break;
 
         case REGISTERED:
         case NONE:
             // Nothing to do
         }
+    }
+
+    /*
+     * If the dvObject is no longer in any released version (i.e. all published
+     * versions have been deaccessioned), replaces the metadata with placeholder
+     * values and changes the DOI from FINDABLE to REGISTERED. The target URL is
+     * left as is so the DOI continues to resolve to the tombstone page.
+     */
+    @Override
+    public void deaccessionIdentifier(DvObject dvObject) throws IOException {
+        logger.log(Level.FINE, "deaccessionIdentifier");
+        if (REGISTERED.equals(getPidStatus(dvObject))) {
+            deactivateIdentifier(getIdentifier(dvObject), dvObject);
+        }
+    }
+
+    private void deactivateIdentifier(String identifier, DvObject dvObject) throws IOException {
+        Map<String, String> metadata = addDOIMetadataForDestroyedDataset(dvObject);
+        metadata.put("_status", "registered");
+        metadata.put("_target", getTargetUrl(dvObject));
+        doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
     }
 
     /**
@@ -345,6 +363,10 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         metadata.put("_target", getTargetUrl(dvObject));
         try {
             String updated = doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
+            if (REGISTERED.equals(getPidStatus(dvObject))) {
+                // Posting metadata can make a DOI findable again, keep deaccessioned ones hidden
+                doiDataCiteRegisterService.hideIdentifier(identifier);
+            }
             if(updated.length()!=0) {
                 logger.info(identifier + "updated: " + updated );
                 return true;
