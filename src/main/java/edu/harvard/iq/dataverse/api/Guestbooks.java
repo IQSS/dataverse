@@ -78,7 +78,7 @@ public class Guestbooks extends AbstractApiBean {
             @Parameter(description = "Include guestbook usage and response counts.")
             @QueryParam("includeStats") boolean includeStats) {
         return response( req -> {
-            Dataverse dataverse = findDataverseOrDie(identifier);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(identifier, req);
             final Long dataverseId = dataverse.getId();
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
@@ -112,9 +112,9 @@ public class Guestbooks extends AbstractApiBean {
             String jsonBody) {
 
         try {
-            Dataverse dataverse = findDataverseOrDie(identifier);
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
             DataverseRequest req = createDataverseRequest(u);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(identifier, req);
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                     return error(Response.Status.FORBIDDEN, "Not authorized");
             }
@@ -192,6 +192,10 @@ public class Guestbooks extends AbstractApiBean {
                 return notFound("Guestbook " + id + " not found.");
             }
             Dataverse dataverse = guestbook.getDataverse();
+            if(dataverse.isLocallyFAIR() && !permissionSvc.hasLocallyFAIRAccess(req, dataverse)) {
+                // If you can't see the collection, we don't acknowledge the guestbook exists.
+                return notFound("Guestbook " + id + " not found.");
+            }
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
@@ -256,7 +260,7 @@ public class Guestbooks extends AbstractApiBean {
         }
         boolean enabled = Util.isTrue(body);
         return response( req -> {
-            Dataverse dataverse = findDataverseOrDie(identifier);
+            Dataverse dataverse = findDataverseUserCanSeeOrDie(identifier, req);
             if (!permissionSvc.request(req).on(dataverse).has(Permission.EditDataverse)) {
                 return error(Response.Status.FORBIDDEN, "Not authorized");
             }
