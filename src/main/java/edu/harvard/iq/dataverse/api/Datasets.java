@@ -913,43 +913,31 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = JsonUtil.getJsonObject(jsonBody);
-            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
-
-            // clear possibly stale fields from the incoming dataset version.
-            // creation and modification dates are updated by the commands.
-            incomingVersion.setId(null);
-            incomingVersion.setVersionNumber(null);
-            incomingVersion.setMinorVersionNumber(null);
-            incomingVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-            incomingVersion.setDataset(ds);
-            incomingVersion.setCreateTime(null);
-            incomingVersion.setLastUpdateTime(null);
-
-            if (!incomingVersion.getFileMetadatas().isEmpty()){
+            
+            // Parse EVERYTHING from JSON into a temporary object for validation and field copying.
+            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json, null, false);
+            
+            if (json.containsKey("files") || json.containsKey("fileMetadatas")){
                 return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
             }
+            
+            // To support "GET then PUT" workflows, we compare managed fields against the latest version.
+            ManagedFieldsValidator.validateManagedFields(incomingVersion, ds.getLatestVersion());
 
-            boolean updateDraft = ds.getLatestVersion().isDraft();
-
-            DatasetVersion managedVersion;
-            if (updateDraft) {
-                final DatasetVersion editVersion = ds.getOrCreateEditVersion();
-                editVersion.setDatasetFields(incomingVersion.getDatasetFields());
-                editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
-                editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
-                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(editVersion.getTermsOfUseAndAccess(), null);
-                if (!hasValidTerms) {
-                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
-                }
-                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getOrCreateEditVersion();
-            } else {
-                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(incomingVersion.getTermsOfUseAndAccess(), null);
-                if (!hasValidTerms) {
-                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
-                }
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
+            // Get existing draft version or create new one as needed
+            final DatasetVersion editVersion = ds.getOrCreateEditVersion();
+            editVersion.setDatasetFields(incomingVersion.getDatasetFields());
+            editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
+            editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
+            
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(editVersion.getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
             }
+            
+            Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            // Latest version is the draft
+            DatasetVersion managedVersion = managedDataset.getLatestVersion();
             return ok( json(managedVersion, true) );
 
         } catch (JsonParseException ex) {
