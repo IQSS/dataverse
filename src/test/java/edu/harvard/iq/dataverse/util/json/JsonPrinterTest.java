@@ -99,7 +99,7 @@ public class JsonPrinterTest {
 
     @Test
     public void testJson_RoleAssignment() {
-        JsonPrinter.injectSettingsService(null, null, null, null, null, null, new MockRoleAssigneeService());
+        JsonPrinter.injectSettingsService(null, null, null, null, null, null, new MockRoleAssigneeService(), null);
         DataverseRole aRole = new DataverseRole();
         PrivateUrlUser privateUrlUserIn = new PrivateUrlUser(42);
         RoleAssignee anAssignee = privateUrlUserIn;
@@ -117,7 +117,7 @@ public class JsonPrinterTest {
 
     @Test
     public void testJson_PrivateUrl() {
-        JsonPrinter.injectSettingsService(null, null, null, null, null, null, new MockRoleAssigneeService());
+        JsonPrinter.injectSettingsService(null, null, null, null, null, null, new MockRoleAssigneeService(), null);
         DataverseRole aRole = new DataverseRole();
         PrivateUrlUser privateUrlUserIn = new PrivateUrlUser(42);
         RoleAssignee anAssignee = privateUrlUserIn;
@@ -201,7 +201,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonPrinter.injectSettingsService(null, null, null, null, null, null, null);
+        JsonPrinter.injectSettingsService(null, null, null, null, null, null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -242,7 +242,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null, null, null, null, null);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null, null, null, null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -292,7 +292,7 @@ public class JsonPrinterTest {
 
         block.setDatasetFieldTypes(datasetFieldTypes);
 
-        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null ,null, null, null, null);
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), null, null ,null, null, null, null, null);
 
         JsonObject jsonObject = JsonPrinter.json(block).build();
         assertNotNull(jsonObject);
