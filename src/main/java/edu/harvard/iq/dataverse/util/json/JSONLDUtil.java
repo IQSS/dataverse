@@ -60,6 +60,8 @@ import jakarta.json.JsonReader;
 public class JSONLDUtil {
 
     private static final Logger logger = Logger.getLogger(JSONLDUtil.class.getCanonicalName());
+    
+    private static final CachingDocumentLoader CACHED_LOADER = new CachingDocumentLoader(null);
 
     /*
      * private static Map<String, String> populateContext(JsonValue json) {
@@ -560,8 +562,9 @@ public class JSONLDUtil {
             JsonObject jsonld = JsonUtil.getJsonObject(jsonLDString);
             JsonDocument doc = JsonDocument.of(jsonld);
             // Use JsonLd to expand/compact to localContext
-            JsonArray array = JsonLd.expand(doc).get();
-            jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JsonUtil.createObjectBuilder().build())).get();
+            JsonArray array = JsonLd.expand(doc).loader(CACHED_LOADER).get();
+            jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JsonUtil.createObjectBuilder().build()))
+                    .loader(CACHED_LOADER).get();
             // jsonld = array.getJsonObject(0);
             logger.fine("Decontextualized object: " + jsonld);
             return jsonld;
@@ -579,10 +582,10 @@ public class JSONLDUtil {
         JsonDocument doc = JsonDocument.of(jsonldObj);
         JsonArray array = null;
         try {
-            array = JsonLd.expand(doc).get();
+            array = JsonLd.expand(doc).loader(CACHED_LOADER).get();
 
             jsonldObj = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
-                    .get();
+                    .loader(CACHED_LOADER).get();
             logger.fine("Compacted: " + jsonldObj.toString());
             return jsonldObj;
         } catch (JsonLdError e) {

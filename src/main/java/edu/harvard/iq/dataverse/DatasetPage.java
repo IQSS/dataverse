@@ -5806,6 +5806,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private boolean showLinkingPopup = false;
     private boolean showUnLinkingPopup = false;
+    private Boolean privateUrlAccess = null;
     private Boolean anonymizedAccess = null;
 
     //
@@ -5844,13 +5845,22 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isAnonymizedAccess() {
         if (anonymizedAccess == null) {
-            if (session.getUser() instanceof PrivateUrlUser && workingVersion.isDraft()) {
+            if (isPrivateUrlAccess()) {
                 anonymizedAccess = ((PrivateUrlUser) session.getUser()).hasAnonymizedAccess();
             } else {
                 anonymizedAccess = false;
             }
         }
         return anonymizedAccess;
+    }
+
+    public boolean isPrivateUrlAccess() {
+        if(privateUrlAccess == null) {
+            privateUrlAccess = session.getUser() instanceof PrivateUrlUser && workingVersion.isDraft();
+        } else {
+            privateUrlAccess = false;
+        }
+        return privateUrlAccess;
     }
 
     public boolean isAnonymizedPrivateUrl() {
