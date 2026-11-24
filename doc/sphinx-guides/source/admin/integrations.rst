@@ -76,6 +76,13 @@ SampleDB is a web-based electronic lab notebook (ELN) with a focus on flexible m
 
 For instructions on using the Dataverse export, you can visit https://scientific-it-systems.iffgit.fz-juelich.de/SampleDB/administrator_guide/dataverse_export.html
 
+Domandata
++++++++++
+
+Domandata is survey software for academic research. Researchers who connect a Harvard Dataverse API token can deposit a survey's replication package (response data, SPSS and Stata files, codebook, survey instrument, and README) from Domandata's Export tab into a new or existing dataset on Harvard Dataverse. Deposits are left unpublished so researchers can review them before submitting for review.
+
+For instructions, visit https://www.domandata.net/help/deposit-harvard-dataverse-replication-package
+
 RedCap
 ++++++
 
