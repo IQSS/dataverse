@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -33,8 +34,37 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
         if (value.getTemplate() != null){
             return true;
         }
-        
-         //If there are no restricted files then terms are valid 
+
+        if (value.getLicense() != null) {
+            if (!StringUtils.isBlank(value.getTermsOfUse())) {
+                if (context != null) {
+                    context.buildConstraintViolationWithTemplate("Terms of use and license cannot both be set.").addConstraintViolation();
+                }
+                return false;
+            }
+            if (!StringUtils.isBlank(value.getCitationRequirements()) ||
+                !StringUtils.isBlank(value.getConditions()) ||
+                !StringUtils.isBlank(value.getConfidentialityDeclaration()) ||
+                !StringUtils.isBlank(value.getDepositorRequirements()) ||
+                !StringUtils.isBlank(value.getDisclaimer()) ||
+                !StringUtils.isBlank(value.getRestrictions()) ||
+                !StringUtils.isBlank(value.getSpecialPermissions())) {
+                if (context != null) {
+                    context.buildConstraintViolationWithTemplate("When a license is set, no other terms can be set.").addConstraintViolation();
+                }
+                return false;
+            }
+        } else {
+            if (StringUtils.isBlank(value.getTermsOfUse())) {
+                if (context != null) {
+                    context.buildConstraintViolationWithTemplate("Either terms of use or license must be set.").addConstraintViolation();
+                }
+                return false;
+            }
+            // TODO get the file based terms of use of existing/other files
+        }
+
+        //If there are no restricted files then terms of access are valid
         if (!value.getDatasetVersion().isHasRestrictedFile()) {
             return true;
         }
