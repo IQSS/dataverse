@@ -2,9 +2,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -319,10 +322,12 @@ public class PermissionServiceBean {
 
     /**
      * Returns all the children (direct descendants) of {@code dvo}, on which the user 
- has all the permissions specified in {@code permissions}. This method takes into
+     * has all the permissions specified in {@code permissions}. This method takes into
      * account which permissions apply for which object type, so a permission that 
      * applies only to {@link Dataset}s will not be considered when looking into
      * the question of whether a {@link Dataverse} should be contained in the output list.
+     * The method treats superusers and those with the {@link Permission#ActAsSuperuser} permission
+     * assigned on the relevant DvObject as satisfying any set of required permissions.
      * @param req The request whose permissions are queried
      * @param dvo The objects whose children we list
      * @param required (sub)set of permissions {@code req} has on the objects in the returned list
@@ -504,6 +509,19 @@ public class PermissionServiceBean {
         return isSuperuserOn((AuthenticatedUser) user, dvo);
     }
 
+
+    /**
+     * Whether {@code user} may act as a superuser on {@code dvo}. The method returns true for superusers
+     * and those with the {@link Permission#ActAsSuperuser} permission on {@code dvo} (i.e via a
+     * {@link RoleAssignment} on {@code dvo} on an ancestor up to the permission root.
+     * <p>
+     * Note: Since the method requires an {@link AuthenticatedUser} and groups are resolved via
+     * {@link GroupServiceBean#groupsFor(RoleAssignee, DvObject)}, assigment of the
+     * {@link Permission#ActAsSuperuser} permission to {@link GuestUser}, {@link IpGroup}, {@link MailDomainGroup}
+     * are ignored by this method. (This is a safety measure, but is not inherent in the design,
+     * and could be changed if there are use cases where granting superuser powers to GuestUsers and/or
+     * these types of groups is desired.)
+     */
     public boolean isSuperuserOn(AuthenticatedUser user, DvObject dvo) {
         if (user == null) {
             return false;
@@ -519,6 +537,16 @@ public class PermissionServiceBean {
         return hasGroupPermissionsFor(ras, dvo, EnumSet.of(Permission.ActAsSuperuser));
     }
 
+    /**
+     * Whether {@code user} is a superuser or holds a @{link RoleAssignment} containing
+     * {@link Permission#ActAsSuperuser} on at least one object in the installation.
+     * The initial use is to decide whether to show the Dashboard and its Move
+     * Data pages.
+     * <p>
+     * Note: as with the {@link #isSuperuserOn(AuthenticatedUser, DvObject)} method,
+     * assignments of {@link Permission#ActAsSuperuser} for {@link GuestUser} and via
+     * {@link IpGroup} or {@link MailDomainGroup} groups are ignored.
+     */
     public boolean isSuperuserOnSomeDvObject(AuthenticatedUser user) {
         if (user == null) {
             return false;
@@ -689,6 +717,19 @@ public class PermissionServiceBean {
         return new RequestPermissionQuery(null, req);
     }
 
+    /**
+     * Lists the users holding {@code permission} through role assignments
+     * returned by {@code roleService.rolesAssignments(dvo)}. Used to choose
+     * notification recipients (file access requests, datasets submitted for
+     * review or returned to authors).
+     * <p>
+     * Note: This method is specialized to the needs of the notification use case: only direct
+     * permission assignments or those from membership in an @{link ExplicitGroup} are checked.
+     * It excludes GuestUsers and users who hold this permissions due to:
+     * * superuser status
+     * * assignment of the {@link Permission#ActAsSuperuser} on {@code dvo},
+     * * membership in {@link IpGroup}, {@link MailDomainGroup}, {@link Shib}, or the {@link AuthenticatedUsers} group.
+     */
     public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
         List<AuthenticatedUser> usersHasPermissionOn = new LinkedList<>();
         Set<RoleAssignment> ras = roleService.rolesAssignments(dvo);
