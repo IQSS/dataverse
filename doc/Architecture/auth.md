@@ -6,6 +6,8 @@
 
 > For DvObject - who holds what permissions
 
+> Note: 11/2026 v6.13 - this document is significantly out of date. It does not describe the concept of superusers or the new aggregate ActAsSuperuser permission. It also references the non-existent Permission.GrantPermissions and does not describe how granting permissions works today. It should be treated as a historical document that only outlines the core concepts unless/until it is updated.
+
 ## Concepts
 <dl>
     <dt>DvObject</dt>
@@ -17,7 +19,7 @@
     <dt>User</dt>
     <dd>A type of Assignee. An entity that can issue commands. Normally refers to a real person, but can also refer to a group (e.g. <code>GuestUser</code>).</dd>
     <dt>Group</dt>
-    <dd>A set of Assignees. A group may hold explicit reference to its content (e.g. the <code>ExplicitGroup</code> class). A group may also use logic do determine membership (e.g. an <code>IPGroup</code> will look at the IP address the request is coming from, <code>AuthenticatedUsers</code> will check that the user is not a <code>GuestUser</code> instance, a Shibboleth group will match against Shibb headers in the HTTP request). <br/>
+    <dd>A set of Assignees. A group may hold explicit reference to its content (e.g. the <code>ExplicitGroup</code> class). A group may also use logic do determine membership (e.g. an <code>IPGroup</code> will look at the IP address the request is coming from, <code>AuthenticatedUsers</code> will check that the user is not a <code>GuestUser</code> instance, a Shibboleth group will match against Shib headers in the HTTP request). <br/>
     A Group is a type of Assignee. This means that groups can contain other groups, which makes them a powerful user management tool.</dd>
 </dl>
 

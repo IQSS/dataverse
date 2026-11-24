@@ -758,7 +758,7 @@ public class Access extends AbstractApiBean {
 
         DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         dataFile = findDataFileUserCanSeeOrDieWrapper(fileId, req);
-        
+
         // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(req.getUser(), dataFile);
 
@@ -1994,7 +1994,7 @@ public class Access extends AbstractApiBean {
         }
 
 
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
+        if (!(permissionService.isSuperuserOn(dataverseRequest.getAuthenticatedUser(), dataFile) || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
@@ -2214,7 +2214,7 @@ public class Access extends AbstractApiBean {
 
         dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
+        if (!(permissionService.isSuperuserOn(dataverseRequest.getAuthenticatedUser(), dataFile) || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
         FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
@@ -2286,6 +2286,7 @@ public class Access extends AbstractApiBean {
         jsonObjectBuilder.add("canDownloadFile", permissionService.userOn(requestUser, dataFile).has(Permission.DownloadFile));
         jsonObjectBuilder.add("canManageFilePermissions", permissionService.userOn(requestUser, dataFile).has(Permission.ManageFilePermissions));
         jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canActAsSuperuser", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.ActAsSuperuser));
         return ok(jsonObjectBuilder);
     }
     private boolean checkGuestbookRequiredResponse(UriInfo uriInfo, DataFile df, String gbrids, Long externalToolId) throws WebApplicationException {

@@ -1,4 +1,4 @@
-Native API
+﻿Native API
 ==========
 
 The Dataverse Software exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
@@ -511,7 +511,7 @@ The fully expanded example above (without environment variables) looks like this
 
 For ``roles.json`` see :ref:`json-representation-of-a-role`
 
-.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
+.. note:: Only a Dataverse installation account with superuser permissions or a user with the ActAsSuperuser permission on the collection is allowed to create roles in a Dataverse Collection.
 
 .. _list-role-assignments-on-a-dataverse-api:
 
@@ -949,7 +949,7 @@ List Locally FAIR Role Assignees for a Dataverse Collection
 Lists the Locally FAIR role assignee identifiers configured for a Dataverse collection identified by ``id``.
 For more about the concept, see :ref:`locally-fair` in the User Guide.
 
-This API is superuser-only.
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the collection.
 
 .. code-block:: bash
 
@@ -981,7 +981,7 @@ Set Locally FAIR Role Assignees for a Dataverse Collection
 
 Replaces the full set locally FAIR role assignee identifiers for a Dataverse collection identified by ``id``.
 
-This API is superuser-only.
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the collection.
 
 .. code-block:: bash
 
@@ -1013,7 +1013,7 @@ Add a Locally FAIR Role Assignee to a Dataverse Collection
 
 Adds a single locally FAIR role assignee identifier to a Dataverse collection identified by ``id``.
 
-This API is superuser-only.
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the collection.
 
 .. code-block:: bash
 
@@ -1039,7 +1039,7 @@ Delete a Locally FAIR Role Assignee from a Dataverse Collection
 
 Removes a single locally FAIR role assignee identifier from a Dataverse collection identified by ``id``.
 
-This API is superuser-only.
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the collection.
 
 .. code-block:: bash
 
@@ -1192,7 +1192,7 @@ See also :ref:`dataset-types`.
 Import a Dataset into a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: This action requires a Dataverse installation account with super-user permissions.
+.. note:: This action requires a superuser account or a user with the ActAsSuperuser permission on the collection.
 
 To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse installation's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to the Dataverse installation, and then releases it:
 
@@ -1245,7 +1245,7 @@ See also :ref:`dataset-types`.
 Import a Dataset into a Dataverse Installation with a DDI file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: This action requires a Dataverse installation account with super-user permissions.
+.. note:: This action requires a superuser account or a user with the ActAsSuperuser permission on the collection.
 
 To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to the Dataverse installation, and then releases it:
 
@@ -1494,9 +1494,9 @@ The following attributes are supported:
 * ``name`` Name
 * ``description`` Description
 * ``affiliation`` Affiliation
-* ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
-* ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by superusers. Defines if Dataset version needs files in order to be published or submitted for review.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superusers will not be blocked.
-* ``allowedDatasetTypes`` Restricted to use by superusers. By default "dataset" is implied. Pass a comma-separated list of dataset types (e.g. "dataset,software"). You cannot unset this attribute so if you want to delete a dataset type, set ``allowedDatasetTypes`` to a dataset type you won't be deleting. See also :ref:`dataset-types`.
+* ``filePIDsEnabled`` ("true" or "false") Restricted to use by a superuser account or a user with the ActAsSuperuser permission on the collection and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+* ``requireFilesToPublishDataset`` ("true" or "false") Restricted to use by a superuser account or a user with the ActAsSuperuser permission on the collection. Defines if Dataset version needs files in order to be published or submitted for review.  If not set the determination will be made through inheritance by checking the owners of this collection. Publishing by a superuser account or a user with the ActAsSuperuser permission on the collection will not be blocked.
+* ``allowedDatasetTypes`` Restricted to use by a superuser account or a user with the ActAsSuperuser permission on the collection. By default "dataset" is implied. Pass a comma-separated list of dataset types (e.g. "dataset,software"). You cannot unset this attribute so if you want to delete a dataset type, set ``allowedDatasetTypes`` to a dataset type you won't be deleting. See also :ref:`dataset-types`.
 
 See also :ref:`update-dataverse-api`.
 
@@ -1577,7 +1577,7 @@ To set or change the storage allocation quota for a collection:
 
   curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This API is superuser-only.
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the collection.
   
 
 To delete a storage quota configured for a collection:
@@ -1586,7 +1586,7 @@ To delete a storage quota configured for a collection:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
 
-This API is superuser-only.
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the collection.
 
 Storage Quotas on Individual Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1610,8 +1610,8 @@ To set or change the storage allocation quota for a dataset:
 
   curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -d $SIZE_IN_BYTES "$SERVER_URL/api/datasets/$ID/storage/quota"
 
-This API is superuser-only.
-  
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the dataset.
+
 
 To delete a storage quota configured for a dataset:
 
@@ -1619,7 +1619,7 @@ To delete a storage quota configured for a dataset:
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/datasets/$ID/storage/quota"
 
-This API is superuser-only.
+This API is only accessible to a superuser account or a user with the ActAsSuperuser permission on the dataset.
 
 The following convenience API shows the dynamic values of the *remaining* storage size and/or file number quotas on the dataset, if present. For example:
 
@@ -3506,15 +3506,15 @@ The limit can be set via JVM setting :ref:`dataverse.files.default-dataset-file-
 
 For Installation wide limit, the limit can be set via JVM. ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.default-dataset-file-count-limit=<limit>"
 
-For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body (Must be a superuser to change this value).
+For Collections, the attribute can be controlled by calling the Create or Update Dataverse API and adding ``datasetFileCountLimit=500`` to the Json body (Must be a superuser account or a user with the ActAsSuperuser permission on the collection to change this value).
 
-For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500` (Must be a superuser to change this value).
+For Datasets, the attribute can be set using the `Update Dataset Files Limit <#setting-the-files-count-limit-on-a-dataset>`_ API and passing the qp `fileCountLimit=500` (Must be a superuser account or a user with the ActAsSuperuser permission on the dataset to change this value).
 
 Setting a value of -1 will clear the limit for that level. If no limit is found on the Dataset, the hierarchy of parent nodes will be checked until finally the JVM setting is checked.
 
 With this setting set a 400 error response stating that the limit has been reached, including the effective limit, will be returned.
 
-Please note that a superuser will be exempt from this rule.
+Please note that a superuser account or a user with the ActAsSuperuser permission on the dataset will be exempt from this rule.
 
 The check will use the value defined in the Dataset first, and if not set (value <1) the Dataverse/Collection will be checked, and finally the JVM setting.
 
@@ -3524,7 +3524,7 @@ Setting the files count limit on a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 In order to update the number of files allowed for a Dataset, without causing a Draft version of the Dataset being created, the following API can be used
 
-.. note:: To clear the limit simply set the limit to -1 or call the DELETE API (Must be a superuser to change this value).
+.. note:: To clear the limit simply set the limit to -1 or call the DELETE API (this requires a superuser account or a user with the ActAsSuperuser permission on the dataset to change this value).
 
 .. code-block:: bash
 
@@ -3824,7 +3824,7 @@ The API will output the list of locks, for example::
 
 If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list. 
 
-The following API end point will lock a Dataset with a lock of specified type. Note that this requires “superuser” credentials:
+The following API end point will lock a Dataset with a lock of specified type. Note that this requires a superuser account or a user with the ActAsSuperuser permission on the dataset:
 
 .. code-block:: bash
 
@@ -3841,7 +3841,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/lock/Ingest"
 
-Use the following API to unlock the dataset, by deleting all the locks currently on the dataset. Note that this requires “superuser” credentials:
+Use the following API to unlock the dataset, by deleting all the locks currently on the dataset. Note that this requires a superuser account or a user with the ActAsSuperuser permission on the dataset:
 
 .. code-block:: bash
 
@@ -3857,7 +3857,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/locks"
 
-Or, to delete a lock of the type specified only. Note that this requires “superuser” credentials:
+Or, to delete a lock of the type specified only. Note that this requires a superuser account or a user with the ActAsSuperuser permission on the dataset:
 
 .. code-block:: bash
 
@@ -3881,7 +3881,7 @@ If the dataset is not locked (or if there is no lock of the specified type), the
 List Locks Across All Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Note that this API requires “superuser” credentials. You must supply the ``X-Dataverse-key`` header with the api token of an admin user (as in the example below).
+Note that this API requires "superuser" credentials. You must supply the ``X-Dataverse-key`` header with the api token of an admin user (as in the example below).
 
 The output of this API is formatted identically to the API that lists the locks for a specific dataset, as in one of the examples above. 
 
@@ -4032,7 +4032,7 @@ The fully expanded example above (without environment variables) looks like this
 Delete Published Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Normally published datasets should not be deleted, but there exists a "destroy" API endpoint for superusers which will act on a dataset given a persistent ID or dataset database ID:
+Normally published datasets should not be deleted, but there exists a "destroy" API endpoint for a superuser account or a user with the ActAsSuperuser permission on the dataset which will act on a dataset given a persistent ID or dataset database ID:
 
 .. code-block:: bash
 
@@ -4064,7 +4064,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/destroy"
   
-Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent Dataverse collection in Solr. This endpoint requires the API token of a superuser.
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent Dataverse collection in Solr. This endpoint requires the API token of a superuser account or a user with the ActAsSuperuser permission on the dataset.
 
 Configure a Dataset to Use a Specific File Store
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4083,7 +4083,7 @@ One use case where this API call could be useful is in allowing an external appl
 Set an Embargo on Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``/api/datasets/$dataset-id/files/actions/:set-embargo`` can be used to set an embargo on one or more files in a dataset. Embargoes can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to add an embargo to files that have already been released as part of a previously published dataset version. 
+``/api/datasets/$dataset-id/files/actions/:set-embargo`` can be used to set an embargo on one or more files in a dataset. Embargoes can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser account or a user with the ActAsSuperuser permission on the dataset to add an embargo to files that have already been released as part of a previously published dataset version.
 
 The API call requires a Json body that includes the embargo's end date (dateAvailable - YYYY-MM-DD format), a short reason (must not consist of whitespace only, optional unless Dataverse is configured to make it required), and a list of the fileIds that the embargo should be set on. The dateAvailable must be after the current date and the duration (dateAvailable - today's date) must be less than the value specified by the :ref:`:MaxEmbargoDurationInMonths` setting. All files listed must be in the specified dataset. For example: 
 
@@ -4099,7 +4099,7 @@ The API call requires a Json body that includes the embargo's end date (dateAvai
 Remove an Embargo on Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``/api/datasets/$dataset-id/files/actions/:unset-embargo`` can be used to remove an embargo on one or more files in a dataset. Embargoes can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to remove embargos from files that have already been released as part of a previously published dataset version.
+``/api/datasets/$dataset-id/files/actions/:unset-embargo`` can be used to remove an embargo on one or more files in a dataset. Embargoes can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser account or a user with the ActAsSuperuser permission on the dataset to remove embargos from files that have already been released as part of a previously published dataset version.
 
 The API call requires a Json body that includes the list of the fileIds that the embargo should be removed from. All files listed must be in the specified dataset. For example: 
 
@@ -4115,7 +4115,7 @@ The API call requires a Json body that includes the list of the fileIds that the
 Set a Retention Period on Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``/api/datasets/$dataset-id/files/actions/:set-retention`` can be used to set a retention period on one or more files in a dataset. Retention periods can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to add a retention period to files that have already been released as part of a previously published dataset version.
+``/api/datasets/$dataset-id/files/actions/:set-retention`` can be used to set a retention period on one or more files in a dataset. Retention periods can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser account or a user with the ActAsSuperuser permission on the dataset to add a retention period to files that have already been released as part of a previously published dataset version.
 
 The API call requires a Json body that includes the retention period's end date (dateUnavailable), a short reason (optional), and a list of the fileIds that the retention period should be set on. The dateUnavailable must be after the current date and the duration (dateUnavailable - today's date) must be larger than the value specified by the :ref:`:MinRetentionDurationInMonths` setting. All files listed must be in the specified dataset. For example:
 
@@ -4131,7 +4131,7 @@ The API call requires a Json body that includes the retention period's end date 
 Remove a Retention Period on Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``/api/datasets/$dataset-id/files/actions/:unset-retention`` can be used to remove a retention period on one or more files in a dataset. Retention periods can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to remove retention periods from files that have already been released as part of a previously published dataset version.
+``/api/datasets/$dataset-id/files/actions/:unset-retention`` can be used to remove a retention period on one or more files in a dataset. Retention periods can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser account or a user with the ActAsSuperuser permission on the dataset to remove retention periods from files that have already been released as part of a previously published dataset version.
 
 The API call requires a Json body that includes the list of the fileIds that the retention period should be removed from. All files listed must be in the specified dataset. For example:
 
@@ -4149,7 +4149,7 @@ The API call requires a Json body that includes the list of the fileIds that the
 Get the Archival Status of a Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Archival :ref:`BagIt Export` is an optional feature that may be configured for a Dataverse installation. When that is enabled, this API call be used to retrieve the status. Note that this requires "superuser" credentials.
+Archival :ref:`BagIt Export` is an optional feature that may be configured for a Dataverse installation. When that is enabled, this API call be used to retrieve the status. Note that this requires a superuser account or a user with the ActAsSuperuser permission on the dataset.
 
 ``GET /api/datasets/$dataset-id/$version/archivalStatus`` returns the archival status of the specified dataset version.
 
@@ -4167,7 +4167,7 @@ The response is a JSON object that will contain a "status" which may be "success
 Set the Archival Status of a Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Archiving is an optional feature that may be configured for a Dataverse installation. When that is enabled, this API call be used to set the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
+Archiving is an optional feature that may be configured for a Dataverse installation. When that is enabled, this API call be used to set the status. Note that this is intended to be used by the archival system and requires a superuser account or a user with the ActAsSuperuser permission on the dataset.
 
 ``PUT /api/datasets/$dataset-id/$version/archivalStatus`` sets the archival status of the specified dataset version.
 
@@ -4188,7 +4188,7 @@ Note that if the configured archiver only supports archiving a single version, t
 Delete the Archival Status of a Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Archiving is an optional feature that may be configured for a Dataverse installation. When that is enabled, this API call be used to delete the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
+Archiving is an optional feature that may be configured for a Dataverse installation. When that is enabled, this API call be used to delete the status. Note that this is intended to be used by the archival system and requires a superuser account or a user with the ActAsSuperuser permission on the dataset.
 
 ``DELETE /api/datasets/$dataset-id/$version/archivalStatus`` deletes the archival status of the specified dataset version.
 
@@ -4517,7 +4517,7 @@ Dataverse can be configured to use multiple PID Providers (see the :ref:`pids-co
 When there are multiple PID Providers and File PIDs are enabled, it is possible to set which provider will be used to generate (mint) those PIDs.
 While it usually makes sense to use the same PID Provider that manages the dataset PID, there are cases, specifically if the PID Provider for the dataset PID cannot generate
 other PIDs with the same authority/shoulder, etc. as in the dataset PID, where another Provider is needed. Dataverse has a set of API calls to see what PID provider will be
-used to generate datafile PIDs and, as a superuser, to change it (to a new one or back to a default).
+used to generate datafile PIDs and, as a superuser account or a user with the ActAsSuperuser permission on the dataset, to change it (to a new one or back to a default).
 
 To see the current choice for this dataset:
 
@@ -4543,7 +4543,7 @@ To set the behavior for this dataset:
 
 
 The PID Provider id used must be one of the those configured - see :ref:`pids-providers-api`.
-The return status code may be 200/OK, 401/403 if an api key is not sent or the user is not a superuser, or 404 if the dataset or PID provider are not found.
+The return status code may be 200/OK, 401/403 if an api key is not sent or the user is not a superuser account or a user with the ActAsSuperuser permission on the dataset, or 404 if the dataset or PID provider are not found.
 Note that using a PIDProvider that generates DEPENDENT datafile PIDs that doesn't share the dataset PID's protocol/authority/separator/shoulder is not supported. (INDEPENDENT should be used in this case see the :ref:`pids-configuration` section for more information).
   
 The API can also be used to reset the dataset to use the default/inherited value:
@@ -4568,7 +4568,7 @@ It ensures consistency by reassigning a PID that aligns with the current provide
 a new PID is minted through the active provider, and the previously assigned PID is preserved as an alternativePersistentIdentifier.
 The same procedure applies to associated datafiles, provided that DataFile PIDs are enabled. (Note: If the currently configured PID provider is identical to the one originally used, this API call has no effect. )
 
-The API is restricted to superusers and to datasets that have not already been published. (It does not make any changes to any PID Provider.)
+The API is restricted to a superuser account or a user with the ActAsSuperuser permission on the dataset and to datasets that have not already been published. (It does not make any changes to any PID Provider.)
 Warning: This change does not affect the storage repository, where the old PID is still
 used in the name of where files are stored for the dataset. If you want to remove the PID from the name used in storage, you could manually
 move the files offline and remove the old identifier from the database (by setting storagelocationdesignator to false for the old identifier
@@ -4759,7 +4759,7 @@ Dataset Version Notes
 
 Intended as :ref:`provenance` information about why the version was created/how it differs from the prior version
 
-Depositors who can edit the dataset and curators can add a version note for the draft version. Superusers can add/delete version notes for any version.
+Depositors who can edit the dataset and curators can add a version note for the draft version. A superuser account or a user with the ActAsSuperuser permission on the dataset can add/delete version notes for any version.
 
 Version notes can be retrieved via the following, with authorization required to see a note on the :draft version
 
@@ -5388,7 +5388,7 @@ Uningest a File
 
 Reverse the tabular data ingest process performed on a file where ``ID`` is the database id or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file to process.
 
-Note that this requires "superuser" credentials to undo a successful ingest and remove the variable-level metadata and .tab version of the file.
+Note that this requires a superuser account or a user with the ActAsSuperuser permission on the dataset to undo a successful ingest and remove the variable-level metadata and .tab version of the file.
 It can also be used by a user who can publish the dataset to clear the error from an unsuccessful ingest.
 
 A curl example using an ``ID``:
@@ -5430,7 +5430,7 @@ Reingest a File
 
 Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse Software v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "reingest").
 
-Note that this requires "superuser" credentials.
+Note that this requires a superuser account or a user with the ActAsSuperuser permission on the dataset.
 
 A curl example using an ``ID``
 
@@ -5522,7 +5522,7 @@ Extract NcML
 
 As explained in the :ref:`netcdf-and-hdf5` section of the User Guide, when those file types are uploaded, an attempt is made to extract an NcML file from them and store it as an auxiliary file.
 
-This happens automatically but superusers can also manually trigger this NcML extraction process with the API endpoint below.
+This happens automatically but a superuser account or a user with the ActAsSuperuser permission on the dataset can also manually trigger this NcML extraction process with the API endpoint below.
 
 Note that "true" will be returned if an NcML file was created. "false" will be returned if there was an error or if the NcML file already exists (check server.log for details).
 
@@ -6538,6 +6538,8 @@ The JSON representation of a role (``roles.json``) looks like this::
       "AddDataset"
     ]
   }
+
+The ``permissions`` field is a list of permission strings. As a shortcut, you can use the string ``"all"`` (case-insensitive) as the only element in the list to grant all standard permissions at once. Note that using ``"all"`` does not include the ``ActAsSuperuser`` permission, which must be granted explicitly.
 
 .. note:: alias is constrained to a length of 16 characters
 
@@ -7647,7 +7649,7 @@ The output will look something like the following.
     }
   }
 
-Only users with superuser permissions may create or configure harvesting clients.
+Only a superuser account or a user with the ActAsSuperuser permission on the collection may create or configure harvesting clients.
 
 Modify a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7671,7 +7673,7 @@ The fully expanded example above (without the environment variables) looks like 
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/zenodo"
 
-Only users with superuser permissions may delete harvesting clients.
+Only a superuser account or a user with the ActAsSuperuser permission on the collection may delete harvesting clients.
 
 Harvesting from DataCite
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7790,7 +7792,7 @@ The fully expanded example above (without environment variables) looks like this
 Reserve a PID
 ~~~~~~~~~~~~~
 
-Reserve a PID for a dataset if not yet registered, and, if FilePIDs are enabled, reserve any file PIDs that are not yet registered. A superuser API token is required.
+Reserve a PID for a dataset if not yet registered, and, if FilePIDs are enabled, reserve any file PIDs that are not yet registered. A superuser account or a user with the ActAsSuperuser permission on the dataset is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -7811,7 +7813,7 @@ The fully expanded example above (without environment variables) looks like this
 Delete a PID
 ~~~~~~~~~~~~
 
-Delete PID (this is only possible for PIDs that are in the "draft" state) and within a Dataverse installation, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
+Delete PID (this is only possible for PIDs that are in the "draft" state) and within a Dataverse installation, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser account or a user with the ActAsSuperuser permission on the dataset is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -7858,7 +7860,6 @@ Get the id of the PID Provider Managing a Given PID
 
 Dataverse can be configured with one or more PID Providers that it uses to create new PIDs and manage existing ones.
 This API call returns the string id of the PID Provider than manages a given PID. See the :ref:`pids-configuration` section for more information.
-Delete PID (this is only possible for PIDs that are in the "draft" state) and within a Dataverse installation, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 

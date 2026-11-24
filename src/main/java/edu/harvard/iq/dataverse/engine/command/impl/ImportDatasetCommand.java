@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -53,8 +54,8 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         
-        if ( ! getUser().isSuperuser() ) {
-            throw new PermissionException("ImportDatasetCommand can only be issued by a super-user.", this, Collections.emptySet(), getDataset());
+        if ( !ctxt.permissions().isSuperuserOn(getUser(), getDataset().getOwner())) {
+            throw new PermissionException("ImportDatasetCommand can only be issued by a super-user or scoped superuser.", this, Collections.emptySet(), getDataset());
         }
         
         Dataset ds = getDataset();

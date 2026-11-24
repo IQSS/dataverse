@@ -56,8 +56,11 @@ public class RoleDTO {
 		r.clearPermissions();
 		if (permissions != null) {
 			if (permissions.length > 0) {
+				//"ALL" is not currently used or documented
 				if (permissions[0].trim().toLowerCase().equals("all")) {
-					r.addPermissions(EnumSet.allOf(Permission.class));
+					EnumSet<Permission> allExceptPower = EnumSet.allOf(Permission.class);
+					allExceptPower.remove(Permission.ActAsSuperuser);
+					r.addPermissions(allExceptPower);
 				} else {
 					for (String ps : permissions) {
 						r.addPermission(Permission.valueOf(ps));

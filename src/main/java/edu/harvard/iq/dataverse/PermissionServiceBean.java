@@ -2,9 +2,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -319,10 +322,12 @@ public class PermissionServiceBean {
 
     /**
      * Returns all the children (direct descendants) of {@code dvo}, on which the user 
- has all the permissions specified in {@code permissions}. This method takes into
+     * has all the permissions specified in {@code permissions}. This method takes into
      * account which permissions apply for which object type, so a permission that 
      * applies only to {@link Dataset}s will not be considered when looking into
      * the question of whether a {@link Dataverse} should be contained in the output list.
+     * The method treats superusers and those with the {@link Permission#ActAsSuperuser} permission
+     * assigned on the relevant DvObject as satisfying any set of required permissions.
      * @param req The request whose permissions are queried
      * @param dvo The objects whose children we list
      * @param required (sub)set of permissions {@code req} has on the objects in the returned list
@@ -334,8 +339,8 @@ public class PermissionServiceBean {
         User user = req.getUser();
         
         // quick cases
-        if (user.isSuperuser()) {
-            return children; // it's good to be king
+        if (isSuperuserOn(user, dvo)) {
+            return children; // it's good to be king/scoped superuser
             
         } else if (!user.isAuthenticated()) {
             if ( required.stream().anyMatch(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY::contains) ){
@@ -368,7 +373,7 @@ public class PermissionServiceBean {
         childrenAssignments.forEach( assignment -> {
             DvObject definitionPoint = assignment.getDefinitionPoint();
             if (!roleMap.containsKey(definitionPoint)){
-                roleMap.put(definitionPoint, assignment.getRole().permissions());
+                roleMap.put(definitionPoint, new HashSet<>(assignment.getRole().permissions()));
             } else {
                 roleMap.get(definitionPoint).addAll(assignment.getRole().permissions());
             }
@@ -378,7 +383,8 @@ public class PermissionServiceBean {
         return children.stream().filter( child -> 
                 ((includeReleased && child.isReleased()) 
                         || ((roleMap.containsKey(child)) &&
-                            (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
+                            (roleMap.get(child).contains(Permission.ActAsSuperuser) ||
+                             roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
         ).collect( toList() );
         
     }
@@ -398,7 +404,7 @@ public class PermissionServiceBean {
 
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
         User user = req.getUser();
-        if (user.isSuperuser()) {
+        if (isSuperuserOn(user, dvo)) {
             return true;
         } else if (!user.isAuthenticated()) {
             Set<Permission> requiredCopy = EnumSet.copyOf(required);
@@ -414,11 +420,12 @@ public class PermissionServiceBean {
     }
 
     public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
-        if (ra instanceof User) {
-            User user = (User) ra;
-            if (user.isSuperuser()) {
+        if (ra instanceof AuthenticatedUser au) {
+            if (isSuperuserOn(au, dvo)) {
                 return true;
-            } else if (!user.isAuthenticated()) {
+            }
+        } else if (ra instanceof User user) {
+            if (!user.isAuthenticated()) {
                 Set<Permission> requiredCopy = EnumSet.copyOf(required);
                 requiredCopy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
                 if (!requiredCopy.isEmpty()) {
@@ -452,7 +459,7 @@ public class PermissionServiceBean {
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
     public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
-        if (req.getUser().isSuperuser()) {
+        if (isSuperuserOn(req.getUser(), dvo)) {
             return EnumSet.allOf(Permission.class);
         }
 
@@ -479,7 +486,7 @@ public class PermissionServiceBean {
      * @return the set of permissions {@code ra} has over {@code dvo}.
      */
     public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
-        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
+        if (ra instanceof AuthenticatedUser && isSuperuserOn((AuthenticatedUser) ra, dvo)) {
             return EnumSet.allOf(Permission.class);
         }
 
@@ -493,6 +500,84 @@ public class PermissionServiceBean {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
         return permissions;
+    }
+
+    public boolean isSuperuserOn(User user, DvObject dvo) {
+        if(user == null || !user.isAuthenticated()) {
+            return false;
+        }
+        return isSuperuserOn((AuthenticatedUser) user, dvo);
+    }
+
+
+    /**
+     * Whether {@code user} may act as a superuser on {@code dvo}. The method returns true for superusers
+     * and those with the {@link Permission#ActAsSuperuser} permission on {@code dvo} (i.e via a
+     * {@link RoleAssignment} on {@code dvo} on an ancestor up to the permission root.
+     * <p>
+     * Note: Since the method requires an {@link AuthenticatedUser} and groups are resolved via
+     * {@link GroupServiceBean#groupsFor(RoleAssignee, DvObject)}, assigment of the
+     * {@link Permission#ActAsSuperuser} permission to {@link GuestUser}, {@link IpGroup}, {@link MailDomainGroup}
+     * are ignored by this method. (This is a safety measure, but is not inherent in the design,
+     * and could be changed if there are use cases where granting superuser powers to GuestUsers and/or
+     * these types of groups is desired.)
+     */
+    public boolean isSuperuserOn(AuthenticatedUser user, DvObject dvo) {
+        if (user == null) {
+            return false;
+        }
+        if (user.isSuperuser()) {
+            return true;
+        }
+        if (dvo == null) {
+            return false;
+        }
+        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(user, dvo));
+        ras.add(user);
+        return hasGroupPermissionsFor(ras, dvo, EnumSet.of(Permission.ActAsSuperuser));
+    }
+
+    /**
+     * Whether {@code user} is a superuser or holds a @{link RoleAssignment} containing
+     * {@link Permission#ActAsSuperuser} on at least one object in the installation.
+     * The initial use is to decide whether to show the Dashboard and its Move
+     * Data pages.
+     * <p>
+     * Note: as with the {@link #isSuperuserOn(AuthenticatedUser, DvObject)} method,
+     * assignments of {@link Permission#ActAsSuperuser} for {@link GuestUser} and via
+     * {@link IpGroup} or {@link MailDomainGroup} groups are ignored.
+     */
+    public boolean isSuperuserOnSomeDvObject(AuthenticatedUser user) {
+        if (user == null) {
+            return false;
+        }
+        if (user.isSuperuser()) {
+            return true;
+        }
+
+        // Get all groups the user belongs to (persistent ones)
+        Set<edu.harvard.iq.dataverse.authorization.groups.Group> groups = groupService.groupsFor(user);
+        Set<String> identifiers = groups.stream()
+                .map(edu.harvard.iq.dataverse.authorization.groups.Group::getIdentifier)
+                .collect(Collectors.toSet());
+        identifiers.add(user.getIdentifier());
+
+        // Get all roles that have ActAsSuperuser permission
+        List<DataverseRole> powerRoles = roleService.findAllWithPermission(Permission.ActAsSuperuser);
+        if (powerRoles.isEmpty()) {
+            return false;
+        }
+        List<Long> roleIds = powerRoles.stream()
+                .map(DataverseRole::getId)
+                .collect(Collectors.toList());
+
+        // Check if any role assignment exists for these identifiers and roles
+        Long count = em.createQuery("SELECT COUNT(ra) FROM RoleAssignment ra WHERE ra.assigneeIdentifier IN :identifiers AND ra.role.id IN :roleIds", Long.class)
+                .setParameter("identifiers", identifiers)
+                .setParameter("roleIds", roleIds)
+                .getSingleResult();
+
+        return count > 0;
     }
     
     private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
@@ -632,6 +717,19 @@ public class PermissionServiceBean {
         return new RequestPermissionQuery(null, req);
     }
 
+    /**
+     * Lists the users holding {@code permission} through role assignments
+     * returned by {@code roleService.rolesAssignments(dvo)}. Used to choose
+     * notification recipients (file access requests, datasets submitted for
+     * review or returned to authors).
+     * <p>
+     * Note: This method is specialized to the needs of the notification use case: only direct
+     * permission assignments or those from membership in an @{link ExplicitGroup} are checked.
+     * It excludes GuestUsers and users who hold this permissions due to:
+     * * superuser status
+     * * assignment of the {@link Permission#ActAsSuperuser} on {@code dvo},
+     * * membership in {@link IpGroup}, {@link MailDomainGroup}, {@link Shib}, or the {@link AuthenticatedUsers} group.
+     */
     public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
         List<AuthenticatedUser> usersHasPermissionOn = new LinkedList<>();
         Set<RoleAssignment> ras = roleService.rolesAssignments(dvo);
@@ -1083,11 +1181,11 @@ public class PermissionServiceBean {
         // Check if user is in the locally FAIR assignee list
         Set<RoleAssignee> userAndGroups = new HashSet<>(groupService.groupsFor(req));
         User user = req.getUser();
-        if (user.isAuthenticated()) {
-            if(user.isSuperuser()) {
+        if (user instanceof AuthenticatedUser authUser) {
+            if (isSuperuserOn(authUser, dvObject)) {
                 return true;
             }
-            userAndGroups.add(user);
+            userAndGroups.add(authUser);
         }
         
         for (RoleAssignee ra : userAndGroups) {

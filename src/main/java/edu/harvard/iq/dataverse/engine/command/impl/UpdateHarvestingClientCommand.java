@@ -27,7 +27,7 @@ public class UpdateHarvestingClientCommand extends AbstractCommand<HarvestingCli
 
     @Override
     public HarvestingClient execute(CommandContext ctxt) throws CommandException {
-        // TODO: check that the harvesting client config is attached to a legit 
+        // TODO: check that the harvesting client config is attached to a legit
         // dataverse; and that we are in fact modifying a config that already 
         // exists. -- L.A. 4.4
         return ctxt.em().merge(this.harvestingClient);

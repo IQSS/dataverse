@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.DvObject;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
@@ -53,7 +55,12 @@ public enum Permission implements java.io.Serializable {
     LinkDataset(BundleUtil.getStringFromBundle("permission.linkDataset"), true, Dataset.class, Dataverse.class),
     // Delete
     DeleteDataverse(BundleUtil.getStringFromBundle("permission.deleteDataverse"), true, Dataverse.class),
-    DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class);
+    DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class),
+    // The ActAsSuperuser permission is an aggregate permission that helps bridge between the Permission/Role Assignment system and
+    // the currently separate mechanism of authorization based on the status of a user being a 'superuser'. While it can be used the same way other
+    // permissions are, i.e. in an @RequiredPermissions annotation on a command, it's primary use is to replace tests of isSuperuser() with
+    // isSuperuserOn() and allow actions previously limited to superusers to also be performed by users with this permission. See PR #12676 for further discussion.
+    ActAsSuperuser(BundleUtil.getStringFromBundle("permission.actAsSuperuser"), true, DvObject.class);
 
 
     // FUTURE:
