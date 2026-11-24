@@ -56,6 +56,7 @@ public class RoleDTO {
 		r.clearPermissions();
 		if (permissions != null) {
 			if (permissions.length > 0) {
+				//"ALL" is not currently used or documented
 				if (permissions[0].trim().toLowerCase().equals("all")) {
 					EnumSet<Permission> allExceptPower = EnumSet.allOf(Permission.class);
 					allExceptPower.remove(Permission.ActAsSuperuser);
