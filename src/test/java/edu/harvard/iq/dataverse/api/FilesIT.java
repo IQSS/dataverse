@@ -3987,11 +3987,11 @@ public class FilesIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", ownerApiToken);
 
         String guestbookResponse = UtilIT.generateGuestbookResponse(guestbook);
-        Response downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
+        Response downloadResponse = delayGetDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.getSignedUrlFromResponse(downloadResponse);
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId2, apiToken, guestbookResponse);
+        downloadResponse = delayGetDownloadFileUrlWithGuestbookResponse(fileId2, apiToken, guestbookResponse);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.getSignedUrlFromResponse(downloadResponse);
@@ -4162,7 +4162,7 @@ public class FilesIT {
         assertEquals(OK.getStatusCode(), signedUrlResponse.getStatusCode());
 
         // Get Download Url attempt - Guestbook Response is required but not found
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, null);
+        downloadResponse = delayGetDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, null);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
@@ -4170,7 +4170,7 @@ public class FilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Get Signed Download Url with guestbook response
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
+        downloadResponse = delayGetDownloadFileUrlWithGuestbookResponse(fileId1, apiToken, guestbookResponse);
         downloadResponse.prettyPrint();
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -4220,7 +4220,7 @@ public class FilesIT {
         // Modify guestbookResponse excluding email to show that the email remains unchanged
         guestbookResponse = guestbookResponse.replace("\"guestbookResponse\": {",
                 "\"guestbookResponse\": { \"name\":\"My Name\", \"position\":\"My Position\", \"institution\":\"My Institution\",");
-        downloadResponse = UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId1, apiToken2, guestbookResponse);
+        downloadResponse = delayGetDownloadFileUrlWithGuestbookResponse(fileId1, apiToken2, guestbookResponse);
         downloadResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Response guestbookResponses = UtilIT.getGuestbookResponses(dataverseAlias, guestbook.getId(), ownerApiToken);
@@ -4302,6 +4302,14 @@ public class FilesIT {
         assertTrue(callbackResponse.prettyPrint().contains("imagePreviewText"));
     }
 
+    // add delay so the timestamps don't match
+    private Response delayGetDownloadFileUrlWithGuestbookResponse(Integer fileId, String apiToken, String body) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+        return UtilIT.getDownloadFileUrlWithGuestbookResponse(fileId, apiToken, body);
+    }
     private Response testSortByField(Long id, String sortField, String order, Integer offset, Integer limit, String errorMsg, String token) {
         Response guestbookListResponses = UtilIT.getGuestbooksResponses(id, sortField, order, offset, limit, token);
         boolean isDescending = order != null && order.equalsIgnoreCase("desc");
