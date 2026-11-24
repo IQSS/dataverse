@@ -769,7 +769,6 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
                 if ( p.getKey().getName().equals(blockName) ) {
-                    logger.severe(">>> getVersionMetadataBlock {id}/versions/{versionNumber}/metadata/{block}");
                     return ok(json(p.getKey(), p.getValue()));
                 }
             }
