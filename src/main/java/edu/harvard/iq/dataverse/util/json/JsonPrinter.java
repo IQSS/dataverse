@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.dto.GuestbookResponseListDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -41,6 +42,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
+import java.text.DateFormat;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -421,44 +423,23 @@ public class JsonPrinter {
         return getOwnersFromDvObject(dvObject, null);
     }
 
-    public static JsonObjectBuilder json(GuestbookResponse gbResponse) {
-        JsonObjectBuilder guestbookResponseObject = jsonObjectBuilder();
-        if (gbResponse != null) {
-            guestbookResponseObject.add("id", gbResponse.getId());
-            guestbookResponseObject.add("dataset", gbResponse.getDataset().getDisplayName());
-            guestbookResponseObject.add("datasetPid", gbResponse.getDataset().getIdentifier());
-            guestbookResponseObject.add("date", format(gbResponse.getResponseTime()));
-            guestbookResponseObject.add("type", gbResponse.getEventType());
-            guestbookResponseObject.add("fileName", gbResponse.getDataFile().getDisplayName());
-            guestbookResponseObject.add("fileId", gbResponse.getDataFile().getId());
-            if (gbResponse.getDataFile().getGlobalId() != null) {
-                guestbookResponseObject.add("filePid", gbResponse.getDataFile().getGlobalId().asString());
-            }
-            if (!StringUtil.isEmpty(gbResponse.getName())) {
-                guestbookResponseObject.add("name", gbResponse.getName());
-            }
-            if (gbResponse.getEmail() != null) {
-                guestbookResponseObject.add("email", gbResponse.getEmail());
-            }
-            if (gbResponse.getInstitution() != null) {
-                guestbookResponseObject.add("institution", gbResponse.getInstitution());
-            }
-            if (gbResponse.getPosition() != null) {
-                guestbookResponseObject.add("position", gbResponse.getPosition());
-            }
-            final List<CustomQuestionResponse> cqResponses = gbResponse.getCustomQuestionResponses();
-            if (cqResponses != null && !cqResponses.isEmpty()) {
-                JsonArrayBuilder customQuestions = JsonUtil.createArrayBuilder();
-                for (CustomQuestionResponse cqResponse : cqResponses) {
-                    JsonObjectBuilder cqObj = jsonObjectBuilder();
-                    cqObj.add("question", cqResponse.getCustomQuestion().getQuestionString());
-                    cqObj.add("response", cqResponse.getResponse());
-                    customQuestions.add(cqObj);
-                }
-                guestbookResponseObject.add("customQuestions", customQuestions);
-            }
+    public static JsonArrayBuilder getGuestbookResponseList(List<GuestbookResponseListDTO> gbResponses) {
+        JsonArrayBuilder responsesArray = JsonUtil.createArrayBuilder();
+        for (GuestbookResponseListDTO gr : gbResponses) {
+            NullSafeJsonBuilder grObject = jsonObjectBuilder();
+            grObject.add("id", gr.getId());
+            grObject.add("dataset", gr.getDataset());
+            grObject.add("name", gr.getName());
+            grObject.add("institution", gr.getInstitution());
+            grObject.add("position", gr.getPosition());
+            grObject.add("type", gr.getType());
+            grObject.add("date", DateFormat.getDateTimeInstance().format(gr.getDate()));
+            grObject.add("file", gr.getFile());
+            grObject.add("fileid", gr.getFileId());
+            grObject.add("responses", gr.getResponses());
+            responsesArray.add(grObject);
         }
-        return guestbookResponseObject;
+        return responsesArray;
     }
 
     public static JsonObjectBuilder json(Guestbook guestbook) {
