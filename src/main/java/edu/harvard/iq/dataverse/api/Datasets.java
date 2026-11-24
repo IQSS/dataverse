@@ -541,6 +541,7 @@ public class Datasets extends AbstractApiBean {
             boolean includeMetadataBlocks = excludeMetadataBlocks == null ? true : !excludeMetadataBlocks;
             boolean includeFiles = excludeFiles == null ? true : !excludeFiles;
             boolean ignoreSettingExcludeEmailFromExport = ignoreSettingToExcludeEmailFromExport != null ? ignoreSettingToExcludeEmailFromExport : false;
+            List<String> anonymizedFieldTypeNamesList = null;
 
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions.
             boolean checkPerms = includeFiles;
@@ -557,15 +558,20 @@ public class Datasets extends AbstractApiBean {
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
             }
-
+            // Check if private user to see if anonymization is needed
+            if (req.getUser() instanceof PrivateUrlUser) {
+                if (((PrivateUrlUser) req.getUser()).hasAnonymizedAccess()) {
+                    // Use ListSplitUtil for consistent CSV parsing
+                    anonymizedFieldTypeNamesList = new ArrayList<>(ListSplitUtil.split(settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)));
+                }
+            }
             // Check to see if the caller wants to ignore the ExcludeEmailFromExport setting in the metadata block and that they have permission to do so
             // Let the JsonPrinter know to ignore the ExcludeEmailFromExport setting so the emails will show for this API call by permitted user
             if (ignoreSettingExcludeEmailFromExport && (!includeMetadataBlocks || !permissionService.userOn(getRequestUser(crc), dataset).has(Permission.EditDataset))) {
                 // either not showing metadata block or user isn't allowed to override the setting
                 ignoreSettingExcludeEmailFromExport = false;
             }
-
-            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, null, includeFiles,
+            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, anonymizedFieldTypeNamesList, includeFiles,
                     returnOwners, includeMetadataBlocks, false, ignoreSettingExcludeEmailFromExport);
             return ok(jsonBuilder);
 
@@ -763,6 +769,7 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
                 if ( p.getKey().getName().equals(blockName) ) {
+                    logger.severe(">>> getVersionMetadataBlock {id}/versions/{versionNumber}/metadata/{block}");
                     return ok(json(p.getKey(), p.getValue()));
                 }
             }
