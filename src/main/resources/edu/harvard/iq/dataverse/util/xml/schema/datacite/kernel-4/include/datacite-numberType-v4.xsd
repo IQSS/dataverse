@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version 4.4 - Created 2021-03-05 -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://datacite.org/schema/kernel-4" targetNamespace="http://datacite.org/schema/kernel-4" elementFormDefault="qualified">
+  <xs:simpleType name="numberType" id="numberType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Article" />
+      <xs:enumeration value="Chapter" />
+      <xs:enumeration value="Report" />
+      <xs:enumeration value="Other" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

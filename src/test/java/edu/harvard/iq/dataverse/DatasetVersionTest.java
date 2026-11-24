@@ -3,8 +3,11 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -28,6 +31,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+@LocalJvmSettings
+@JvmSetting(key = JvmSettings.SITE_URL, value = "http://localhost:8080")
 public class DatasetVersionTest {
     
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
