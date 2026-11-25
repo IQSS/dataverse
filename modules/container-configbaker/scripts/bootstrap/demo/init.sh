@@ -13,7 +13,7 @@ export BLOCKED_API_KEY
 # later in this script we'll apply the changes as if we had
 # run the script without --insecure.
 echo "Running base setup-all.sh..."
-"${BOOTSTRAP_DIR}"/base/setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
+"${BOOTSTRAP_DIR}"/base/setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out || SETUP_STATUS=$?
 
 echo ""
 echo "Setting DOI provider to \"FAKE\"..."
@@ -47,4 +47,8 @@ echo "Block admin and other sensitive API endpoints..."
 curl -sS -X PUT -d 'admin,builtin-users' "${DATAVERSE_URL}/api/admin/settings/:BlockedApiEndpoints"
 
 echo ""
-echo "Done, your instance has been configured for demo or eval. Have a nice day!"
+if [[ "$SETUP_STATUS" -eq 0 ]]; then
+  echo "Done, your instance has been configured for demo or eval. Have a nice day!"
+else
+  echo "Demo configuration finished with setup errors; see the diagnostics above." >&2
+fi
