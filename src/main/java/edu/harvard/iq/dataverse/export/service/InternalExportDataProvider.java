@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.export;
+package edu.harvard.iq.dataverse.export.service;
 
 import java.io.InputStream;
 import java.util.Optional;
