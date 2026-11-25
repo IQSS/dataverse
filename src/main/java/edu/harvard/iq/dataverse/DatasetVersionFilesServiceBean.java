@@ -358,9 +358,10 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
         String searchText = searchCriteria.getSearchText();
         if (searchText != null && !searchText.isEmpty()) {
-            searchText = searchText.trim().toLowerCase();
-            predicates.add(criteriaBuilder.or(criteriaBuilder.like(criteriaBuilder.lower(fileMetadataRoot.get("label")), "%" + searchText + "%"),
-                    criteriaBuilder.like(criteriaBuilder.lower(fileMetadataRoot.get("description")), "%" + searchText + "%")));
+            String searchPattern = "%" + searchText.trim().toLowerCase() + "%";
+            predicates.add(criteriaBuilder.or(criteriaBuilder.like(criteriaBuilder.lower(fileMetadataRoot.get("label")), searchPattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(fileMetadataRoot.get("description")), searchPattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(fileMetadataRoot.get("directoryLabel")), searchPattern)));
         }
         return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
     }
