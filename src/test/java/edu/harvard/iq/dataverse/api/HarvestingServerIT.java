@@ -574,6 +574,18 @@ public class HarvestingServerIT {
         assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", 
                 responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.description"));
         assertEquals("Medicine, Health and Life Sciences", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.subject"));
+
+        Response dataverseJsonRecordResponse =
+                UtilIT.getOaiRecord(singleSetDatasetPersistentId, "dataverse_json");
+        assertEquals(OK.getStatusCode(), dataverseJsonRecordResponse.getStatusCode());
+        responseXmlPath = validateOaiVerbResponse(dataverseJsonRecordResponse, "GetRecord");
+        String directApiCall =
+                responseXmlPath.getString(
+                        "OAI-PMH.GetRecord.record.metadata.dataverse_json.@directApiCall");
+        assertTrue(
+                directApiCall.endsWith(
+                        "/api/datasets/export?exporter=dataverse_json&persistentId="
+                                + singleSetDatasetPersistentId));
         
         // ok, looks legit!
         
