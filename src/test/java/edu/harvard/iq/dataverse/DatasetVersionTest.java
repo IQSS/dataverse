@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
@@ -18,12 +19,17 @@ import java.util.List;
 import java.util.logging.Logger;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 @LocalJvmSettings
 @JvmSetting(key = JvmSettings.SITE_URL, value = "http://localhost:8080")
@@ -110,9 +116,11 @@ public class DatasetVersionTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(license);
-        datasetVersion.setTermsOfUseAndAccess(terms);
+        TermsOfAccess termsOfAccess = new TermsOfAccess();
+        datasetVersion.setTermsOfAccess(termsOfAccess);
+        TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+        termsOfUseOrLicense.setLicense(license);
+        datasetVersion.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
         String jsonLd = datasetVersion.getJsonLd();
         logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonObject obj = JsonUtil.getJsonObject(jsonLd);
@@ -161,10 +169,11 @@ public class DatasetVersionTest {
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(null);
-        terms.setTermsOfUse("Call me maybe");
-        datasetVersion.setTermsOfUseAndAccess(terms);
+        TermsOfUseOrLicense termsOfUseOrLicense = new TermsOfUseOrLicense();
+        termsOfUseOrLicense.setLicense(null);
+        termsOfUseOrLicense.setTermsOfUse("Call me maybe");
+        datasetVersion.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
+        datasetVersion.setTermsOfAccess(new TermsOfAccess());
 
         String jsonLd = datasetVersion.getJsonLd();
         logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
@@ -212,4 +221,31 @@ public class DatasetVersionTest {
         assertEquals("DRAFT", obj.getString("version"));
     }
 
+    @Test
+    public void testValid() throws ParseException {
+        var datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(new Dataset());
+        var violations = datasetVersion.validate();
+        assertEquals(0, violations.size());
+    }
+
+    @Test
+    public void testInvalidTermsOfAccess() {
+        var datasetVersion = Mockito.spy(new DatasetVersion());
+
+        Mockito.doReturn(true).when(datasetVersion).isHasRestrictedFile();
+        datasetVersion.setDataset(new Dataset());
+        assertTrue(datasetVersion.isHasRestrictedFile());
+
+        var termsOfAccess = new TermsOfAccess();
+        termsOfAccess.setDatasetVersion(datasetVersion);
+        datasetVersion.setTermsOfAccess(termsOfAccess);
+
+        var violations = datasetVersion.validate();
+
+        var expectedMessage = BundleUtil.getStringFromBundle("dataset.message.toua.invalid");
+        assertThat(termsOfAccess.getValidationMessage()).isEqualTo(expectedMessage);
+        assertEquals(1, violations.size());
+        assertThat(violations.iterator().next().getMessage()).isEqualTo(expectedMessage);
+    }
 }

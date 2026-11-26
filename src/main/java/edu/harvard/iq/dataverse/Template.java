@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.persistence.CascadeType;
@@ -113,15 +112,27 @@ public class Template implements Serializable {
     }
     
     @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
-    @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess;
+    @JoinColumn(name = "termsofaccess_id")
+    private TermsOfAccess termsOfAccess;
 
-    public TermsOfUseAndAccess getTermsOfUseAndAccess() {
-        return termsOfUseAndAccess;
+    public TermsOfAccess getTermsOfAccess() {
+        return termsOfAccess;
     }
 
-    public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
-        this.termsOfUseAndAccess = termsOfUseAndAccess;
+    public void setTermsOfAccess(TermsOfAccess termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
+    @JoinColumn(name = "default_termsofuseorlicense_id")
+    private TermsOfUseOrLicense defaultTermsOfUseOrLicense;
+
+    public TermsOfUseOrLicense getDefaultTermsOfUseOrLicense() {
+        return defaultTermsOfUseOrLicense;
+    }
+
+    public void setDefaultTermsOfUseOrLicense(TermsOfUseOrLicense defaultTermsOfUseOrLicense) {
+        this.defaultTermsOfUseOrLicense = defaultTermsOfUseOrLicense;
     }
 
     @OneToMany(mappedBy = "template", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -359,17 +370,26 @@ public class Template implements Serializable {
         if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
             newTemplate.setDatasetFields(newTemplate.copyDatasetFields(source.getDatasetFields()));
         }
-        TermsOfUseAndAccess terms = null;
-        if(source.getTermsOfUseAndAccess() != null){
-            terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+        TermsOfAccess termsOfAccess = null;
+        if(source.getTermsOfAccess() != null){
+            termsOfAccess = source.getTermsOfAccess().copyTermsOfAccess();
         } else {
-            terms = new TermsOfUseAndAccess();
-           // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
-            terms.setFileAccessRequest(true);
+            termsOfAccess = new TermsOfAccess();
+            termsOfAccess.setFileAccessRequest(true);
         }
-        terms.setTemplate(newTemplate);
-        newTemplate.setTermsOfUseAndAccess(terms);
+        termsOfAccess.setTemplate(newTemplate);
+        newTemplate.setTermsOfAccess(termsOfAccess);
         
+        TermsOfUseOrLicense termsOfUseOrLicense = null;
+        if(source.getDefaultTermsOfUseOrLicense() != null){
+            termsOfUseOrLicense = source.getDefaultTermsOfUseOrLicense().copyTermsOfUseOrLicense();
+        } else {
+            termsOfUseOrLicense = new TermsOfUseOrLicense();
+           // terms.setLicense(TermsOfUseOrLicense.defaultLicense);
+        }
+        termsOfUseOrLicense.setTemplate(newTemplate);
+        newTemplate.setDefaultTermsOfUseOrLicense(termsOfUseOrLicense);
+
         newTemplate.getInstructionsMap().putAll(source.getInstructionsMap());
         newTemplate.updateInstructions();
         return newTemplate;

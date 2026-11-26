@@ -27,6 +27,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -39,6 +41,9 @@ import jakarta.validation.constraints.Size;
  * 
  */
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(name = "oaiset_spec_key", columnNames = "spec")
+})
 public class OAISet implements Serializable {
 
     private static final long serialVersionUID = 1L;

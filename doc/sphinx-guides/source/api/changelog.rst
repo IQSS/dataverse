@@ -7,6 +7,12 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.13
+-----
+
+- API endpoints returning a ``Template`` object now return the fields ``defaultTermsOfUseOrLicense`` and ``termsOfAccess`` instead of the ``termsOfUseAndAccess`` field. The default applies to files without an explicit license or terms of use. Assigning a license or terms of use to a file is not yet implemented.
+
+
 v6.12
 -----
 
