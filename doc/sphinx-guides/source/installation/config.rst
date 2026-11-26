@@ -4675,6 +4675,10 @@ You can set terms like this:
 
 ``curl -X PUT http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse --upload-file /tmp/apptou.html``
 
+Save the file with UTF-8 encoding. Files saved in another encoding, such as Windows-1252 or ISO-8859-1 (common for files created on Windows), may not display accented characters correctly. On Linux, you can check the encoding of the file with ``file /tmp/apptou.html`` and convert it to UTF-8 with ``iconv -f WINDOWS-1252 -t UTF-8 /tmp/apptou.html > /tmp/apptou_utf8.html``.
+
+If curl reports that it cannot open or read the file, check the path and the file permissions before trying again, so that the terms are not left blank. To check the terms that were saved, see :ref:`api-get-app-tou` in the API Guide.
+
 To delete terms:
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse``
