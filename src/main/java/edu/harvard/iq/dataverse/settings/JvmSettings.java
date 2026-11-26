@@ -299,6 +299,12 @@ public enum JvmSettings {
     UI_PLATICA_PROFILE_URL(SCOPE_UI_PLATICA, "profile-url"),
     UI_PLATICA_KEYCLOAK_CLIENT_ID(SCOPE_UI_PLATICA, "keycloak-client-id"),
 
+    // PLATICA (non-UI) SETTINGS
+    SCOPE_PLATICA(PREFIX, "platica"),
+    // ISO 3166-1 alpha-2 country of the publisher, emitted as publisher.address.addressCountry
+    // in the Schema.org JSON-LD export (blank = omitted)
+    PLATICA_PUBLISHER_COUNTRY(SCOPE_PLATICA, "publisher-country"),
+
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),
     GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),

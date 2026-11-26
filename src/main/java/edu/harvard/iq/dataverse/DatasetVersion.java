@@ -2061,10 +2061,16 @@ public class DatasetVersion implements Serializable {
          * Both "publisher" and "provider" are included but they have the same
          * values. Some services seem to prefer one over the other.
          */
-        job.add("publisher", JsonUtil.createObjectBuilder()
+        JsonObjectBuilder publisher = JsonUtil.createObjectBuilder()
                 .add("@type", "Organization")
-                .add("name", installationBrandName)
-        );
+                .add("name", installationBrandName);
+        // PLATICA: optional publisher country (dataverse.platica.publisher-country)
+        JvmSettings.PLATICA_PUBLISHER_COUNTRY.lookupOptional()
+                .filter(StringUtils::isNotBlank)
+                .ifPresent(country -> publisher.add("address", JsonUtil.createObjectBuilder()
+                        .add("@type", "PostalAddress")
+                        .add("addressCountry", country.trim())));
+        job.add("publisher", publisher);
         job.add("provider", JsonUtil.createObjectBuilder()
                 .add("@type", "Organization")
                 .add("name", installationBrandName)

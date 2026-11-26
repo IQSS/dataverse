@@ -70,6 +70,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    @JvmSetting(key = JvmSettings.PLATICA_PUBLISHER_COUNTRY, value = "ES")
     public void testExportDataset() throws JsonParseException, ParseException, IOException {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
@@ -119,8 +120,11 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
         assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("publisher").getString("name"));
+        assertEquals("PostalAddress", json2.getJsonObject("publisher").getJsonObject("address").getString("@type"));
+        assertEquals("ES", json2.getJsonObject("publisher").getJsonObject("address").getString("addressCountry"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
+        assertFalse(json2.getJsonObject("provider").containsKey("address"));
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
         assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
         // The NIH grant number is not shown because don't have anywhere in schema.org to put it. :(
@@ -181,7 +185,24 @@ public class SchemaDotOrgExporterTest {
         assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
         assertFalse(json2.getJsonArray("distribution").getJsonObject(0).containsKey("contentUrl"));
     }
-    
+
+    // PLATICA: a blank publisher country must not emit publisher.address
+    @Test
+    @JvmSetting(key = JvmSettings.PLATICA_PUBLISHER_COUNTRY, value = "")
+    public void testExportWithoutPublisherCountry() throws IOException, JsonParseException, ParseException {
+        File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+
+        JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
+        ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
+
+        JsonObject json2 = createExportFromJson(exportDataProviderStub);
+
+        assertEquals("LibraScholar", json2.getJsonObject("publisher").getString("name"));
+        assertFalse(json2.getJsonObject("publisher").containsKey("address"));
+    }
+
     private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
