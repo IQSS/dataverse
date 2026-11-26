@@ -17,19 +17,24 @@ body {
 }
 body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
-/* PLATICA theme: links are blue, orange on hover and while pressed, and blue with a blue oval ring on focus */
+/* PLATICA theme: links are blue, orange on hover and while pressed, and blue with a blue oval ring on keyboard focus.
+   Focus rings use :focus-visible so they do not stay on a link or button after a mouse click; plain :focus only
+   removes Bootstrap's default outline. */
 a:not(.btn), .ui-widget-content a:not(.btn) {color: #29204c;}
 a:not(.btn):hover, .ui-widget-content a:not(.btn):hover {color: #e5630d;}
-a:not(.btn):focus, .ui-widget-content a:not(.btn):focus {color: #29204c; outline: 2px solid #29204c; outline-offset: 2px; border-radius: 50rem;}
+a:not(.btn):focus, .ui-widget-content a:not(.btn):focus {color: #29204c; outline: none;}
+a:not(.btn):focus-visible, .ui-widget-content a:not(.btn):focus-visible {outline: 2px solid #29204c; outline-offset: 2px; border-radius: 50rem;}
 a:not(.btn):active, .ui-widget-content a:not(.btn):active {color: #e5630d;}
 /* Link-styled buttons (e.g. the citation "Download" toggle) and dropdown menu items follow the same link states;
    btn-link keeps a thin transparent border so the 3px black button focus border does not apply */
 .btn.btn-link {color: #29204c;}
 .btn.btn-link:hover, .btn.btn-link:active {color: #e5630d;}
-.btn.btn-link:focus {color: #29204c; border: 1px solid transparent; outline: 2px solid #29204c; outline-offset: 2px; border-radius: 50rem;}
+.btn.btn-link:focus {color: #29204c; border: 1px solid transparent; outline: none;}
+.btn.btn-link:focus-visible {outline: 2px solid #29204c; outline-offset: 2px; border-radius: 50rem;}
 .dropdown-menu > li > a {color: #29204c;}
 .dropdown-menu > li > a:hover, .dropdown-menu > li > a:active {color: #e5630d; background-color: transparent; background-image: none;}
-.dropdown-menu > li > a:focus {color: #29204c; background-color: transparent; background-image: none; outline: 2px solid #29204c; outline-offset: -2px; border-radius: 50rem;}
+.dropdown-menu > li > a:focus {color: #29204c; background-color: transparent; background-image: none; outline: none;}
+.dropdown-menu > li > a:focus-visible {outline: 2px solid #29204c; outline-offset: -2px; border-radius: 50rem;}
 
 /* -------- TEMPLATE -------- */
 .panelgridHeaderTable {width:100%;}
@@ -452,8 +457,9 @@ a.ui-widget.btn.btn-default:hover, a.ui-widget.btn.btn-default:focus, a.ui-widge
 .btn-group:not(.btn-group-justified) > .btn:has(~ .btn-group) {border-radius: 50rem !important;}
 .btn-group:not(.btn-group-justified) > .btn-group + .btn-group,
 .btn-group:not(.btn-group-justified) > .btn + .btn-group {margin-left: .5em;}
-/* PLATICA theme: focused buttons get a 3px black border */
-.btn:focus, .btn:focus-visible, a.ui-widget.btn:focus {border: 3px solid #000; outline: none;}
+/* PLATICA theme: buttons focused with the keyboard get a 3px black border (not after a mouse click) */
+.btn:focus, a.ui-widget.btn:focus {outline: none;}
+.btn:focus-visible, a.ui-widget.btn:focus-visible {border: 3px solid #000; outline: none;}
 .col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn,
 .col-manage-action .button-block div.btn-group, .col-manage-action .button-block span.btn.ui-state-disabled,
 .button-block div.btn-group div.btn-group,
@@ -1076,7 +1082,8 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-button.btn-link, .ui-button.btn-link.active, .ui-button.btn-link:active, .ui-button.btn-link[disabled], fieldset[disabled] .ui-button.btn-link {padding:0; border:0; border-color:transparent; border-radius:10px; background-color:transparent; background-image:none; box-shadow: none; color: #29204c;}
 .ui-button.btn-link, .ui-button.btn-link:hover, .ui-button.btn-link:focus, .ui-button.btn-link:active {border-color: transparent;}
 .ui-button.btn-link:hover, .ui-button.btn-link:active {color: #e5630d; text-decoration: underline !important; background-color: transparent;}
-.ui-button.btn-link:focus {color: #29204c; outline: 2px solid #29204c; outline-offset: 2px; border-radius: 50rem; background-color: transparent;}
+.ui-button.btn-link:focus {color: #29204c; outline: none; background-color: transparent;}
+.ui-button.btn-link:focus-visible {outline: 2px solid #29204c; outline-offset: 2px; border-radius: 50rem;}
 .ui-button.btn-link[disabled]:hover, fieldset[disabled] .ui-button.btn-link:hover, .ui-button.btn-link[disabled]:focus, fieldset[disabled] .ui-button.btn-link:focus {color: #777;text-decoration: none;}
 .ui-widget-header .form-group {font-weight:normal;}
 
