@@ -451,6 +451,8 @@ The path to the directory where JAR files containing additional types of PID Pro
 Dataverse includes providers that support DOIs (DataCite, EZId, or FAKE), Handles, and PermaLinks.
 PID provider jar files added to this directory can replace any of these or add new PID Providers.
 
+For an example of a community-contributed SPI provider that adds Archival Resource Key (ARK) support, see `dataverse-ark <https://github.com/pinoyseoul/dataverse-ark>`_.
+
 Per-Provider Settings
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -461,7 +463,7 @@ Each Provider listed by id in the dataverse.pid.providers setting must be config
 dataverse.pid.*.type
 ^^^^^^^^^^^^^^^^^^^^
 
-The Provider type, currently one of ``datacite``, ``ezid``, ``FAKE``, ``hdl``, or ``perma``. The type defines which protocol a service supports (DOI, Handle, or PermaLink) and, for DOI Providers, which 
+The Provider type, currently one of ``datacite``, ``ezid``, ``FAKE``, ``hdl``, or ``perma`` (or a custom type supplied by an external SPI plugin in ``dataverse.spi.pidproviders.directory``, such as ``ark`` from `dataverse-ark <https://github.com/pinoyseoul/dataverse-ark>`_). The type defines which protocol a service supports (DOI, Handle, PermaLink, or ARK) and, for DOI Providers, which 
 DOI service is used.
 
 .. _dataverse.pid.*.label:

@@ -118,6 +118,13 @@ Java
 
 Please note that there is a Java library for Dataverse Software APIs listed in the :doc:`client-libraries` section.
 
+dataverse-ark
+~~~~~~~~~~~~~
+
+A standalone Java Service Provider Interface (SPI) plugin that brings native Archival Resource Key (ARK) persistent identifier support to Dataverse installations. Features automated minting, Name-to-Thing (N2T) resolver integration (using modern-form ``https://n2t.net/ark:...`` syntax), and metadata synchronization without modifying core Dataverse source code.
+
+https://github.com/pinoyseoul/dataverse-ark
+
 DVUploader
 ~~~~~~~~~~
 
