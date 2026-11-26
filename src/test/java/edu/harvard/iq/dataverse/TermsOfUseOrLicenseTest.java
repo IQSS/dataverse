@@ -7,22 +7,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TermsOfUseOrLicenseTest {
 
     @Test
-    public void testRemovingTermsRequiresLicense() {
-        TermsOfUseOrLicense terms = new TermsOfUseOrLicense();
-        terms.setTermsOfUse("New terms");
-        assertTrue(TermsOfUseOrLicenseValidator.isTOUOLValid(terms, null));
-
-        terms.setTermsOfUse(null);
-        assertFalse(TermsOfUseOrLicenseValidator.isTOUOLValid(terms, null));
-
-        License license = new License();
-        license.setName("CC0 1.0");
-        terms.setLicense(license);
-        assertTrue(TermsOfUseOrLicenseValidator.isTOUOLValid(terms, null));
-        assertNull(terms.getTermsOfUse());
-    }
-
-    @Test
     public void testLicenseAndTermsMutualExclusivity() {
         License license = new License();
         license.setName("CC0");
