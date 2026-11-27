@@ -1,0 +1,13 @@
+FROM ghcr.io/graalvm/native-image-community:21
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN microdnf install -y curl findutils git grep sed unzip which \
+    && microdnf clean all
+
+RUN curl -Ls https://sh.jbang.dev | bash -s - app setup
+
+ENV PATH="/root/.jbang/bin:${PATH}"
+
+WORKDIR /workspace
+
