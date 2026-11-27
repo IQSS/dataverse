@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> {
@@ -85,10 +86,7 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
                     }
 
                     if (updatedField.getDatasetFieldType().isControlledVocabulary()) {
-                        updateControlledVocabularyDatasetField(
-                                updatedField, datasetVersionField, datasetVersionField.getDisplayValue(),
-                                new ArrayList<>(datasetVersionField.getControlledVocabularyValues())
-                        );
+                        updateControlledVocabularyDatasetField(updatedField, datasetVersionField);
                     } else {
                         updateRegularDatasetField(updatedField, datasetVersionField, datasetVersion);
                     }
@@ -104,12 +102,14 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
     }
 
     private void resetDatasetField(DatasetField datasetVersionField) {
-        if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
+        if (datasetVersionField.getDatasetFieldType().isCompound()) {
+            datasetVersionField.setDatasetFieldCompoundValues(new ArrayList<>());
+        } else if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
             datasetVersionField.setDatasetFieldValues(new ArrayList<>());
             datasetVersionField.setControlledVocabularyValues(new ArrayList<>());
             datasetVersionField.setDatasetFieldCompoundValues(new ArrayList<>());
         } else {
-            datasetVersionField.setSingleValue("");
+            datasetVersionField.setDatasetFieldValues(new ArrayList<>());
             datasetVersionField.setSingleControlledVocabularyValue(null);
         }
     }
@@ -125,7 +125,9 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
     private static void updateSingleDatasetField(DatasetField updatedField, DatasetField datasetVersionField) {
         if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
             for (DatasetFieldValue datasetFieldValue : updatedField.getDatasetFieldValues()) {
-                if (!datasetVersionField.getDisplayValue().contains(datasetFieldValue.getDisplayValue())) {
+                if (StringUtils.isNotBlank(datasetFieldValue.getValue())
+                        && datasetVersionField.getDatasetFieldValues().stream()
+                                .noneMatch(existing -> existing.valuesEqual(datasetFieldValue))) {
                     datasetFieldValue.setDatasetField(datasetVersionField);
                     datasetVersionField.getDatasetFieldValues().add(datasetFieldValue);
                 }
@@ -137,7 +139,12 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
 
     private static void updateCompoundDatasetField(DatasetField updatedField, DatasetField datasetVersionField, DatasetVersion datasetVersion) {
         for (DatasetFieldCompoundValue datasetFieldCompoundValue : updatedField.getDatasetFieldCompoundValues()) {
-            if (!datasetVersionField.getCompoundDisplayValue().contains(updatedField.getCompoundDisplayValue())) {
+            //  Skip an incoming compound entry if all its children are empty
+            if (datasetFieldCompoundValue.getChildDatasetFields().stream().allMatch(DatasetField::isEmpty)) {
+                continue;
+            }
+            if (datasetVersionField.getDatasetFieldCompoundValues().stream()
+                    .noneMatch(existing -> existing.valuesEqual(datasetFieldCompoundValue))) {
                 datasetFieldCompoundValue.setParentDatasetField(datasetVersionField);
                 datasetVersionField.setDatasetVersion(datasetVersion);
                 datasetVersionField.getDatasetFieldCompoundValues().add(datasetFieldCompoundValue);
@@ -146,16 +153,16 @@ public class UpdateDatasetFieldsCommand extends AbstractDatasetCommand<Dataset> 
     }
 
     private static void updateControlledVocabularyDatasetField(DatasetField updatedField,
-                                                               DatasetField datasetVersionField,
-                                                               String controlledVocabularyDisplayValue,
-                                                               List<ControlledVocabularyValue> priorControlledVocabularyValues) {
+                                                               DatasetField datasetVersionField) {
         if (datasetVersionField.getDatasetFieldType().isAllowMultiples()) {
+            List<ControlledVocabularyValue> values = new ArrayList<>(datasetVersionField.getControlledVocabularyValues());
             for (ControlledVocabularyValue controlledVocabularyValue : updatedField.getControlledVocabularyValues()) {
-                if (!controlledVocabularyDisplayValue.contains(controlledVocabularyValue.getStrValue())) {
-                    priorControlledVocabularyValues.add(controlledVocabularyValue);
+                if (StringUtils.isNotBlank(controlledVocabularyValue.getStrValue())
+                        && values.stream().noneMatch(existing -> existing.valuesEqual(controlledVocabularyValue))) {
+                    values.add(controlledVocabularyValue);
                 }
             }
-            datasetVersionField.setControlledVocabularyValues(priorControlledVocabularyValues);
+            datasetVersionField.setControlledVocabularyValues(values);
         } else {
             datasetVersionField.setSingleControlledVocabularyValue(updatedField.getSingleControlledVocabularyValue());
         }

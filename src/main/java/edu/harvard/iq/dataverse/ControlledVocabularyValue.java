@@ -159,6 +159,16 @@ public class ControlledVocabularyValue implements Serializable  {
         }
     }
 
+    /**
+     * Compares this ControlledVocabularyValue with another for equality based on their string values.
+     *
+     * @param other The ControlledVocabularyValue to compare with
+     * @return true if both values are equal (case-sensitive), false otherwise
+     */
+    public boolean valuesEqual(ControlledVocabularyValue other) {
+        return this == other || (other != null && Objects.equals(getStrValue(), other.getStrValue()));
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
