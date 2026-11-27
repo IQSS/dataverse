@@ -34,6 +34,7 @@ public class SolrSearchResult {
     private String id;
     private Long entityId;
     private DvObject entity;
+    private JsonObject selectedSolrFields;
     private String identifier;
     private String type;
     private String htmlUrl;
@@ -587,6 +588,10 @@ public class SolrSearchResult {
                 .add("canDownloadFile", this.canDownloadFile)
                 .add("isLinked", this.isLinked);
 
+        if (selectedSolrFields != null) {
+            nullSafeJsonBuilder.add("index_fields", selectedSolrFields);
+        }
+
         // Now that nullSafeJsonBuilder has been instantiated, check for null before adding to it!
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
@@ -843,6 +848,10 @@ public class SolrSearchResult {
 
     public void setEntity(DvObject entity) {
         this.entity = entity;
+    }
+
+    public void setSelectedSolrFields(JsonObject selectedSolrFields) {
+        this.selectedSolrFields = selectedSolrFields;
     }
 
     public String getIdentifier() {
