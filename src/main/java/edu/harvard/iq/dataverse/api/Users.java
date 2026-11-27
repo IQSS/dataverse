@@ -38,8 +38,12 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -280,6 +284,14 @@ public class Users extends AbstractApiBean {
     @Produces("text/csv, application/json")
     @Operation(summary = "Returns a user trace element",
             description = "Returns one category of trace information for the specified authenticated user as JSON or CSV.")
+    @APIResponse(responseCode = "200", description = "User trace element.",
+            content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(type = SchemaType.OBJECT)),
+                    @Content(mediaType = "text/csv",
+                            schema = @Schema(type = SchemaType.STRING,
+                                    description = "CSV representation of the selected trace element."))
+            })
     public Response getTracesElement(@Context ContainerRequestContext crc, @Context Request req,
             @Parameter(description = "Authenticated user identifier whose trace element is returned.", required = true)
             @PathParam("identifier") String identifier,
@@ -319,6 +331,9 @@ public class Users extends AbstractApiBean {
     @Produces("application/json")
     @Operation(summary = "Lists collections permitted for a user",
             description = "Returns collections where the specified user has the requested permission when the requester is that user or a superuser.")
+    @APIResponse(responseCode = "200", description = "Permitted collections.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getUserPermittedCollections(@Context ContainerRequestContext crc, @Context Request req,
             @Parameter(description = "Authenticated user identifier whose permitted collections are returned.", required = true)
             @PathParam("identifier") String identifier,

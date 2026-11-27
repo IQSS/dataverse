@@ -32,7 +32,11 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -53,6 +57,9 @@ public class Pids extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns PID provider metadata",
             description = "Queries configured DataCite metadata for the supplied persistent identifier when the requester is a superuser.")
+    @APIResponse(responseCode = "200", description = "PID provider metadata.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getPid(@Context ContainerRequestContext crc,
             @Parameter(description = "Persistent identifier to query.")
             @QueryParam("persistentId") String persistentId) {
@@ -84,6 +91,10 @@ public class Pids extends AbstractApiBean {
     @Path("unreserved")
     @Operation(summary = "Lists unreserved dataset PIDs",
             description = "Returns draft datasets whose persistent identifiers have not been reserved when the requester is a superuser.")
+    @APIResponse(responseCode = "200", description = "Unreserved dataset PIDs.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT,
+                            description = "Contains the total in numUnreserved and the matching dataset records in count.")))
     public Response getUnreserved(@Context ContainerRequestContext crc,
             @Parameter(description = "Optional persistent identifier value accepted by the endpoint.")
             @QueryParam("persistentId") String persistentId) {
@@ -118,6 +129,9 @@ public class Pids extends AbstractApiBean {
     @Path("{id}/reserve")
     @Operation(summary = "Reserves a dataset PID",
             description = "Reserves the persistent identifier for the specified dataset.")
+    @APIResponse(responseCode = "200", description = "PID reserved.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response reservePid(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier whose PID is reserved.", required = true)
             @PathParam("id") String idSupplied) {
@@ -136,6 +150,9 @@ public class Pids extends AbstractApiBean {
     @Path("{id}/delete")
     @Operation(summary = "Deletes a draft dataset PID",
             description = "Deletes the persistent identifier for an unpublished dataset.")
+    @APIResponse(responseCode = "200", description = "Draft PID deleted.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response deletePid(@Context ContainerRequestContext crc,
             @Parameter(description = "Dataset id or persistent identifier whose PID is deleted.", required = true)
             @PathParam("id") String idSupplied) {
@@ -160,6 +177,9 @@ public class Pids extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Lists PID providers",
             description = "Returns the configured persistent identifier providers.")
+    @APIResponse(responseCode = "200", description = "Configured PID providers.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getPidProviders(@Context ContainerRequestContext crc) throws WrappedResponse {
         try {
             getRequestAuthenticatedUserOrDie(crc);
@@ -177,6 +197,9 @@ public class Pids extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Returns the provider for a PID",
             description = "Parses a persistent identifier and returns the managed provider id or reports that the PID belongs to an unmanaged provider.")
+    @APIResponse(responseCode = "200", description = "PID provider result.",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(type = SchemaType.OBJECT)))
     public Response getPidProviderId(@Context ContainerRequestContext crc,
             @Parameter(description = "Persistent identifier whose provider is requested.", required = true)
             @PathParam("persistentId") String persistentId) throws WrappedResponse {
