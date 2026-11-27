@@ -891,4 +891,13 @@ public class SettingsWrapper implements java.io.Serializable {
     public Boolean isHasSubmitForReviewDatasetDisclaimerText() {
         return !StringUtil.isEmpty(getSubmitForReviewDatasetDisclaimerText());
     }
+
+    public String getSubmitForReviewDatasetDisclaimerText(String locale) {
+        submitForReviewDatasetDisclaimerText = settingsService.getValueForKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText, locale, getValueForKey(SettingsServiceBean.Key.SubmitForReviewDatasetDisclaimerText));
+        return submitForReviewDatasetDisclaimerText;
+    }
+
+    public Boolean isHasSubmitForReviewDatasetDisclaimerText(String locale) {
+        return !StringUtil.isEmpty(getSubmitForReviewDatasetDisclaimerText(locale));
+    }
 }
