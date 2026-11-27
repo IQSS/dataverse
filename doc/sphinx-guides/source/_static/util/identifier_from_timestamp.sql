@@ -39,8 +39,8 @@ DECLARE
     curr_time_msec bigint;
     identifier varchar;
 BEGIN
-    curr_time_msec := extract(epoch from now())*1000;
+    curr_time_msec := extract(epoch from clock_timestamp())*1000;
     identifier := base36_encode(curr_time_msec);
     RETURN identifier;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+$$ LANGUAGE plpgsql VOLATILE;

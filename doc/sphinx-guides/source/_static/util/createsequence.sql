@@ -30,4 +30,4 @@ BEGIN
   identifier := nextval('datasetidentifier_seq')::varchar;
   RETURN identifier;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+$$ LANGUAGE plpgsql VOLATILE;
