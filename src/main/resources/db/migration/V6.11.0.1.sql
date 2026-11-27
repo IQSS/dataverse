@@ -1,14 +1,3 @@
--- This migration ensures that the function used for identifier generation
--- is marked as VOLATILE to prevent caching issues that could lead to
--- infinite loops in the application code.
-
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 
-        FROM pg_proc 
-        WHERE proname = 'generateidentifierfromstoredprocedure'
-    ) THEN
-        ALTER FUNCTION generateIdentifierFromStoredProcedure() VOLATILE;
-    END IF;
-END $$;
+CREATE INDEX IF NOT EXISTS INDEX_GUESTBOOKRESPONSE_responsetime ON GUESTBOOKRESPONSE (responsetime);
+CREATE INDEX IF NOT EXISTS INDEX_GUESTBOOKRESPONSE_dataset_not_access_req ON GUESTBOOKRESPONSE (dataset_id) WHERE eventtype != 'AccessRequest';
+CREATE INDEX IF NOT EXISTS INDEX_GUESTBOOKRESPONSE_datafile_not_access_req ON GUESTBOOKRESPONSE (datafile_id) WHERE eventtype != 'AccessRequest';

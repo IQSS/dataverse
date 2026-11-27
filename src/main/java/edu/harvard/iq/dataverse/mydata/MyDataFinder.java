@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import jakarta.json.Json;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -400,7 +401,7 @@ public class MyDataFinder {
      */
     public JsonObjectBuilder getSelectedFilterParamsAsJSON() {
 
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder();
         jsonData.add("publication_statuses", this.filterParams.getListofSelectedPublicationStatuses())
                 .add("role_names", this.getListofSelectedRoles());
 
@@ -421,7 +422,7 @@ public class MyDataFinder {
      */
     public JsonArrayBuilder getListofSelectedRoles(){
 
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArray = JsonUtil.createArrayBuilder();
 
         for (Long roleId : this.filterParams.getRoleIds()){
             String roleName = this.rolePermissionHelper.getRoleName(roleId);
@@ -516,8 +517,7 @@ public class MyDataFinder {
         // Iterate through assigned objects
         // -----------------------------------------------
         for (Object[] ra : results) {
-            dvIdAsInteger = (Integer)ra[0];     // ?? Why?
-            dvId = new Long(dvIdAsInteger);
+            dvId = ((Number)ra[0]).longValue();
             dtype = (String)ra[1];
             parentId = (Long)ra[2];
 
@@ -594,8 +594,7 @@ public class MyDataFinder {
         // Iterate through object list
         //
         for (Object[] ra : results) {
-            dvIdAsInteger = (Integer)ra[0];     // ?? Why?
-            dvId = new Long(dvIdAsInteger);
+            dvId = ((Number)ra[0]).longValue();
             dtype = (String)ra[1];
             parentId = (Long)ra[2];
 

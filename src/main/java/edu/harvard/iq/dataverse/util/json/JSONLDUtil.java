@@ -29,6 +29,7 @@ import jakarta.json.JsonWriterFactory;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.ws.rs.BadRequestException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
@@ -59,6 +60,8 @@ import jakarta.json.JsonReader;
 public class JSONLDUtil {
 
     private static final Logger logger = Logger.getLogger(JSONLDUtil.class.getCanonicalName());
+    
+    private static final CachingDocumentLoader CACHED_LOADER = new CachingDocumentLoader(null);
 
     /*
      * private static Map<String, String> populateContext(JsonValue json) {
@@ -70,7 +73,7 @@ public class JSONLDUtil {
      */
 
     public static JsonObject getContext(Map<String, String> contextMap) {
-        JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder contextBuilder = JsonUtil.createObjectBuilder();
         for (Entry<String, String> e : contextMap.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
@@ -168,6 +171,8 @@ public class JSONLDUtil {
                 if (dsftMap.containsKey(key)) {
 
                     DatasetFieldType dsft = dsftMap.get(key);
+                    // A child of a compound field can only be sent inside its parent - see #12752
+                    checkNotChildFieldType(dsft);
                     DatasetField dsf = null;
                     if (fieldByTypeMap.containsKey(dsft)) {
                         dsf = fieldByTypeMap.get(dsft);
@@ -295,6 +300,8 @@ public class JSONLDUtil {
                 if (dsftMap.containsKey(key)) {
                     //THere's a field type with theis URI
                     DatasetFieldType dsft = dsftMap.get(key);
+                    // A child of a compound field can only be sent inside its parent - see #12752
+                    checkNotChildFieldType(dsft);
                     DatasetField dsf = null;
                     if (fieldByTypeMap.containsKey(dsft)) {
                         //There's a field of this type
@@ -498,13 +505,24 @@ public class JSONLDUtil {
                 valArray = (JsonArray) val;
             }
         } else {
-            valArray = Json.createArrayBuilder().add(val).build();
+            valArray = JsonUtil.createArrayBuilder().add(val).build();
         }
         return valArray;
     }
 
     static Map<String, String> localContext = new TreeMap<String, String>();
     static Map<String, DatasetFieldType> dsftMap = new TreeMap<String, DatasetFieldType>();
+
+    /**
+     * Child field types are part of their metadata block and therefore show up in dsftMap, but
+     * they may only be sent as children of their parent compound field, never on their own.
+     */
+    private static void checkNotChildFieldType(DatasetFieldType dsft) {
+        if (dsft.isHasParent()) {
+            throw new BadRequestException(BundleUtil.getStringFromBundle("jsonparser.error.childfield.not.toplevel",
+                    List.of(dsft.getName(), dsft.getParentDatasetFieldType().getName())));
+        }
+    }
 
     //A map if DatasetFieldTypes by decontextualized URL
     private static void populateFieldTypeMap(MetadataBlockServiceBean metadataBlockSvc) {
@@ -540,21 +558,19 @@ public class JSONLDUtil {
 
     public static JsonObject decontextualizeJsonLD(String jsonLDString) {
         logger.fine(jsonLDString);
-        try (StringReader rdr = new StringReader(jsonLDString)) {
-
+        try {
+            JsonObject jsonld = JsonUtil.getJsonObject(jsonLDString);
+            JsonDocument doc = JsonDocument.of(jsonld);
             // Use JsonLd to expand/compact to localContext
-            try (JsonReader jsonReader = Json.createReader(rdr)) {
-                JsonObject jsonld = jsonReader.readObject();
-                JsonDocument doc = JsonDocument.of(jsonld);
-                JsonArray array = JsonLd.expand(doc).get();
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build())).get();
-                // jsonld = array.getJsonObject(0);
-                logger.fine("Decontextualized object: " + jsonld);
-                return jsonld;
-            } catch (JsonLdError e) {
-                logger.warning(e.getMessage());
-                return null;
-            }
+            JsonArray array = JsonLd.expand(doc).loader(CACHED_LOADER).get();
+            jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JsonUtil.createObjectBuilder().build()))
+                    .loader(CACHED_LOADER).get();
+            // jsonld = array.getJsonObject(0);
+            logger.fine("Decontextualized object: " + jsonld);
+            return jsonld;
+        } catch (JsonLdError e) {
+            logger.warning(e.getMessage());
+            return null;
         }
     }
 
@@ -566,10 +582,10 @@ public class JSONLDUtil {
         JsonDocument doc = JsonDocument.of(jsonldObj);
         JsonArray array = null;
         try {
-            array = JsonLd.expand(doc).get();
+            array = JsonLd.expand(doc).loader(CACHED_LOADER).get();
 
             jsonldObj = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
-                    .get();
+                    .loader(CACHED_LOADER).get();
             logger.fine("Compacted: " + jsonldObj.toString());
             return jsonldObj;
         } catch (JsonLdError e) {
@@ -582,7 +598,7 @@ public class JSONLDUtil {
         StringWriter sw = new StringWriter();
         Map<String, Object> properties = new HashMap<>(1);
         properties.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+        JsonWriterFactory writerFactory = JsonUtil.createWriterFactory(properties);
         JsonWriter jsonWriter = writerFactory.createWriter(sw);
         jsonWriter.write(val);
         jsonWriter.close();

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
@@ -105,7 +106,7 @@ public class DuplicateFilesIT {
         Files.write(pathtoReadme1, "File 1".getBytes());
         System.out.println("README: " + pathtoReadme1);
 
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder()
                 .add("description", "Description of the whole project.");
 
         Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoReadme1.toString(), json1.build(), apiToken);
@@ -118,7 +119,7 @@ public class DuplicateFilesIT {
         Files.write(pathtoReadme2, "File 2".getBytes());
         System.out.println("README: " + pathtoReadme2);
 
-        JsonObjectBuilder json2 = Json.createObjectBuilder()
+        JsonObjectBuilder json2 = JsonUtil.createObjectBuilder()
                 .add("description", "Docs for the code.")
                 .add("directoryLabel", "code");
 
@@ -182,7 +183,7 @@ public class DuplicateFilesIT {
         Long idOfReadme2 = JsonPath.from(uploadReadme2.getBody().asString()).getLong("data.files[0].dataFile.id");
         System.out.println("id: " + idOfReadme2);
 
-        JsonObjectBuilder renameFile = Json.createObjectBuilder()
+        JsonObjectBuilder renameFile = JsonUtil.createObjectBuilder()
                 .add("label", "README.md");
         Response renameFileResponse = UtilIT.updateFileMetadata(String.valueOf(idOfReadme2), renameFile.build().toString(), apiToken);
         renameFileResponse.prettyPrint();
@@ -228,7 +229,7 @@ public class DuplicateFilesIT {
         Files.write(pathtoReadme1, "File 1".getBytes());
         System.out.println("README: " + pathtoReadme1);
 
-        JsonObjectBuilder json = Json.createObjectBuilder()
+        JsonObjectBuilder json = JsonUtil.createObjectBuilder()
                 .add("description", "Docs for the code.")
                 .add("directoryLabel", "code");
 
@@ -254,7 +255,7 @@ public class DuplicateFilesIT {
         Long idOfReadme2 = JsonPath.from(uploadReadme2.getBody().asString()).getLong("data.files[0].dataFile.id");
         System.out.println("id: " + idOfReadme2);
 
-        JsonObjectBuilder moveFile = Json.createObjectBuilder()
+        JsonObjectBuilder moveFile = JsonUtil.createObjectBuilder()
                 .add("directoryLabel", "code");
         Response moveFileResponse = UtilIT.updateFileMetadata(String.valueOf(idOfReadme2), moveFile.build().toString(), apiToken);
         moveFileResponse.prettyPrint();
@@ -305,7 +306,7 @@ public class DuplicateFilesIT {
         Integer idOfReadme1 = JsonPath.from(uploadReadme1.getBody().asString()).getInt("data.files[0].dataFile.id");
         System.out.println("id: " + idOfReadme1);
 
-        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
                 .add("description", "This file is awesome.");
         Response updateFileMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(idOfReadme1), updateFileMetadata.build().toString(), apiToken);
         updateFileMetadataResponse.prettyPrint();
@@ -345,7 +346,7 @@ public class DuplicateFilesIT {
         Files.write(pathtoReadme1, "File 1".getBytes());
         System.out.println("README: " + pathtoReadme1);
 
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder()
                 .add("directoryLabel", "code");
 
         Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoReadme1.toString(), json1.build(), apiToken);
@@ -357,7 +358,7 @@ public class DuplicateFilesIT {
         Integer idOfReadme1 = JsonPath.from(uploadReadme1.getBody().asString()).getInt("data.files[0].dataFile.id");
         System.out.println("id: " + idOfReadme1);
 
-        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
                 .add("label", "README.md")
                 .add("directoryLabel", "code")
                 .add("description", "This file is awesome.");
@@ -399,7 +400,7 @@ public class DuplicateFilesIT {
         Files.write(pathToFile, "File 1".getBytes());
         System.out.println("file: " + pathToFile);
 
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder()
                 .add("directory", "code");
 
         Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), json1.build(), apiToken);
@@ -411,7 +412,7 @@ public class DuplicateFilesIT {
         Integer idOfFile = JsonPath.from(uploadFile.getBody().asString()).getInt("data.files[0].dataFile.id");
         System.out.println("id: " + idOfFile);
 
-        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
                 .add("label", "label")
                 .add("description", "This file is awesome.");
         Response updateFileMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(idOfFile), updateFileMetadata.build().toString(), apiToken);
@@ -463,7 +464,7 @@ public class DuplicateFilesIT {
         Files.write(pathToFile, "File 1".getBytes());
         System.out.println("file: " + pathToFile);
 
-        JsonObjectBuilder json1 = Json.createObjectBuilder()
+        JsonObjectBuilder json1 = JsonUtil.createObjectBuilder()
                 .add("description", "This is my file.");
 
         Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), json1.build(), apiToken);
@@ -475,7 +476,7 @@ public class DuplicateFilesIT {
         Integer idOfFile = JsonPath.from(uploadFile.getBody().asString()).getInt("data.files[0].dataFile.id");
         System.out.println("id: " + idOfFile);
 
-        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+        JsonObjectBuilder updateFileMetadata = JsonUtil.createObjectBuilder()
                 // It doesn't make sense to pass "" as a directoryLabel.
                 .add("directoryLabel", "")
                 .add("description", "This file is awesome.");

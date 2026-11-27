@@ -6,8 +6,11 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -33,6 +36,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 
+@LocalJvmSettings
+@JvmSetting(key = JvmSettings.SITE_URL, value = "http://localhost:8080")
 class SiteMapUtilTest {
 
     // see https://www.sitemaps.org/protocol.html#validating
@@ -45,16 +50,14 @@ class SiteMapUtilTest {
     
     @BeforeEach
     void setup() throws IOException {
-        // NOTE: This might be unsafe for parallel tests, but our @SystemProperty helper does not yet support
-        //       lookups from vars or methods.
-        System.setProperty("test.filesDir", tempDir.toString());
         this.tempDocroot = tempDir.resolve("docroot");
-        Files.createDirectory(tempDocroot);
+        Files.createDirectories(tempDocroot);
+        System.setProperty(JvmSettings.DOCROOT_DIRECTORY.getScopedKey(), tempDocroot.toString());
     }
     
     @AfterEach
     void teardown() {
-        System.clearProperty("test.filesDir");
+        System.clearProperty(JvmSettings.DOCROOT_DIRECTORY.getScopedKey());
     }
     
     @Test
@@ -126,6 +129,55 @@ class SiteMapUtilTest {
     }
 
     @Test
+    void testUpdateSiteMapLocallyFair() throws IOException, ParseException, SAXException {
+        // given
+        List<Dataverse> dataverses = new ArrayList<>();
+        
+        Dataverse publishedDataverse = new Dataverse();
+        publishedDataverse.setAlias("publishedDv");
+        Timestamp now = new Timestamp(new Date().getTime());
+        publishedDataverse.setPublicationDate(now);
+        publishedDataverse.setModificationTime(now);
+        dataverses.add(publishedDataverse);
+
+        Dataverse locallyFairDataverse = new Dataverse();
+        locallyFairDataverse.setAlias("locallyFairDv");
+        locallyFairDataverse.setPublicationDate(now);
+        locallyFairDataverse.setModificationTime(now);
+        locallyFairDataverse.addLocallyFAIRRoleAssignee("@alice");
+        dataverses.add(locallyFairDataverse);
+
+        List<Dataset> datasets = new ArrayList<>();
+
+        Dataset published = new Dataset();
+        published.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FAKE/published1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        published.setPublicationDate(now);
+        published.setModificationTime(now);
+        published.setOwner(publishedDataverse);
+        datasets.add(published);
+
+        Dataset locallyFairDataset = new Dataset();
+        locallyFairDataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FAKE/locallyFair1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        locallyFairDataset.setPublicationDate(now);
+        locallyFairDataset.setModificationTime(now);
+        locallyFairDataset.setOwner(locallyFairDataverse); // Inherits Locally FAIR from owner
+        datasets.add(locallyFairDataset);
+
+        // when
+        SiteMapUtil.updateSiteMap(dataverses, datasets);
+
+        // then
+        String pathToSiteMap = tempDocroot.resolve("sitemap").resolve("sitemap.xml").toString();
+        File sitemapFile = new File(pathToSiteMap);
+        String sitemapString = new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath())));
+
+        assertTrue(sitemapString.contains("publishedDv"));
+        assertTrue(sitemapString.contains("FAKE/published1"));
+        assertFalse(sitemapString.contains("locallyFairDv"));
+        assertFalse(sitemapString.contains("FAKE/locallyFair1"));
+    }
+
+    @Test
     void testHugeSiteMap() throws IOException, ParseException, SAXException {
         // given
         final int nbDataverse = 50;
@@ -173,7 +225,7 @@ class SiteMapUtilTest {
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath())), StandardCharsets.UTF_8));
         // System.out.println("sitemap: " + sitemapString);
 
-        String[] lines = sitemapString.split("\n");
+        String[] lines = sitemapString.split("\r?\n");
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].strip();
             if (StringUtils.isNotBlank(line)) {

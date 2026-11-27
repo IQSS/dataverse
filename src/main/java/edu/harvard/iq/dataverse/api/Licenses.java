@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.ws.rs.DELETE;
@@ -48,7 +49,7 @@ public class Licenses extends AbstractApiBean {
     @Operation(summary = "Lists licenses",
             description = "Returns all configured licenses as JSON.")
     public Response getLicenses() {
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder arrayBuilder = JsonUtil.createArrayBuilder();
         for (License license : licenseSvc.listAll()) {
             arrayBuilder.add(JsonPrinter.json(license));
         }
@@ -95,7 +96,7 @@ public class Licenses extends AbstractApiBean {
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseAdded")
                     .setInfo("License " + l.getName() + "(" + l.getUri() + ") as id: " + l.getId() + ".")
                     .setUserIdentifier(authenticatedUser.getIdentifier()));
-            return created("/api/licenses/" + l.getId(), Json.createObjectBuilder().add("message", "License created"));
+            return created("/api/licenses/" + l.getId(), JsonUtil.createObjectBuilder().add("message", "License created"));
         } catch (WrappedResponse e) {
             Throwable cause = e.getCause();
             if (cause instanceof IllegalArgumentException) {

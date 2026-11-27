@@ -11,6 +11,7 @@ import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.BagItLoc
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
 import edu.harvard.iq.dataverse.util.bagit.BagGenerator.FileEntry;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
@@ -53,7 +54,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
         String zipName = null;
         
         // Set a failure status that will be updated if we succeed
-        JsonObjectBuilder statusObject = Json.createObjectBuilder();
+        JsonObjectBuilder statusObject = JsonUtil.createObjectBuilder();
         statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
         statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
         

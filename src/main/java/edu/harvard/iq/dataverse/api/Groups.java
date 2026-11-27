@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.Stateless;
 import jakarta.interceptor.Interceptors;
 import jakarta.ws.rs.GET;
@@ -190,7 +191,7 @@ public class Groups extends AbstractApiBean {
     @Operation(summary = "Lists Shibboleth groups",
             description = "Returns all global Shibboleth groups as JSON.")
     public Response listShibGroups() {
-        JsonArrayBuilder arrBld = Json.createArrayBuilder();
+        JsonArrayBuilder arrBld = JsonUtil.createArrayBuilder();
         for (ShibGroup g : shibGroupPrv.findGlobalGroups()) {
             arrBld.add(json(g));
         }

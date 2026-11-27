@@ -1,0 +1,4 @@
+A bug in the DataCite XML (sent to DataCIte and available as a metadata export) has caused it to report the sizes and formats of dataset files from all versions rather than the one being published. Reporting of sizes and formats was added in v6.4. This release correctly reports only the sizes/formats of files in the latest released version.
+
+To correct this error for existing datasets, you can reExport the dataset metadata and then update the DOI entry.
+(I can add instructions here, but I assume, with all the other DataCite changes for this release, that instructions will already be in other release notes.)

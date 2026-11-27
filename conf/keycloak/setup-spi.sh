@@ -27,6 +27,14 @@ ADMIN_TOKEN=$(curl -s -X POST "http://keycloak:8090/realms/master/protocol/openi
   -d "grant_type=password" \
   -d "client_id=admin-cli" | jq -r .access_token)
 
+EXISTING_SPI_COUNT=$(curl -s "http://keycloak:8090/admin/realms/test/components" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq '[.[] | select(.providerId == "dv-builtin-users-authenticator" and .providerType == "org.keycloak.storage.UserStorageProvider")] | length')
+
+if [ "$EXISTING_SPI_COUNT" -gt 0 ]; then
+  echo "Keycloak SPI already configured in realm."
+  exit 0
+fi
+
 # Create user storage provider using the components endpoint
 curl -X POST "http://keycloak:8090/admin/realms/test/components" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \

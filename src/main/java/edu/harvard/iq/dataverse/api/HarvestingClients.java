@@ -83,7 +83,7 @@ public class HarvestingClients extends AbstractApiBean {
             return ok(jsonObjectBuilder().add("harvestingClients",""));
         }
         
-        JsonArrayBuilder hcArr = Json.createArrayBuilder();
+        JsonArrayBuilder hcArr = JsonUtil.createArrayBuilder();
         
         for (HarvestingClient harvestingClient : harvestingClients) {
             // We already have this harvestingClient - wny do we need to 

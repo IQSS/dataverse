@@ -24,7 +24,7 @@ public class WorkflowUtil {
     private static final Logger logger = Logger.getLogger(WorkflowUtil.class.getName());
     
     public static JsonArrayBuilder getAllWorkflowComments(DatasetVersion datasetVersion) {
-        JsonArrayBuilder workflowCommentsAsJson = Json.createArrayBuilder();
+        JsonArrayBuilder workflowCommentsAsJson = JsonUtil.createArrayBuilder();
         List<WorkflowComment> workflowComments = datasetVersion.getWorkflowComments();
         for (WorkflowComment workflowComment : workflowComments) {
             NullSafeJsonBuilder workflowCommentAsJson = jsonObjectBuilder();

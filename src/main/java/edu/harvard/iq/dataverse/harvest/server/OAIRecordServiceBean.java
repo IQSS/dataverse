@@ -260,10 +260,15 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(REQUIRES_NEW)
     public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
+        exportFormatsInNewTransaction(dataset, List.of());
+    }
+    
+    @TransactionAttribute(REQUIRES_NEW)
+    public void exportFormatsInNewTransaction(Dataset dataset, List<String> formatNames) throws ExportException {
         try {
             ExportService exportServiceInstance = ExportService.getInstance();
-            exportServiceInstance.exportAllFormats(dataset);
-           datasetService.setLastExportTimeInNewTransaction(dataset.getId(), dataset.getLastExportTime());
+            exportServiceInstance.exportFormats(dataset, formatNames);
+            datasetService.setLastExportTimeInNewTransaction(dataset.getId(), dataset.getLastExportTime());
         } catch (OptimisticLockException ole) {
             datasetService.setLastExportTimeInNewTransaction(dataset.getId(), dataset.getLastExportTime());
         } catch (Exception e) {
@@ -307,29 +312,29 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
     public List<OAIRecord> findOaiRecordsBySetName(String setName) {
         return findOaiRecordsBySetName(setName, null, null);
-    }    
-    
+    }
+
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, false);
     }
-    
+
     public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, true);
     }
-    
+
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until, boolean excludeSet) {
-                
+
         if (setName == null) {
             setName = "";
         }
-        
+
         String queryString = "SELECT object(h) from OAIRecord h where h.id is not null";
         if (excludeSet) {
             queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
         } else {
             queryString += " and h.setName = :setName";
         }
-        
+
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
         queryString += " order by h.globalId";

@@ -186,15 +186,5 @@ public interface PidProvider {
      * @return
      */
     public JsonObject getProviderSpecification();
-    
-    /**
-     * Returns a the Citation Style Language (CSL) JSON representation of the pid.
-     * For some providers, this could be a call to the service API. For others, it
-     * may involve generating a local copy.
-     * 
-     * @param datasetVersion
-     * @return - the CSL Json for the PID
-     */
-    public JsonObject getCSLJson(DatasetVersion datasetVersion);
 
 }

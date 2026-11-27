@@ -221,7 +221,7 @@ public abstract class DvObjectContainer extends DvObject {
     public void setPidGenerator(PidProvider pidGenerator) {
         this.pidGenerator = pidGenerator;
         if (pidGenerator != null) {
-            JsonObjectBuilder job = jakarta.json.Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             this.pidGeneratorSpecs = job.add("protocol", pidGenerator.getProtocol())
                     .add("authority", pidGenerator.getAuthority()).add("shoulder", pidGenerator.getShoulder())
                     .add("separator", pidGenerator.getSeparator()).build().toString();

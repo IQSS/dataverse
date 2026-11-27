@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
@@ -99,7 +101,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             for ( DatasetFieldType dt : requiredFields ) {
                 requiredFieldNames.add( dt.getName() );
             }
-            return ok( Json.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
+            return ok( JsonUtil.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
                     .add("noParents", asJsonArray(listOfIsHasParentsFalse))
                     .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
                     .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
@@ -149,7 +151,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 parentAllowsMultiplesDisplay = Boolean.toString(parentAllowsMultiplesBoolean);
             }
-            JsonArrayBuilder controlledVocabularyValues = Json.createArrayBuilder();
+            JsonArrayBuilder controlledVocabularyValues = JsonUtil.createArrayBuilder();
             for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
                 controlledVocabularyValues.add(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("id", controlledVocabularyValue.getId())
@@ -205,7 +207,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             description = "Returns the configured controlled vocabulary display values for the subject dataset field.")
     public Response showControlledVocabularyForSubject() {
         DatasetFieldType subjectDatasetField = datasetFieldService.findByName(DatasetFieldConstant.subject);
-        JsonArrayBuilder possibleSubjects = Json.createArrayBuilder();
+        JsonArrayBuilder possibleSubjects = JsonUtil.createArrayBuilder();
         for (ControlledVocabularyValue subjectValue : controlledVocabularyValueService.findByDatasetFieldTypeId(subjectDatasetField.getId())) {
             String subject = subjectValue.getStrValue();
             if (subject != null) {
@@ -257,7 +259,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         String splitBy = "\t";
         int lineNumber = 0;
         HeaderType header = null;
-        JsonArrayBuilder responseArr = Json.createArrayBuilder();
+        JsonArrayBuilder responseArr = JsonUtil.createArrayBuilder();
         String[] values = null;
         try {
             br = new BufferedReader(new FileReader("/" + file));
@@ -283,19 +285,19 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 } else {
                     switch (header) {
                         case METADATABLOCK:
-                            responseArr.add( Json.createObjectBuilder()
+                            responseArr.add( JsonUtil.createObjectBuilder()
                                                     .add("name", parseMetadataBlock(values))
                                                     .add("type", "MetadataBlock"));
                             break;
                             
                         case DATASETFIELD:
-                            responseArr.add( Json.createObjectBuilder()
+                            responseArr.add( JsonUtil.createObjectBuilder()
                                                     .add("name", parseDatasetField(values))
                                                     .add("type", "DatasetField") );
                             break;
                             
                         case CONTROLLEDVOCABULARY:
-                            responseArr.add( Json.createObjectBuilder()
+                            responseArr.add( JsonUtil.createObjectBuilder()
                                                     .add("name", parseControlledVocabulary(values))
                                                     .add("type", "Controlled Vocabulary") );
                             break;
@@ -336,7 +338,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             actionLogSvc.log(alr);
         }
 
-        return ok( Json.createObjectBuilder().add("added", responseArr) );
+        return ok( JsonUtil.createObjectBuilder().add("added", responseArr) );
     }
 
     /**

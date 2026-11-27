@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.persistence.Column;
@@ -44,6 +46,8 @@ import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 
 import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -138,8 +142,13 @@ public class FileMetadata implements Serializable {
     @JoinColumn(nullable=false)
     private DatasetVersion datasetVersion;
     
+    // Loaded with the file metadata (without weaving, EclipseLink loads this eagerly). Batch fetching
+    // loads the data files of a whole list of file metadatas in a few queries instead of one per file,
+    // which takes many seconds for large datasets (#12739). The same goes for the one-to-one relations
+    // of DataFile and DvObject marked with @BatchFetch.
     @ManyToOne
     @JoinColumn(nullable=false)
+    @BatchFetch(BatchFetchType.IN)
     private DataFile dataFile;
 
     /**
@@ -262,6 +271,7 @@ public class FileMetadata implements Serializable {
     }
 
     @OneToMany(mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.IN)
     private List<VarGroup> varGroups;
 
     public Collection<VariableMetadata> getVariableMetadatas() {
@@ -287,6 +297,7 @@ public class FileMetadata implements Serializable {
     @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     @OrderBy("name")
+    @BatchFetch(BatchFetchType.IN)
     private List<DataFileCategory> fileCategories;
     
     public List<DataFileCategory> getCategories() {
@@ -333,7 +344,7 @@ public class FileMetadata implements Serializable {
     
     public JsonArrayBuilder getCategoryNamesAsJsonArrayBuilder() {
 
-        JsonArrayBuilder builder = Json.createArrayBuilder();
+        JsonArrayBuilder builder = JsonUtil.createArrayBuilder();
 
         if (fileCategories == null) {
             return builder;

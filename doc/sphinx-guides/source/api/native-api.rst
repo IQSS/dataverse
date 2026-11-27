@@ -30,9 +30,14 @@ The steps for creating a Dataverse collection are:
 - Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
 - Execute a curl command or equivalent.
 
-Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is the following:
+Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs.
+The fields ``name``, ``alias``, and ``dataverseContacts`` are required.
+The optional field ``datasetFileCountLimit`` can be used to set the maximum number of files a dataset can have.
+The optional field ``guestbookRoot``, when set to true, will allow datasets in this collection to be assigned a Guestbook from a parent collection.
+The controlled vocabulary for ``dataverseType`` is the following:
 
 - ``DEPARTMENT``
+- ``DIVISION``
 - ``JOURNALS``
 - ``LABORATORY``
 - ``ORGANIZATIONS_INSTITUTIONS``
@@ -1133,6 +1138,17 @@ Submit Dataset
 ^^^^^^^^^^^^^^
 
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
+
+**Note:** To set the Template on the new Dataset add "templateId":{$templateId} to the Json payload:
+
+.. code-block:: bash
+
+  {
+   "templateId":1234,
+   "datasetVersion": {...}
+  }
+
+An invalid templateId will result in a 400 "Error parsing Json: Invalid template id: #".
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
 
@@ -2854,6 +2870,8 @@ Edit Dataset Metadata
 
 Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following:
 
+Note that a child of a compound field, such as ``authorName``, must be sent inside its parent field (``author``) and is rejected if it is sent on its own as if it were a top level field.
+
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -3745,66 +3763,6 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/link/test"
-
-Unlink a Dataset
-~~~~~~~~~~~~~~~~
-
-Removes a link between a dataset and a Dataverse collection (see :ref:`dataset-linking` section of Dataverse Collection Management in the User Guide for more information):
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export DATASET_ID=24
-  export DATAVERSE_ID=test
-
-  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/$DATASET_ID/deleteLink/$DATAVERSE_ID"
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/deleteLink/test"
-
-Link a Dataverse collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Creates a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export LINKED_DATAVERSE_ID=linked-collection
-  export LINKING_DATAVERSE_ID=linking-collection
-
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/link/$LINKING_DATAVERSE_ID"
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/dataverses/linked-collection/link/linking-collection"
-
-Unlink a Dataverse collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Removes a link between one Dataverse collection and another Dataverse collection (see :ref:`dataverse-linking` section of Dataverse Collection Management in the User Guide for more information):
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export LINKED_DATAVERSE_ID=linked-collection
-  export LINKING_DATAVERSE_ID=linking-collection
-
-  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$LINKED_DATAVERSE_ID/deleteLink/$LINKING_DATAVERSE_ID"
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/linked-collection/deleteLink/linking-collection"
 
 Dataset Locks
 ~~~~~~~~~~~~~
@@ -6375,6 +6333,23 @@ with limit parameter:
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
+Repair Missing File Sizes
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following superuser-only API will scan the database for datafiles with missing filesizes (i.e. where the size is not yet recorded in the database) and will attempt to retrieve the sizes from the underlying storage media and update the database records:
+
+.. code-block:: bash
+
+  curl -X POST "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes"
+
+with limit parameter:
+
+.. code-block:: bash
+
+  curl -X POST "$SERVER_URL/api/admin/datafiles/integrity/fixmissingfilesizes?limit=100"
+
+Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles.
+
 By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
 
 Get File External Tool URL
@@ -6383,6 +6358,7 @@ Get File External Tool URL
 This API call generates a URL for accessing an external tool (see :doc:`/installation/external-tools`) that operates at the file level. The URL includes necessary authentication tokens and parameters based on the user's permissions and the tool's configuration.
 
 Authentication is required for draft, restricted, embargoed, or expired (retention period) files; the user must have appropriate permissions.
+Where a Guestbook Response is required to access the file the "guestbookResponse" can be passed via the Json body to allow the user to download the file from the external tool.
 
 .. code-block:: bash
 
@@ -6407,6 +6383,7 @@ The JSON request body accepts the following optional parameters:
 
 - ``preview``: boolean flag to indicate if the tool should run in preview mode (default: false)
 - ``locale``: string specifying the locale for internationalization
+- ``guestbookResponse``: JsonObject containing the Guestbook Response
 
 The response includes:
 
@@ -9139,10 +9116,10 @@ Signed URLs were developed to support External Tools but may be useful in other 
 This API call allows a Dataverse superUser to generate a signed URL for such scenarios.
 The JSON input parameter required is an object with the following keys:
 
-- ``url`` - the exact URL to sign, including api version number and all query parameters
+- ``url`` - the exact URL to sign, including api version number and all query parameters. Provide it in its URL-decoded form (for example ``persistentId=doi:10.5072/FK2/ABC``): the signature is computed over the URL exactly as provided, and a URL signed in decoded form validates both when used as received and when parts of it get percent-encoded in flight. The URL must not already contain any of the reserved query parameters ``until``, ``user``, ``method``, ``token`` (these are appended by the signing), ``key`` or ``signed``; such a URL will be rejected with a 400 (Bad Request) response.
 - ``timeOut`` - how long in minutes the signature should be valid for, default is 10 minutes
 - ``httpMethod`` - which HTTP method is required, default is GET
-- ``user`` - the user identifier for the account associated with this signature, the default is the superuser making the call. The API call will succeed/fail based on whether the specified user has the required permissions. 
+- ``user`` - the user identifier for the account associated with this signature; if omitted, the URL is signed for the superuser making the call. A ``user`` that does not exist will be rejected with a 400 (Bad Request). The API call will succeed/fail based on whether the specified user has the required permissions.
 
 A curl example using allowing access to a dataset's metadata
 
@@ -9154,8 +9131,14 @@ A curl example using allowing access to a dataset's metadata
 
   curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/requestSignedUrl"
 
-Please see :ref:`dataverse.api.signing-secret` for the configuration option to add a shared secret, enabling extra
-security.
+Use the returned ``signedUrl`` as received, treating it as an opaque string: do not parse and rebuild it or add query
+parameters, as reordering or inserting anything invalidates the signature. If you need a percent-encoded form (for
+example a search term containing spaces), append the returned signature parameters to the URL exactly as you
+originally constructed it.
+
+The key used to sign the URL is created from the user's API token plus a server-side signing secret that is generated
+automatically at startup; see :ref:`dataverse.api.signing-secret` for details, including how to configure a persistent
+secret (required for signed URLs to survive server restarts and for multi-server installations).
 
 .. _send-feedback-admin:
 

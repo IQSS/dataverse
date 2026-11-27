@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.recipes.DatasetRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.DatasetTypeRecipe;
 import edu.harvard.iq.dataverse.util.testing.recipes.FileRecipe;
@@ -60,7 +61,7 @@ class DatasetFixtureTest {
         
         start = Instant.now();
         
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         for (FileMetadata fileMetadata : fixture.fileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
             jab.add(JsonPrinter.json(dataFile, fileMetadata, true));

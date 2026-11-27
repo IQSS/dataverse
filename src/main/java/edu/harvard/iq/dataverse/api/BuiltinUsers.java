@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
@@ -218,7 +219,7 @@ public class BuiltinUsers extends AbstractApiBean {
             ApiToken token = authSvc.generateApiTokenForUser(au);
             authSvc.save(token);
 
-            JsonObjectBuilder resp = Json.createObjectBuilder();
+            JsonObjectBuilder resp = JsonUtil.createObjectBuilder();
             resp.add("user", json(user));
             resp.add("authenticatedUser", json(au));
             resp.add("apiToken", token.getTokenString());

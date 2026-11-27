@@ -128,7 +128,7 @@ DatasetFixture fixture = DatasetFixtureBuilder.builder()
     .populator(FixturePopulator.minimal())
     .build();
 
-JsonArrayBuilder files = Json.createArrayBuilder();
+JsonArrayBuilder files = JsonUtil.createArrayBuilder();
 
 for (FileMetadata fileMetadata : fixture.fileMetadatas()) {
     files.add(JsonPrinter.json(fileMetadata.getDataFile(), fileMetadata, true));

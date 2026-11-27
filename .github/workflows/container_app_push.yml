@@ -101,13 +101,13 @@ jobs:
             # Depending on context, we push to different targets. Login accordingly.
             - if: github.event_name != 'pull_request'
               name: Log in to Docker Hub registry
-              uses: docker/login-action@v4
+              uses: docker/login-action@v4.8.0
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
             - if: ${{ github.event_name == 'pull_request' }}
               name: Login to Github Container Registry
-              uses: docker/login-action@v4
+              uses: docker/login-action@v4.8.0
               with:
                   registry: ghcr.io
                   username: ${{ secrets.GHCR_USERNAME }}
@@ -133,12 +133,14 @@ jobs:
                   -P ct -pl edu.harvard.iq:dataverse -am
                   $( [[ -n "${{ inputs.base-image-ref }}" ]] && echo "-Dbase.image=${{ inputs.base-image-ref }}" )
                   install
+            # We don't want to push dev_keycloak so we filter/whitelist other images to push
             - name: Deploy multi-arch application and configbaker container image
               run: >
                   mvn 
                   -Dapp.image.tag=${{ env.IMAGE_TAG }} ${{ env.ADDITIONAL_TAGS }}
                   $( [[ -n "${{ inputs.base-image-ref }}" ]] && echo "-Dbase.image=${{ inputs.base-image-ref }}" )
                   ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+                  -Ddocker.filter=dev_dataverse,dev_bootstrap
                   -P ct deploy
 
             - uses: marocchino/sticky-pull-request-comment@v3

@@ -1,17 +1,15 @@
 package edu.harvard.iq.dataverse.export.croissant;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +26,7 @@ public class CroissantExportUtil {
             throws ExportException {
         try {
             // Start building the output format.
-            JsonObjectBuilder job = Json.createObjectBuilder();
+            JsonObjectBuilder job = JsonUtil.createObjectBuilder();
             String contextString =
                     """
             {
@@ -81,10 +79,8 @@ public class CroissantExportUtil {
                 }
             }
             """;
-            try (JsonReader jsonReader = Json.createReader(new StringReader(contextString))) {
-                JsonObject contextObject = jsonReader.readObject();
-                job.add("@context", contextObject.getJsonObject("@context"));
-            }
+            JsonObject contextObject = JsonUtil.getJsonObject(contextString);
+            job.add("@context", contextObject.getJsonObject("@context"));
 
             job.add("@type", "sc:Dataset");
             job.add("conformsTo", "http://mlcommons.org/croissant/1.1");
@@ -154,12 +150,12 @@ public class CroissantExportUtil {
                 }
             }
 
-            JsonArrayBuilder distribution = Json.createArrayBuilder();
-            JsonArrayBuilder recordSet = Json.createArrayBuilder();
+            JsonArrayBuilder distribution = JsonUtil.createArrayBuilder();
+            JsonArrayBuilder recordSet = JsonUtil.createArrayBuilder();
             JsonArray datasetFileDetails = dataProvider.getDatasetFileDetails();
             for (JsonValue jsonValue : datasetFileDetails) {
 
-                JsonObjectBuilder recordSetContent = Json.createObjectBuilder();
+                JsonObjectBuilder recordSetContent = JsonUtil.createObjectBuilder();
                 recordSetContent.add("@type", "cr:RecordSet");
                 JsonObject fileDetails = jsonValue.asJsonObject();
                 /**
@@ -238,7 +234,7 @@ public class CroissantExportUtil {
                 }
 
                 distribution.add(
-                        Json.createObjectBuilder()
+                        JsonUtil.createObjectBuilder()
                                 .add("@type", "cr:FileObject")
                                 .add("@id", fileId)
                                 .add("name", filename)
@@ -266,15 +262,15 @@ public class CroissantExportUtil {
                     int caseQuantity = dataTableObject.getInt("caseQuantity");
                     recordSetContent.add(
                             "cr:annotation",
-                            Json.createObjectBuilder()
+                            JsonUtil.createObjectBuilder()
                                     .add("@type", "cr:Field")
                                     .add("name", fileId.toString() + "/count")
                                     .add("value", caseQuantity)
                                     .add("dataType", "http://www.wikidata.org/entity/Q4049983"));
                     JsonArray dataVariables = dataTableObject.getJsonArray("dataVariables");
-                    JsonArrayBuilder fieldSetArray = Json.createArrayBuilder();
+                    JsonArrayBuilder fieldSetArray = JsonUtil.createArrayBuilder();
                     for (JsonValue dataVariableValue : dataVariables) {
-                        JsonObjectBuilder fieldSetObject = Json.createObjectBuilder();
+                        JsonObjectBuilder fieldSetObject = JsonUtil.createObjectBuilder();
                         fieldSetObject.add("@type", "cr:RecordSet");
                         JsonObject dataVariableObject = dataVariableValue.asJsonObject();
                         // TODO: should this be an integer?
@@ -305,12 +301,12 @@ public class CroissantExportUtil {
                             default:
                                 break;
                         }
-                        JsonArrayBuilder annotationsBuilder = Json.createArrayBuilder();
+                        JsonArrayBuilder annotationsBuilder = JsonUtil.createArrayBuilder();
                         if (variableSummaryStatistics != null) {
                             // Same order as upstream: MEAN, MEDN, MODE, MIN, MAX, STDEV, VALD, INVD
                             annotationsBuilder
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     // We're aware that an @id of
                                                     // "data/stata13-auto.dta/price/mean"
                                                     // looks nice but won't validate if there's
@@ -333,7 +329,7 @@ public class CroissantExportUtil {
                                                                     "mean"))
                                                     .add("dataType", "ddi-stats:7975ed0"))
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     .add(
                                                             "@id",
                                                             fileId.toString()
@@ -347,7 +343,7 @@ public class CroissantExportUtil {
                                                     .add("dataType", "ddi-stats:66851a3")
                                                     .add("equivalentProperty", "sc:median"))
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     .add(
                                                             "@id",
                                                             fileId.toString()
@@ -360,7 +356,7 @@ public class CroissantExportUtil {
                                                                     "mode"))
                                                     .add("dataType", "ddi-stats:650be61"))
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     .add(
                                                             "@id",
                                                             fileId.toString()
@@ -374,7 +370,7 @@ public class CroissantExportUtil {
                                                     .add("dataType", "ddi-stats:a1d0ec6")
                                                     .add("equivalentProperty", "sc:minValue"))
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     .add(
                                                             "@id",
                                                             fileId.toString()
@@ -388,7 +384,7 @@ public class CroissantExportUtil {
                                                     .add("dataType", "ddi-stats:8321e79")
                                                     .add("equivalentProperty", "sc:maxValue"))
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     .add(
                                                             "@id",
                                                             fileId.toString()
@@ -401,7 +397,7 @@ public class CroissantExportUtil {
                                                                     "stdev"))
                                                     .add("dataType", "ddi-stats:690ab50"))
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     .add(
                                                             "@id",
                                                             fileId.toString()
@@ -414,7 +410,7 @@ public class CroissantExportUtil {
                                                                     "vald"))
                                                     .add("dataType", "ddi-stats:c646dd8"))
                                     .add(
-                                            Json.createObjectBuilder()
+                                            JsonUtil.createObjectBuilder()
                                                     .add(
                                                             "@id",
                                                             fileId.toString()
@@ -428,22 +424,22 @@ public class CroissantExportUtil {
                                                     .add("dataType", "ddi-stats:6459c62"));
                         }
                         JsonObjectBuilder fieldBuilder =
-                                Json.createObjectBuilder()
+                                JsonUtil.createObjectBuilder()
                                         .add("@type", "cr:Field")
                                         .add("name", variableName)
                                         .add("description", variableDescription)
                                         .add("dataType", dataType)
                                         .add(
                                                 "source",
-                                                Json.createObjectBuilder()
+                                                JsonUtil.createObjectBuilder()
                                                         .add("@id", variableId.toString())
                                                         .add(
                                                                 "fileObject",
-                                                                Json.createObjectBuilder()
+                                                                JsonUtil.createObjectBuilder()
                                                                         .add("@id", fileId))
                                                         .add(
                                                                 "extract",
-                                                                Json.createObjectBuilder()
+                                                                JsonUtil.createObjectBuilder()
                                                                         .add(
                                                                                 "column",
                                                                                 variableName)));
@@ -598,25 +594,25 @@ public class CroissantExportUtil {
     //              ]
     //     }]
     public static JsonObjectBuilder getReviews(JsonObjectBuilder reviewsIn) {
-        JsonObjectBuilder reviewsOut = Json.createObjectBuilder();
-        JsonArrayBuilder jab = Json.createArrayBuilder();
+        JsonObjectBuilder reviewsOut = JsonUtil.createObjectBuilder();
+        JsonArrayBuilder jab = JsonUtil.createArrayBuilder();
         JsonArray reviews = reviewsIn.build().getJsonArray("reviews");
 
         for (JsonValue jsonValue : reviews) {
             JsonObject jsonObject = (JsonObject) jsonValue;
             String title = jsonObject.getString("title");
             JsonArray authors = jsonObject.getJsonArray("authors");
-            JsonArrayBuilder creators = Json.createArrayBuilder();
+            JsonArrayBuilder creators = JsonUtil.createArrayBuilder();
             for (JsonValue author : authors) {
-                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonObjectBuilder job = JsonUtil.createObjectBuilder();
                 // TODO add @type for "Person" or "Organization"
                 job.add("name", author);
                 creators.add(job);
             }
             String datePublished = jsonObject.getString("datePublished");
-            JsonObjectBuilder positiveNotesObj = Json.createObjectBuilder();
+            JsonObjectBuilder positiveNotesObj = JsonUtil.createObjectBuilder();
             positiveNotesObj.add("@type", "ItemList");
-            JsonArrayBuilder positiveNotesArray = Json.createArrayBuilder();
+            JsonArrayBuilder positiveNotesArray = JsonUtil.createArrayBuilder();
             JsonArray rubricMetadataBlocks = jsonObject.getJsonArray("rubricMetadataBlocks");
             for (JsonValue rmb : rubricMetadataBlocks) {
                 JsonObject rubricMetadataBlock = rmb.asJsonObject();
@@ -627,10 +623,10 @@ public class CroissantExportUtil {
                     String value = field.getString("value");
                     // Flatten all positive notes into a single array, regardless of which block
                     // they came from.
-                    positiveNotesArray.add(Json.createObjectBuilder()
+                    positiveNotesArray.add(JsonUtil.createObjectBuilder()
                             .add("@type", "StructuredValue")
                             .add("name", typeName)
-                            .add("value", Json.createObjectBuilder()
+                            .add("value", JsonUtil.createObjectBuilder()
                                     .add("@type", StringUtils.isNumeric(value) ? "QuantitativeValue" : "QualitativeValue")
                                     // We are aware that the value might be "Low", which is a bit strange for a positive note! We are constrained by what's allowed by https://schema.org/CriticReview
                                     .add("value", value)));
@@ -638,12 +634,12 @@ public class CroissantExportUtil {
             }
             positiveNotesObj.add("itemListElement", positiveNotesArray);
             jab.add(
-                    Json.createObjectBuilder()
+                    JsonUtil.createObjectBuilder()
                             .add("@context", "https://schema.org/")
                             .add("@type", "CriticReview")
                             .add(
                                     "itemReviewed",
-                                    Json.createObjectBuilder()
+                                    JsonUtil.createObjectBuilder()
                                             // TODO don't hard code this to "Dataset"
                                             .add("@type", "Dataset")
                                             .add("name", title))

@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -115,7 +116,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (optionalLoggerMsg != null){
             logger.severe(optionalLoggerMsg);
         }
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder();
 
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
         jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, jsonMsg);
@@ -311,12 +312,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
     }
 
     private JsonObjectBuilder myDataAsJson(String message, Pager pager, RoleTagRetriever roleTagRetriever, List<String> metadataFields) {
-        JsonObjectBuilder jsonData = Json.createObjectBuilder().add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true);
+        JsonObjectBuilder jsonData = JsonUtil.createObjectBuilder().add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true);
         if (message != null) {
             jsonData.add(DataRetrieverAPI.JSON_MSG_FIELD_NAME, message);
         }
         jsonData.add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,
-                Json.createObjectBuilder()
+                JsonUtil.createObjectBuilder()
                         .add("pagination", pager.asJsonObjectBuilderUsingCardTerms())
                         .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever, metadataFields))
                         .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
@@ -379,7 +380,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  roleTagRetriever should not be null");     
         }
 
-        JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder jsonSolrDocsArrayBuilder = JsonUtil.createArrayBuilder();
 
         JsonObjectBuilder myDataCardInfo;
         JsonArrayBuilder rolesForCard;

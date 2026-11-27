@@ -64,10 +64,10 @@ class OIDCAuthenticationProviderFactoryIT {
     static final String adminUser = "kcadmin";
     static final String adminPassword = "kcpassword";
     
-    // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
+    // The realm JSON resides in conf/keycloak/test-realm-include-spi.json and gets avail here using <testResources> in pom.xml
     @Container
     static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.3.2")
-        .withRealmImportFile("keycloak/test-realm.json")
+        .withRealmImportFile("keycloak/test-realm-include-spi.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
     
